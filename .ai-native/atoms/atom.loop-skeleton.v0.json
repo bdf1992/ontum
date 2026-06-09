@@ -1,0 +1,29 @@
+{
+  "atom": {
+    "id": "atom.loop-skeleton.v0",
+    "story": {
+      "text": "As an AI, I need to move one atom to its goal state by reconciling over a durable file log, because bdo wants a workflow engine whose work survives any session death.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["phase-1.loop-skeleton"],
+      "touches": [".ai-native/log"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-placement"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["ai-native-loop-substrate.md"],
+      "receipts": []
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated: current verdicts and state are always the fold over .ai-native/log/ (D-5). The verdicts block above records the state at authoring time only."
+}
