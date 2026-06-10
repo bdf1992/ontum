@@ -6,5 +6,11 @@
 # sensor trace, not truth: the command watcher's log (done-line 0011) — deletable
 .ai-native/log/tool-use.jsonl
 
+# envoy packages are rebuildable artifacts (done-line 0015); the
+# environment doc and the disclosure ledger are the committed trace
+exports/*
+!exports/CLAUDE.md
+!exports/log.jsonl
+
 __pycache__/
 *.pyc

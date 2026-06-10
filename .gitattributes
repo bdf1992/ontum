@@ -11,3 +11,4 @@
 # Append-only logs: parallel branches only ever append; union-merge
 # keeps both tails instead of conflicting.
 .ai-native/log/*.jsonl merge=union
+exports/log.jsonl merge=union
