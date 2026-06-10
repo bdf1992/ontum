@@ -111,6 +111,24 @@ class TestBodyForm(unittest.TestCase):
         self.assertEqual(pen.compose_body(_story()), pen.compose_body(_story()))
 
 
+class TestMergeSignal(unittest.TestCase):
+    """Done-line 0017: a rolling draft says so in its own body; the flip
+    is the one merge signal."""
+
+    def test_rolling_body_wears_the_banner(self):
+        body = pen.compose_body(_story(), rolling=True)
+        self.assertIn("Rolling draft", body)
+        self.assertIn("not at the stamp", body)
+        self.assertTrue(body.startswith(pen.ROLLING_BANNER))
+
+    def test_final_body_carries_no_banner(self):
+        self.assertNotIn("Rolling draft", pen.compose_body(_story()))
+
+    def test_banner_states_the_reading_rule(self):
+        # the rule the owner reads: open and not a draft means please merge
+        self.assertIn("please merge", pen.ROLLING_BANNER)
+
+
 class TestBrandedPush(unittest.TestCase):
     """Done-line 0014: the pure refusal rules of the pen's push verb."""
 
@@ -229,6 +247,13 @@ class TestGuardAndWatcher(unittest.TestCase):
 
     def test_self_review_denied(self):
         self.assertEqual(self._invoke("gh pr review 9 --approve").returncode, 2)
+
+    def test_raw_ready_flip_denied_toward_the_pen(self):
+        # the draft flip IS the merge signal (done-line 0017) — pen only
+        for command in ("gh pr ready 10", "gh pr ready 10 --undo"):
+            proc = self._invoke(command)
+            self.assertEqual(proc.returncode, 2, command)
+            self.assertIn("pen", proc.stderr)
 
     def test_push_to_trunk_denied_in_any_spelling(self):
         for command in ("git push origin main",

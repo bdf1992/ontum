@@ -90,9 +90,17 @@ def _ref_line(directory, value, why):
     return f"`{directory}/{value}.md`"
 
 
-def compose_body(story):
+ROLLING_BANNER = (
+    "> 🟡 **Rolling draft — not at the stamp.** The session is still\n"
+    "> appending; `pr.py ready <n>` flips it when the story is final.\n"
+    "> Open and not a draft means *please merge* (done-line 0017)."
+)
+
+
+def compose_body(story, rolling=False):
     """The standard story form. Validation has already passed."""
-    lines = ["## What landed", ""]
+    lines = [ROLLING_BANNER, ""] if rolling else []
+    lines += ["## What landed", ""]
     lines += [f"- {b.strip()}" for b in story["landed"] if b.strip()]
     lines += ["", "## Done-line", ""]
     lines.append(_ref_line(".ai-native/done", story["done_line"], story["why"]))
@@ -205,10 +213,18 @@ def cmd_create(ns):
         print("note: the working tree is not clean — anything uncommitted stays behind:")
         print("  " + "\n  ".join(dirty.splitlines()))
     _run(["git", "push", "-u", "origin", branch])
-    url = _run(["gh", "pr", "create", "--base", ns.base, "--head", branch,
-                "--title", story["title"], "--body", compose_body(story)]).strip()
-    print(f"result: done — PR at the stamp: {url}")
-    print("do not merge it; tell bdo.")
+    create_args = ["gh", "pr", "create", "--base", ns.base, "--head", branch,
+                   "--title", story["title"],
+                   "--body", compose_body(story, rolling=ns.rolling)]
+    if ns.rolling:
+        create_args.append("--draft")
+    url = _run(create_args).strip()
+    if ns.rolling:
+        print(f"result: done — rolling draft opened (NOT at the stamp): {url}")
+        print(f"keep appending; flip when final with: {PEN} ready <number> ...")
+    else:
+        print(f"result: done — PR at the stamp: {url}")
+        print("do not merge it; tell bdo. (open + not a draft = please merge)")
 
 
 def push_refusal(branch, merged_numbers):
@@ -287,6 +303,49 @@ def cmd_edit(ns):
     print(f"result: done — story rewritten on PR #{ns.number}; the stamp is bdo's")
 
 
+def cmd_ready(ns):
+    """The merge signal (done-line 0017): re-validate the story, require a
+    green (or declared red) suite, flip the draft. The flip is the one
+    unambiguous 'bdo, it's yours now' — accidental merges die here."""
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number),
+         "--json", "state,headRefName,isDraft"]))
+    if info["state"] != "OPEN":
+        _refuse(
+            f"PR #{ns.number} is {info['state'].lower()} — only an open PR "
+            "can come to the stamp"
+        )
+    if not info["isDraft"]:
+        _refuse(
+            f"PR #{ns.number} is already at the stamp (open, not a draft) — "
+            "nothing to flip"
+        )
+    story = _story_from(ns)
+    problems = validate_story(story, info["headRefName"])
+    if problems:
+        _refuse("the story does not hold:\n  - " + "\n  - ".join(problems))
+    _check_tests(story)
+    _run(["gh", "pr", "edit", str(ns.number),
+          "--title", story["title"], "--body", compose_body(story)])
+    _run(["gh", "pr", "ready", str(ns.number)])
+    print(f"result: done — PR #{ns.number} is AT THE STAMP. Open and not a "
+          "draft means please merge (done-line 0017); bdo, it's yours.")
+
+
+def cmd_unready(ns):
+    """Back to a rolling draft — the de-escalation needs no story; it only
+    takes the merge button away."""
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number), "--json", "state,isDraft"]))
+    if info["state"] != "OPEN":
+        _refuse(f"PR #{ns.number} is {info['state'].lower()} — nothing to roll back")
+    if info["isDraft"]:
+        _refuse(f"PR #{ns.number} is already a rolling draft")
+    _run(["gh", "pr", "ready", str(ns.number), "--undo"])
+    print(f"result: done — PR #{ns.number} is a rolling draft again (NOT at "
+          f"the stamp); flip back when final with: {PEN} ready {ns.number} ...")
+
+
 def cmd_check(_ns):
     prs = json.loads(_run(
         ["gh", "pr", "list", "--state", "open",
@@ -348,12 +407,32 @@ def main(argv=None):
     create.add_argument("--recover", action="store_true",
                         help="this PR rescues commits stranded on a merged "
                              "branch (the PR #4 pattern)")
+    create.add_argument("--rolling", action="store_true",
+                        help="open as a GitHub draft: the session keeps "
+                             "appending and the merge button stays disabled "
+                             "until `ready` flips it (done-line 0017)")
     create.set_defaults(func=cmd_create)
 
     edit = verbs.add_parser("edit", help="rewrite an open PR's story")
     edit.add_argument("number", type=int)
     _story_args(edit)
     edit.set_defaults(func=cmd_edit)
+
+    ready = verbs.add_parser(
+        "ready", help="flip a rolling draft to AT THE STAMP — the one "
+                      "merge signal (done-line 0017)")
+    ready.add_argument("number", type=int)
+    _story_args(ready)
+    ready.add_argument("--red-ok", dest="red_ok", default="", metavar="WHY",
+                       help="come to the stamp with a red suite anyway, "
+                            "declaring why in the story (§9.5)")
+    ready.set_defaults(func=cmd_ready)
+
+    unready = verbs.add_parser(
+        "unready", help="roll an at-the-stamp PR back to a draft (takes "
+                        "the merge button away; no story needed)")
+    unready.add_argument("number", type=int)
+    unready.set_defaults(func=cmd_unready)
 
     check = verbs.add_parser("check", help="audit open PRs for unwritten stories")
     check.set_defaults(func=cmd_check)

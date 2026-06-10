@@ -57,6 +57,10 @@ DENY_RULES = (
     ("gh-pr-review", r"\bgh\s+pr\s+review\b",
      "denied: no one signs their own line (CLAUDE.md) — a session does not "
      "review or approve PRs."),
+    ("gh-pr-ready", r"\bgh\s+pr\s+ready\b",
+     "raw `gh pr ready` is denied (done-line 0017): the draft flip IS the "
+     f"merge signal — it goes through the pen: {PEN} ready <n> ... "
+     f"(or {PEN} unready <n> to roll back to draft)."),
 )
 
 # Heads that stay invisible to the watcher: local work, not external reach.

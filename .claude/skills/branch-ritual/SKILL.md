@@ -5,9 +5,19 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.4.0
+version: 0.5.0
 owner: bdo
 changelog:
+  - version: 0.5.0
+    note: >
+      The merge signal is mechanical (done-line 0017). PR #9 was
+      stamped mid-build — the owner's read: "it needs to be more
+      clear when you want me to merge." Clearer prose is not the fix;
+      a disabled button is. Rolling work opens as a GitHub draft
+      (create --rolling), the pen's ready verb is the one flip to the
+      stamp (story re-validated, suite green or declared red),
+      unready rolls it back, and raw gh pr ready joins the deny-list.
+      Open non-draft PR = please merge; draft = not yet.
   - version: 0.4.0
     note: >
       The watcher's first nomination, stamped by bdo in conversation:
@@ -78,13 +88,22 @@ section), don't work around it.
   bdo story-less.)*
 - **The pen is the only write path to a PR.** `pr.py` (beside this file)
   validates the story before anything is submitted; the `command_guard`
-  hook denies the raw verbs (`gh pr create/edit/merge/close/review`,
+  hook denies the raw verbs (`gh pr create/edit/merge/close/review/ready`,
   `git push` to the trunk) and watches every other raw external command
   into `.ai-native/log/tool-use.jsonl`. Branded tools over the generic
   brand: raw use that isn't denied gets called out in-context (once per
   tool per session, with the audit count) so it surfaces naturally —
   surfaced it's a judgment call, unsurfaced it stays silent. One pen
   per seam, the `loop/node.py` pattern.
+- **Open non-draft PR = please merge; draft = not yet.** A PR the
+  session is still appending to is a **rolling draft** (`pr.py create
+  --rolling`) — the platform disables the merge button, so an early
+  stamp is impossible rather than unlikely. The flip (`pr.py ready <n>`,
+  story re-validated, suite green or declared red) is the one merge
+  signal; `unready` takes a PR back off the stamp when more work
+  arrives. The owner never guesses readiness from prose. *(This rule
+  exists because it happened: PR #9 was stamped mid-build at 01:51
+  while the session was still appending — done-line 0017.)*
 
 ## Hand-off — run at session end, or when the work is done
 

@@ -13,7 +13,9 @@ Written before code, per §9.4. When this line is met, stop.
 > please merge; draft = not yet**), and a test pins that a rolling
 > create without the draft flag cannot happen.
 
-Decision recorded now; enforcement queued. The convention was agreed
+Decision recorded at ~02:10; enforcement landed later the same night
+once the 0014–0016 increment committed and freed the pen files. The
+convention was agreed
 with bdo in chat (2026-06-10 ~02:10) after PR #9 was stamped mid-build
 — his read: "it needs to be more clear when you want me to merge,
 right?" Right — and clearer prose is not the fix; a disabled button
