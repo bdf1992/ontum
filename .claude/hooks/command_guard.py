@@ -65,10 +65,35 @@ LOCAL_HEADS = {
     "head", "tail", "grep", "rg", "find", "findstr", "sed", "awk", "sort",
     "wc", "tee", "jq", "mkdir", "rm", "cp", "mv", "touch", "pwd", "set",
     "export", "if", "for", "while", "do", "then", "else", "fi", "true",
-    "false", "test", "exit", "select-object", "get-content", "get-childitem",
-    "test-path", "write-output", "measure-object", "out-null",
+    "false", "test", "exit",
 }
 GIT_NETWORK = {"push", "fetch", "pull", "clone", "remote", "ls-remote"}
+# PowerShell cmdlets are Verb-Noun shaped and local by default; these
+# reach the network and stay visible to the watcher.
+PS_NETWORK_CMDLETS = {"invoke-webrequest", "invoke-restmethod", "send-mailmessage"}
+CMDLET_SHAPE = re.compile(r"[a-z]+-[a-z]+")
+
+
+QUOTED_SPANS = (
+    re.compile(r"@'[\s\S]*?'@"),                        # PS literal here-string
+    re.compile(r'@"[\s\S]*?"@'),                        # PS expanding here-string
+    re.compile(r"<<-?\s*'?(\w+)'?[\s\S]*?\n\s*\1\b"),   # POSIX heredoc
+    re.compile(r"'[^']*'"),
+    re.compile(r'"[^"]*"'),
+)
+
+
+def strip_quoted(command):
+    """Remove quoted content so prose is never mistaken for commands.
+
+    A commit message or PR body legitimately *mentions* forbidden
+    verbs; only the command outside the quotes acts. Caught live: the
+    shame hook read words of a here-string commit message as tool
+    heads.
+    """
+    for pattern in QUOTED_SPANS:
+        command = pattern.sub(" ", command)
+    return command
 
 
 def pushes_to_trunk(command):
@@ -91,7 +116,7 @@ def external_bins(command):
     git. Heuristic by design — the watcher is a sensor, not a parser.
     """
     seen, found = set(), []
-    for segment in re.split(r"[|;&\n]+", command):
+    for segment in re.split(r"[|;&\n{}()]+", strip_quoted(command)):
         words = segment.strip().split()
         if not words:
             continue
@@ -99,6 +124,8 @@ def external_bins(command):
         head = head[:-4] if head.endswith(".exe") else head
         if head in LOCAL_HEADS or not re.fullmatch(r"[a-z][a-z0-9._-]*", head):
             continue
+        if CMDLET_SHAPE.fullmatch(head) and head not in PS_NETWORK_CMDLETS:
+            continue  # a local cmdlet (caught live: Remove-Item shamed)
         if head == "git":
             sub = next((w for w in words[1:] if not w.startswith("-")), "")
             if sub not in GIT_NETWORK:
@@ -121,7 +148,9 @@ def record(entry):
 
 def _payload():
     try:
-        payload = json.load(sys.stdin)
+        # the harness pipes UTF-8; Windows' default stdin is cp1252 — read
+        # bytes, or a command with any non-ASCII character slips the guard
+        payload = json.loads(sys.stdin.buffer.read().decode("utf-8", "replace"))
     except (json.JSONDecodeError, ValueError):
         return None
     if payload.get("tool_name") not in ("Bash", "PowerShell"):
@@ -135,14 +164,15 @@ def hook():
         return 0
     command = (payload.get("tool_input") or {}).get("command") or ""
     session = payload.get("session_id") or ""
+    acting = strip_quoted(command)  # prose mentions a verb; only this acts
 
     for rule, pattern, message in DENY_RULES:
-        if re.search(pattern, command):
+        if re.search(pattern, acting):
             record({"status": "denied", "rule": rule, "command": command,
                     "session": session})
             print(message, file=sys.stderr)
             return 2
-    if pushes_to_trunk(command):
+    if pushes_to_trunk(acting):
         record({"status": "denied", "rule": "git-push-trunk",
                 "command": command, "session": session})
         print(

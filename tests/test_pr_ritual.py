@@ -30,6 +30,7 @@ def _load(name, path):
 
 
 pen = _load("pr_pen", PEN_PATH)
+guard = _load("command_guard", GUARD_PATH)
 
 
 def _story(**overrides):
@@ -108,6 +109,50 @@ class TestBodyForm(unittest.TestCase):
 
     def test_body_is_deterministic(self):
         self.assertEqual(pen.compose_body(_story()), pen.compose_body(_story()))
+
+
+class TestQuotedProse(unittest.TestCase):
+    """Caught live: the shame hook read a here-string commit message as
+    tool heads. Quoted content is prose, never commands."""
+
+    PS_COMMIT = (
+        "git commit -m @'\n"
+        "feat: the shame layer — unbranded use surfaces in-context\n\n"
+        "Collection alone is silent. The branded pass via audit call.\n"
+        "'@; if ($?) { git push origin claude/quiet-hopper-ovn8x1 }"
+    )
+
+    def test_here_string_words_are_not_tool_heads(self):
+        self.assertEqual(guard.external_bins(self.PS_COMMIT), ["git"])
+
+    def test_heredoc_body_is_invisible(self):
+        command = (
+            'gh pr edit 8 --body "$(cat <<\'EOF\'\n'
+            "the curl of the wave, the ssh of the wind\n"
+            'EOF\n)"'
+        )
+        self.assertEqual(guard.external_bins(command), ["gh"])
+
+    def test_prose_mentioning_a_forbidden_verb_is_not_denied(self):
+        # the deny rules must read the acting command, not the message
+        command = ("git commit -m @'\ndocs: explain why raw gh pr create "
+                   "and gh pr merge are denied\n'@")
+        self.assertEqual(guard.external_bins(command), [])
+        acting = guard.strip_quoted(command)
+        self.assertNotIn("gh pr create", acting)
+
+    def test_cmdlets_are_local_but_network_cmdlets_are_seen(self):
+        # caught live: Remove-Item shamed as an external tool
+        self.assertEqual(guard.external_bins(
+            "Remove-Item -Force x.jsonl -Confirm:$false"), [])
+        self.assertEqual(guard.external_bins(
+            "Invoke-WebRequest https://example.com"), ["invoke-webrequest"])
+
+    def test_quoted_trunk_word_is_not_a_trunk_push(self):
+        self.assertFalse(guard.pushes_to_trunk(
+            guard.strip_quoted("git commit -m 'fix the main page'")))
+        self.assertTrue(guard.pushes_to_trunk(
+            guard.strip_quoted("git push -f origin HEAD:main")))
 
 
 class TestGuardAndWatcher(unittest.TestCase):

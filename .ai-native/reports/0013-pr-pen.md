@@ -90,6 +90,12 @@ stamp. Suite 76/76 green.
 
 Open items for bdo (also flagged on PR #8): the report-numbering
 collision; the Core 27 mint awaiting the pin; the 'drift' borrow.
-One more: the PreToolUse hook takes effect for *new* sessions when
-settings.json is loaded — running sessions (this one included) are
-not retro-gated mid-flight.
+One more, observed live: the hooks took effect *immediately* in the
+running session, not just for new ones — and the shame hook's first
+firing caught a real bug in itself: it read a here-string commit
+message as commands and shamed words of prose. Fixed in the same
+session (quoted spans — here-strings, heredocs, quotes — are stripped
+before any matching, which also stops the deny rules from firing on
+prose that merely *mentions* a forbidden verb); four regression tests
+pin it; the polluted watch log was deleted (a sensor trace is
+deletable by design). The check did its §10 job on its own author.
