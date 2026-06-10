@@ -31,6 +31,7 @@ from pathlib import Path
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, load_atoms,
                             node_prompt, real_nodes, receipt_for_stage)
 from loop.orchestrate import HUMAN_NODE, next_action
+from loop.reflect import drift, registered_surfaces
 
 
 def open_summons(root):
@@ -131,6 +132,13 @@ def main(argv=None):
             if backlog:
                 print(f"[loop] {len(backlog)} item(s) await bdo's stamp"
                       " — python -m loop.node inbox")
+            unreflected = sum(len(drift(root, sid))
+                              for sid in registered_surfaces(Fold(root)))
+            if unreflected:
+                # a stale surface is surfaced, never silently wrong
+                # (done-line 0018); applying stays the reflector pen's act
+                print(f"[loop] surface drift: {unreflected} act(s) not yet "
+                      "reflected — python -m loop.reflect")
         except Exception:
             pass  # a broken hook must never block the owner's prompt
         return 0

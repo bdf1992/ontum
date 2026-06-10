@@ -27,13 +27,16 @@ python -m loop.node admit-real --stage <mock-node> --node <real-node> --by <who>
 python -m loop.summon                      # open summons, read-only (D-10)
 python -m loop.summon --hook               # hook mode: briefing on stdout, exit 0 always
 
+python -m loop.reflect                     # registered surfaces + their drift, read-only
+python -m loop.reflect register --surface github-issues --address <owner/repo> --by <who>
+
 python -m loop.web render                  # static owner inbox page
 python -m loop.web serve                   # localhost inbox with verdict forms
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
-`node`, `summon`, and `web` import from the `loop` package and must run
-as modules (`python -m loop.<name>`) from the repo root.
+`node`, `summon`, `reflect`, and `web` import from the `loop` package
+and must run as modules (`python -m loop.<name>`) from the repo root.
 
 Every invocation ends with a clear stdout result: `done | report |
 needs-you`. Treat `needs-you` as an escalation to surface, not an error
@@ -107,6 +110,12 @@ so a prompt edit can't reopen a settled verdict (I-2).
   admissions; enforces the seam contract (right node, right verdict
   set, no judging your own announcement, write-twice is a no-op).
 - [summon.py](summon.py) — the summons surface; read-only, hook-safe.
+- [reflect.py](reflect.py) — the reflection fold (done-line 0018):
+  surfaces are admitted records; the drift between the owner's queue
+  and what a registered surface shows is a pure fold over the log.
+  Outward reach lives only in the reflector pen
+  (`.claude/skills/reflect/reflect.py`) — never here. The mirror is
+  one-way: verdicts still land only through `loop.node judge` (D-4).
 - [web.py](web.py) — the owner inbox, a rendered fold; its verdict POST
   calls the same `judge()` the CLI uses. There is deliberately no
   second write path.
