@@ -1,19 +1,28 @@
 ---
 name: reflect
 description: >-
-  Reflect the owner's stamp queue onto registered external surfaces:
-  an atom arriving at bdo's stamp opens a GitHub issue carrying the
-  arc-first briefing; the stamp landing closes it with the verdict and
-  receipt id. Use when the summon hook reports surface drift, at the
-  end of any session that judged or stamped atoms, or when bdo looks
+  The reflection service as application: the owner's stamp queue
+  mirrored onto registered external surfaces (GitHub Issues today) —
+  an atom arriving at bdo's stamp opens an issue with the arc-first
+  briefing; the stamp landing closes it with the verdict and receipt
+  id. Reflection rules (kind x surface, admitted records) make it
+  automatic: the Stop-hook beat applies enabled rules after every
+  turn. Use when the summon hook reports surface drift, when bdo looks
   at an external surface and sees nothing while the hook says work
-  waits (the exact incident behind done-line 0018). The pen is
-  reflect.py beside this file; the drift fold is loop/reflect.py;
-  surfaces are admitted records and every applied act is receipted on
-  the log.
-version: 0.1.0
+  waits, to register surfaces or admit rules, or to extend the service
+  with a new kind or surface translator. The pen is reflect.py beside
+  this file; the drift fold is loop/reflect.py; every applied act is
+  receipted on the log.
+version: 0.2.0
 owner: bdo
 changelog:
+  - version: 0.2.0
+    note: >-
+      The pattern commons (done-line 0020). bdo's pub/sub directive
+      and stamp ("Lets do it then", chat 2026-06-10): rules as the
+      translation matrix, the Stop-hook beat as the subscriber, the
+      skill as the application manual. First writing hook — contract
+      change stamped on the done-line.
   - version: 0.1.0
     note: >-
       First form (done-line 0018). bdo's directive, on the record
@@ -22,57 +31,74 @@ changelog:
       Issues showed him nothing while the queue held work.
 ---
 
-# Reflect
+# Reflect — the pattern commons
 
 The owner's queue lives in the log; the owner lives on his surfaces.
-This skill closes that gap in one direction only: **log → surface,
+This service closes that gap in one direction only: **log → surface,
 never back**. The issue is a mirror — judging it does nothing; the
 verdict still lands through `loop.node judge` (D-4, one pen).
 
-## The ritual
+The pub/sub reading (bdo's frame, level-triggered form): **the log is
+the topic, rules are the subscriptions, reflection records are the
+acks, drift is the unconsumed backlog.** No broker, no daemon — a
+missed beat costs nothing because the next beat re-derives the whole
+diff from the log.
 
-1. **Read the drift** (pure fold, writes nothing):
-
-   ```sh
-   python -m loop.reflect           # every registered surface + its drift
-   ```
-
-   `done` means every surface mirrors the log — stop. `report` names
-   the acts (open / close) that would close the gap.
-
-2. **Apply it** (the pen — the only writer):
-
-   ```sh
-   python .claude/skills/reflect/reflect.py apply --surface github-issues --by <who>
-   ```
-
-   Opens one issue per atom newly at the stamp (briefed arc-first, with
-   the verdict set and the clear line); closes the issue with verdict +
-   receipt id when the stamp has landed. Each applied act is recorded on
-   the log before the next is attempted — a half-applied run resumes, a
-   re-run with no drift is a no-op.
-
-3. **Verify**: re-run step 1 and expect `done`.
-
-## Registering a surface
-
-Surfaces are admitted records (I-8), signed, latest-wins — never code:
+## Using
 
 ```sh
+python -m loop.reflect                    # surfaces, rules, drift — read-only
 python -m loop.reflect register --surface github-issues \
-    --address bdf1992/ontum --by bdo
+    --address bdf1992/ontum --by bdo      # admit a surface (omit --address: deregister)
+python -m loop.reflect rule --kind owner-stamp-queue \
+    --surface github-issues --on --by bdo # admit a rule (--off: disable)
+
+python .claude/skills/reflect/reflect.py apply --surface github-issues --by <who>
+                                          # the deliberate hand: any registered surface
+python .claude/skills/reflect/reflect.py auto --by reflect-auto
+                                          # the beat's verb: only what enabled rules name
 ```
 
-Omit `--address` to deregister. Reflecting to an unregistered surface
-refuses (§10: it must not fit).
+The beat itself is wired in `.claude/settings.json`: a `Stop` hook runs
+`auto` after every turn. With a rule on, drift clears itself; with no
+rule, nothing leaves the machine and the summon hook surfaces the drift
+for a deliberate `apply`. Both paths receipt every act on the log,
+signed.
+
+## Extending
+
+- **A new kind** (something else worth reflecting — open summons, epic
+  progress, parked atoms) is a new drift fold: add the fold to
+  `loop/reflect.py`, list the kind in `RULE_KINDS`, and admit rules for
+  it. Its own done-line: a kind defines what the system says out loud.
+- **A new surface kind** (PR comments, email, the phone inbox) is a new
+  translator in the pen: a branch in `_apply_acts` (or a sibling
+  function) that knows the surface's verbs. The fold never changes —
+  desired view and drift are surface-shape-agnostic.
+- The refusals stay load-bearing (§10): unknown kinds refuse at the
+  CLI, unregistered surfaces refuse in the fold, configured-off drift
+  never reflects.
+
+## Managing
+
+- **Audit**: every reflected act is a log record with provenance —
+  `surface.reflected` events carry surface, atom, act, external ref,
+  and signature. The fold *is* the audit; there is no second ledger.
+- **Pause**: `rule ... --off --by <who>` — a superseding admission,
+  never an erasure. The drift then accumulates visibly (summon hook,
+  `loop.reflect` status) instead of applying.
+- **Remove a surface**: `register --surface <id> --by <who>` with no
+  `--address`. Its reflection history stands.
+- A failed act stops the run, keeps what landed receipted, and the
+  next beat (or re-run) resumes from the rest — never double-acting.
 
 ## Boundaries
 
 - The drift fold (`loop/reflect.py`) is stdlib-pure: no network, no
-  subprocess. All outward reach lives in this pen, like the PR pen.
-- The hook (`loop.summon --hook`) names drift ambiently so a stale
-  surface is surfaced, not silently wrong — but the hook never writes;
-  applying stays a deliberate act through this pen.
-- Next-not-now, each its own stamped increment: more surface kinds,
-  ambient auto-apply (today's hooks never write — changing that is a
-  contract change), and the served web inbox (auth still named-not-built).
+  subprocess (pinned by test over its imports). All outward reach
+  lives in this pen, like the PR pen.
+- The Stop-hook beat is the repo's **first writing hook** — stamped by
+  bdo on done-line 0020. It writes only through the pen, only what
+  enabled rules name, fail-open, exit 0 always, never gating the owner.
+- Next-not-now, each its own stamped increment: more kinds, more
+  surface translators, the served web inbox (auth still named-not-built).

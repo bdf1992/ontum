@@ -277,5 +277,100 @@ class HookTest(ReflectBase):
             self.assertEqual((self.root / "log" / name).read_bytes(), data)
 
 
+class RuleTest(ReflectBase):
+    def test_rules_are_admitted_records_latest_wins(self):
+        self.assertEqual(reflect.enabled_rules(reconcile.Fold(self.root)), {})
+        reflect.admit_rule(self.root, "owner-stamp-queue", "github-issues",
+                           True, by="test-bdo")
+        key = ("owner-stamp-queue", "github-issues")
+        self.assertIn(key, reflect.enabled_rules(reconcile.Fold(self.root)))
+        reflect.admit_rule(self.root, "owner-stamp-queue", "github-issues",
+                           False, by="test-bdo")
+        self.assertEqual(reflect.enabled_rules(reconcile.Fold(self.root)), {})
+        # disabling supersedes, never erases: both admissions stand on the log
+        fold = reconcile.Fold(self.root)
+        recorded = [a for a in fold.admissions
+                    if a.get("type") == "reflection_rule"]
+        self.assertEqual(len(recorded), 2)
+
+    def test_unknown_kind_refuses_at_the_cli(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = reflect.main(["rule", "--root", str(self.root),
+                                 "--kind", "weather", "--surface",
+                                 "github-issues", "--on", "--by", "test-bdo"])
+        self.assertEqual(code, 2)
+        self.assertIn("unknown kind", out.getvalue())
+
+
+class AutoTest(ReflectBase):
+    def auto(self, run):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = reflect_pen.auto(self.root, by="reflect-auto", run=run)
+        return code, out.getvalue()
+
+    def test_configured_off_drift_must_not_reflect(self):
+        """§10: drift exists but no rule is enabled — the beat must reach
+        nowhere, with no rule at all and with a disabled one alike."""
+        self.register()
+        self.to_stamp()
+        self.assertTrue(reflect.drift(self.root, "github-issues"))
+        code, text = self.auto(lambda args: self.fail("no rule, no reach"))
+        self.assertEqual(code, 0)
+        self.assertIn("nothing to auto-apply", text)
+        reflect.admit_rule(self.root, "owner-stamp-queue", "github-issues",
+                           True, by="test-bdo")
+        reflect.admit_rule(self.root, "owner-stamp-queue", "github-issues",
+                           False, by="test-bdo")
+        code, _ = self.auto(lambda args: self.fail("disabled rule, no reach"))
+        self.assertEqual(code, 0)
+
+    def test_enabled_rule_auto_applies_signs_and_settles(self):
+        self.register()
+        reflect.admit_rule(self.root, "owner-stamp-queue", "github-issues",
+                           True, by="test-bdo")
+        self.to_stamp()
+        calls = []
+
+        def fake(args):
+            calls.append(args)
+            return "https://github.com/owner/repo/issues/20"
+
+        code, text = self.auto(fake)
+        self.assertEqual(code, 0)
+        self.assertEqual(len(calls), 1)
+        self.assertIn("auto-applied 1 act(s)", text)
+        recs = [ev for ev in reconcile.Fold(self.root).events
+                if ev.get("type") == reflect.REFLECTED_EVENT]
+        self.assertEqual(len(recs), 1)
+        self.assertEqual(recs[0]["by"], "reflect-auto")
+        code, _ = self.auto(lambda args: self.fail("no drift, no reach"))
+        self.assertEqual(code, 0)  # the next beat is a no-op
+
+    def test_rule_for_unregistered_surface_reaches_nowhere(self):
+        reflect.admit_rule(self.root, "owner-stamp-queue", "github-issues",
+                           True, by="test-bdo")
+        self.to_stamp()
+        code, _ = self.auto(lambda args: self.fail("unregistered, no reach"))
+        self.assertEqual(code, 0)
+
+
+class HookBeatTest(unittest.TestCase):
+    def test_beat_fails_open_everywhere(self):
+        """Garbage stdin + a project dir with no pen in it: exit 0, no
+        noise — a broken beat must never break the turn."""
+        import os
+        import subprocess
+        hook = REPO / ".claude" / "hooks" / "reflect_auto.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            env = dict(os.environ, CLAUDE_PROJECT_DIR=tmp)
+            proc = subprocess.run([sys.executable, str(hook)],
+                                  input="{not json", capture_output=True,
+                                  text=True, env=env, timeout=60)
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.stdout.strip(), "")
+
+
 if __name__ == "__main__":
     unittest.main()
