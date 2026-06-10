@@ -8,7 +8,9 @@
     "horizon": "A served, authenticated page you open on your phone: the whole system's open questions told as stories under their epics, cleared with a thumb, with epic-level verdicts available when an arc should be steered as one unit.",
     "pieces": [
       {"atom": "atom.owner-inbox.v1", "glue": "the briefed surface: every open item told value-first with what each verdict does, rendered to a phone-readable page, cleared through one pen"},
-      {"atom": "atom.epic-layer.v0", "glue": "this directive itself: items file under epics, the inbox briefs the arc before the item, and the owner steers at epic scale"}
+      {"atom": "atom.epic-layer.v0", "glue": "this directive itself: items file under epics, the inbox briefs the arc before the item, and the owner steers at epic scale"},
+      {"atom": "atom.github-verdict-mirror.v0", "glue": "the first external surface, wired both ways — parked by bdo's amend in favour of the pattern (rcp.558ad49545cd)"},
+      {"atom": "atom.surface-registry.v0", "glue": "the distributed half of the harness: every surface bdo steers from is registered and watched, its words reflected onto the log, so the stamp travels at whatever speed he does"}
     ]
   }
 }

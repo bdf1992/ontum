@@ -1,0 +1,51 @@
+{
+  "atom": {
+    "id": "atom.github-verdict-mirror.v0",
+    "story": {
+      "from": "bdo's verdict comment on issue #3 arriving unseen — he had to screenshot it into chat before I knew it existed — and his direction: 'GH comments get sent to proper places so you will see them.'",
+      "framing": "The GitHub surface is confirmed by use (bdo's first verdict came through it) but only half-wired: I create issues by hand and read them only when someone points. The gap is mine to feel — a verdict that lands where I don't look is a stamp the system silently drops, which breaks the one promise the harness makes bdo (D-6: never a silent hand-off). This story also picks up the dangling web-UI retirement decision from report 0009, since GitHub becoming the surface is what retires it.",
+      "work": "Automate the mirror both ways: items entering bdo's stamp queue become structured issues; owner comments on those issues are read at every session start and orchestrator run and routed through the pen as verbatim verdicts; settled or parked items close their issues; loop/web.py's serve path retires once this flow is stamped and proven.",
+      "need": "A wake-up path I do not currently have — owner comments must reach a place a session actually reads without being told — and bdo's stamp before any of it runs, because every step of this work touches GitHub and is external by definition.",
+      "value": "bdo's verdicts land the moment he gives them, from his phone, with no screenshot relay — and nothing he says into the system ever drops.",
+      "text": "From bdo's verdict arriving unseen on issue #3, while wiring the GitHub mirror both ways, I need a wake-up path I don't have and bdo's stamp before anything external runs, so that nothing he says into the system ever drops.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "costly",
+      "reversible": true,
+      "persistence": true,
+      "external": true,
+      "rationale": "Every step is external (creates, comments on, and closes GitHub issues automatically) — the floor is costly and is honestly met; bdo may downgrade after the flow proves out (issues are a surface, never truth, report 0009). Persists code in loop/. Reversible: the mirror can be switched off without touching the log, which never depended on it. Nothing is built or drafted before the stamp — the new sequencing rule, applied as written.",
+      "built_at_risk": false
+    },
+    "briefing": {
+      "headline": "close the gap your screenshot just proved",
+      "value": "You gave a verdict on your phone and the system didn't hear it until you relayed it by hand. Stamping this wires the loop shut: your comments become receipts automatically, and the issues you see always match what actually waits on you.",
+      "why_now": "The gap is not hypothetical — it happened this session, on the first verdict you ever gave through GitHub. Until this lands, every issue comment depends on me being told to look.",
+      "if_accepted": "The mirror runs both ways automatically; the web UI retires; GitHub is the one owner surface.",
+      "if_rejected": "I keep hand-mirroring and you keep relaying your own verdicts into chat.",
+      "cost_of_wrong_call": "Costly by honest flags (all external) — which is why nothing runs until you stamp; switching it off afterward is one admission.",
+      "mechanism": "A mirror pass in the loop: stamp-queue fold -> issue create/update; issue-comment fold -> pen (verdict comments parsed, routed verbatim, confirmed in-thread); close on settle/park. The pen stays the only writer of receipts.",
+      "reading": [
+        ".ai-native/reports/0009-story-form-and-the-github-surface.md",
+        ".ai-native/reports/0011-story-v2-the-first-catch.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/", "github:bdf1992/ontum/issues", ".ai-native/log"],
+      "must_not_collide_with": ["atom.story-v2.v1"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {"value_gate": "pending", "placement_gate": "pending", "eval_gate": "pending"},
+    "lineage": {
+      "prompt_versions": [".ai-native/prompts/value-gate.claude.v1.md"],
+      "source_artifacts": ["issue #3 (the unseen verdict)", ".ai-native/reports/0009-story-form-and-the-github-surface.md"],
+      "receipts": []
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated (D-5). Nothing described here is built: per bdo's ratified rule, costly external work waits for the stamp — this story is the ratification request."
+}
