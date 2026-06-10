@@ -26,6 +26,7 @@ from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, append_line,
                             make_receipt, node_prompt, now_ts, real_nodes,
                             receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
+from loop import trust
 
 
 def admit_real(root, stage_node, real_node, by, supersedes=None):
@@ -34,6 +35,28 @@ def admit_real(root, stage_node, real_node, by, supersedes=None):
         "type": "node_real",
         "stage_node": stage_node,
         "real_node": real_node,
+        "by": by,
+        "supersedes": supersedes,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm
+
+
+def admit_rung(root, agent_class, capability, by, supersedes=None):
+    """Grant a class a capability rung — the one write path for the trust
+    ladder (loop/trust.py reads it). bdo-only; ontum-touch is LOCKED and
+    refused here (the lock is the pen itself, never a flag a session passes).
+    Returns the admission, or None on refusal (already printed)."""
+    reason = trust.rung_refusal(agent_class, capability, by)
+    if reason:
+        print(f"result: needs-you — {reason}")
+        return None
+    adm = {
+        "id": "adm." + short_hash("trust_rung", agent_class, capability, str(by), now_ts()),
+        "type": "trust_rung",
+        "agent_class": agent_class,
+        "capability": capability,
         "by": by,
         "supersedes": supersedes,
         "ts": now_ts(),
@@ -193,11 +216,28 @@ def main(argv=None):
     r.add_argument("--node", default=None, help="the real node id (omit to revert the stage to its mock)")
     r.add_argument("--by", required=True, help="who admits it (D-4: realness is signed, never self-set)")
 
+    g = sub.add_parser("admit-rung", help="grant a class a capability rung (bdo only; ontum-touch LOCKED)")
+    g.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    g.add_argument("--class", dest="agent_class", required=True,
+                   help="agent class: " + ", ".join(trust.AGENT_CLASSES))
+    g.add_argument("--capability", required=True,
+                   help="read | judge | author (ontum-touch is LOCKED)")
+    g.add_argument("--by", required=True, help="who grants it (D-4: bdo only)")
+    g.add_argument("--supersedes", default=None, help="a prior rung id this replaces")
+
     args = ap.parse_args(argv)
     if args.cmd == "judge":
         return judge(args.root, args.atom, args.node, args.verdict, args.reason)
     if args.cmd == "inbox":
         return inbox(args.root)
+    if args.cmd == "admit-rung":
+        adm = admit_rung(args.root, args.agent_class, args.capability,
+                         args.by, args.supersedes)
+        if adm is None:
+            return 2
+        print(f"result: report — {adm['id']}: {args.agent_class} may now "
+              f"{args.capability} (admitted by {args.by})")
+        return 0
     stages = {s["node"] for s in PIPELINE}
     if args.stage not in stages:
         print(f"result: needs-you — unknown stage {args.stage}; stages: {', '.join(sorted(stages))}")
