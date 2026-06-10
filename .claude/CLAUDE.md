@@ -6,10 +6,12 @@ be, landed as stamped increments, never hand-tuned silently.
 
 - `settings.json` — the hook wiring. Current hooks:
   - `PreToolUse` Bash|PowerShell → `hooks/command_guard.py`: denies raw
-    `gh pr` mutations and all raw `git push` (the PR pen — create /
-    edit / push — is the paved path); watches every other external
-    tool into `.ai-native/log/tool-use.jsonl` (`--report` says which
-    wrapper is worth building next).
+    `gh pr` mutations and raw `git add`/`git commit`/`git push` (the PR
+    pen and the git pen are the paved paths); watches every other
+    external tool — *including standalone local mutating git*
+    (checkout, branch, merge, …) — into
+    `.ai-native/log/tool-use.jsonl` (`--report` says which wrapper is
+    worth building next; read-only git stays raw-and-watched).
   - `PreToolUse` Write → `hooks/write_guard.py`: a new file lands only
     under a governing `CLAUDE.md` (root governs root level only), and
     records directories with a `.pen.json` enforce form — next id,
@@ -26,7 +28,9 @@ be, landed as stamped increments, never hand-tuned silently.
 - `hooks/` — the guards. Deny = exit 2 + reason on stderr; guards fail
   open on their own errors and never gate the owner.
 - `skills/` — versioned rituals (prompt-as-code): `branch-ritual` (with
-  `pr.py`, the PR pen), `glyph-knolling`, `envoy` (with `envoy.py`, the
+  `pr.py`, the PR pen, and `git.py`, the git pen — branded `add`/`commit`,
+  named paths only, no sweep; done-line 0020), `glyph-knolling`, `envoy`
+  (with `envoy.py`, the
   export pen — the repo leaves as a sealed ≤10-file package, receipted
   on `exports/log.jsonl`), `reflect` (with `reflect.py`, the reflector
   pen — the owner's stamp queue mirrored onto registered external
