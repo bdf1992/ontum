@@ -61,9 +61,10 @@
   .kv div:nth-child(odd) { color: var(--dim); }
   #cellGlyph { font-size: 42px; line-height: 1.1; }
   #cellGlyph .at { font-size: 18px; color: var(--dim); margin: 0 5px; }
-  #miniWrap { display: flex; gap: 14px; align-items: center; margin-bottom: 4px; }
+  #miniWrap { display: flex; gap: 14px; align-items: center; margin-bottom: 6px; }
   #miniWrap p { margin: 2px 0 6px; color: var(--dim); }
-  #miniCubie { width: 132px; height: 132px; flex: 0 0 auto; }
+  #miniCubie { width: 100%; height: 240px; border-radius: 10px; cursor: grab;
+    background: rgba(7,9,13,.5); touch-action: none; }
   .stk { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 11.5px; }
   .chip { display: inline-block; width: 22px; height: 22px; border-radius: 4px;
     text-align: center; font-weight: 700; line-height: 22px; font-size: 13px;
@@ -2288,78 +2289,163 @@ updateCubeUI();
 
 function badge(s) { return `<span class="badge ${s}">${s}</span>`; }
 
-// ----------------------------------------------------- the cubie inspector
-// One panel, every glyph the cubie carries: a live mini render of the piece
-// (stickers + glued letters, true to its current rotation), the occupant
-// wing, the facelet breakdown, and the address wing of the cell it sits in.
+// ------------------------------------------------- the local-cube inspector
+// The cubie as its own Site: a nested 3×3×3 local frame, re-rooted on the
+// selected cell. The keystone (the local spindle) holds the glyph itself;
+// the 26 surrounding slots are the cell's actual global neighborhood at
+// their true relative offsets — seams along its open axes, requests along
+// its decided ones, diagonal kin dimmed, out-of-bounds neighbors left as
+// open wireframe slots (holes the structure has not filled yet). Placement
+// is computed from the registry relations, never hand-authored: when the
+// term graph grows, re-arrangement is recomputation — the shaper pattern.
+// Click a neighbor to re-root and walk the atlas. The local cube of ⊘ is
+// the entire global cube: the root Token whose subtree is the specimen.
 let miniToken = 0;
-function startMini(p) {
+const miniView = { rx: 0.42, ry: -0.62, touched: 0 };
+function startLocalCube(p) {
   const tok = ++miniToken;
   const mc = $("miniCubie");
   if (!mc) return;
   const md = Math.min(2, window.devicePixelRatio || 1);
-  mc.width = 132 * md; mc.height = 132 * md;
+  const PW = mc.clientWidth || 320, PH = 240;
+  mc.width = PW * md; mc.height = PH * md;
   const g = mc.getContext("2d");
-  let ry = -0.6;
-  const rx = 0.42;
+  const root = p.cell.slice();
+  const rootCell = polyByKey[key(root)];
+  const seamSet = new Set(rootCell.seam_of), reqSet = new Set(rootCell.requests);
+  const slots = [];
+  for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+    if (!dx && !dy && !dz) continue;
+    const gc = [root[0] + dx, root[1] + dy, root[2] + dz];
+    const inb = gc.every(v => v >= -1 && v <= 1);
+    const entry = inb ? polyByKey[key(gc)] : null;
+    slots.push({
+      d: [dx, dy, dz], gc, entry,
+      rel: !entry ? "open"
+        : seamSet.has(entry.letter) ? "seam"
+        : reqSet.has(entry.letter) ? "request" : "near",
+    });
+  }
   const lrot = v => {
-    const cy = Math.cos(ry), sy = Math.sin(ry);
+    const cy = Math.cos(miniView.ry), sy = Math.sin(miniView.ry);
     const x1 = v[0] * cy + v[2] * sy, z1 = -v[0] * sy + v[2] * cy;
-    const cx = Math.cos(rx), sx = Math.sin(rx);
+    const cx = Math.cos(miniView.rx), sx = Math.sin(miniView.rx);
     return [x1, v[1] * cx - z1 * sx, v[1] * sx + z1 * cx];
   };
   const lproj = v => {
-    const r = lrot(v), zc = r[2] + 3.6, s = 132 * 1.45 / zc;
-    return { x: 66 + r[0] * s, y: 66 - r[1] * s, s, zc };
+    const r = lrot(v), zc = r[2] + 4.6, s = PH * 1.7 / zc;
+    return { x: PW / 2 + r[0] * s, y: PH / 2 - r[1] * s, s, zc };
   };
+  const slotPos = s => [s.d[0] * 0.85, s.d[1] * 0.85, s.d[2] * 0.85];
+  // pointer: drag rotates the local frame, click re-roots on a neighbor
+  let mdrag = null;
+  mc.onpointerdown = e => { mdrag = { x: e.offsetX, y: e.offsetY, moved: false }; mc.setPointerCapture(e.pointerId); };
+  mc.onpointermove = e => {
+    if (!mdrag) return;
+    const sc = PW / (mc.clientWidth || PW);
+    const dx = e.offsetX - mdrag.x, dy = e.offsetY - mdrag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) mdrag.moved = true;
+    miniView.ry += dx * sc * 0.008; miniView.rx += dy * sc * 0.008;
+    miniView.touched = performance.now();
+    mdrag.x = e.offsetX; mdrag.y = e.offsetY;
+  };
+  mc.onpointerup = e => {
+    const wasDrag = mdrag && mdrag.moved; mdrag = null;
+    if (wasDrag) return;
+    const sc = PW / (mc.clientWidth || PW);
+    const mx = e.offsetX * sc, my = e.offsetY * sc;
+    let best = null, bd = 1e9;
+    for (const s of slots) {
+      if (!s.entry) continue;
+      const q = lproj(slotPos(s));
+      const d = Math.hypot(q.x - mx, q.y - my);
+      if (d < 18 && q.zc < bd) { best = s; bd = q.zc; }
+    }
+    if (best) {
+      const piece = pieces.find(q => key(q.cell) === key(best.gc));
+      if (piece) { st.sel = piece; showCell(piece); }
+    }
+  };
+  const REL = { seam: "#3fd9c9", request: "#d7dce6" };
+  function miniCube(c, h, color, alpha, glow) {
+    const pts = VERT.map(v => lproj([c[0] + v[0] * h, c[1] + v[1] * h, c[2] + v[2] * h]));
+    g.globalAlpha = alpha;
+    if (glow) { g.shadowColor = glow; g.shadowBlur = 14; }
+    const order = FACES.map(([idx, n]) => {
+      const rn = lrot(n);
+      return { idx, z: idx.reduce((a, i) => a + pts[i].zc, 0) / 4,
+               front: rn[2] < 0, d: rn[0] * LIGHT[0] + rn[1] * LIGHT[1] + rn[2] * LIGHT[2] };
+    }).sort((a, b) => b.z - a.z);
+    for (const f of order) {
+      if (!f.front) continue;
+      g.beginPath();
+      f.idx.forEach((i, j) => j ? g.lineTo(pts[i].x, pts[i].y) : g.moveTo(pts[i].x, pts[i].y));
+      g.closePath();
+      g.fillStyle = shade(color, 0.5 + 0.55 * Math.max(0, f.d));
+      g.fill();
+      g.strokeStyle = "rgba(7,9,13,.8)"; g.lineWidth = 1; g.stroke();
+    }
+    g.shadowBlur = 0; g.globalAlpha = 1;
+  }
+  function wireSlot(c, h) {
+    const pts = VERT.map(v => lproj([c[0] + v[0] * h, c[1] + v[1] * h, c[2] + v[2] * h]));
+    g.strokeStyle = "rgba(215,220,230,.10)"; g.lineWidth = 1; g.setLineDash([3, 3]);
+    const E = [[0,1],[1,3],[3,2],[2,0],[4,5],[5,7],[7,6],[6,4],[0,4],[1,5],[2,6],[3,7]];
+    g.beginPath();
+    for (const [a, b] of E) { g.moveTo(pts[a].x, pts[a].y); g.lineTo(pts[b].x, pts[b].y); }
+    g.stroke(); g.setLineDash([]);
+  }
   function loop() {
     if (tok !== miniToken || !$("pCell").classList.contains("show")) return;
-    ry += 0.012;
+    if (performance.now() - miniView.touched > 3000) miniView.ry += 0.006;
     g.setTransform(md, 0, 0, md, 0, 0);
-    g.clearRect(0, 0, 132, 132);
-    if (p.kind === "center") {
-      g.strokeStyle = "rgba(215,220,230,.6)"; g.setLineDash([4, 4]); g.lineWidth = 1.4;
-      g.beginPath(); g.arc(66, 66, 34, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
-      g.font = "700 30px ui-monospace, Menlo, monospace";
-      g.textAlign = "center"; g.textBaseline = "middle";
-      g.fillStyle = "#d7dce6"; g.fillText("⊘", 66, 67);
-    } else {
-      const h = 0.62;
-      const pts = VERT.map(v => lproj([v[0] * h, v[1] * h, v[2] * h]));
-      const order = FACES.map(([idx, n], fi) => {
-        const rn = lrot(n);
-        return { idx, fi, n, z: idx.reduce((a, i) => a + pts[i].zc, 0) / 4,
-                 front: rn[2] < 0, d: rn[0] * LIGHT[0] + rn[1] * LIGHT[1] + rn[2] * LIGHT[2] };
-      }).sort((a, b) => b.z - a.z);
-      for (const f of order) {
-        if (!f.front) continue;
-        const quad = f.idx.map(i => pts[i]);
-        g.beginPath(); quad.forEach((q, i) => i ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y)); g.closePath();
-        g.fillStyle = shade(PLASTIC, 0.7 + 0.55 * Math.max(0, f.d)); g.fill();
-        g.lineJoin = "round"; g.strokeStyle = "rgba(7,9,13,.92)"; g.lineWidth = 3; g.stroke();
-        const col = p.stickers[f.fi];
-        if (!col) continue;
-        const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
-        const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
-        g.beginPath();
-        quad.forEach((q, i) => { const ix = cx + (q.x - cx) * 0.8, iy = cy + (q.y - cy) * 0.8; i ? g.lineTo(ix, iy) : g.moveTo(ix, iy); });
-        g.closePath();
-        g.fillStyle = shade(col, Math.min(1.2, 0.66 + 0.5 * Math.max(0, f.d))); g.fill();
-        const hn = mulMv(transpose(p.M), f.n);
-        const t = TANG[key(hn)];
-        const tu = mulMv(p.M, t[0]), tv = mulMv(p.M, t[1]);
-        const c3 = [f.n[0] * h, f.n[1] * h, f.n[2] * h];
-        const p0 = lproj(c3);
-        const pu = lproj([c3[0] + tu[0] * h * 0.5, c3[1] + tu[1] * h * 0.5, c3[2] + tu[2] * h * 0.5]);
-        const pv = lproj([c3[0] + tv[0] * h * 0.5, c3[1] + tv[1] * h * 0.5, c3[2] + tv[2] * h * 0.5]);
-        g.save();
-        g.transform((pu.x - p0.x) / 32, (pu.y - p0.y) / 32, (pv.x - p0.x) / 32, (pv.y - p0.y) / 32, p0.x, p0.y);
-        g.font = "700 40px ui-monospace, Menlo, monospace";
-        g.textAlign = "center"; g.textBaseline = "middle";
-        g.fillStyle = INK[col]; g.fillText(p.entryCube.letter, 0, 2);
-        g.restore();
-      }
+    g.clearRect(0, 0, PW, PH);
+    // relation threads from the keystone outward
+    const c0 = lproj([0, 0, 0]);
+    for (const s of slots) {
+      if (s.rel !== "seam" && s.rel !== "request") continue;
+      const q = lproj(slotPos(s));
+      g.strokeStyle = REL[s.rel]; g.globalAlpha = 0.5; g.lineWidth = 1.1;
+      g.shadowColor = REL[s.rel]; g.shadowBlur = 6;
+      g.beginPath(); g.moveTo(c0.x, c0.y); g.lineTo(q.x, q.y); g.stroke();
+      g.shadowBlur = 0; g.globalAlpha = 1;
     }
+    const order = slots.slice().sort((a, b) => lproj(slotPos(b)).zc - lproj(slotPos(a)).zc);
+    let centered = false;
+    const drawKeystone = () => {
+      // the local spindle holds the glyph: the Self at its own origin
+      g.strokeStyle = "rgba(215,220,230,.55)"; g.setLineDash([4, 4]); g.lineWidth = 1.3;
+      g.beginPath(); g.arc(c0.x, c0.y, 0.34 * c0.s, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+      g.font = `700 ${Math.max(13, 0.4 * c0.s)}px ui-monospace, Menlo, monospace`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.shadowColor = "#d7dce6"; g.shadowBlur = 10;
+      g.fillStyle = "#fff"; g.fillText(rootCell.letter, c0.x, c0.y + 1);
+      g.shadowBlur = 0;
+    };
+    for (const s of order) {
+      if (!centered && lproj(slotPos(s)).zc >= c0.zc) { drawKeystone(); centered = true; }
+      const pos = slotPos(s);
+      if (!s.entry) { wireSlot(pos, 0.26); continue; }
+      const dimmed = s.rel === "near";
+      miniCube(pos, 0.27, KINDCOLOR[s.entry.cell], dimmed ? 0.35 : 0.95,
+               s.rel === "seam" || s.rel === "request" ? REL[s.rel] : null);
+      const q = lproj(pos);
+      g.globalAlpha = dimmed ? 0.5 : 1;
+      g.font = `700 ${Math.max(9, 0.32 * q.s)}px ui-monospace, Menlo, monospace`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.lineJoin = "round"; g.strokeStyle = "rgba(7,9,13,.85)";
+      g.lineWidth = 2.5;
+      g.strokeText(s.entry.letter, q.x, q.y + 1);
+      g.fillStyle = "#fff"; g.fillText(s.entry.letter, q.x, q.y + 1);
+      g.globalAlpha = 1;
+    }
+    if (!centered) drawKeystone();
+    // legend
+    g.font = "600 9.5px ui-monospace, Menlo, monospace"; g.textAlign = "left";
+    g.fillStyle = REL.seam; g.fillText("— seams", 8, PH - 22);
+    g.fillStyle = REL.request; g.fillText("— requests", 8, PH - 11);
+    g.fillStyle = "#8a93a6"; g.textAlign = "right";
+    g.fillText("click a neighbor to re-root", PW - 8, PH - 11);
     requestAnimationFrame(loop);
   }
   loop();
@@ -2396,13 +2482,17 @@ function showCell(p) {
   if (p.kind === "corner") ori = `<div>twist</div><div>${cornerOrientOf(p)}</div>`;
   $("pCellBody").innerHTML = `
     <div id="miniWrap">
-      <canvas id="miniCubie"></canvas>
+      <div id="cellGlyph" style="color:${isVoid ? "#d7dce6" : KINDCOLOR[p.kind]}">${occ.letter}<span class="at">@</span>${addr.letter}</div>
       <div>
-        <div id="cellGlyph" style="color:${isVoid ? "#d7dce6" : KINDCOLOR[p.kind]}">${occ.letter}<span class="at">@</span>${addr.letter}</div>
         <p>${occ.cubie} · ${p.kind} · ${away ? "away from home" : "home"}</p>
         ${badge(occ.status)}
       </div>
     </div>
+    <canvas id="miniCubie"></canvas>
+    <p class="src">the cubie as its own Site: the keystone holds the glyph, its
+    neighborhood settles around it at true offsets — dashed slots are open
+    (out of the global frame). Placement is computed from the registry, so
+    new relationships re-arrange themselves on re-knoll.</p>
     <h3>occupant — the piece</h3>
     <div class="kv">
       <div>glyph</div><div>${occ.letter} (${occ.cubie})</div>
@@ -2424,7 +2514,7 @@ function showCell(p) {
     ${occ.note ? `<p class="quote">${occ.note}</p>` : ""}${addr.note ? `<p class="quote">${addr.note}</p>` : ""}
     <p class="src">occupant: ${occ.source}<br>address: ${addr.source}</p>`;
   showOnly("pCell");
-  startMini(p);
+  startLocalCube(p);
 }
 
 $("bTrio").onclick = () => {
