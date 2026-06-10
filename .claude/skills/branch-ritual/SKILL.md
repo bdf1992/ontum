@@ -5,9 +5,17 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.1.0
+version: 0.2.0
 owner: bdo
 changelog:
+  - version: 0.2.0
+    note: >
+      Sharpened after PR #8 reached the stamp story-less: a recovery PR
+      wore the auto-title over an empty body, and the stranding it
+      recovered (pushes to busy-feynman after PR #6 merged) repeated the
+      PR #2 failure. The story rule now binds every PR to main, recovery
+      included; hand-off checks for a dead branch before pushing; and
+      `gh pr edit` is named as the repair for an unwritten story.
   - version: 0.1.0
     note: >
       First form. Lifted from docs/sop/branch-management.md (PR #5) and
@@ -38,6 +46,13 @@ section), don't work around it.
   PR #4.)*
 - **Never merge your own PR; never push to `main`.** Work propels itself, it
   never authorizes itself (§4). The stamp is bdo's. *(Firm.)*
+- **Every PR to `main` carries its story — recovery PRs included.** A PR
+  wearing the auto-title (the branch name) over an empty body is an
+  unwritten story: not at the stamp, however green the merge button.
+  GitHub's "Compare & pull request" button produces exactly this — fill
+  the form, or repair after the fact with `gh pr edit <n> --title --body`.
+  *(This rule exists because it happened: PR #1 and PR #8 both reached
+  bdo story-less.)*
 
 ## Hand-off — run at session end, or when the work is done
 
@@ -45,12 +60,20 @@ section), don't work around it.
    or shrink scope (§9.5) — don't hand off red without saying so.
 2. Confirm you're on this session's `claude/*` branch and everything is
    committed — small, step-shaped commits with messages that say what landed.
-3. Push: `git push -u origin <branch>`.
-4. Open **exactly one PR** to `main`. The description carries: what landed,
-   which done-line it serves, the session report number, and the end-state
-   (`done | report | needs-you`).
-5. **Stop.** Do not merge it. Tell bdo it's at the stamp.
-6. After the stamp lands, the branch gets deleted (the button on the merged
+3. **Confirm the branch is alive** before pushing: if a PR from it has
+   already merged (`gh pr list --head <branch> --state merged`), the
+   branch is dead — cut a fresh branch from where you stand and push that
+   instead. *(The PR #6 → #8 stranding happened exactly here: nine commits
+   pushed to a branch whose PR had merged an hour earlier.)*
+4. Push: `git push -u origin <branch>`.
+5. Open **exactly one PR** to `main`, story written in — explicit
+   `--title` and `--body`, never the defaults. The description carries:
+   what landed, which done-line it serves, the session report number, the
+   end-state (`done | report | needs-you`), and anything the commits
+   flagged *for bdo* — the PR is where those flags surface, or they
+   scroll away with the log.
+6. **Stop.** Do not merge it. Tell bdo it's at the stamp.
+7. After the stamp lands, the branch gets deleted (the button on the merged
    PR page). Dissolved, not archived — `main` already holds the truth.
 
 ## Gardening — run when the Branches page confuses or accumulates
@@ -68,7 +91,7 @@ Recovery moves:
 
 | situation | move |
 |---|---|
-| commit stranded on a merged branch | PR that branch → `main`; stamp; delete (the PR #4 pattern) |
+| commit stranded on a merged branch | PR that branch → `main` — with its story (what stranded, how, what it carries); stamp; delete (the PR #4 pattern) |
 | PR conflicts with `main` | rebase the session branch onto `main` and force-push *your own branch* (never `main`); the stamp still belongs to bdo |
 | a branch nobody remembers | `0` ahead → delete; otherwise read its diff, then PR it or write it off in a report — don't leave it to rot |
 
