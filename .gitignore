@@ -1,6 +1,7 @@
 # cache, never truth (§14.1): a fold over .ai-native/log/ — rebuilt by replay
 .ai-native/queues/
 .ai-native/offsets/
+.ai-native/inbox.html
 
 __pycache__/
 *.pyc

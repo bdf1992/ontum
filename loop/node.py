@@ -123,6 +123,18 @@ def inbox(root):
               "until it is admitted real (node admit-real)")
     for atom, ahash in mine:
         print(f"\n{atom['id']} — awaiting your stamp ({human})")
+        briefing = atom.get("briefing", {})
+        if briefing:
+            # value first, mechanism after (done-line 0005)
+            print(f"  {briefing.get('headline', '')}")
+            print(f"  value: {briefing['value']}")
+            if briefing.get("why_now"):
+                print(f"  why now: {briefing['why_now']}")
+            for label, key in (("if you accept", "if_accepted"),
+                               ("if you reject", "if_rejected"),
+                               ("cost of a wrong call", "cost_of_wrong_call")):
+                if briefing.get(key):
+                    print(f"  {label}: {briefing[key]}")
         print(f"  story: {atom['story']['text']}")
         print(f"  author's confidence: {atom['story']['value_confidence']}")
         for rc in fold.receipts:
