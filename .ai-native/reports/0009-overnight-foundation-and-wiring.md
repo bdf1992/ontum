@@ -106,3 +106,36 @@ catch up with tonight's substrate; `CLAUDE.md` is finally committed.
   Honest flag: this is the dual-benefit zone report 0006 named — an
   owner-surface change you didn't verbatim request tonight. It ships as
   its own commit so your stamp can reject it alone.
+
+## Addendum 2 (~02:30) — the write pen, on your directive
+
+You sent the directive at ~01:50 with the live exhibit already on
+disk: two `0011-*.md` done-lines, eleven minutes apart, one from each
+session. Done-line 0013 answers it:
+
+- **write_guard.py** (PreToolUse on Write): file creation requires a
+  governing CLAUDE.md below the root (root governs root level only) —
+  `docs/` deliberately has none, so its read-only hard rule is now
+  mechanical for sessions; records dirs with `.pen.json` enforce
+  pattern, exact-next id, required sections. Refusals name the pen.
+- **loop/pen.py**: ids from the directory fold, scaffold from the
+  control config, LF bytes. `tests/` and `.claude/` founded their
+  CLAUDE.md environments (composing with 0010).
+- The collision resolved: my backlog done-line renumbered 0012;
+  your `0011-pr-pen` stands.
+- **Guard hardening, both of them**: stdin is now read as UTF-8
+  bytes — Windows' cp1252 default meant any non-ASCII payload made a
+  guard *silently fail open* (caught by live smoke, not by tests:
+  the tests encoded with the same wrong codec on both sides).
+  `command_guard.py` had the identical hole; fixed surgically. Guards
+  also now print a traceback when they fail open — an invisible
+  failure is an unguarded repo that still looks guarded.
+- Least-permissions: the guards + watcher are tonight's enforcement;
+  broader `settings.json` allowlists left as a morning decision (the
+  dial is yours, I-8). The watcher's fold already names raw `git` as
+  the heaviest unwrapped tool — likely the next pen worth minting.
+
+Suite 61/61. Mid-flight file races with your live session on
+`command_guard.py` and `settings.json` were absorbed by re-reading
+before each edit — the same discipline the write guard now enforces
+for records.
