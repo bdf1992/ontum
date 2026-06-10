@@ -141,6 +141,13 @@ class OrchestrateTest(unittest.TestCase):
         keys = receipt_keys(root)
         self.assertEqual(len(keys), len(set(keys)), "doubled receipts after resume")
         self.assertEqual(len(keys), 4 * len(reconcile.PIPELINE))
+        # two sessions can sense the same pressure at the same tick number in
+        # the same second — their tick ids must still be distinct lines
+        raw_ticks = [line for line in
+                     (root / "log" / "admissions.jsonl").read_text().splitlines()
+                     if line.strip() and json.loads(line).get("type") == "tick"]
+        self.assertEqual(len(raw_ticks), len(tick_records(root)),
+                         "tick ids collided across sessions: history hidden by the fold")
 
     def test_rerun_after_done_writes_nothing(self):
         root = make_root(self.tmp, 2)

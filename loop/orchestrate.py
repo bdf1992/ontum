@@ -197,15 +197,20 @@ def control(pressure, setpoint, fold, atoms, human_rate):
 
 
 def tick_record(n, pressure, setpoint, scheduled, deferred, cooled):
+    steps = [{"atom": a["id"], "step": f"{k}:{t}"} for a, _, k, t in scheduled]
     return {
-        "id": "adm.tick." + short_hash(str(n), canon(pressure), now_ts()),
+        # the id hashes the decision, not just the weather: two sessions can
+        # sense identical pressure at the same tick number within one second,
+        # and only a tick that also took the same steps is the same tick
+        "id": "adm.tick." + short_hash(str(n), canon(pressure), canon(steps),
+                                       canon(deferred), now_ts()),
         "type": "tick",
         "tick": n,
         "mode": "cool" if cooled else "heat",
         "pressure": pressure,
         "setpoint_id": setpoint["id"],
         "budget_spent": len(scheduled),
-        "scheduled": [{"atom": a["id"], "step": f"{k}:{t}"} for a, _, k, t in scheduled],
+        "scheduled": steps,
         "deferred": deferred,
         "ts": now_ts(),
     }
