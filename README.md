@@ -21,6 +21,7 @@ syntax, semiotics, and semantics at once.
 | `.ai-native/` | The loop's own ground: `log/` (truth), `atoms/`, `done/` (done-lines, written before code), `reports/` (session reports). |
 | `docs/phase-2/` | **Read-only context.** The wider system the loop exists to build: the cellular language, the 27-cell sheaf, the Ontum unit system, the ontogrammatic typing discipline. |
 | `docs/sources/` | **Read-only inspiration.** External sources aligned with the work, for when we hit walls or question our sanity. |
+| `.claude/skills/` | **Our rituals.** Versioned prompts-as-code (doctrine §7) for repeatable repo operations — start with [branch-ritual](.claude/skills/branch-ritual/SKILL.md). |
 
 ## Quickstart
 
