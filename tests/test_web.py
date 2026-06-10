@@ -90,6 +90,32 @@ class WebInboxTest(unittest.TestCase):
         self.assertIn("python -m loop.node judge", page)
         self.assertNotIn("<form", page)
 
+    def test_epic_first_briefing(self):
+        (self.root / "epics").mkdir()
+        (self.root / "epics" / "epic.test-arc.json").write_text(json.dumps({"epic": {
+            "id": "epic.test-arc", "owner": "bdo",
+            "arc": "The full telling of the test arc.",
+            "context": "Why the arc exists.",
+            "value": "You steer one arc instead of two tickets.",
+            "horizon": "What done looks like at arc scale.",
+            "pieces": [{"atom": "atom.web-01.v0", "glue": "retro-filed: the briefingless piece glues in here"}],
+        }}), encoding="utf-8")
+        # web-00 files itself via serves; web-01 is claimed by the epic's pieces
+        atom0 = make_atom(0, briefing=BRIEFING)
+        atom0["atom"]["incidence"]["serves"] = ["epic.test-arc"]
+        (self.root / "atoms" / "atom.web-00.v0.json").write_text(json.dumps(atom0), encoding="utf-8")
+        orchestrate.orchestrate(self.root, quiet=True)  # re-key web-00 to its new hash
+        page = web.render_html(self.root)
+        # the arc is briefed above the items, value first
+        self.assertIn("epic.test-arc", page)
+        self.assertIn("You steer one arc instead of two tickets.", page)
+        self.assertIn("the arc, fully told", page)
+        self.assertLess(page.index("You steer one arc"), page.index("Approve the test briefing"))
+        # the retro-filed piece carries its glue without being re-judged
+        self.assertIn("retro-filed: the briefingless piece glues in here", page)
+        # both atoms grouped under the one epic — no unfiled section
+        self.assertNotIn("unfiled", page)
+
     def test_served_form_clears_through_the_one_pen(self):
         server = ThreadingHTTPServer(("127.0.0.1", 0), web.make_handler(self.root))
         threading.Thread(target=server.serve_forever, daemon=True).start()

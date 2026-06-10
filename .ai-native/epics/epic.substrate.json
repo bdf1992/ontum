@@ -1,0 +1,15 @@
+{
+  "epic": {
+    "id": "epic.substrate",
+    "owner": "bdo",
+    "arc": "Build a work substrate where files are the environment, sessions are mortal, and nothing of value depends on any process staying alive. The log remembers; a different set of eyes countersigns every claim; an ambient loop holds the field at a workable temperature — heating stalled work, cooling runaway inflow before it floods the human. Work compounds between sessions instead of decaying.",
+    "context": "This is the metabolism for the wider Ontum project (the fabric of named, provenance-carrying units described in docs/phase-2/). The substrate is the harness, never the building: every capability here exists so that meaning-level work can later run on it without trusting any single agent's memory or honesty.",
+    "value": "You can point disposable AI sessions at real work and trust what survives, because every state is replayable from files, every claim passed a second set of eyes, and the system can tell itself to back off before it buries you.",
+    "horizon": "All five gates real (only L0 is today), the slow loop re-admitting its own dials from outcomes, and a corpus pointed at the machine becoming proposed atoms — the corpus-to-system move.",
+    "pieces": [
+      {"atom": "atom.loop-skeleton.v0", "glue": "the cell: one atom reconciled over a durable log, surviving SIGKILL with nothing lost or doubled"},
+      {"atom": "atom.fast-ambient-loop.v0", "glue": "the field: many atoms under an admitted setpoint, with the cool path proven — the loop throttles its own inflow to protect the human stage"},
+      {"atom": "atom.real-value-gate.v0", "glue": "the first real eye: L0 judgements come from a summoned session that can say no, and the owner stamp became genuinely the owner's"}
+    ]
+  }
+}

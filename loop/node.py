@@ -22,7 +22,8 @@ import sys
 from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, append_line,
-                            load_atoms, make_receipt, now_ts, real_nodes,
+                            epic_of, glue_of, load_atoms, load_epics,
+                            make_receipt, now_ts, real_nodes,
                             receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 
@@ -121,8 +122,23 @@ def inbox(root):
     if human is None:
         print("note: the owner stamp is still mocked — nothing waits on you "
               "until it is admitted real (node admit-real)")
+    epics = load_epics(root)
+    # epic-first (done-line 0006): brief the arc, then the items inside it
+    mine.sort(key=lambda item: (epic_of(item[0], epics) or {}).get("id", "~unfiled"))
+    last_key = object()  # sentinel: distinct from None (the unfiled group)
     for atom, ahash in mine:
+        epic = epic_of(atom, epics)
+        key = epic["id"] if epic else None
+        if key != last_key:
+            last_key = key
+            if epic:
+                print(f"\n== {epic['id']} — {epic['value']}")
+            else:
+                print("\n== unfiled — no epic claims this yet")
         print(f"\n{atom['id']} — awaiting your stamp ({human})")
+        glue = glue_of(atom, epic)
+        if glue:
+            print(f"  glues in: {glue}")
         briefing = atom.get("briefing", {})
         if briefing:
             # value first, mechanism after (done-line 0005)

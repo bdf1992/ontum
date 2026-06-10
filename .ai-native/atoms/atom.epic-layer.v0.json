@@ -1,0 +1,46 @@
+{
+  "atom": {
+    "id": "atom.epic-layer.v0",
+    "story": {
+      "text": "As an AI, I need to file every story under the epic it advances and brief bdo at that scale first — the arc, its context, and how each local piece glues in — because bdo wants to steer arcs of value, not approve tickets.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Steer epics, not tickets",
+      "value": "You said it directly: 'I want to see epic level ideas and context, not individual tasks or tickets.' From now on every item that reaches you is shown inside its arc — what the big idea is, why it exists, and how this specific piece glues into it — so a glance gives you the epic and a minute gives you the verdict.",
+      "why_now": "Your last two stamps came with a rider: the tickets were briefed but the scale was wrong. You also granted the sizing rule that makes this workable: larger swaths of value at once, as long as the local pieces each glue into value and carry their own receipts.",
+      "if_accepted": "Epics become the steering level: two already retro-cover everything built (epic.substrate, epic.owner-harness), new work files under an epic or says why it can't, and the inbox briefs arc-first everywhere.",
+      "if_rejected": "Items stay ticket-scale and you keep reconstructing the big picture yourself on every visit.",
+      "cost_of_wrong_call": "Low: epics are records and rendering — no gate logic, no truth moved. Retiring the layer is deleting files the log never depended on.",
+      "mechanism": "Epic records in .ai-native/epics/ carry arc/context/value/horizon/pieces+glue; atoms file via incidence.serves or the epic's pieces list (settled atoms retro-file without re-judging — the epic points at them); CLI inbox and the web page group and brief epic-first; unfiled atoms still render.",
+      "reading": [
+        ".ai-native/done/0006-epic-layer.md",
+        ".ai-native/epics/epic.owner-harness.json",
+        ".ai-native/epics/epic.substrate.json"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/node.py", "loop/web.py", "loop/reconcile.py"],
+      "must_not_collide_with": ["atom.owner-inbox.v1"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0006-epic-layer.md",
+        "ai-native-loop-substrate.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated: current verdicts and state are always the fold over .ai-native/log/ (D-5)."
+}

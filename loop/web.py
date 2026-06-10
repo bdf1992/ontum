@@ -23,7 +23,8 @@ from urllib.parse import parse_qs
 
 from loop.node import judge
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action, read_setpoint
-from loop.reconcile import DEFAULT_ROOT, Fold, load_atoms, real_nodes
+from loop.reconcile import (DEFAULT_ROOT, Fold, epic_of, glue_of, load_atoms,
+                            load_epics, real_nodes)
 
 STYLE = """
 body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#101418;
@@ -79,13 +80,15 @@ def gather(root):
     return fold, atoms, human, mine, summons, parked
 
 
-def card(fold, atom, ahash, human, actionable):
+def card(fold, atom, ahash, human, actionable, glue=None):
     b = atom.get("briefing", {})
     story = atom["story"]
     out = ['<div class="card">']
     out.append(f'<p class="head">{esc(b.get("headline", story["text"]))}'
                f'<span class="chip">confidence: {esc(story["value_confidence"])}</span></p>')
     out.append(f'<p class="id">{esc(atom["id"])}</p>')
+    if glue:
+        out.append(f'<p class="why"><strong>glues in:</strong> {esc(glue)}</p>')
     if b:
         out.append(f'<p class="value">{esc(b["value"])}</p>')
         if b.get("why_now"):
@@ -137,8 +140,29 @@ def render_html(root, actionable=False):
     if human is None:
         parts.append("<p class='why'>the owner stamp is still mocked — nothing waits on you "
                      "until it is admitted real</p>")
+    # epic-first (done-line 0006): the arc above the items, the glue on each
+    epics = load_epics(root)
+    groups, by_key = [], {}
     for atom, ahash in mine:
-        parts.append(card(fold, atom, ahash, human, actionable))
+        epic = epic_of(atom, epics)
+        key = epic["id"] if epic else None
+        if key not in by_key:
+            by_key[key] = []
+            groups.append((epic, by_key[key]))
+        by_key[key].append((atom, ahash))
+    for epic, items in groups:
+        if epic:
+            parts.append(f"<h2>{esc(epic['id'])}</h2><p class='why'>{esc(epic['value'])}</p>")
+            arc = [f"<p>{esc(epic['arc'])}</p>"]
+            if epic.get("context"):
+                arc.append(f"<p>{esc(epic['context'])}</p>")
+            if epic.get("horizon"):
+                arc.append(f"<p><strong>horizon:</strong> {esc(epic['horizon'])}</p>")
+            parts.append(f"<details><summary>the arc, fully told</summary>{''.join(arc)}</details>")
+        elif epics:
+            parts.append("<h2>unfiled — no epic claims these yet</h2>")
+        for atom, ahash in items:
+            parts.append(card(fold, atom, ahash, human, actionable, glue=glue_of(atom, epic)))
     if summons:
         parts.append("<h2>Awaiting summons (routed for you, not by you)</h2>")
         for atom, target in summons:

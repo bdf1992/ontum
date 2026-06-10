@@ -191,6 +191,40 @@ def load_atom(root):
     return atoms[0]
 
 
+def load_epics(root):
+    """The arcs bdo steers (done-line 0006): first-class records read like
+    atoms — the file is truth for what an epic claims, the log for what its
+    pieces have earned."""
+    out = []
+    edir = root / "epics"
+    if not edir.exists():
+        return out
+    for path in sorted(edir.glob("*.json")):
+        out.append(json.loads(path.read_bytes())["epic"])
+    return out
+
+
+def epic_of(atom, epics):
+    """An atom files under an epic via its own incidence.serves, or via the
+    epic's pieces list — the latter lets settled atoms retro-file without
+    re-judging (the epic points at them; their hashes never move)."""
+    serves = set(atom.get("incidence", {}).get("serves", []))
+    for epic in epics:
+        if epic["id"] in serves:
+            return epic
+        if any(p.get("atom") == atom["id"] for p in epic.get("pieces", [])):
+            return epic
+    return None
+
+
+def glue_of(atom, epic):
+    """How this local piece composes into the arc, in the epic's words."""
+    for piece in (epic or {}).get("pieces", []):
+        if piece.get("atom") == atom["id"]:
+            return piece.get("glue")
+    return None
+
+
 def make_event(type_, seam, from_node, atom_id, artifact_hash, requires, terminal_expected):
     return {
         "id": "evt." + short_hash(type_, atom_id, artifact_hash),
