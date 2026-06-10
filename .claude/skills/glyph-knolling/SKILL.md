@@ -76,6 +76,30 @@ result.
    was re-derived, what was minted, what stays open, end-state
    `done | report | needs-you`.
 
+## The Core 27 (MINTED, session 0009)
+
+Every glyph of the 27 is the Self/void term of its own local frame —
+globally a cell, locally the keystone of its neighborhood. The registry's
+`core27` section carries the principle, the coining utterance, the
+non-example, and the openness gradient (corner 7/19, edge 11/15, face
+17/9, ⊘ 26/0 — in-frame neighbors / open slots). The open slots are the
+typed capacity for future term placements; when assigning non-spatial
+terms into frames, record the placement as a derived rule in `knoll.py`,
+never as hand-edited registry data.
+
+## Term frames (contract v0, session 0010)
+
+Each glyph's own cube carries its 27 terms mapped on its cubies
+(registry `term_frames`, derived by `build_term_frames()` in knoll.py):
+center = the Self/void term; faces = directional relations + the cell's
+own decisions (pure geometry); corners = settled facts; edges =
+relations (antipode, live occupant, trio), unfilled edge slots OPEN.
+The inspector shows this as the default **terms** view (LOCAL/self
+first), with the **neighborhood** view kept as the second tab. To place
+new terms into open slots, extend the relation queue in
+`build_term_frames()` — never hand-edit the registry; re-arranging is
+re-knolling.
+
 ## Extending
 
 - **A new lettering** (a third alphabet over the solid): add a derivation
@@ -85,6 +109,41 @@ result.
   addresses/occupants (the two letterings), knolled (flat-lay), S·I·O
   spotlight, cascade (the worked example from the polysheaf doc, animated:
   A → seams I,M,Q → endpoint E → faces → the obscured wildcard ⊘).
+- **Cube controls:** the viewer is a working cube over the generative
+  minimum {U,D,L,R,F,B} — buttons, keys, or **dragging a facelet** to turn
+  its layer (shift/′/right-click for counterclockwise; drag on empty space
+  orbits). Scramble (a 20-letter word; God's number), unwind (the word
+  read backwards), reset. The live state string follows cube-alphabet.md
+  §7 exactly (`edge word | EO bits | corner word | CO trits`). The cube
+  mathematics lives in the pure `CUBE_MATH` block inside the viewer;
+  `tests/test_viewer_cube.py` extracts it and checks the group laws under
+  node (auto-skipped if node is absent). Keep that block free of DOM and
+  registry references — the purity is tested. Addresses stay put under
+  turns; occupants travel — the two-alphabet split, demonstrated live.
+  Solving the cube earns the Pilish line (word lengths spell π).
+- **Facelets and colors:** sticker colors are the §7 pinned names
+  (white/yellow/orange/red/green/blue), recorded as `face_color` on the
+  six center entries in the registry; the hexes are authored in the
+  viewer's `FACE_HEX`. Stickers are derived per frame from each piece's
+  rotation matrix (`Mᵀ·n` pulls a world normal back to the home frame), so
+  flips and twists render truthfully — never repaint them by hand. Letters
+  are a toggle (`letters`); sound is synthesized Web Audio (`sound`
+  toggle, no assets).
+- **Printed letters:** the 26 letters render ON the facelets in per-face
+  text frames (`TANG`, chosen so `tu × tv = −n` — never mirrored).
+  Occupant letters are *glued*: their home-face frame is transported by
+  the piece's rotation, so flips and twists show in the typography.
+  Address letters print upright always — labels of fixed space. The void
+  ⊘/∅ keeps its billboard glyph; billboards otherwise appear only in the
+  knolled flat-lay (where faces go edge-on).
+- **Links web (`links` button):** off → *seams* (the incidence skeleton
+  from the registry's `seam_of`, drawn between the pieces currently
+  occupying related cells — scrambling re-wires it) → *drift* (each
+  displaced piece tied to the piece squatting its home cell: permutation
+  cycles drawn as chords; solved = no chords). Lines follow pieces live
+  through turns and through the knolled flat-lay. "drift" here is a loose
+  viewer-level borrow of the ledger's word — flag it for bdo, don't
+  promote it.
 - **The two alphabets are complementary, not in conflict:** polysheaf
   letters name fixed **cells** (addresses), cube-alphabet letters name
   mobile **pieces** (occupants). Keep that split intact in anything new —

@@ -258,6 +258,9 @@ def polysheaf_cells(letters, pin_lines):
 # ---------------------------------------------------------------------------
 
 CUBE_CENTERS = ["U", "D", "L", "R", "F", "B"]                      # A–F
+# face colors as the §7 table pins them: "Up (white)", "Down (yellow)" …
+CUBE_FACE_COLORS = {"U": "white", "D": "yellow", "L": "orange",
+                    "R": "red", "F": "green", "B": "blue"}
 CUBE_EDGES = ["UF", "UR", "UB", "UL", "DF", "DR", "DB", "DL",
               "FR", "FL", "BR", "BL"]                               # G–R
 CUBE_CORNERS = ["UFR", "UFL", "UBR", "UBL", "DFR", "DFL", "DBR", "DBL"]  # S–Z
@@ -301,6 +304,8 @@ def cube_alphabet_cells(pin_lines):
                 else f"{CUBE_DOC} §7 (bijection table)"
             ),
         }
+        if piece == "center":
+            entry["face_color"] = CUBE_FACE_COLORS[cubie]
         cells.append(entry)
     cells.append({
         "letter": SPINDLE_GLYPH,
@@ -504,6 +509,178 @@ def build_trio(poly_cells, cube_cells):
 
 
 # ---------------------------------------------------------------------------
+# The Core 27 — bdo's leap (session 0009): "one term of those 27 glyphs ends
+# up being the S/Void term for each letter; these are like our CORE 27
+# operational terms." Each glyph, opened as its own local frame, occupies
+# that frame's void — the keystone. Globally one void; locally every glyph
+# voids its own center. Scale-recursive restatement of the cube principle:
+# every Feature is the Token of its own subtree.
+# ---------------------------------------------------------------------------
+
+def build_core27(poly_cells):
+    terms = []
+    for c in poly_cells:
+        in_frame = 1
+        for v in c["coord"]:
+            in_frame *= 3 if v == 0 else 2
+        in_frame -= 1  # neighbors of the cell that stay inside {−,0,+}³
+        entry = {
+            "glyph": c["letter"],
+            "coord_str": c["coord_str"],
+            "global_role": c["cell"],
+            "local_role": "keystone — the Self/void term of its own frame",
+            "neighbors_in_frame": in_frame,
+            "open_slots": 26 - in_frame,
+        }
+        if c["letter"] == CENTER_GLYPH:
+            entry["note"] = ("the root: zero open slots — its local frame is "
+                             "the entire specimen")
+        terms.append(entry)
+    return {
+        "name": "Core 27",
+        "status": "MINTED",
+        "coined_by": "bdo — 'one term of those 27 glyphs ends up being the "
+                     "S/Void term for each letter; these are like our CORE "
+                     "27 operational terms' (glyph-knolling session 0009)",
+        "principle": "Every glyph of the 27 is the Self/void term of its own "
+                     "local frame: globally a cell among cells, locally the "
+                     "keystone occupying its frame's empty center. The 27 "
+                     "glyphs are therefore the system's core operational "
+                     "terms — 26 letters and ⊘, each one anchoring a "
+                     "neighborhood. Globally there is one void; locally, "
+                     "every glyph voids its own center.",
+        "gradient": "openness by kind — corner frames hold 7 neighbors (19 "
+                    "slots open), edges 11/15, faces 17/9, and ⊘ 26/0: the "
+                    "root's frame is the whole specimen and closes "
+                    "completely.",
+        "non_example": "A grip-ledger word without an address — cant, drift, "
+                       "jective: operational vocabulary, but not core-27; "
+                       "they have no cell and anchor no local frame.",
+        "terms": terms,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Term frames — bdo (session 0010): "S has 27 terms associated with it.
+# Those terms could EACH go on a cubie of S if it's self-similar to THIS
+# rubik's cube. S's cube has its TERMS mapped on it."
+#
+# The placement contract, v0 — typed self-similarly to the solid itself:
+#   center  — the Self/void term: the glyph (the keystone holds it)
+#   faces   — directional relations, derived purely from coordinates:
+#             in-bounds unit neighbors are seams (they decide an open axis)
+#             or requests (they open a decided one); out-of-bounds
+#             directions hold the cell's own DECISIONS — "x = +" is why no
+#             neighbor lies that way
+#   corners — settled facts (fully decided slots take fully decided terms)
+#   edges   — relations/joins (a Seam is a primitive that is a join):
+#             antipode, live occupant, trio membership; unfilled edge
+#             slots stay OPEN — measured capacity for future relationships
+# Placement is derived here, never hand-authored: when the term graph
+# grows, re-arrangement is recomputation.
+# ---------------------------------------------------------------------------
+
+TERM_FRAME_CONTRACT = (
+    "v0 — center: the Self/void term (the glyph). faces: directional "
+    "relations derived from coordinates (seams decide, requests open, "
+    "out-of-bounds directions carry the cell's own decisions). corners: "
+    "settled facts in lex slot order (kind, dim, codim, axis, status, "
+    "frame capacity, wing, home piece). edges: relations in queue order "
+    "(antipode, live occupant, trio membership); unfilled edge slots stay "
+    "OPEN — capacity for future relationships. Derived in knoll.py; "
+    "re-arranging is re-knolling."
+)
+
+
+def build_term_frames(poly_cells, cube_cells, core27, trio):
+    by_coord = {tuple(c["coord"]): c for c in poly_cells}
+    cube_by_coord = {tuple(c["coord"]): c for c in cube_cells}
+    core_by_glyph = {t["glyph"]: t for t in core27["terms"]}
+    trio_glyphs = set(trio["glyphs"])
+    frames = {}
+    for c in poly_cells:
+        coord = tuple(c["coord"])
+        slots = [{
+            "d": [0, 0, 0], "slot": "center", "kind": "self",
+            "label": c["letter"], "ref": None,
+            "gloss": "the Self/void term — the keystone holds the glyph",
+        }]
+        # faces: one per signed axis direction
+        for i, ax in enumerate(AXES):
+            for s in (-1, 1):
+                d = [0, 0, 0]
+                d[i] = s
+                g = (coord[0] + d[0], coord[1] + d[1], coord[2] + d[2])
+                if g in by_coord:
+                    t = by_coord[g]
+                    if t["letter"] in c["seam_of"]:
+                        kind, gloss = "seam", (f"seam — {t['letter']} decides "
+                                               f"{ax} = {SIGN[s]}")
+                    else:
+                        kind, gloss = "request", (f"request — opening {ax} "
+                                                  f"reaches {t['letter']}")
+                    slots.append({"d": d, "slot": "face", "kind": kind,
+                                  "label": t["letter"], "ref": t["letter"],
+                                  "gloss": gloss})
+                else:
+                    slots.append({
+                        "d": d, "slot": "face", "kind": "decided",
+                        "label": f"{ax}{SIGN[coord[i]]}", "ref": None,
+                        "gloss": f"decided — {ax} = {SIGN[coord[i]]} is why "
+                                 "no neighbor lies this way",
+                    })
+        # corners: settled facts
+        cube_here = cube_by_coord[coord]
+        core = core_by_glyph[c["letter"]]
+        facts = [
+            (c["cell"], f"cell kind: {c['cell']}"),
+            (f"dim {c['dim']}", f"dimension: {c['dim']} open axis"),
+            (f"codim {c['codim']}", f"codimension: {c['codim']} decided"),
+            (f"axis {c['axis'] or '·'}", f"axis: {c['axis'] or 'none'}"),
+            (c["status"], f"provenance: {c['status']}"),
+            (f"{core['neighbors_in_frame']}/{core['open_slots']}",
+             f"frame capacity: {core['neighbors_in_frame']} in frame, "
+             f"{core['open_slots']} open"),
+            ("addr", "wing: address (polysheaf lettering)"),
+            (f"{cube_here['letter']}·{cube_here['cubie']}",
+             f"home piece: {cube_here['letter']} ({cube_here['cubie']})"),
+        ]
+        corner_ds = sorted([x, y, z] for x in (-1, 1) for y in (-1, 1)
+                           for z in (-1, 1))
+        for d, (v, gl) in zip(corner_ds, facts):
+            slots.append({"d": d, "slot": "corner", "kind": "fact",
+                          "label": v, "ref": None, "gloss": gl})
+        # edges: relations in queue order; the rest stay open
+        rels = []
+        if c["antipode"] != c["letter"]:
+            rels.append({"kind": "relation", "label": c["antipode"],
+                         "ref": c["antipode"],
+                         "gloss": f"antipode — reflection through the center "
+                                  f"reaches {c['antipode']}"})
+        rels.append({"kind": "live", "label": "@", "ref": None,
+                     "gloss": "occupant — the piece currently at this "
+                              "address (live; the viewer fills it)"})
+        if c["letter"] in trio_glyphs:
+            rels.append({"kind": "relation", "label": "S·I·O", "ref": None,
+                         "gloss": "member of the S·I·O trio — status OPEN, "
+                                  "bdo's pin pending"})
+        edge_ds = sorted(d for d in
+                         ([x, y, z] for x in (-1, 0, 1) for y in (-1, 0, 1)
+                          for z in (-1, 0, 1))
+                         if sum(1 for v in d if v != 0) == 2)
+        for j, d in enumerate(edge_ds):
+            if j < len(rels):
+                slots.append({"d": d, "slot": "edge", **rels[j]})
+            else:
+                slots.append({"d": d, "slot": "edge", "kind": "open",
+                              "label": None, "ref": None,
+                              "gloss": "open — capacity for a future "
+                                       "relationship"})
+        frames[c["letter"]] = slots
+    return {"contract": TERM_FRAME_CONTRACT, "frames": frames}
+
+
+# ---------------------------------------------------------------------------
 # Findings — seams between the docs that do not close. Per the polysheaf's
 # own doctrine these are preserved as comparison structs, not "fixed":
 # the vault is read-only, so findings are reported, never patched around.
@@ -573,6 +750,8 @@ def build_registry():
     poly_cells = polysheaf_cells(letters, pin_lines)
     cube_cells = cube_alphabet_cells(pin_lines)
     terms = parse_grip_ledger(doc_texts[LEDGER_DOC]) + PRIMITIVES
+    trio = build_trio(poly_cells, cube_cells)
+    core27 = build_core27(poly_cells)
     return {
         "generated_by": "glyphs/knoll.py — do not edit registry.json or the "
                         "viewer data block by hand; re-run the generator",
@@ -599,7 +778,9 @@ def build_registry():
             },
         },
         "terms": terms,
-        "trio": build_trio(poly_cells, cube_cells),
+        "trio": trio,
+        "core27": core27,
+        "term_frames": build_term_frames(poly_cells, cube_cells, core27, trio),
         "findings": FINDINGS,
     }
 
@@ -668,7 +849,41 @@ def render_knolling_md(reg):
         w("")
     w("---")
     w("")
-    w("## 3. Terms (grip ledger + primitives)")
+    w("## 3. The Core 27")
+    w("")
+    c27 = reg["core27"]
+    w(f"Status: **{c27['status']}** — coined by {c27['coined_by']}")
+    w("")
+    w(c27["principle"])
+    w("")
+    w(f"*{c27['gradient']}*")
+    w("")
+    w(f"Non-example: {c27['non_example']}")
+    w("")
+    w("| Glyph | Address | Global role | Local role | In frame | Open slots |")
+    w("|---|---|---|---|---|---|")
+    for t in c27["terms"]:
+        w("| **{}** | `{}` | {} | {} | {} | {} |".format(
+            t["glyph"], t["coord_str"], t["global_role"],
+            t["local_role"], t["neighbors_in_frame"], t["open_slots"]))
+    w("")
+    w("### The term-frame contract (v0)")
+    w("")
+    w("Each core term's own cube carries **its terms mapped on its 27 "
+      "cubies**, self-similar to the global solid:")
+    w("")
+    w(reg["term_frames"]["contract"])
+    w("")
+    w("Worked example — **S** `(+,−,0)`: center holds S; faces −z/+z hold "
+      "its seams E and F (they decide z), faces −x/+y hold its requests W "
+      "and V (the axes they open), faces +x/−y hold its decisions "
+      "(`x+`, `y−` — why no neighbor lies that way); corners hold its "
+      "settled facts; edges hold antipode R, the live occupant, the trio "
+      "tag; the rest stay open.")
+    w("")
+    w("---")
+    w("")
+    w("## 4. Terms (grip ledger + primitives)")
     w("")
     w("| Term | Status | Referent | Non-example | Source |")
     w("|---|---|---|---|---|")
@@ -679,7 +894,7 @@ def render_knolling_md(reg):
     w("")
     w("---")
     w("")
-    w("## 4. Findings — seams that do not close")
+    w("## 5. Findings — seams that do not close")
     w("")
     for f in reg["findings"]:
         w(f"### `{f['id']}` — {f['kind']}  [{f['status']}]")

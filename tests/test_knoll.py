@@ -87,6 +87,16 @@ class CubeAlphabetTest(unittest.TestCase):
         self.assertEqual(table[14], "FR")      # O
         self.assertEqual(table[18], "UFR")     # S
 
+    def test_face_colors_match_doc_table(self):
+        # §7 pins them in prose: Up (white), Down (yellow), Left (orange),
+        # Right (red), Front (green), Back (blue)
+        self.assertEqual(knoll.CUBE_FACE_COLORS,
+                         {"U": "white", "D": "yellow", "L": "orange",
+                          "R": "red", "F": "green", "B": "blue"})
+        text = (REPO / "docs/phase-2/cube-alphabet.md").read_text(encoding="utf-8")
+        for face, color in knoll.CUBE_FACE_COLORS.items():
+            self.assertIn(f"({color})", text)
+
     def test_home_slots_cover_the_27_cell_solid(self):
         coords = {knoll.cubie_coord(n) for n in
                   knoll.CUBE_CENTERS + knoll.CUBE_EDGES + knoll.CUBE_CORNERS}
@@ -133,6 +143,51 @@ class RegistryTest(unittest.TestCase):
                 self.reg["letterings"]["polysheaf"]["cells"]}
         self.assertEqual({poly[g]["axis"] for g in ("S", "I", "O")},
                          {"x", "y", "z"})
+
+    def test_core27_inventory(self):
+        c27 = self.reg["core27"]
+        self.assertEqual(c27["status"], "MINTED")
+        self.assertTrue(c27["non_example"])
+        self.assertEqual(len(c27["terms"]), 27)
+        # the openness gradient: corner 7/19, edge 11/15, face 17/9, ⊘ 26/0
+        expect = {"corner": (7, 19), "edge": (11, 15),
+                  "face": (17, 9), "center": (26, 0)}
+        for t in c27["terms"]:
+            inf, opn = expect[t["global_role"]]
+            self.assertEqual(t["neighbors_in_frame"], inf, t["glyph"])
+            self.assertEqual(t["open_slots"], opn, t["glyph"])
+        # the root closes completely: its frame is the whole specimen
+        root = next(t for t in c27["terms"] if t["glyph"] == "⊘")
+        self.assertEqual(root["open_slots"], 0)
+
+    def test_term_frames_contract_v0(self):
+        tf = self.reg["term_frames"]["frames"]
+        self.assertEqual(len(tf), 27)
+        for letter, slots in tf.items():
+            self.assertEqual(len(slots), 27, letter)
+            kinds = {tuple(s["d"]): s for s in slots}
+            self.assertEqual(kinds[(0, 0, 0)]["kind"], "self")
+        # the worked example: S (+,−,0)
+        s = {tuple(sl["d"]): sl for sl in tf["S"]}
+        self.assertEqual((s[(0, 0, -1)]["kind"], s[(0, 0, -1)]["label"]), ("seam", "E"))
+        self.assertEqual((s[(0, 0, 1)]["kind"], s[(0, 0, 1)]["label"]), ("seam", "F"))
+        self.assertEqual((s[(-1, 0, 0)]["kind"], s[(-1, 0, 0)]["label"]), ("request", "W"))
+        self.assertEqual((s[(0, 1, 0)]["kind"], s[(0, 1, 0)]["label"]), ("request", "V"))
+        self.assertEqual(s[(1, 0, 0)]["kind"], "decided")
+        self.assertEqual(s[(0, -1, 0)]["kind"], "decided")
+        # corners are settled facts; edges carry relations then open slots
+        self.assertEqual(
+            sum(1 for sl in tf["S"] if sl["slot"] == "corner" and sl["kind"] == "fact"), 8)
+        glosses = " ".join(sl["gloss"] for sl in tf["S"] if sl["slot"] == "edge")
+        self.assertIn("antipode", glosses)
+        self.assertIn("occupant", glosses)
+        self.assertIn("trio", glosses)
+        self.assertIn("open", glosses)
+        # the root: all six faces are seams, nothing decided, no antipode
+        root_faces = [sl for sl in tf["⊘"] if sl["slot"] == "face"]
+        self.assertTrue(all(sl["kind"] == "seam" for sl in root_faces))
+        self.assertNotIn("antipode",
+                         " ".join(sl["gloss"] for sl in tf["⊘"]))
 
     def test_dim_codim_split_recorded(self):
         # finding seam.codim-wording: both numbers kept per cell

@@ -74,7 +74,57 @@ Status: **OPEN** — Three candidate readings, knolled side by side. A grip need
 
 ---
 
-## 3. Terms (grip ledger + primitives)
+## 3. The Core 27
+
+Status: **MINTED** — coined by bdo — 'one term of those 27 glyphs ends up being the S/Void term for each letter; these are like our CORE 27 operational terms' (glyph-knolling session 0009)
+
+Every glyph of the 27 is the Self/void term of its own local frame: globally a cell among cells, locally the keystone occupying its frame's empty center. The 27 glyphs are therefore the system's core operational terms — 26 letters and ⊘, each one anchoring a neighborhood. Globally there is one void; locally, every glyph voids its own center.
+
+*openness by kind — corner frames hold 7 neighbors (19 slots open), edges 11/15, faces 17/9, and ⊘ 26/0: the root's frame is the whole specimen and closes completely.*
+
+Non-example: A grip-ledger word without an address — cant, drift, jective: operational vocabulary, but not core-27; they have no cell and anchor no local frame.
+
+| Glyph | Address | Global role | Local role | In frame | Open slots |
+|---|---|---|---|---|---|
+| **A** | `(−,−,−)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **B** | `(−,−,+)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **C** | `(−,+,−)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **D** | `(−,+,+)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **E** | `(+,−,−)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **F** | `(+,−,+)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **G** | `(+,+,−)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **H** | `(+,+,+)` | corner | keystone — the Self/void term of its own frame | 7 | 19 |
+| **I** | `(0,−,−)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **J** | `(0,−,+)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **K** | `(0,+,−)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **L** | `(0,+,+)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **M** | `(−,0,−)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **N** | `(−,0,+)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **O** | `(+,0,−)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **P** | `(+,0,+)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **Q** | `(−,−,0)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **R** | `(−,+,0)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **S** | `(+,−,0)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **T** | `(+,+,0)` | edge | keystone — the Self/void term of its own frame | 11 | 15 |
+| **U** | `(−,0,0)` | face | keystone — the Self/void term of its own frame | 17 | 9 |
+| **V** | `(+,0,0)` | face | keystone — the Self/void term of its own frame | 17 | 9 |
+| **W** | `(0,−,0)` | face | keystone — the Self/void term of its own frame | 17 | 9 |
+| **X** | `(0,+,0)` | face | keystone — the Self/void term of its own frame | 17 | 9 |
+| **Y** | `(0,0,−)` | face | keystone — the Self/void term of its own frame | 17 | 9 |
+| **Z** | `(0,0,+)` | face | keystone — the Self/void term of its own frame | 17 | 9 |
+| **⊘** | `(0,0,0)` | center | keystone — the Self/void term of its own frame | 26 | 0 |
+
+### The term-frame contract (v0)
+
+Each core term's own cube carries **its terms mapped on its 27 cubies**, self-similar to the global solid:
+
+v0 — center: the Self/void term (the glyph). faces: directional relations derived from coordinates (seams decide, requests open, out-of-bounds directions carry the cell's own decisions). corners: settled facts in lex slot order (kind, dim, codim, axis, status, frame capacity, wing, home piece). edges: relations in queue order (antipode, live occupant, trio membership); unfilled edge slots stay OPEN — capacity for future relationships. Derived in knoll.py; re-arranging is re-knolling.
+
+Worked example — **S** `(+,−,0)`: center holds S; faces −z/+z hold its seams E and F (they decide z), faces −x/+y hold its requests W and V (the axes they open), faces +x/−y hold its decisions (`x+`, `y−` — why no neighbor lies that way); corners hold its settled facts; edges hold antipode R, the live occupant, the trio tag; the rest stay open.
+
+---
+
+## 4. Terms (grip ledger + primitives)
 
 | Term | Status | Referent | Non-example | Source |
 |---|---|---|---|---|
@@ -104,7 +154,7 @@ Status: **OPEN** — Three candidate readings, knolled side by side. A grip need
 
 ---
 
-## 4. Findings — seams that do not close
+## 5. Findings — seams that do not close
 
 ### `seam.lettering-collision` — non-closing seam, resolved as complementarity  [MINTED]
 
