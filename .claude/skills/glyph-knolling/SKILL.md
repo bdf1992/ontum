@@ -105,6 +105,21 @@ result.
   flips and twists render truthfully — never repaint them by hand. Letters
   are a toggle (`letters`); sound is synthesized Web Audio (`sound`
   toggle, no assets).
+- **Printed letters:** the 26 letters render ON the facelets in per-face
+  text frames (`TANG`, chosen so `tu × tv = −n` — never mirrored).
+  Occupant letters are *glued*: their home-face frame is transported by
+  the piece's rotation, so flips and twists show in the typography.
+  Address letters print upright always — labels of fixed space. The void
+  ⊘/∅ keeps its billboard glyph; billboards otherwise appear only in the
+  knolled flat-lay (where faces go edge-on).
+- **Links web (`links` button):** off → *seams* (the incidence skeleton
+  from the registry's `seam_of`, drawn between the pieces currently
+  occupying related cells — scrambling re-wires it) → *drift* (each
+  displaced piece tied to the piece squatting its home cell: permutation
+  cycles drawn as chords; solved = no chords). Lines follow pieces live
+  through turns and through the knolled flat-lay. "drift" here is a loose
+  viewer-level borrow of the ledger's word — flag it for bdo, don't
+  promote it.
 - **The two alphabets are complementary, not in conflict:** polysheaf
   letters name fixed **cells** (addresses), cube-alphabet letters name
   mobile **pieces** (occupants). Keep that split intact in anything new —

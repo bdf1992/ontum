@@ -92,7 +92,8 @@
   <button class="btn on" id="bLetterPoly" title="polysheaf ternary lettering — letters name fixed cells">addresses ⊘</button>
   <button class="btn" id="bLetterCube" title="cube-alphabet piece lettering — letters name mobile pieces">occupants ∅</button>
   <button class="btn" id="bKnoll" title="flat-lay: sorted by kind, laid at right angles, labeled">knolled</button>
-  <button class="btn on" id="bLabels" title="floating letters on the pieces">letters</button>
+  <button class="btn on" id="bLabels" title="the 26 letters printed on the facelets">letters</button>
+  <button class="btn" id="bLinks" title="relationship web: off → seams (incidence skeleton) → drift (displacement chords)">links off</button>
   <button class="btn" id="bTrioSpot" title="spotlight S, I, O in the current frame">S·I·O</button>
   <button class="btn" id="bCascade" title="the worked example: A's seams request the next sites">cascade ▸</button>
   <button class="btn" id="bTrio">trio</button>
@@ -1536,6 +1537,20 @@ const FACE_HEX = { U: "#f2f3ee", D: "#ffd200", L: "#ff8a1e", R: "#e03e3e", F: "#
 const DIRFACE = { "0,1,0": "U", "0,-1,0": "D", "-1,0,0": "L", "1,0,0": "R", "0,0,1": "F", "0,0,-1": "B" };
 const PLASTIC = "#161922";
 const HB = 0.53;            // cubie half-size: tight gaps, plastic look
+// printed-letter ink per sticker color (light stickers take dark ink)
+const INK = { "#f2f3ee": "rgba(12,14,18,.88)", "#ffd200": "rgba(12,14,18,.88)",
+              "#ff8a1e": "rgba(12,14,18,.85)", "#e03e3e": "rgba(255,255,255,.92)",
+              "#27b54e": "rgba(255,255,255,.92)", "#2f6fe0": "rgba(255,255,255,.92)" };
+// per-face text frames [text-right, text-down], chosen so tu × tv = −n:
+// stickers read correctly from outside, upright in the solved pose
+const TANG = {
+  "0,0,1":  [[1, 0, 0], [0, -1, 0]],   // F
+  "0,0,-1": [[-1, 0, 0], [0, -1, 0]],  // B
+  "1,0,0":  [[0, 0, -1], [0, -1, 0]],  // R
+  "-1,0,0": [[0, 0, 1], [0, -1, 0]],   // L
+  "0,1,0":  [[1, 0, 0], [0, 0, 1]],    // U (top of text toward the back)
+  "0,-1,0": [[1, 0, 0], [0, 0, -1]],   // D (top of text toward the front)
+};
 
 const key = c => c.join(",");
 const kindOf = c => ["corner", "edge", "face", "center"][c.filter(v => v === 0).length];
@@ -1585,6 +1600,7 @@ const st = {
   prime: false,
   labels: true,
   sound: true,
+  links: 0,               // 0 off · 1 seams (incidence skeleton) · 2 drift
 };
 
 // the cube's word: the move history over the 6-letter generator set
@@ -1657,7 +1673,7 @@ function quadPath(q) {
   ctx.closePath();
 }
 
-function drawCube(p, h, lit, alpha, spin) {
+function drawCube(p, h, lit, alpha, spin, letterInfo) {
   const off = v => spin ? rotVec(spin.axis, spin.ang, [v[0] * h, v[1] * h, v[2] * h]) : [v[0] * h, v[1] * h, v[2] * h];
   const pts = VERT.map(v => { const o = off(v); return proj([p.pos[0] + o[0], p.pos[1] + o[1], p.pos[2] + o[2]]); });
   ctx.globalAlpha = alpha;
@@ -1695,6 +1711,38 @@ function drawCube(p, h, lit, alpha, spin) {
       const g = ctx.createLinearGradient(inset[hi].x, inset[hi].y, cx, cy);
       g.addColorStop(0, "rgba(255,255,255,.20)"); g.addColorStop(1, "rgba(255,255,255,0)");
       ctx.fillStyle = g; ctx.fill();
+      // printed letter, in the facelet's own frame. Occupant letters are
+      // glued: their home-face text frame rides the piece's rotation, so a
+      // flipped edge shows its letter flipped, a twisted corner shows it
+      // turned. Address letters print upright — labels of fixed space.
+      if (letterInfo) {
+        const n = FACES[f.fi][1];
+        let tu, tv;
+        if (letterInfo.glued) {
+          const hn = mulMv(transpose(p.M), n);
+          const t = TANG[key(hn)];
+          tu = mulMv(p.M, t[0]); tv = mulMv(p.M, t[1]);
+        } else { const t = TANG[key(n)]; tu = t[0]; tv = t[1]; }
+        let nw = n, tuw = tu, tvw = tv;
+        if (spin) {
+          nw = rotVec(spin.axis, spin.ang, n);
+          tuw = rotVec(spin.axis, spin.ang, tu);
+          tvw = rotVec(spin.axis, spin.ang, tv);
+        }
+        const c3 = [p.pos[0] + nw[0] * h, p.pos[1] + nw[1] * h, p.pos[2] + nw[2] * h];
+        const p0 = proj(c3);
+        const pu = proj([c3[0] + tuw[0] * h * 0.5, c3[1] + tuw[1] * h * 0.5, c3[2] + tuw[2] * h * 0.5]);
+        const pv = proj([c3[0] + tvw[0] * h * 0.5, c3[1] + tvw[1] * h * 0.5, c3[2] + tvw[2] * h * 0.5]);
+        const Q = 32;
+        ctx.save();
+        ctx.transform((pu.x - p0.x) / Q, (pu.y - p0.y) / Q,
+                      (pv.x - p0.x) / Q, (pv.y - p0.y) / Q, p0.x, p0.y);
+        ctx.font = "700 42px ui-monospace, Menlo, monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillStyle = INK[col] || "rgba(12,14,18,.88)";
+        ctx.fillText(letterInfo.text, 0, 2);
+        ctx.restore();
+      }
       if (lit > 0.05) { ctx.shadowColor = KINDCOLOR[p.kind]; ctx.shadowBlur = 28 * lit; }
     }
   }
@@ -1964,18 +2012,43 @@ function frame(now) {
   const L = byLetter(cur);
   for (const [a, b] of tg.lines) if (L[a] && L[b]) drawLine(L[a], L[b], "#d7dce6", 1.4, 0.55);
 
+  // the links web: live in lattice and knolled view, follows every turn.
+  // seams — the incidence skeleton between the pieces currently occupying
+  // related cells (scrambling re-wires which pieces the web touches).
+  // drift — each displaced piece tied to whoever squats its home cell:
+  // the permutation's cycles drawn as chords; solved = no chords.
+  if (st.links && !st.spot && !st.cascade) {
+    const cellAt = {};
+    for (const p of pieces) cellAt[key(p.cell)] = p;
+    if (st.links === 1) {
+      for (const p of pieces) {
+        const cell = polyByKey[key(p.cell)];
+        for (const sl of cell.seam_of)
+          drawLine(p, cellAt[key(polyByLetter[sl].coord)], KINDCOLOR[cell.cell], 1, 0.26);
+      }
+    } else {
+      for (const p of pieces) {
+        if (key(p.cell) === key(p.home)) continue;
+        drawLine(p, cellAt[key(p.home)], KINDCOLOR[p.kind], 1.3, 0.5);
+      }
+    }
+  }
+
   for (const p of order) {
     const entry = dispEntry(p, cur);
     const isVoid = p.kind === "center";
     const sel = st.sel === p || st.hover === p;
     const h = HB * (1 + 0.07 * p.lit + (sel ? 0.05 : 0));
     const pSpin = spin && p.cell[spin.axis] === spin.sign ? spin : null;
+    const letterInfo = st.labels && st.knollT <= 0.5 && !isVoid
+      ? { text: entry.letter, glued: cur !== "polysheaf" } : null;
     if (isVoid) drawVoid(p, h * 0.8, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, 0.5));
-    else drawCube(p, h, Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin);
-    // floating letter (the void keeps its glyph even with labels off)
+    else drawCube(p, h, Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin, letterInfo);
+    // billboard letter: knolled flat-lay only (faces go edge-on there);
+    // the void keeps its glyph always — the 27th term has no faces
     const q = proj(p.pos);
     const fs = Math.max(9, h * q.s * 0.8);
-    if (st.labels || isVoid || p.lit > 0.5) {
+    if ((st.labels && st.knollT > 0.5) || isVoid) {
       ctx.globalAlpha = Math.min(1, p.alpha + p.lit);
       ctx.font = `700 ${fs}px ui-monospace, Menlo, monospace`;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -2161,6 +2234,15 @@ $("bKnoll").onclick = () => {
 $("bLabels").onclick = () => {
   st.labels = !st.labels;
   $("bLabels").classList.toggle("on", st.labels);
+};
+$("bLinks").onclick = () => {
+  st.links = (st.links + 1) % 3;
+  $("bLinks").textContent = ["links off", "seams", "drift"][st.links];
+  $("bLinks").classList.toggle("on", st.links > 0);
+  const caps = [null,
+    "seams: the incidence skeleton — every cell tied to the cells that decide it (edge→corners, face→edges, faces→⊘); scramble and watch which pieces the web lands on",
+    "drift: each displaced piece tied to whoever squats its home — the permutation's cycles drawn as chords; solved = no chords. (A loose borrow of the ledger's word — bdo may rename.)"];
+  if (caps[st.links]) st.flash = { text: caps[st.links], until: performance.now() + 6000 };
 };
 $("bTrioSpot").onclick = () => {
   st.spot = !st.spot; st.cascade = null;
