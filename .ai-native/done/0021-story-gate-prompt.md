@@ -1,4 +1,4 @@
-# Done-line 0020 — the story gate's versioned prompt — the Reader of cold-reader stories
+# Done-line 0021 — the story gate's versioned prompt — the Reader of cold-reader stories
 
 Written before code, per §9.4. When this line is met, stop.
 

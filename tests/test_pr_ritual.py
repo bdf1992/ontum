@@ -65,7 +65,7 @@ class TestStoryValidation(unittest.TestCase):
 
     def test_a_body_that_is_only_a_pointer_refuses(self):
         # the pen's deterministic floor: a path/ref where writing belongs is homework
-        for pointer in (".ai-native/done/0020-x.md", "`0020-story-gate-prompt`", "0020"):
+        for pointer in (".ai-native/done/0020-x.md", "`0021-story-gate-prompt`", "0020"):
             problems = pen.validate_story(_story(story=pointer), self.BRANCH)
             self.assertTrue(any("pointer" in p for p in problems), pointer)
 

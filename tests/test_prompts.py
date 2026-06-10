@@ -136,7 +136,7 @@ class PromptsAsCodeTest(unittest.TestCase):
 
 
 class StoryGatePromptContractTest(unittest.TestCase):
-    """The story gate's versioned prompt (done-line 0020) carries a contract
+    """The story gate's versioned prompt (done-line 0021) carries a contract
     the loop will depend on once it is wired real: a cold-reader bar, the
     two-verdict route-back loop, the source-handed (warm-reader) requirement,
     and no self-judgment. A future edit may sharpen the wording; it may not
