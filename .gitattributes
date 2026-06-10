@@ -1,0 +1,13 @@
+# One eol on every platform: source is stored and checked out LF.
+* text=auto eol=lf
+
+# Identity is sha256 over file bytes (atoms, logs, receipts). Git must
+# never rewrite these at any boundary — eol conversion here orphans the
+# pipeline history (it did, 2026-06-10: autocrlf turned the atoms CRLF
+# and the fold read every atom as unborn).
+.ai-native/** -text
+*.jsonl -text
+
+# Append-only logs: parallel branches only ever append; union-merge
+# keeps both tails instead of conflicting.
+.ai-native/log/*.jsonl merge=union

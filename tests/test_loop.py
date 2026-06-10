@@ -5,7 +5,6 @@ cache deleted + replayed from log/ is byte-identical; torn tails tolerated."""
 import json
 import os
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
@@ -95,7 +94,7 @@ class LoopTest(unittest.TestCase):
              "--until-done", "--pace", "0.05"],
             cwd=REPO, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         time.sleep(0.3)
-        proc.send_signal(signal.SIGKILL)
+        proc.kill()  # SIGKILL on POSIX, TerminateProcess on Windows — both un-catchable
         proc.wait()
         mid_receipts = len(receipt_keys(self.root))
         self.assertLess(mid_receipts, len(reconcile.PIPELINE), "kill landed too late to prove anything")
