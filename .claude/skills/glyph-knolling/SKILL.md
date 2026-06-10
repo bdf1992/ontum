@@ -85,6 +85,17 @@ result.
   addresses/occupants (the two letterings), knolled (flat-lay), S·I·O
   spotlight, cascade (the worked example from the polysheaf doc, animated:
   A → seams I,M,Q → endpoint E → faces → the obscured wildcard ⊘).
+- **Cube controls:** the viewer is a working cube over the generative
+  minimum {U,D,L,R,F,B} — buttons or keys, shift/′ for counterclockwise,
+  scramble (a 20-letter word; God's number), unwind (the word read
+  backwards), reset. The live state string follows cube-alphabet.md §7
+  exactly (`edge word | EO bits | corner word | CO trits`). The cube
+  mathematics lives in the pure `CUBE_MATH` block inside the viewer;
+  `tests/test_viewer_cube.py` extracts it and checks the group laws under
+  node (auto-skipped if node is absent). Keep that block free of DOM and
+  registry references — the purity is tested. Addresses stay put under
+  turns; occupants travel — the two-alphabet split, demonstrated live.
+  Solving the cube earns the Pilish line (word lengths spell π).
 - **The two alphabets are complementary, not in conflict:** polysheaf
   letters name fixed **cells** (addresses), cube-alphabet letters name
   mobile **pieces** (occupants). Keep that split intact in anything new —

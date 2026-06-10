@@ -63,6 +63,17 @@
   table.terms { border-collapse: collapse; width: 100%; }
   table.terms td { border-top: 1px solid rgba(215,220,230,.08); padding: 6px 6px 6px 0;
     vertical-align: top; font-size: 11.5px; }
+
+  #cube { position: fixed; left: 18px; bottom: 14px; max-width: 52vw; }
+  #word { font-size: 11px; color: var(--dim); max-width: 50vw; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  #word b { color: var(--ink); font-weight: 600; }
+  #stateStr { font-size: 11.5px; color: var(--dim); letter-spacing: .04em;
+    margin: 5px 0 7px; white-space: nowrap; }
+  #stateStr.solved { color: var(--pin); text-shadow: 0 0 12px rgba(127,217,98,.55); }
+  #moves { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+  .mv { min-width: 34px; padding: 5px 0; text-align: center; }
+  #cube .src { color: var(--dim); font-size: 10px; margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -83,6 +94,24 @@
 
 <div id="caption"></div>
 <div id="hint">drag to orbit · scroll to zoom · click a cell</div>
+
+<div id="cube">
+  <div id="word">word: <b id="moveWord">∅ — turn a face</b></div>
+  <div id="stateStr"></div>
+  <div id="moves">
+    <button class="btn mv" data-mv="U" title="up face — center A">U</button>
+    <button class="btn mv" data-mv="D" title="down face — center B">D</button>
+    <button class="btn mv" data-mv="L" title="left face — center C">L</button>
+    <button class="btn mv" data-mv="R" title="right face — center D">R</button>
+    <button class="btn mv" data-mv="F" title="front face — center E">F</button>
+    <button class="btn mv" data-mv="B" title="back face — center F">B</button>
+    <button class="btn" id="bPrime" title="sticky counterclockwise modifier">′</button>
+    <button class="btn" id="bScramble" title="a 20-letter word — God's number says that reaches everything">scramble</button>
+    <button class="btn" id="bUnwind" title="replay the word backwards, every letter inverted">unwind</button>
+    <button class="btn" id="bReset" title="instant: every piece home, the word erased">reset</button>
+  </div>
+  <div class="src">the generative minimum: 6 letters around a void · click = CW, shift/′/right-click = CCW · keys u d l r f b</div>
+</div>
 
 <div class="panel" id="pCell"><span class="x" data-close="pCell">✕</span><div id="pCellBody"></div></div>
 <div class="panel" id="pTrio"><span class="x" data-close="pTrio">✕</span><div id="pTrioBody"></div></div>
@@ -1383,31 +1412,131 @@ if (!REGISTRY) {
   throw new Error("registry missing");
 }
 
+/*CUBE_MATH_START*/
+// Pure cube mathematics — no DOM, no registry data. Pieces are {home, cell, M}:
+// home is the piece's identity (its solved cell), cell its current address,
+// M its accumulated rotation (integer 3×3). The six generators {U,D,L,R,F,B}
+// are the cube-alphabet doc's generative minimum; the state string follows
+// the doc's format exactly. tests/test_viewer_cube.py extracts this block
+// and checks the group laws under node.
+const FACEDEF = { U: { axis: 1, sign: 1 }, D: { axis: 1, sign: -1 },
+                  R: { axis: 0, sign: 1 }, L: { axis: 0, sign: -1 },
+                  F: { axis: 2, sign: 1 }, B: { axis: 2, sign: -1 } };
+const CUBIES_E = ["UF", "UR", "UB", "UL", "DF", "DR", "DB", "DL", "FR", "FL", "BR", "BL"]; // G–R
+const CUBIES_C = ["UFR", "UFL", "UBR", "UBL", "DFR", "DFL", "DBR", "DBL"];                  // S–Z
+const FV = { U: [0, 1, 0], D: [0, -1, 0], L: [-1, 0, 0], R: [1, 0, 0], F: [0, 0, 1], B: [0, 0, -1] };
+const cubieCoord = n => n.split("").reduce((a, f) => a.map((v, i) => v + FV[f][i]), [0, 0, 0]);
+const SOLVED_STRING = "GHIJKLMNOPQR | 000000000000 | STUVWXYZ | 00000000";
+
+const ID3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+const QUARTER = [ // +90° right-hand about x, y, z
+  [[1, 0, 0], [0, 0, -1], [0, 1, 0]],
+  [[0, 0, 1], [0, 1, 0], [-1, 0, 0]],
+  [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+];
+const mulMv = (M, v) => [0, 1, 2].map(i => M[i][0] * v[0] + M[i][1] * v[1] + M[i][2] * v[2]);
+const mulMM = (A, B) => [0, 1, 2].map(i => [0, 1, 2].map(j => A[i][0] * B[0][j] + A[i][1] * B[1][j] + A[i][2] * B[2][j]));
+const transpose = M => [0, 1, 2].map(i => [0, 1, 2].map(j => M[j][i]));
+const quarterMat = (axis, k) => k > 0 ? QUARTER[axis] : transpose(QUARTER[axis]);
+const veq = (a, b) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const vdot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const det3 = (a, b, c) => vdot(cross(a, b), c);
+
+function newPieces() {
+  const ps = [];
+  for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++)
+    ps.push({ home: [x, y, z], cell: [x, y, z], M: ID3 });
+  return ps;
+}
+
+// dir +1 = clockwise viewed from outside the face (the standard notation);
+// a quarter turn is then -sign·dir·90° right-hand about the face's axis.
+function applyMoveTo(ps, face, dir) {
+  const { axis, sign } = FACEDEF[face];
+  const R = quarterMat(axis, -sign * dir);
+  for (const p of ps) if (p.cell[axis] === sign) {
+    p.cell = mulMv(R, p.cell);
+    p.M = mulMM(R, p.M);
+  }
+}
+
+// The sticker every piece is oriented by: its U/D sticker if it has one,
+// else its F/B sticker. Centers and the void have no orientation here.
+function homePrimary(p) {
+  const z = p.home.filter(v => v === 0).length;
+  if (z >= 2) return null;
+  if (p.home[1] !== 0) return [0, p.home[1], 0];
+  return [0, 0, p.home[2]];
+}
+
+// Edge orientation: 0 if the primary sticker sits on the slot's primary
+// axis. Under this convention U,D,L,R preserve EO and F,B flip their four.
+function edgeOrientOf(p) {
+  const pa = p.cell[1] !== 0 ? 1 : 2;
+  const cur = mulMv(p.M, homePrimary(p));
+  return Math.abs(cur[pa]) === 1 ? 0 : 1;
+}
+
+// Corner twist: index of the U/D sticker in the slot's clockwise normal
+// cycle (clockwise from outside has det = −1, anchored on the ±y normal).
+function cornerOrientOf(p) {
+  const [sx, sy, sz] = p.cell;
+  const nY = [0, sy, 0], nX = [sx, 0, 0], nZ = [0, 0, sz];
+  const order = det3(nY, nX, nZ) === -1 ? [nY, nX, nZ] : [nY, nZ, nX];
+  const cur = mulMv(p.M, [0, p.home[1], 0]);
+  for (let i = 0; i < 3; i++) if (veq(cur, order[i])) return i;
+  return -1;
+}
+
+// The doc's state-string format (cube-alphabet.md §7): edge permutation as
+// a 12-letter word from G–R, edge orientation bits, corner permutation as
+// an 8-letter word from S–Z, corner orientation ternary digits. Centers
+// drop out — the spindle's retinue carries no state.
+function stateStringOf(ps) {
+  const k = c => c.join(",");
+  const at = {}; for (const p of ps) at[k(p.cell)] = p;
+  const homeLetter = {};
+  CUBIES_E.forEach((n, i) => homeLetter[k(cubieCoord(n))] = String.fromCharCode(71 + i));
+  CUBIES_C.forEach((n, i) => homeLetter[k(cubieCoord(n))] = String.fromCharCode(83 + i));
+  let ep = "", eo = "", cp = "", co = "";
+  for (const n of CUBIES_E) {
+    const p = at[k(cubieCoord(n))];
+    ep += homeLetter[k(p.home)]; eo += edgeOrientOf(p);
+  }
+  for (const n of CUBIES_C) {
+    const p = at[k(cubieCoord(n))];
+    cp += homeLetter[k(p.home)]; co += cornerOrientOf(p);
+  }
+  return ep + " | " + eo + " | " + cp + " | " + co;
+}
+/*CUBE_MATH_END*/
+
 // ---------------------------------------------------------------- data prep
 const KINDCOLOR = { corner: "#ffb454", edge: "#3fd9c9", face: "#b18cff", center: "#8a93a6" };
 const key = c => c.join(",");
 const kindOf = c => ["corner", "edge", "face", "center"][c.filter(v => v === 0).length];
 
-// 27 positions; each carries one entry per lettering (addresses & occupants).
-const pieces = [];
-{
-  const poly = {}, cube = {};
-  for (const e of REGISTRY.letterings.polysheaf.cells) poly[key(e.coord)] = e;
-  for (const e of REGISTRY.letterings.cube_alphabet.cells) cube[key(e.coord)] = e;
-  for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) {
-    const c = [x, y, z];
-    pieces.push({
-      coord: c, kind: kindOf(c),
-      by: { polysheaf: poly[key(c)], cube_alphabet: cube[key(c)] },
-      lat: [x * 1.15, y * 1.15, z * 1.15],
-      knoll: [0, 0, 0], pos: [x * 1.15, y * 1.15, z * 1.15],
-      lit: 0, alpha: 1,
-    });
-  }
+const polyByKey = {}, cubeByKey = {}, polyByLetter = {};
+for (const e of REGISTRY.letterings.polysheaf.cells) { polyByKey[key(e.coord)] = e; polyByLetter[e.letter] = e; }
+for (const e of REGISTRY.letterings.cube_alphabet.cells) cubeByKey[key(e.coord)] = e;
+
+// 27 pieces. Identity (entryCube, the occupant letter) rides the piece;
+// the address letter belongs to whatever cell the piece currently sits in.
+const pieces = newPieces();
+for (const p of pieces) {
+  p.kind = kindOf(p.home);
+  p.entryCube = cubeByKey[key(p.home)];
+  p.oriDir = homePrimary(p);
+  p.lat = p.cell.map(v => v * 1.15);
+  p.knoll = [0, 0, 0]; p.pos = p.lat.slice();
+  p.lit = 0; p.alpha = 1;
 }
+const dispEntry = (p, lettering) =>
+  lettering === "polysheaf" ? polyByKey[key(p.cell)] : p.entryCube;
 const byLetter = lettering => {
   const m = {};
-  for (const p of pieces) m[p.by[lettering].letter] = p;
+  for (const p of pieces) m[dispEntry(p, lettering).letter] = p;
   return m;
 };
 
@@ -1417,17 +1546,24 @@ const st = {
   lettering: "polysheaf",
   knollT: 0, knollOn: false,
   spot: false,
-  cascade: null,          // {stage, t0}
+  cascade: null,          // {stages, stage, t0}
   hover: null, sel: null,
   lastTouch: performance.now(),
+  flash: null,            // {text, until}
+  prime: false,
 };
 
-// knolled flat-lay: rows by kind, sorted by current letter; right angles, labels.
+// the cube's word: the move history over the 6-letter generator set
+let turn = null;          // {face, dir, axis, sign, t, dur}
+const queue = [];         // pending {face, dir, record, dur}
+const history = [];       // committed recorded moves
+
+// knolled flat-lay: rows by kind, sorted by the current display letter.
 function computeKnoll() {
   const rows = [["corner", 4.6], ["edge", 1.6], ["face", -1.5], ["center", -4.2]];
   for (const [kind, y] of rows) {
     const group = pieces.filter(p => p.kind === kind)
-      .sort((a, b) => a.by[st.lettering].letter < b.by[st.lettering].letter ? -1 : 1);
+      .sort((a, b) => dispEntry(a, st.lettering).letter < dispEntry(b, st.lettering).letter ? -1 : 1);
     const step = kind === "edge" ? 1.45 : 1.85;
     group.forEach((p, i) => {
       p.knoll = [(i - (group.length - 1) / 2) * step, y, 0];
@@ -1459,6 +1595,12 @@ function proj(p) {
   const r = rot3(p), zc = r[2] + view.dist, s = view.f / Math.max(0.5, zc);
   return { x: W / 2 + r[0] * s, y: H / 2 - r[1] * s, s, zc };
 }
+function rotVec(axis, ang, v) {
+  const c = Math.cos(ang), s = Math.sin(ang), [x, y, z] = v;
+  if (axis === 0) return [x, y * c - z * s, y * s + z * c];
+  if (axis === 1) return [x * c + z * s, y, -x * s + z * c];
+  return [x * c - y * s, x * s + y * c, z];
+}
 
 // ------------------------------------------------------------- cube render
 const VERT = [];
@@ -1474,12 +1616,14 @@ function shade(hex, k) {
   return `rgb(${Math.round(r * k)},${Math.round(g * k)},${Math.round(b * k)})`;
 }
 
-function drawCube(p, h, color, lit, alpha) {
-  const pts = VERT.map(v => proj([p.pos[0] + v[0] * h, p.pos[1] + v[1] * h, p.pos[2] + v[2] * h]));
+function drawCube(p, h, color, lit, alpha, spin) {
+  const off = v => spin ? rotVec(spin.axis, spin.ang, [v[0] * h, v[1] * h, v[2] * h]) : [v[0] * h, v[1] * h, v[2] * h];
+  const pts = VERT.map(v => { const o = off(v); return proj([p.pos[0] + o[0], p.pos[1] + o[1], p.pos[2] + o[2]]); });
   ctx.globalAlpha = alpha;
   if (lit > 0.05) { ctx.shadowColor = color; ctx.shadowBlur = 26 * lit; } else ctx.shadowBlur = 0;
   const fs = FACES.map(([idx, n]) => {
-    const rn = rot3(n);
+    const wn = spin ? rotVec(spin.axis, spin.ang, n) : n;
+    const rn = rot3(wn);
     return { idx, z: idx.reduce((a, i) => a + pts[i].zc, 0) / 4, d: rn[0] * LIGHT[0] + rn[1] * LIGHT[1] + rn[2] * LIGHT[2], front: rn[2] < 0 };
   }).sort((a, b) => b.z - a.z);
   for (const f of fs) {
@@ -1491,6 +1635,15 @@ function drawCube(p, h, color, lit, alpha) {
     ctx.fillStyle = shade(color, Math.min(1.25, k));
     ctx.fill();
     ctx.strokeStyle = "rgba(11,14,20,.65)"; ctx.lineWidth = 1; ctx.stroke();
+  }
+  // orientation tick: a dot on the primary-sticker face. Watch F/B flips.
+  if (p.oriDir) {
+    const d = spin ? rotVec(spin.axis, spin.ang, mulMv(p.M, p.oriDir)) : mulMv(p.M, p.oriDir);
+    if (rot3(d)[2] < 0) {
+      const q = proj([p.pos[0] + d[0] * h, p.pos[1] + d[1] * h, p.pos[2] + d[2] * h]);
+      ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(1.2, h * q.s * 0.13), 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(11,14,20,.85)"; ctx.fill();
+    }
   }
   ctx.shadowBlur = 0; ctx.globalAlpha = 1;
 }
@@ -1513,13 +1666,80 @@ function drawLine(a, b, color, w, alpha) {
   ctx.shadowBlur = 0; ctx.globalAlpha = 1;
 }
 
+// ------------------------------------------------------------- cube moves
+const PILISH = "Now I turn a facet carefully, to settle every odd cubie " +
+  "homeward — spiraling through emptiness.   (Pilish: word lengths spell " +
+  "π = 3.14159 26535 8979)";
+
+function enqueueMove(face, dir, record, dur) {
+  if (queue.length > 40) return;
+  if (st.knollOn) { st.knollOn = false; document.getElementById("bKnoll").classList.remove("on"); }
+  st.lastTouch = performance.now();
+  queue.push({ face, dir, record, dur: dur || 0.2 });
+}
+
+function commitTurn(t) {
+  const wasSolved = stateStringOf(pieces) === SOLVED_STRING;
+  applyMoveTo(pieces, t.face, t.dir);
+  for (const p of pieces) p.lat = p.cell.map(v => v * 1.15);
+  if (t.record) history.push(t.face + (t.dir < 0 ? "′" : ""));
+  else history.pop();
+  computeKnoll();
+  updateCubeUI();
+  if (!wasSolved && stateStringOf(pieces) === SOLVED_STRING)
+    st.flash = { text: PILISH, until: performance.now() + 10000 };
+}
+
+function resetCube(flashText) {
+  queue.length = 0; turn = null; history.length = 0;
+  for (const p of pieces) {
+    p.cell = p.home.slice(); p.M = ID3;
+    p.lat = p.cell.map(v => v * 1.15);
+  }
+  computeKnoll(); updateCubeUI();
+  if (flashText) st.flash = { text: flashText, until: performance.now() + 4000 };
+}
+
+function scramble() {
+  if (turn || queue.length) return;
+  let prev = "";
+  for (let i = 0; i < 20; i++) {  // God's number: 20 reaches everything
+    let f; do { f = "UDLRFB"[Math.floor(Math.random() * 6)]; } while (f === prev);
+    prev = f;
+    enqueueMove(f, Math.random() < 0.5 ? 1 : -1, true, 0.12);
+  }
+  st.flash = { text: "a 20-letter word over {U,D,L,R,F,B} — God's number says no state is farther than that", until: performance.now() + 4500 };
+}
+
+function unwind() {
+  if (turn || queue.length || !history.length) return;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const m = history[i];
+    enqueueMove(m[0], m.endsWith("′") ? 1 : -1, false, 0.095);
+  }
+  st.flash = { text: "unwinding: the word read backwards, every letter inverted", until: performance.now() + 3000 };
+}
+
+function updateCubeUI() {
+  const s = stateStringOf(pieces);
+  const el = document.getElementById("stateStr");
+  el.textContent = s;
+  el.classList.toggle("solved", s === SOLVED_STRING);
+  const w = document.getElementById("moveWord");
+  if (!history.length) w.textContent = "∅ — turn a face";
+  else {
+    const shown = history.length > 24 ? "… " + history.slice(-24).join(" ") : history.join(" ");
+    w.textContent = shown + "   (" + history.length + ")";
+  }
+}
+
 // ----------------------------------------------------------- cascade story
 // Built from the registry itself: seam_of / requests per cell.
 function cascadeStages() {
-  const L = byLetter("polysheaf");
-  const edges = [], faces = [];
-  for (const p of pieces) { if (p.kind === "edge") edges.push(p.by.polysheaf.letter); if (p.kind === "face") faces.push(p.by.polysheaf.letter); }
-  const I = L["I"].by.polysheaf;
+  const cells = REGISTRY.letterings.polysheaf.cells;
+  const edges = cells.filter(c => c.cell === "edge").map(c => c.letter);
+  const faces = cells.filter(c => c.cell === "face").map(c => c.letter);
+  const I = polyByLetter["I"];
   return [
     { t: 2.6, cap: "Determine the Self — corner A = (−,−,−): codename of the fully decided cell.", lit: { A: 1 }, lines: [] },
     { t: 3.2, cap: "A's seam-logic requests its three edges — open one axis → I (x), M (y), Q (z).", lit: { A: 1, I: .9, M: .9, Q: .9 }, lines: [["A", "I"], ["A", "M"], ["A", "Q"]] },
@@ -1554,12 +1774,13 @@ function targets() {
   } else if (st.spot) {
     lit.S = 1; lit.I = 1; lit.O = 1;
     if (st.lettering === "polysheaf") {
-      const L = byLetter("polysheaf");
-      for (const g of ["S", "I", "O"]) for (const e of L[g].by.polysheaf.seam_of) { lit[e] = Math.max(lit[e] || 0, .45); lines.push([g, e]); }
-      setCaption("S·I·O as addresses — one seam per axis: I crosses x, O crosses y, S crosses z. A seam basis for the fabric. (trio status: OPEN)");
+      for (const g of ["S", "I", "O"]) for (const e of polyByLetter[g].seam_of) { lit[e] = Math.max(lit[e] || 0, .45); lines.push([g, e]); }
+      setCaption("S·I·O as addresses — one seam per axis (I:x, O:y, S:z), all three shared by corner E: the seam-star of one Self. (trio status: OPEN)");
     } else {
-      setCaption("S·I·O as occupants — S = corner UFR (leads the corner octave S–Z); I = edge UB; O = edge FR. All three carry state. (trio status: OPEN)");
+      setCaption("S·I·O as occupants — S = corner UFR, I = edge UB, O = edge FR. All three carry state; scramble and they travel. (trio status: OPEN)");
     }
+  } else if (st.flash && performance.now() < st.flash.until) {
+    setCaption(st.flash.text);
   } else setCaption("");
   return { lit, ghost, lines };
 }
@@ -1582,15 +1803,31 @@ function frame(now) {
   }
   view.rx = Math.max(-1.45, Math.min(1.45, view.rx));
 
+  // face turns: one at a time off the queue, eased, then committed
+  if (!turn && queue.length) {
+    const q = queue.shift();
+    turn = { ...q, ...FACEDEF[q.face], t: 0 };
+  }
+  let spin = null;
+  if (turn) {
+    turn.t += dt / turn.dur;
+    const e = turn.t >= 1 ? 1 : 1 - Math.pow(1 - turn.t, 3);
+    spin = { axis: turn.axis, sign: turn.sign, ang: e * (-turn.sign * turn.dir * Math.PI / 2) };
+    if (turn.t >= 1) { commitTurn(turn); turn = null; spin = null; }
+  }
+
   const tg = targets();
+  const cur = st.cascade ? "polysheaf" : st.lettering;
   for (const p of pieces) {
-    const letter = p.by[st.cascade ? "polysheaf" : st.lettering].letter;
+    const letter = dispEntry(p, cur).letter;
     const wantLit = tg.lit[letter] || 0;
     const wantA = wantLit > 0.05 ? 1 : tg.ghost;
     p.lit += (wantLit - p.lit) * Math.min(1, dt * 8);
     p.alpha += (wantA - p.alpha) * Math.min(1, dt * 8);
+    let lat = p.lat;
+    if (spin && p.cell[spin.axis] === spin.sign) lat = rotVec(spin.axis, spin.ang, lat);
     const k = st.knollT, e = k * k * (3 - 2 * k); // smoothstep
-    for (let i = 0; i < 3; i++) p.pos[i] = p.lat[i] + (p.knoll[i] - p.lat[i]) * e;
+    for (let i = 0; i < 3; i++) p.pos[i] = lat[i] + (p.knoll[i] - lat[i]) * e;
   }
 
   // render
@@ -1598,19 +1835,19 @@ function frame(now) {
   ctx.clearRect(0, 0, W, H);
 
   const order = pieces.slice().sort((a, b) => proj(b.pos).zc - proj(a.pos).zc);
-  const cur = st.cascade ? "polysheaf" : st.lettering;
 
   // relation lines beneath the lit pieces
   const L = byLetter(cur);
   for (const [a, b] of tg.lines) if (L[a] && L[b]) drawLine(L[a], L[b], "#d7dce6", 1.4, 0.55);
 
   for (const p of order) {
-    const entry = p.by[cur];
+    const entry = dispEntry(p, cur);
     const isVoid = p.kind === "center";
     const sel = st.sel === p || st.hover === p;
     const h = 0.42 * (1 + 0.1 * p.lit + (sel ? 0.08 : 0));
+    const pSpin = spin && p.cell[spin.axis] === spin.sign ? spin : null;
     if (isVoid) drawVoid(p, h, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, 0.5));
-    else drawCube(p, h, KINDCOLOR[p.kind], Math.max(p.lit, sel ? .7 : 0), p.alpha);
+    else drawCube(p, h, KINDCOLOR[p.kind], Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin);
     // floating letter
     const q = proj(p.pos);
     const fs = Math.max(9, h * q.s * 0.95);
@@ -1636,7 +1873,7 @@ function frame(now) {
     const groups = [["corner", 4.6, "corners ×8"], ["edge", 1.6, "edges ×12"], ["face", -1.5, "faces ×6"], ["center", -4.2, cur === "polysheaf" ? "the obscured wildcard" : "the spindle — not a piece"]];
     ctx.globalAlpha = (st.knollT - 0.6) / 0.4;
     for (const [kind, y, label] of groups) {
-      const letters = pieces.filter(p => p.kind === kind).map(p => p.by[cur].letter).sort();
+      const letters = pieces.filter(p => p.kind === kind).map(p => dispEntry(p, cur).letter).sort();
       const q = proj([0, y + 0.95, 0]);
       ctx.font = "600 11px ui-monospace, Menlo, monospace";
       ctx.fillStyle = "#8a93a6"; ctx.textAlign = "center";
@@ -1684,6 +1921,13 @@ cv.addEventListener("wheel", e => {
   view.dist = Math.max(4, Math.min(26, view.dist * (1 + Math.sign(e.deltaY) * 0.08)));
 }, { passive: false });
 
+window.addEventListener("keydown", e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if ("UDLRFB".includes(k) && k.length === 1)
+    enqueueMove(k, (e.shiftKey || st.prime) ? -1 : 1, true);
+});
+
 function pick(mx, my) {
   let best = null, bd = 1e9;
   for (const p of pieces) {
@@ -1730,24 +1974,41 @@ $("bCascade").onclick = () => {
   $("bCascade").classList.add("on"); $("bCascade").textContent = "cascade ◼";
 };
 
+// cube controls
+document.querySelectorAll(".mv").forEach(b => {
+  b.addEventListener("click", e => enqueueMove(b.dataset.mv, (e.shiftKey || st.prime) ? -1 : 1, true));
+  b.addEventListener("contextmenu", e => { e.preventDefault(); enqueueMove(b.dataset.mv, -1, true); });
+});
+$("bPrime").onclick = () => { st.prime = !st.prime; $("bPrime").classList.toggle("on", st.prime); };
+$("bScramble").onclick = scramble;
+$("bUnwind").onclick = unwind;
+$("bReset").onclick = () => resetCube("reset: every piece home, the word erased — no Pilish for shortcuts");
+updateCubeUI();
+
 function badge(s) { return `<span class="badge ${s}">${s}</span>`; }
 
 function showCell(p) {
   const cur = st.cascade ? "polysheaf" : st.lettering;
-  const e = p.by[cur], o = p.by[cur === "polysheaf" ? "cube_alphabet" : "polysheaf"];
-  let rows;
+  let rows, e;
   if (cur === "polysheaf") {
+    e = polyByKey[key(p.cell)];
+    const occ = p.entryCube;
+    const away = key(p.cell) !== key(p.home);
     rows = [["address", `<code>${e.coord_str}</code>`], ["cell", e.cell],
       ["dim / codim", `${e.dim} open · ${e.codim} decided`],
       ["axis", e.axis || "—"], ["antipode", e.antipode],
       ["seam of", e.seam_of.join(", ") || "—"],
       ["requests", e.requests.join(", ") || "nothing — the loop closes here"],
-      ["occupant here", `${o.letter} (${o.cubie})`]];
+      ["occupant now", `${occ.letter} (${occ.cubie})${away ? " — away from home" : ""}`]];
   } else {
+    e = p.entryCube;
+    const addr = polyByKey[key(p.cell)], home = polyByKey[key(p.home)];
     rows = [["cubie", e.cubie], ["piece", e.piece],
       ["carries state", e.carries_state ? "yes" : "no — frame anchor"],
-      ["orientations", String(e.orientation_states)],
-      ["home address", `${o.letter} <code>${o.coord_str}</code>`]];
+      ["now at", `${addr.letter} <code>${addr.coord_str}</code>`],
+      ["home", `${home.letter} <code>${home.coord_str}</code>`]];
+    if (p.kind === "edge") rows.push(["orientation", edgeOrientOf(p) ? "1 — flipped" : "0 — good"]);
+    if (p.kind === "corner") rows.push(["twist", String(cornerOrientOf(p))]);
   }
   $("pCellBody").innerHTML =
     `<div id="cellGlyph" style="color:${p.kind === "center" ? "#d7dce6" : KINDCOLOR[p.kind]}">${e.letter}</div>
