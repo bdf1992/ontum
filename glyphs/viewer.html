@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ontum · glyph knolling</title>
+<style>
+  :root {
+    --bg: #0b0e14; --ink: #d7dce6; --dim: #8a93a6;
+    --corner: #ffb454; --edge: #3fd9c9; --face: #b18cff; --void: #8a93a6;
+    --pin: #7fd962; --der: #59c2ff; --mint: #ffb454; --open: #f07178;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg);
+    color: var(--ink); font: 13px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  canvas { display: block; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+
+  #title { position: fixed; top: 14px; left: 18px; pointer-events: none; }
+  #title b { font-size: 15px; letter-spacing: .12em; }
+  #title span { color: var(--dim); display: block; font-size: 11px; }
+
+  #bar { position: fixed; top: 14px; right: 18px; display: flex; gap: 6px; flex-wrap: wrap;
+    justify-content: flex-end; max-width: 60vw; }
+  .btn { background: rgba(215,220,230,.06); border: 1px solid rgba(215,220,230,.18);
+    color: var(--ink); border-radius: 999px; padding: 5px 12px; font: inherit;
+    font-size: 12px; cursor: pointer; user-select: none; }
+  .btn:hover { border-color: rgba(215,220,230,.45); }
+  .btn.on { background: rgba(89,194,255,.16); border-color: var(--der); color: #fff; }
+
+  #caption { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+    max-width: 720px; text-align: center; padding: 8px 18px; border-radius: 12px;
+    background: rgba(11,14,20,.75); border: 1px solid rgba(215,220,230,.14);
+    backdrop-filter: blur(6px); opacity: 0; transition: opacity .35s; pointer-events: none; }
+  #caption.show { opacity: 1; }
+
+  #hint { position: fixed; right: 18px; bottom: 14px; color: var(--dim); font-size: 11px;
+    pointer-events: none; }
+
+  .panel { position: fixed; top: 64px; right: 18px; width: 380px; max-width: calc(100vw - 36px);
+    max-height: calc(100vh - 120px); overflow-y: auto; padding: 16px 18px;
+    background: rgba(13,17,25,.92); border: 1px solid rgba(215,220,230,.16);
+    border-radius: 14px; backdrop-filter: blur(8px); display: none; }
+  .panel.show { display: block; }
+  .panel h2 { margin: 0 0 4px; font-size: 14px; letter-spacing: .08em; }
+  .panel h3 { margin: 14px 0 4px; font-size: 12px; color: var(--der); }
+  .panel .x { position: absolute; top: 10px; right: 12px; cursor: pointer; color: var(--dim); }
+  .panel .x:hover { color: #fff; }
+  .panel p, .panel li { color: var(--ink); font-size: 12px; margin: 6px 0; }
+  .panel .src { color: var(--dim); font-size: 11px; }
+  .panel .quote { color: var(--dim); border-left: 2px solid rgba(215,220,230,.2);
+    padding-left: 10px; margin: 6px 0; }
+  .badge { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 10px;
+    letter-spacing: .1em; border: 1px solid; vertical-align: middle; }
+  .badge.PINNED, .badge.SETTLED { color: var(--pin); border-color: var(--pin); }
+  .badge.DERIVED { color: var(--der); border-color: var(--der); }
+  .badge.MINTED { color: var(--mint); border-color: var(--mint); }
+  .badge.OPEN { color: var(--open); border-color: var(--open); }
+  .badge.DEAD { color: var(--dim); border-color: var(--dim); text-decoration: line-through; }
+  .kv { display: grid; grid-template-columns: 92px 1fr; gap: 2px 10px; margin: 10px 0; }
+  .kv div:nth-child(odd) { color: var(--dim); }
+  #cellGlyph { font-size: 42px; line-height: 1.1; }
+  table.terms { border-collapse: collapse; width: 100%; }
+  table.terms td { border-top: 1px solid rgba(215,220,230,.08); padding: 6px 6px 6px 0;
+    vertical-align: top; font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+<div id="title"><b>ONTUM · GLYPH KNOLLING</b>
+  <span>27 cells · 2 alphabets · 1 empty center</span></div>
+
+<div id="bar">
+  <button class="btn on" id="bLetterPoly" title="polysheaf ternary lettering — letters name fixed cells">addresses ⊘</button>
+  <button class="btn" id="bLetterCube" title="cube-alphabet piece lettering — letters name mobile pieces">occupants ∅</button>
+  <button class="btn" id="bKnoll" title="flat-lay: sorted by kind, laid at right angles, labeled">knolled</button>
+  <button class="btn" id="bTrioSpot" title="spotlight S, I, O in the current frame">S·I·O</button>
+  <button class="btn" id="bCascade" title="the worked example: A's seams request the next sites">cascade ▸</button>
+  <button class="btn" id="bTrio">trio</button>
+  <button class="btn" id="bTerms">terms</button>
+  <button class="btn" id="bSeams">findings</button>
+</div>
+
+<div id="caption"></div>
+<div id="hint">drag to orbit · scroll to zoom · click a cell</div>
+
+<div class="panel" id="pCell"><span class="x" data-close="pCell">✕</span><div id="pCellBody"></div></div>
+<div class="panel" id="pTrio"><span class="x" data-close="pTrio">✕</span><div id="pTrioBody"></div></div>
+<div class="panel" id="pTerms"><span class="x" data-close="pTerms">✕</span><div id="pTermsBody"></div></div>
+<div class="panel" id="pSeams"><span class="x" data-close="pSeams">✕</span><div id="pSeamsBody"></div></div>
+
+<canvas id="c"></canvas>
+
+<script>
+"use strict";
+
+/*GLYPH_DATA_START*/
+const REGISTRY = {
+  "generated_by": "glyphs/knoll.py — do not edit registry.json or the viewer data block by hand; re-run the generator",
+  "discipline": "every entry carries a provenance status: PINNED (quoted, source cited) | DERIVED (stated rule from pins) | MINTED (coined, provisional) | OPEN (named hole)",
+  "letterings": {
+    "polysheaf": {
+      "name": "Polysheaf ternary lettering",
+      "names_what": "addresses — fixed cells of {−,0,+}³",
+      "rule": "corners A–H, edges I–T, faces U–Z; edges grouped by open axis (x, then y, then z), faces by their normal axis; within a group, natural sign order (− < 0 < +) on the remaining coordinates; the all-zeros center is the obscured wildcard ⊘, letterless",
+      "source": "docs/phase-2/autojective-polysheaf.md (worked example)",
+      "cells": [
+        {
+          "letter": "A",
+          "coord": [
+            -1,
+            -1,
+            -1
+          ],
+          "coord_str": "(−,−,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "H",
+          "seam_of": [],
+          "requests": [
+            "I",
+            "M",
+            "Q"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:115"
+        },
+        {
+          "letter": "B",
+          "coord": [
+            -1,
+            -1,
+            1
+          ],
+          "coord_str": "(−,−,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "G",
+          "seam_of": [],
+          "requests": [
+            "J",
+            "N",
+            "Q"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "C",
+          "coord": [
+            -1,
+            1,
+            -1
+          ],
+          "coord_str": "(−,+,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "F",
+          "seam_of": [],
+          "requests": [
+            "K",
+            "M",
+            "R"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "D",
+          "coord": [
+            -1,
+            1,
+            1
+          ],
+          "coord_str": "(−,+,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "E",
+          "seam_of": [],
+          "requests": [
+            "L",
+            "N",
+            "R"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "E",
+          "coord": [
+            1,
+            -1,
+            -1
+          ],
+          "coord_str": "(+,−,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "D",
+          "seam_of": [],
+          "requests": [
+            "I",
+            "O",
+            "S"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:129"
+        },
+        {
+          "letter": "F",
+          "coord": [
+            1,
+            -1,
+            1
+          ],
+          "coord_str": "(+,−,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "C",
+          "seam_of": [],
+          "requests": [
+            "J",
+            "P",
+            "S"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "G",
+          "coord": [
+            1,
+            1,
+            -1
+          ],
+          "coord_str": "(+,+,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "B",
+          "seam_of": [],
+          "requests": [
+            "K",
+            "O",
+            "T"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "H",
+          "coord": [
+            1,
+            1,
+            1
+          ],
+          "coord_str": "(+,+,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "A",
+          "seam_of": [],
+          "requests": [
+            "L",
+            "P",
+            "T"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:152"
+        },
+        {
+          "letter": "I",
+          "coord": [
+            0,
+            -1,
+            -1
+          ],
+          "coord_str": "(0,−,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "L",
+          "seam_of": [
+            "A",
+            "E"
+          ],
+          "requests": [
+            "Y",
+            "W"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:123"
+        },
+        {
+          "letter": "J",
+          "coord": [
+            0,
+            -1,
+            1
+          ],
+          "coord_str": "(0,−,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "K",
+          "seam_of": [
+            "B",
+            "F"
+          ],
+          "requests": [
+            "Z",
+            "W"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "K",
+          "coord": [
+            0,
+            1,
+            -1
+          ],
+          "coord_str": "(0,+,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "J",
+          "seam_of": [
+            "C",
+            "G"
+          ],
+          "requests": [
+            "Y",
+            "X"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "L",
+          "coord": [
+            0,
+            1,
+            1
+          ],
+          "coord_str": "(0,+,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "I",
+          "seam_of": [
+            "D",
+            "H"
+          ],
+          "requests": [
+            "Z",
+            "X"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "M",
+          "coord": [
+            -1,
+            0,
+            -1
+          ],
+          "coord_str": "(−,0,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "P",
+          "seam_of": [
+            "A",
+            "C"
+          ],
+          "requests": [
+            "Y",
+            "U"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:124"
+        },
+        {
+          "letter": "N",
+          "coord": [
+            -1,
+            0,
+            1
+          ],
+          "coord_str": "(−,0,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "O",
+          "seam_of": [
+            "B",
+            "D"
+          ],
+          "requests": [
+            "Z",
+            "U"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "O",
+          "coord": [
+            1,
+            0,
+            -1
+          ],
+          "coord_str": "(+,0,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "N",
+          "seam_of": [
+            "E",
+            "G"
+          ],
+          "requests": [
+            "Y",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "P",
+          "coord": [
+            1,
+            0,
+            1
+          ],
+          "coord_str": "(+,0,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "M",
+          "seam_of": [
+            "F",
+            "H"
+          ],
+          "requests": [
+            "Z",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "Q",
+          "coord": [
+            -1,
+            -1,
+            0
+          ],
+          "coord_str": "(−,−,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "T",
+          "seam_of": [
+            "A",
+            "B"
+          ],
+          "requests": [
+            "W",
+            "U"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:125"
+        },
+        {
+          "letter": "R",
+          "coord": [
+            -1,
+            1,
+            0
+          ],
+          "coord_str": "(−,+,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "S",
+          "seam_of": [
+            "C",
+            "D"
+          ],
+          "requests": [
+            "X",
+            "U"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "S",
+          "coord": [
+            1,
+            -1,
+            0
+          ],
+          "coord_str": "(+,−,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "R",
+          "seam_of": [
+            "E",
+            "F"
+          ],
+          "requests": [
+            "W",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "T",
+          "coord": [
+            1,
+            1,
+            0
+          ],
+          "coord_str": "(+,+,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "Q",
+          "seam_of": [
+            "G",
+            "H"
+          ],
+          "requests": [
+            "X",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "U",
+          "coord": [
+            -1,
+            0,
+            0
+          ],
+          "coord_str": "(−,0,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "x",
+          "antipode": "V",
+          "seam_of": [
+            "Q",
+            "R",
+            "M",
+            "N"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "V",
+          "coord": [
+            1,
+            0,
+            0
+          ],
+          "coord_str": "(+,0,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "x",
+          "antipode": "U",
+          "seam_of": [
+            "S",
+            "T",
+            "O",
+            "P"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "W",
+          "coord": [
+            0,
+            -1,
+            0
+          ],
+          "coord_str": "(0,−,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "y",
+          "antipode": "X",
+          "seam_of": [
+            "Q",
+            "S",
+            "I",
+            "J"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "X",
+          "coord": [
+            0,
+            1,
+            0
+          ],
+          "coord_str": "(0,+,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "y",
+          "antipode": "W",
+          "seam_of": [
+            "R",
+            "T",
+            "K",
+            "L"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "Y",
+          "coord": [
+            0,
+            0,
+            -1
+          ],
+          "coord_str": "(0,0,−)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "z",
+          "antipode": "Z",
+          "seam_of": [
+            "M",
+            "O",
+            "I",
+            "K"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "Z",
+          "coord": [
+            0,
+            0,
+            1
+          ],
+          "coord_str": "(0,0,+)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "z",
+          "antipode": "Y",
+          "seam_of": [
+            "N",
+            "P",
+            "J",
+            "L"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "⊘",
+          "coord": [
+            0,
+            0,
+            0
+          ],
+          "coord_str": "(0,0,0)",
+          "cell": "center",
+          "dim": 3,
+          "codim": 0,
+          "axis": null,
+          "antipode": "⊘",
+          "seam_of": [
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y",
+            "Z"
+          ],
+          "requests": [],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:111",
+          "note": "the obscured wildcard — anchored by no pin, requests nothing; the null/generative slot where the cascade terminates"
+        }
+      ]
+    },
+    "cube_alphabet": {
+      "name": "Cube-alphabet piece lettering",
+      "names_what": "occupants — mobile pieces; coords are home (solved) slots under x:L−/R+, y:D−/U+, z:B−/F+ (a derived convention)",
+      "rule": "piece type (centers, edges, corners), then standard face order U D L R F B",
+      "source": "docs/phase-2/cube-alphabet.md §7",
+      "cells": [
+        {
+          "letter": "A",
+          "cubie": "U",
+          "piece": "center",
+          "coord": [
+            0,
+            1,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:118"
+        },
+        {
+          "letter": "B",
+          "cubie": "D",
+          "piece": "center",
+          "coord": [
+            0,
+            -1,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "C",
+          "cubie": "L",
+          "piece": "center",
+          "coord": [
+            -1,
+            0,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "D",
+          "cubie": "R",
+          "piece": "center",
+          "coord": [
+            1,
+            0,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "E",
+          "cubie": "F",
+          "piece": "center",
+          "coord": [
+            0,
+            0,
+            1
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "F",
+          "cubie": "B",
+          "piece": "center",
+          "coord": [
+            0,
+            0,
+            -1
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "G",
+          "cubie": "UF",
+          "piece": "edge",
+          "coord": [
+            0,
+            1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "H",
+          "cubie": "UR",
+          "piece": "edge",
+          "coord": [
+            1,
+            1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "I",
+          "cubie": "UB",
+          "piece": "edge",
+          "coord": [
+            0,
+            1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:131"
+        },
+        {
+          "letter": "J",
+          "cubie": "UL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "K",
+          "cubie": "DF",
+          "piece": "edge",
+          "coord": [
+            0,
+            -1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "L",
+          "cubie": "DR",
+          "piece": "edge",
+          "coord": [
+            1,
+            -1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "M",
+          "cubie": "DB",
+          "piece": "edge",
+          "coord": [
+            0,
+            -1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "N",
+          "cubie": "DL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            -1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "O",
+          "cubie": "FR",
+          "piece": "edge",
+          "coord": [
+            1,
+            0,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:131"
+        },
+        {
+          "letter": "P",
+          "cubie": "FL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            0,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "Q",
+          "cubie": "BR",
+          "piece": "edge",
+          "coord": [
+            1,
+            0,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "R",
+          "cubie": "BL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            0,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "S",
+          "cubie": "UFR",
+          "piece": "corner",
+          "coord": [
+            1,
+            1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:140"
+        },
+        {
+          "letter": "T",
+          "cubie": "UFL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "U",
+          "cubie": "UBR",
+          "piece": "corner",
+          "coord": [
+            1,
+            1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "V",
+          "cubie": "UBL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "W",
+          "cubie": "DFR",
+          "piece": "corner",
+          "coord": [
+            1,
+            -1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "X",
+          "cubie": "DFL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            -1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "Y",
+          "cubie": "DBR",
+          "piece": "corner",
+          "coord": [
+            1,
+            -1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "Z",
+          "cubie": "DBL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            -1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "∅",
+          "cubie": "spindle",
+          "piece": "spindle",
+          "coord": [
+            0,
+            0,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:73",
+          "note": "not a piece — the mechanism is a void with an axis through it; what enables rotation is the absence of a cubie"
+        }
+      ]
+    }
+  },
+  "terms": [
+    {
+      "term": "Ontum",
+      "status": "SETTLED",
+      "referent": "The unit; computational-presence atom; pluralizes to *onta",
+      "non_example": "A passive storage byte",
+      "source": "docs/phase-2/ontum-evolution.md:174"
+    },
+    {
+      "term": "onta",
+      "status": "SETTLED",
+      "referent": "Plural of ontum; scale-recursively, the constituents that settle into an ontum",
+      "non_example": "A single ontum viewed alone",
+      "source": "docs/phase-2/ontum-evolution.md:175"
+    },
+    {
+      "term": "Keystone",
+      "status": "SETTLED",
+      "referent": "The center cell / Token of an ontum; frame-relative, correction-bearing",
+      "non_example": "An inert unweighted centroid (a dead token)",
+      "source": "docs/phase-2/ontum-evolution.md:176"
+    },
+    {
+      "term": "Jective",
+      "status": "MINTED",
+      "referent": "Per-keystone property setting *how* a correction is admitted; makes the center an operator",
+      "non_example": "A global constant applied to all keystones alike",
+      "source": "docs/phase-2/ontum-evolution.md:177"
+    },
+    {
+      "term": "Keystone correction",
+      "status": "MINTED",
+      "referent": "The process by which the cells' collective pull translates the keystone",
+      "non_example": "A center that sits deaf while its cells pull",
+      "source": "docs/phase-2/ontum-evolution.md:178"
+    },
+    {
+      "term": "Metafinitude",
+      "status": "MINTED",
+      "referent": "Relation between finite spec and infinite output, layers untouching",
+      "non_example": "A large-but-bounded set",
+      "source": "docs/phase-2/ontum-evolution.md:179"
+    },
+    {
+      "term": "etymontoken",
+      "status": "SETTLED",
+      "referent": "An ontum carrying its generator-lineage as type",
+      "non_example": "A token with erased `derived_from`",
+      "source": "docs/phase-2/ontum-evolution.md:180"
+    },
+    {
+      "term": "Cant",
+      "status": "MINTED",
+      "referent": "The keystone accepting its correction at one moment, read in a fixed frame",
+      "non_example": "Barycenter coincident with the keystone",
+      "source": "docs/phase-2/ontum-evolution.md:181"
+    },
+    {
+      "term": "Drift",
+      "status": "MINTED",
+      "referent": "The trajectory of the cant over updates",
+      "non_example": "A single static correction",
+      "source": "docs/phase-2/ontum-evolution.md:182"
+    },
+    {
+      "term": "Total-provenance substrate",
+      "status": "OPEN",
+      "referent": "Substrate where every ontum traces its root",
+      "non_example": "Any substrate with one provenance-silent ontum",
+      "source": "docs/phase-2/ontum-evolution.md:183"
+    },
+    {
+      "term": "Grip / Hole / Pin",
+      "status": "MINTED",
+      "referent": "grip = names a referent; hole = names a slot; pin = attaches a non-example",
+      "non_example": "A definition with no falsifier (still a hole)",
+      "source": "docs/phase-2/ontum-evolution.md:184"
+    },
+    {
+      "term": "Onton",
+      "status": "DEAD",
+      "referent": "Former unit-name",
+      "non_example": null,
+      "source": "docs/phase-2/ontum-evolution.md:185"
+    },
+    {
+      "term": "epistemontoken",
+      "status": "DEAD",
+      "referent": "Former provenance-token name; never defined its epistemic payload",
+      "non_example": null,
+      "source": "docs/phase-2/ontum-evolution.md:186"
+    },
+    {
+      "term": "Metafinite (model-theory)",
+      "status": "DEAD",
+      "referent": "Static finite-primary/infinite-secondary structure (name collision)",
+      "non_example": null,
+      "source": "docs/phase-2/ontum-evolution.md:187"
+    },
+    {
+      "term": "Autojective / Autojection",
+      "status": "OPEN",
+      "referent": "Self-issuing projection frame (issued by the projected, not the observer); may be the *kind* of -jection a jective admits",
+      "non_example": "A projection with an external observer role",
+      "source": "docs/phase-2/ontum-evolution.md:188"
+    },
+    {
+      "term": "Site",
+      "status": "SETTLED",
+      "referent": "A primitive treated as a local frame; holds its local stalk (with dynamics), an inward encoding, axis/antipode structure, and outgoing maps. Simultaneously a whole and a part.",
+      "non_example": "A global object authored as its own file",
+      "source": "docs/phase-2/autojective-polysheaf.md:37"
+    },
+    {
+      "term": "Seam",
+      "status": "SETTLED",
+      "referent": "A primitive that is a join. Connects Sites and carries the comparison between them as a cocycle. A Seam that does not close is not a bug; it is data.",
+      "non_example": "A boolean joined/not-joined flag",
+      "source": "docs/phase-2/autojective-polysheaf.md:39"
+    },
+    {
+      "term": "Atlas",
+      "status": "SETTLED",
+      "referent": "Not authored. The emergent index: the collection of Sites and Seams plus their incidence. The whole is read off the Atlas, never written as its own file.",
+      "non_example": "A hand-maintained global map",
+      "source": "docs/phase-2/autojective-polysheaf.md:41"
+    },
+    {
+      "term": "Autojective",
+      "status": "SETTLED",
+      "referent": "Self-casting (thrown-by-itself): a structure that generates its own slots and the constraint that shapes what may fill them.",
+      "non_example": "A projection with an external observer role",
+      "source": "docs/phase-2/autojective-polysheaf.md:52"
+    },
+    {
+      "term": "Spindle",
+      "status": "SETTLED",
+      "referent": "The 27th grid position, dead center: not a piece. A void with an axis through it — what enables rotation is the absence of a cubie.",
+      "non_example": "A 27th cubie",
+      "source": "docs/phase-2/cube-alphabet.md:73"
+    },
+    {
+      "term": "The empty-center law",
+      "status": "SETTLED",
+      "referent": "Symbol systems work because their center is empty. The mechanism is the negative space. Structure rotates around an absence.",
+      "non_example": "A token system whose semantics live inside one privileged symbol",
+      "source": "docs/phase-2/cube-alphabet.md:81"
+    },
+    {
+      "term": "Ontogram",
+      "status": "SETTLED",
+      "referent": "A typed form whose source, structure, and downstream effects are all inspectable — the atomic unit of trust.",
+      "non_example": "A generated artifact whose formation chain died in the conversation",
+      "source": "docs/phase-2/ontogrammatic-systems.md:107"
+    },
+    {
+      "term": "The Machine",
+      "status": "SETTLED",
+      "referent": "The gating mechanism: certifies (never generates) ontograms; six checks, three verdicts — admit, refuse, instrumentation-needed.",
+      "non_example": "A generator that grades its own output",
+      "source": "docs/phase-2/ontogrammatic-systems.md:166"
+    }
+  ],
+  "trio": {
+    "glyphs": [
+      "S",
+      "I",
+      "O"
+    ],
+    "status": "OPEN",
+    "note": "Three candidate readings, knolled side by side. A grip needs a non-example; until bdo pins one reading (or mints a fourth), the trio is a named hole, not a referent.",
+    "readings": [
+      {
+        "frame": "polysheaf (addresses)",
+        "status": "DERIVED",
+        "reading": {
+          "I": "x-seam (0,−,−) = seam(A,E)",
+          "O": "y-seam (+,0,−) = seam(E,G)",
+          "S": "z-seam (+,−,0) = seam(E,F)"
+        },
+        "gloss": "One seam per axis — I on x, O on y, S on z — and all three share the corner E = (+,−,−): S·I·O is exactly the request set of one Self, E's seam-star. (The worked example's corner A requests I, M, Q; the corner that requests I, O, S is E.) A seam basis for the compression frame, issued by a single point."
+      },
+      {
+        "frame": "cube-alphabet (occupants)",
+        "status": "PINNED",
+        "reading": {
+          "S": "corner UFR — the first corner, the canonical home piece",
+          "I": "edge UB",
+          "O": "edge FR"
+        },
+        "gloss": "S leads the corner octave (S–Z); I and O are edges. All three carry state — none is a stateless anchor."
+      },
+      {
+        "frame": "letterform (semiotic)",
+        "status": "MINTED",
+        "reading": {
+          "O": "the ring: a stroke enclosing a void — the empty center made visible; the spindle/wildcard drawn as a glyph",
+          "I": "the stroke: one decided axis — a line, the minimal edge; the unit presence",
+          "S": "the seam: one curve crossing between two lobes — the join drawn as a glyph; also the initial of Site, Seam, Self, settle, spindle"
+        },
+        "gloss": "I/O is additionally the binary pair — 1 and 0, two stickers around a void (cube-alphabet §5) — and S is the path between them. Ontology (O), instance (I), seam (S): the fabric, a fiber, and the stitch."
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "seam.lettering-collision",
+      "kind": "non-closing seam, resolved as complementarity",
+      "status": "MINTED",
+      "between": [
+        "docs/phase-2/cube-alphabet.md §7",
+        "docs/phase-2/autojective-polysheaf.md (worked example)"
+      ],
+      "observation": "The same 26 letters are assigned twice, incompatibly: cube-alphabet gives A = U center / S = corner UFR; the polysheaf gives A = corner (−,−,−) / S = a z-edge. I and O are edges in both; A and S change kind entirely.",
+      "resolution": "Read as the (position, value) split both docs already name (cube-alphabet §3): polysheaf letters name fixed CELLS (addresses), cube-alphabet letters name mobile PIECES (occupants). One alphabet for where, one for what. A full state is a pairing of the two; the solved cube is the canonical pairing. Held MINTED until bdo admits or refuses the reading."
+    },
+    {
+      "id": "seam.codim-wording",
+      "kind": "internal inconsistency (wording)",
+      "status": "PINNED",
+      "between": [
+        "docs/phase-2/autojective-polysheaf.md:111",
+        "docs/phase-2/autojective-polysheaf.md:115"
+      ],
+      "observation": "Line 111 says 'the count of zeros in a cell's coordinate is its codimension', but line 115 calls corner (−,−,−) — zero zeros — 'codim 3'. Count-of-zeros is the cell's DIMENSION (open axes); codimension is 3 minus that (decided axes). One of the two lines is mis-worded.",
+      "resolution": "Vault is read-only for this stream: reported, not patched. The registry records both numbers per cell (dim = zeros, codim = decided) so either fix leaves the data correct."
+    },
+    {
+      "id": "note.two-voids",
+      "kind": "alignment worth keeping",
+      "status": "PINNED",
+      "between": [
+        "docs/phase-2/cube-alphabet.md:73",
+        "docs/phase-2/autojective-polysheaf.md:146"
+      ],
+      "observation": "Both letterings leave (0,0,0) letterless, for different reasons: the spindle ∅ is the mechanism void (absence enables rotation); the obscured wildcard ⊘ is the generative null (requests nothing, terminates the cascade). Two readings of one empty center — the system's load-bearing absence.",
+      "resolution": "No action; knolled here so the alignment stays visible."
+    }
+  ]
+};
+/*GLYPH_DATA_END*/
+
+if (!REGISTRY) {
+  document.body.innerHTML = "<p style='padding:2em'>No data: run " +
+    "<code>python3 glyphs/knoll.py</code> to inject the registry.</p>";
+  throw new Error("registry missing");
+}
+
+// ---------------------------------------------------------------- data prep
+const KINDCOLOR = { corner: "#ffb454", edge: "#3fd9c9", face: "#b18cff", center: "#8a93a6" };
+const key = c => c.join(",");
+const kindOf = c => ["corner", "edge", "face", "center"][c.filter(v => v === 0).length];
+
+// 27 positions; each carries one entry per lettering (addresses & occupants).
+const pieces = [];
+{
+  const poly = {}, cube = {};
+  for (const e of REGISTRY.letterings.polysheaf.cells) poly[key(e.coord)] = e;
+  for (const e of REGISTRY.letterings.cube_alphabet.cells) cube[key(e.coord)] = e;
+  for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) {
+    const c = [x, y, z];
+    pieces.push({
+      coord: c, kind: kindOf(c),
+      by: { polysheaf: poly[key(c)], cube_alphabet: cube[key(c)] },
+      lat: [x * 1.15, y * 1.15, z * 1.15],
+      knoll: [0, 0, 0], pos: [x * 1.15, y * 1.15, z * 1.15],
+      lit: 0, alpha: 1,
+    });
+  }
+}
+const byLetter = lettering => {
+  const m = {};
+  for (const p of pieces) m[p.by[lettering].letter] = p;
+  return m;
+};
+
+// ------------------------------------------------------------------- state
+const view = { rx: 0.42, ry: -0.62, dist: 8.2, f: 1, vrx: 0, vry: 0 };
+const st = {
+  lettering: "polysheaf",
+  knollT: 0, knollOn: false,
+  spot: false,
+  cascade: null,          // {stage, t0}
+  hover: null, sel: null,
+  lastTouch: performance.now(),
+};
+
+// knolled flat-lay: rows by kind, sorted by current letter; right angles, labels.
+function computeKnoll() {
+  const rows = [["corner", 4.6], ["edge", 1.6], ["face", -1.5], ["center", -4.2]];
+  for (const [kind, y] of rows) {
+    const group = pieces.filter(p => p.kind === kind)
+      .sort((a, b) => a.by[st.lettering].letter < b.by[st.lettering].letter ? -1 : 1);
+    const step = kind === "edge" ? 1.45 : 1.85;
+    group.forEach((p, i) => {
+      p.knoll = [(i - (group.length - 1) / 2) * step, y, 0];
+    });
+  }
+}
+computeKnoll();
+
+// ------------------------------------------------------------------ camera
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  cv.style.width = W + "px"; cv.style.height = H + "px";
+  view.f = Math.min(W, H) * 1.05;
+}
+window.addEventListener("resize", resize); resize();
+
+function rot3(p) {
+  const [x, y, z] = p;
+  const cy = Math.cos(view.ry), sy = Math.sin(view.ry);
+  const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+  const cx = Math.cos(view.rx), sx = Math.sin(view.rx);
+  return [x1, y * cx - z1 * sx, y * sx + z1 * cx];
+}
+function proj(p) {
+  const r = rot3(p), zc = r[2] + view.dist, s = view.f / Math.max(0.5, zc);
+  return { x: W / 2 + r[0] * s, y: H / 2 - r[1] * s, s, zc };
+}
+
+// ------------------------------------------------------------- cube render
+const VERT = [];
+for (let i = 0; i < 8; i++) VERT.push([(i & 1) * 2 - 1, ((i >> 1) & 1) * 2 - 1, ((i >> 2) & 1) * 2 - 1]);
+const FACES = [  // [indices CCW from outside, outward normal]
+  [[0, 2, 6, 4], [-1, 0, 0]], [[1, 5, 7, 3], [1, 0, 0]],
+  [[0, 4, 5, 1], [0, -1, 0]], [[2, 3, 7, 6], [0, 1, 0]],
+  [[0, 1, 3, 2], [0, 0, -1]], [[4, 6, 7, 5], [0, 0, 1]],
+];
+const LIGHT = (() => { const l = [-0.45, 0.75, 0.55], n = Math.hypot(...l); return l.map(v => v / n); })();
+function shade(hex, k) {
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  return `rgb(${Math.round(r * k)},${Math.round(g * k)},${Math.round(b * k)})`;
+}
+
+function drawCube(p, h, color, lit, alpha) {
+  const pts = VERT.map(v => proj([p.pos[0] + v[0] * h, p.pos[1] + v[1] * h, p.pos[2] + v[2] * h]));
+  ctx.globalAlpha = alpha;
+  if (lit > 0.05) { ctx.shadowColor = color; ctx.shadowBlur = 26 * lit; } else ctx.shadowBlur = 0;
+  const fs = FACES.map(([idx, n]) => {
+    const rn = rot3(n);
+    return { idx, z: idx.reduce((a, i) => a + pts[i].zc, 0) / 4, d: rn[0] * LIGHT[0] + rn[1] * LIGHT[1] + rn[2] * LIGHT[2], front: rn[2] < 0 };
+  }).sort((a, b) => b.z - a.z);
+  for (const f of fs) {
+    if (!f.front) continue;
+    ctx.beginPath();
+    f.idx.forEach((i, j) => j ? ctx.lineTo(pts[i].x, pts[i].y) : ctx.moveTo(pts[i].x, pts[i].y));
+    ctx.closePath();
+    const k = 0.42 + 0.5 * Math.max(0, f.d) + lit * 0.25;
+    ctx.fillStyle = shade(color, Math.min(1.25, k));
+    ctx.fill();
+    ctx.strokeStyle = "rgba(11,14,20,.65)"; ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+}
+
+function drawVoid(p, h, lit, alpha) {
+  const q = proj(p.pos), r = h * q.s;
+  ctx.globalAlpha = alpha;
+  if (lit > 0.05) { ctx.shadowColor = "#d7dce6"; ctx.shadowBlur = 30 * lit; }
+  ctx.strokeStyle = "rgba(215,220,230," + (0.35 + 0.6 * lit) + ")";
+  ctx.lineWidth = 1.4; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+}
+
+function drawLine(a, b, color, w, alpha) {
+  const pa = proj(a.pos), pb = proj(b.pos);
+  ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = w;
+  ctx.shadowColor = color; ctx.shadowBlur = 12;
+  ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+  ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+}
+
+// ----------------------------------------------------------- cascade story
+// Built from the registry itself: seam_of / requests per cell.
+function cascadeStages() {
+  const L = byLetter("polysheaf");
+  const edges = [], faces = [];
+  for (const p of pieces) { if (p.kind === "edge") edges.push(p.by.polysheaf.letter); if (p.kind === "face") faces.push(p.by.polysheaf.letter); }
+  const I = L["I"].by.polysheaf;
+  return [
+    { t: 2.6, cap: "Determine the Self — corner A = (−,−,−): codename of the fully decided cell.", lit: { A: 1 }, lines: [] },
+    { t: 3.2, cap: "A's seam-logic requests its three edges — open one axis → I (x), M (y), Q (z).", lit: { A: 1, I: .9, M: .9, Q: .9 }, lines: [["A", "I"], ["A", "M"], ["A", "Q"]] },
+    { t: 3.2, cap: "Promote seam I to a Self: edge I = seam(A, E).", lit: { I: 1, A: .6, E: .6 }, lines: [["I", "A"], ["I", "E"]] },
+    { t: 3.0, cap: "Installing the seam requests the next Site: edge I asks for endpoint E.", lit: { E: 1, I: .7, A: .4 }, lines: [["I", "E"]] },
+    { t: 3.2, cap: "Edges request faces — open a second axis.", lit: Object.fromEntries([...edges.map(e => [e, .55]), ...faces.map(f => [f, .9]), ["I", 1]]), lines: I.requests.map(f => ["I", f]) },
+    { t: 3.4, cap: "Faces request the center — and ⊘ requests nothing. The cascade terminates at the obscured wildcard.", lit: Object.fromEntries([...faces.map(f => [f, .5]), ["⊘", 1]]), lines: faces.map(f => [f, "⊘"]) },
+    { t: 4.0, cap: "The loop closes at the void: 26 letters around an empty center. The spindle is the system.", lit: { "⊘": 1 }, lines: [] },
+  ];
+}
+
+// ------------------------------------------------------------------- frame
+const capEl = document.getElementById("caption");
+let capText = "";
+function setCaption(t) {
+  if (t !== capText) { capText = t; capEl.textContent = t || ""; capEl.classList.toggle("show", !!t); }
+}
+
+function targets() {
+  // per-frame target lit/alpha for every piece, from the active mode
+  const lit = {}, ghost = (st.spot || st.cascade) ? 0.13 : 1;
+  let lines = [];
+  if (st.cascade) {
+    const stages = st.cascade.stages, i = st.cascade.stage;
+    const s = stages[i];
+    Object.assign(lit, s.lit); lines = s.lines;
+    setCaption("▸ " + s.cap);
+    if ((performance.now() - st.cascade.t0) / 1000 > s.t) {
+      if (i + 1 < stages.length) { st.cascade.stage++; st.cascade.t0 = performance.now(); }
+      else { st.cascade = null; document.getElementById("bCascade").classList.remove("on"); document.getElementById("bCascade").textContent = "cascade ▸"; setCaption(""); }
+    }
+  } else if (st.spot) {
+    lit.S = 1; lit.I = 1; lit.O = 1;
+    if (st.lettering === "polysheaf") {
+      const L = byLetter("polysheaf");
+      for (const g of ["S", "I", "O"]) for (const e of L[g].by.polysheaf.seam_of) { lit[e] = Math.max(lit[e] || 0, .45); lines.push([g, e]); }
+      setCaption("S·I·O as addresses — one seam per axis: I crosses x, O crosses y, S crosses z. A seam basis for the fabric. (trio status: OPEN)");
+    } else {
+      setCaption("S·I·O as occupants — S = corner UFR (leads the corner octave S–Z); I = edge UB; O = edge FR. All three carry state. (trio status: OPEN)");
+    }
+  } else setCaption("");
+  return { lit, ghost, lines };
+}
+
+let lastT = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+
+  // motion: easing toward mode targets
+  st.knollT += ((st.knollOn ? 1 : 0) - st.knollT) * Math.min(1, dt * 6);
+  const wantDist = st.knollOn ? 13.5 : 8.2;
+  view.dist += (wantDist - view.dist) * Math.min(1, dt * 4);
+  if (st.knollOn) {
+    view.rx += (0.16 - view.rx) * Math.min(1, dt * 4);
+    view.ry += (-0.26 - view.ry) * Math.min(1, dt * 4);
+  } else {
+    view.rx += view.vrx; view.ry += view.vry;
+    view.vrx *= 0.92; view.vry *= 0.92;
+    if (now - st.lastTouch > 4000 && !st.cascade) view.ry += dt * 0.12;
+  }
+  view.rx = Math.max(-1.45, Math.min(1.45, view.rx));
+
+  const tg = targets();
+  for (const p of pieces) {
+    const letter = p.by[st.cascade ? "polysheaf" : st.lettering].letter;
+    const wantLit = tg.lit[letter] || 0;
+    const wantA = wantLit > 0.05 ? 1 : tg.ghost;
+    p.lit += (wantLit - p.lit) * Math.min(1, dt * 8);
+    p.alpha += (wantA - p.alpha) * Math.min(1, dt * 8);
+    const k = st.knollT, e = k * k * (3 - 2 * k); // smoothstep
+    for (let i = 0; i < 3; i++) p.pos[i] = p.lat[i] + (p.knoll[i] - p.lat[i]) * e;
+  }
+
+  // render
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  const order = pieces.slice().sort((a, b) => proj(b.pos).zc - proj(a.pos).zc);
+  const cur = st.cascade ? "polysheaf" : st.lettering;
+
+  // relation lines beneath the lit pieces
+  const L = byLetter(cur);
+  for (const [a, b] of tg.lines) if (L[a] && L[b]) drawLine(L[a], L[b], "#d7dce6", 1.4, 0.55);
+
+  for (const p of order) {
+    const entry = p.by[cur];
+    const isVoid = p.kind === "center";
+    const sel = st.sel === p || st.hover === p;
+    const h = 0.42 * (1 + 0.1 * p.lit + (sel ? 0.08 : 0));
+    if (isVoid) drawVoid(p, h, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, 0.5));
+    else drawCube(p, h, KINDCOLOR[p.kind], Math.max(p.lit, sel ? .7 : 0), p.alpha);
+    // floating letter
+    const q = proj(p.pos);
+    const fs = Math.max(9, h * q.s * 0.95);
+    ctx.globalAlpha = Math.min(1, p.alpha + p.lit);
+    ctx.font = `700 ${fs}px ui-monospace, Menlo, monospace`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = isVoid ? "#d7dce6" : "#0b0e14";
+    ctx.fillText(entry.letter, q.x, q.y + 1);
+    ctx.globalAlpha = 1;
+    // sublabel: knolled mode always; lattice on hover/select/lit
+    if (st.knollT > 0.6 || sel || p.lit > 0.5) {
+      const sub = cur === "polysheaf" ? entry.coord_str : entry.cubie;
+      ctx.globalAlpha = Math.max(0.25, p.alpha) * (st.knollT > 0.6 ? 1 : 0.9);
+      ctx.font = `400 ${Math.max(8, fs * 0.42)}px ui-monospace, Menlo, monospace`;
+      ctx.fillStyle = "#8a93a6";
+      ctx.fillText(sub, q.x, q.y + h * q.s + fs * 0.55);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // knolled group captions
+  if (st.knollT > 0.6) {
+    const groups = [["corner", 4.6, "corners ×8"], ["edge", 1.6, "edges ×12"], ["face", -1.5, "faces ×6"], ["center", -4.2, cur === "polysheaf" ? "the obscured wildcard" : "the spindle — not a piece"]];
+    ctx.globalAlpha = (st.knollT - 0.6) / 0.4;
+    for (const [kind, y, label] of groups) {
+      const letters = pieces.filter(p => p.kind === kind).map(p => p.by[cur].letter).sort();
+      const q = proj([0, y + 0.95, 0]);
+      ctx.font = "600 11px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = "#8a93a6"; ctx.textAlign = "center";
+      ctx.fillText(label.toUpperCase() + "   " + (kind === "center" ? letters[0] : letters[0] + "–" + letters[letters.length - 1]), q.x, q.y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ------------------------------------------------------------- interaction
+let drag = null;
+cv.addEventListener("pointerdown", e => {
+  drag = { x: e.clientX, y: e.clientY, moved: false };
+  st.lastTouch = performance.now();
+  cv.classList.add("dragging"); cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener("pointermove", e => {
+  st.lastTouch = performance.now();
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+    if (!st.knollOn) { view.vry = dx * 0.005; view.vrx = dy * 0.005; }
+    view.ry += dx * 0.005; view.rx += dy * 0.005;
+    drag.x = e.clientX; drag.y = e.clientY;
+  } else {
+    st.hover = pick(e.clientX, e.clientY);
+    cv.style.cursor = st.hover ? "pointer" : "grab";
+  }
+});
+cv.addEventListener("pointerup", e => {
+  cv.classList.remove("dragging");
+  if (drag && !drag.moved) {
+    const p = pick(e.clientX, e.clientY);
+    st.sel = p;
+    if (p) showCell(p); else hide("pCell");
+  }
+  drag = null;
+});
+cv.addEventListener("wheel", e => {
+  e.preventDefault();
+  st.lastTouch = performance.now();
+  view.dist = Math.max(4, Math.min(26, view.dist * (1 + Math.sign(e.deltaY) * 0.08)));
+}, { passive: false });
+
+function pick(mx, my) {
+  let best = null, bd = 1e9;
+  for (const p of pieces) {
+    const q = proj(p.pos), r = Math.max(16, 0.5 * q.s);
+    const d = Math.hypot(q.x - mx, q.y - my);
+    if (d < r && q.zc < (best ? bd : 1e9) && d < r) { best = p; bd = q.zc; }
+  }
+  return best;
+}
+
+// -------------------------------------------------------------------- UI
+const $ = id => document.getElementById(id);
+function hide(id) { $(id).classList.remove("show"); }
+function showOnly(id) {
+  for (const p of ["pCell", "pTrio", "pTerms", "pSeams"]) $(p).classList.toggle("show", p === id);
+}
+document.querySelectorAll(".x").forEach(x => x.onclick = () => hide(x.dataset.close));
+
+function setLettering(l) {
+  st.lettering = l;
+  $("bLetterPoly").classList.toggle("on", l === "polysheaf");
+  $("bLetterCube").classList.toggle("on", l === "cube_alphabet");
+  computeKnoll();
+  if (st.sel) showCell(st.sel);
+}
+$("bLetterPoly").onclick = () => setLettering("polysheaf");
+$("bLetterCube").onclick = () => setLettering("cube_alphabet");
+
+$("bKnoll").onclick = () => {
+  st.knollOn = !st.knollOn;
+  $("bKnoll").classList.toggle("on", st.knollOn);
+  if (st.knollOn) computeKnoll();
+};
+$("bTrioSpot").onclick = () => {
+  st.spot = !st.spot; st.cascade = null;
+  $("bTrioSpot").classList.toggle("on", st.spot);
+  $("bCascade").classList.remove("on");
+};
+$("bCascade").onclick = () => {
+  if (st.cascade) { st.cascade = null; $("bCascade").classList.remove("on"); $("bCascade").textContent = "cascade ▸"; setCaption(""); return; }
+  st.spot = false; $("bTrioSpot").classList.remove("on");
+  setLettering("polysheaf");
+  st.cascade = { stages: cascadeStages(), stage: 0, t0: performance.now() };
+  $("bCascade").classList.add("on"); $("bCascade").textContent = "cascade ◼";
+};
+
+function badge(s) { return `<span class="badge ${s}">${s}</span>`; }
+
+function showCell(p) {
+  const cur = st.cascade ? "polysheaf" : st.lettering;
+  const e = p.by[cur], o = p.by[cur === "polysheaf" ? "cube_alphabet" : "polysheaf"];
+  let rows;
+  if (cur === "polysheaf") {
+    rows = [["address", `<code>${e.coord_str}</code>`], ["cell", e.cell],
+      ["dim / codim", `${e.dim} open · ${e.codim} decided`],
+      ["axis", e.axis || "—"], ["antipode", e.antipode],
+      ["seam of", e.seam_of.join(", ") || "—"],
+      ["requests", e.requests.join(", ") || "nothing — the loop closes here"],
+      ["occupant here", `${o.letter} (${o.cubie})`]];
+  } else {
+    rows = [["cubie", e.cubie], ["piece", e.piece],
+      ["carries state", e.carries_state ? "yes" : "no — frame anchor"],
+      ["orientations", String(e.orientation_states)],
+      ["home address", `${o.letter} <code>${o.coord_str}</code>`]];
+  }
+  $("pCellBody").innerHTML =
+    `<div id="cellGlyph" style="color:${p.kind === "center" ? "#d7dce6" : KINDCOLOR[p.kind]}">${e.letter}</div>
+     <h2>${cur === "polysheaf" ? "address" : "occupant"} · ${p.kind} ${badge(e.status)}</h2>
+     <div class="kv">${rows.map(([k, v]) => `<div>${k}</div><div>${v}</div>`).join("")}</div>
+     ${e.note ? `<p class="quote">${e.note}</p>` : ""}
+     <p class="src">source: ${e.source}</p>`;
+  showOnly("pCell");
+}
+
+$("bTrio").onclick = () => {
+  const t = REGISTRY.trio;
+  $("pTrioBody").innerHTML =
+    `<h2>THE S·I·O TRIO ${badge(t.status)}</h2><p>${t.note}</p>` +
+    t.readings.map(r =>
+      `<h3>${r.frame} ${badge(r.status)}</h3>
+       <ul>${["S", "I", "O"].filter(g => r.reading[g]).map(g => `<li><b>${g}</b> — ${r.reading[g]}</li>`).join("")}</ul>
+       <p class="quote">${r.gloss}</p>`).join("");
+  showOnly("pTrio");
+};
+
+$("bTerms").onclick = () => {
+  $("pTermsBody").innerHTML =
+    `<h2>TERMS — the semantic wing</h2>
+     <p class="src">grip ledger parsed live from ontum-evolution.md §8, plus the quoted primitives</p>
+     <table class="terms">` +
+    REGISTRY.terms.map(t =>
+      `<tr><td><b>${t.term}</b><br>${badge(t.status)}</td>
+       <td>${t.referent}${t.non_example ? `<br><span class="src">non-example: ${t.non_example}</span>` : ""}
+       <br><span class="src">${t.source}</span></td></tr>`).join("") + "</table>";
+  showOnly("pTerms");
+};
+
+$("bSeams").onclick = () => {
+  $("pSeamsBody").innerHTML = `<h2>FINDINGS — seams that do not close</h2>
+    <p class="src">per the polysheaf doctrine: a failure to seam is data, not an error</p>` +
+    REGISTRY.findings.map(f =>
+      `<h3><code>${f.id}</code> ${badge(f.status)}</h3>
+       <p class="src">${f.between.join(" ↔ ")}</p>
+       <p>${f.observation}</p><p class="quote">${f.resolution}</p>`).join("");
+  showOnly("pSeams");
+};
+</script>
+</body>
+</html>

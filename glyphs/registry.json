@@ -1,0 +1,1280 @@
+{
+  "generated_by": "glyphs/knoll.py — do not edit registry.json or the viewer data block by hand; re-run the generator",
+  "discipline": "every entry carries a provenance status: PINNED (quoted, source cited) | DERIVED (stated rule from pins) | MINTED (coined, provisional) | OPEN (named hole)",
+  "letterings": {
+    "polysheaf": {
+      "name": "Polysheaf ternary lettering",
+      "names_what": "addresses — fixed cells of {−,0,+}³",
+      "rule": "corners A–H, edges I–T, faces U–Z; edges grouped by open axis (x, then y, then z), faces by their normal axis; within a group, natural sign order (− < 0 < +) on the remaining coordinates; the all-zeros center is the obscured wildcard ⊘, letterless",
+      "source": "docs/phase-2/autojective-polysheaf.md (worked example)",
+      "cells": [
+        {
+          "letter": "A",
+          "coord": [
+            -1,
+            -1,
+            -1
+          ],
+          "coord_str": "(−,−,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "H",
+          "seam_of": [],
+          "requests": [
+            "I",
+            "M",
+            "Q"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:115"
+        },
+        {
+          "letter": "B",
+          "coord": [
+            -1,
+            -1,
+            1
+          ],
+          "coord_str": "(−,−,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "G",
+          "seam_of": [],
+          "requests": [
+            "J",
+            "N",
+            "Q"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "C",
+          "coord": [
+            -1,
+            1,
+            -1
+          ],
+          "coord_str": "(−,+,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "F",
+          "seam_of": [],
+          "requests": [
+            "K",
+            "M",
+            "R"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "D",
+          "coord": [
+            -1,
+            1,
+            1
+          ],
+          "coord_str": "(−,+,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "E",
+          "seam_of": [],
+          "requests": [
+            "L",
+            "N",
+            "R"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "E",
+          "coord": [
+            1,
+            -1,
+            -1
+          ],
+          "coord_str": "(+,−,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "D",
+          "seam_of": [],
+          "requests": [
+            "I",
+            "O",
+            "S"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:129"
+        },
+        {
+          "letter": "F",
+          "coord": [
+            1,
+            -1,
+            1
+          ],
+          "coord_str": "(+,−,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "C",
+          "seam_of": [],
+          "requests": [
+            "J",
+            "P",
+            "S"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "G",
+          "coord": [
+            1,
+            1,
+            -1
+          ],
+          "coord_str": "(+,+,−)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "B",
+          "seam_of": [],
+          "requests": [
+            "K",
+            "O",
+            "T"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "H",
+          "coord": [
+            1,
+            1,
+            1
+          ],
+          "coord_str": "(+,+,+)",
+          "cell": "corner",
+          "dim": 0,
+          "codim": 3,
+          "axis": null,
+          "antipode": "A",
+          "seam_of": [],
+          "requests": [
+            "L",
+            "P",
+            "T"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:152"
+        },
+        {
+          "letter": "I",
+          "coord": [
+            0,
+            -1,
+            -1
+          ],
+          "coord_str": "(0,−,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "L",
+          "seam_of": [
+            "A",
+            "E"
+          ],
+          "requests": [
+            "Y",
+            "W"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:123"
+        },
+        {
+          "letter": "J",
+          "coord": [
+            0,
+            -1,
+            1
+          ],
+          "coord_str": "(0,−,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "K",
+          "seam_of": [
+            "B",
+            "F"
+          ],
+          "requests": [
+            "Z",
+            "W"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "K",
+          "coord": [
+            0,
+            1,
+            -1
+          ],
+          "coord_str": "(0,+,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "J",
+          "seam_of": [
+            "C",
+            "G"
+          ],
+          "requests": [
+            "Y",
+            "X"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "L",
+          "coord": [
+            0,
+            1,
+            1
+          ],
+          "coord_str": "(0,+,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "x",
+          "antipode": "I",
+          "seam_of": [
+            "D",
+            "H"
+          ],
+          "requests": [
+            "Z",
+            "X"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "M",
+          "coord": [
+            -1,
+            0,
+            -1
+          ],
+          "coord_str": "(−,0,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "P",
+          "seam_of": [
+            "A",
+            "C"
+          ],
+          "requests": [
+            "Y",
+            "U"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:124"
+        },
+        {
+          "letter": "N",
+          "coord": [
+            -1,
+            0,
+            1
+          ],
+          "coord_str": "(−,0,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "O",
+          "seam_of": [
+            "B",
+            "D"
+          ],
+          "requests": [
+            "Z",
+            "U"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "O",
+          "coord": [
+            1,
+            0,
+            -1
+          ],
+          "coord_str": "(+,0,−)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "N",
+          "seam_of": [
+            "E",
+            "G"
+          ],
+          "requests": [
+            "Y",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "P",
+          "coord": [
+            1,
+            0,
+            1
+          ],
+          "coord_str": "(+,0,+)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "y",
+          "antipode": "M",
+          "seam_of": [
+            "F",
+            "H"
+          ],
+          "requests": [
+            "Z",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "Q",
+          "coord": [
+            -1,
+            -1,
+            0
+          ],
+          "coord_str": "(−,−,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "T",
+          "seam_of": [
+            "A",
+            "B"
+          ],
+          "requests": [
+            "W",
+            "U"
+          ],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:125"
+        },
+        {
+          "letter": "R",
+          "coord": [
+            -1,
+            1,
+            0
+          ],
+          "coord_str": "(−,+,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "S",
+          "seam_of": [
+            "C",
+            "D"
+          ],
+          "requests": [
+            "X",
+            "U"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "S",
+          "coord": [
+            1,
+            -1,
+            0
+          ],
+          "coord_str": "(+,−,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "R",
+          "seam_of": [
+            "E",
+            "F"
+          ],
+          "requests": [
+            "W",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "T",
+          "coord": [
+            1,
+            1,
+            0
+          ],
+          "coord_str": "(+,+,0)",
+          "cell": "edge",
+          "dim": 1,
+          "codim": 2,
+          "axis": "z",
+          "antipode": "Q",
+          "seam_of": [
+            "G",
+            "H"
+          ],
+          "requests": [
+            "X",
+            "V"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "U",
+          "coord": [
+            -1,
+            0,
+            0
+          ],
+          "coord_str": "(−,0,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "x",
+          "antipode": "V",
+          "seam_of": [
+            "Q",
+            "R",
+            "M",
+            "N"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "V",
+          "coord": [
+            1,
+            0,
+            0
+          ],
+          "coord_str": "(+,0,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "x",
+          "antipode": "U",
+          "seam_of": [
+            "S",
+            "T",
+            "O",
+            "P"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "W",
+          "coord": [
+            0,
+            -1,
+            0
+          ],
+          "coord_str": "(0,−,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "y",
+          "antipode": "X",
+          "seam_of": [
+            "Q",
+            "S",
+            "I",
+            "J"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "X",
+          "coord": [
+            0,
+            1,
+            0
+          ],
+          "coord_str": "(0,+,0)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "y",
+          "antipode": "W",
+          "seam_of": [
+            "R",
+            "T",
+            "K",
+            "L"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "Y",
+          "coord": [
+            0,
+            0,
+            -1
+          ],
+          "coord_str": "(0,0,−)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "z",
+          "antipode": "Z",
+          "seam_of": [
+            "M",
+            "O",
+            "I",
+            "K"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "Z",
+          "coord": [
+            0,
+            0,
+            1
+          ],
+          "coord_str": "(0,0,+)",
+          "cell": "face",
+          "dim": 2,
+          "codim": 1,
+          "axis": "z",
+          "antipode": "Y",
+          "seam_of": [
+            "N",
+            "P",
+            "J",
+            "L"
+          ],
+          "requests": [
+            "⊘"
+          ],
+          "status": "DERIVED",
+          "source": "rule (see lettering.rule), anchored on the six pins"
+        },
+        {
+          "letter": "⊘",
+          "coord": [
+            0,
+            0,
+            0
+          ],
+          "coord_str": "(0,0,0)",
+          "cell": "center",
+          "dim": 3,
+          "codim": 0,
+          "axis": null,
+          "antipode": "⊘",
+          "seam_of": [
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y",
+            "Z"
+          ],
+          "requests": [],
+          "status": "PINNED",
+          "source": "docs/phase-2/autojective-polysheaf.md:111",
+          "note": "the obscured wildcard — anchored by no pin, requests nothing; the null/generative slot where the cascade terminates"
+        }
+      ]
+    },
+    "cube_alphabet": {
+      "name": "Cube-alphabet piece lettering",
+      "names_what": "occupants — mobile pieces; coords are home (solved) slots under x:L−/R+, y:D−/U+, z:B−/F+ (a derived convention)",
+      "rule": "piece type (centers, edges, corners), then standard face order U D L R F B",
+      "source": "docs/phase-2/cube-alphabet.md §7",
+      "cells": [
+        {
+          "letter": "A",
+          "cubie": "U",
+          "piece": "center",
+          "coord": [
+            0,
+            1,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:118"
+        },
+        {
+          "letter": "B",
+          "cubie": "D",
+          "piece": "center",
+          "coord": [
+            0,
+            -1,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "C",
+          "cubie": "L",
+          "piece": "center",
+          "coord": [
+            -1,
+            0,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "D",
+          "cubie": "R",
+          "piece": "center",
+          "coord": [
+            1,
+            0,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "E",
+          "cubie": "F",
+          "piece": "center",
+          "coord": [
+            0,
+            0,
+            1
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "F",
+          "cubie": "B",
+          "piece": "center",
+          "coord": [
+            0,
+            0,
+            -1
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "G",
+          "cubie": "UF",
+          "piece": "edge",
+          "coord": [
+            0,
+            1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "H",
+          "cubie": "UR",
+          "piece": "edge",
+          "coord": [
+            1,
+            1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "I",
+          "cubie": "UB",
+          "piece": "edge",
+          "coord": [
+            0,
+            1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:131"
+        },
+        {
+          "letter": "J",
+          "cubie": "UL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "K",
+          "cubie": "DF",
+          "piece": "edge",
+          "coord": [
+            0,
+            -1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "L",
+          "cubie": "DR",
+          "piece": "edge",
+          "coord": [
+            1,
+            -1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "M",
+          "cubie": "DB",
+          "piece": "edge",
+          "coord": [
+            0,
+            -1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "N",
+          "cubie": "DL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            -1,
+            0
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "O",
+          "cubie": "FR",
+          "piece": "edge",
+          "coord": [
+            1,
+            0,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:131"
+        },
+        {
+          "letter": "P",
+          "cubie": "FL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            0,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "Q",
+          "cubie": "BR",
+          "piece": "edge",
+          "coord": [
+            1,
+            0,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "R",
+          "cubie": "BL",
+          "piece": "edge",
+          "coord": [
+            -1,
+            0,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 2,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "S",
+          "cubie": "UFR",
+          "piece": "corner",
+          "coord": [
+            1,
+            1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:140"
+        },
+        {
+          "letter": "T",
+          "cubie": "UFL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "U",
+          "cubie": "UBR",
+          "piece": "corner",
+          "coord": [
+            1,
+            1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "V",
+          "cubie": "UBL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "W",
+          "cubie": "DFR",
+          "piece": "corner",
+          "coord": [
+            1,
+            -1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "X",
+          "cubie": "DFL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            -1,
+            1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "Y",
+          "cubie": "DBR",
+          "piece": "corner",
+          "coord": [
+            1,
+            -1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "Z",
+          "cubie": "DBL",
+          "piece": "corner",
+          "coord": [
+            -1,
+            -1,
+            -1
+          ],
+          "carries_state": true,
+          "orientation_states": 3,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+        },
+        {
+          "letter": "∅",
+          "cubie": "spindle",
+          "piece": "spindle",
+          "coord": [
+            0,
+            0,
+            0
+          ],
+          "carries_state": false,
+          "orientation_states": 0,
+          "status": "PINNED",
+          "source": "docs/phase-2/cube-alphabet.md:73",
+          "note": "not a piece — the mechanism is a void with an axis through it; what enables rotation is the absence of a cubie"
+        }
+      ]
+    }
+  },
+  "terms": [
+    {
+      "term": "Ontum",
+      "status": "SETTLED",
+      "referent": "The unit; computational-presence atom; pluralizes to *onta",
+      "non_example": "A passive storage byte",
+      "source": "docs/phase-2/ontum-evolution.md:174"
+    },
+    {
+      "term": "onta",
+      "status": "SETTLED",
+      "referent": "Plural of ontum; scale-recursively, the constituents that settle into an ontum",
+      "non_example": "A single ontum viewed alone",
+      "source": "docs/phase-2/ontum-evolution.md:175"
+    },
+    {
+      "term": "Keystone",
+      "status": "SETTLED",
+      "referent": "The center cell / Token of an ontum; frame-relative, correction-bearing",
+      "non_example": "An inert unweighted centroid (a dead token)",
+      "source": "docs/phase-2/ontum-evolution.md:176"
+    },
+    {
+      "term": "Jective",
+      "status": "MINTED",
+      "referent": "Per-keystone property setting *how* a correction is admitted; makes the center an operator",
+      "non_example": "A global constant applied to all keystones alike",
+      "source": "docs/phase-2/ontum-evolution.md:177"
+    },
+    {
+      "term": "Keystone correction",
+      "status": "MINTED",
+      "referent": "The process by which the cells' collective pull translates the keystone",
+      "non_example": "A center that sits deaf while its cells pull",
+      "source": "docs/phase-2/ontum-evolution.md:178"
+    },
+    {
+      "term": "Metafinitude",
+      "status": "MINTED",
+      "referent": "Relation between finite spec and infinite output, layers untouching",
+      "non_example": "A large-but-bounded set",
+      "source": "docs/phase-2/ontum-evolution.md:179"
+    },
+    {
+      "term": "etymontoken",
+      "status": "SETTLED",
+      "referent": "An ontum carrying its generator-lineage as type",
+      "non_example": "A token with erased `derived_from`",
+      "source": "docs/phase-2/ontum-evolution.md:180"
+    },
+    {
+      "term": "Cant",
+      "status": "MINTED",
+      "referent": "The keystone accepting its correction at one moment, read in a fixed frame",
+      "non_example": "Barycenter coincident with the keystone",
+      "source": "docs/phase-2/ontum-evolution.md:181"
+    },
+    {
+      "term": "Drift",
+      "status": "MINTED",
+      "referent": "The trajectory of the cant over updates",
+      "non_example": "A single static correction",
+      "source": "docs/phase-2/ontum-evolution.md:182"
+    },
+    {
+      "term": "Total-provenance substrate",
+      "status": "OPEN",
+      "referent": "Substrate where every ontum traces its root",
+      "non_example": "Any substrate with one provenance-silent ontum",
+      "source": "docs/phase-2/ontum-evolution.md:183"
+    },
+    {
+      "term": "Grip / Hole / Pin",
+      "status": "MINTED",
+      "referent": "grip = names a referent; hole = names a slot; pin = attaches a non-example",
+      "non_example": "A definition with no falsifier (still a hole)",
+      "source": "docs/phase-2/ontum-evolution.md:184"
+    },
+    {
+      "term": "Onton",
+      "status": "DEAD",
+      "referent": "Former unit-name",
+      "non_example": null,
+      "source": "docs/phase-2/ontum-evolution.md:185"
+    },
+    {
+      "term": "epistemontoken",
+      "status": "DEAD",
+      "referent": "Former provenance-token name; never defined its epistemic payload",
+      "non_example": null,
+      "source": "docs/phase-2/ontum-evolution.md:186"
+    },
+    {
+      "term": "Metafinite (model-theory)",
+      "status": "DEAD",
+      "referent": "Static finite-primary/infinite-secondary structure (name collision)",
+      "non_example": null,
+      "source": "docs/phase-2/ontum-evolution.md:187"
+    },
+    {
+      "term": "Autojective / Autojection",
+      "status": "OPEN",
+      "referent": "Self-issuing projection frame (issued by the projected, not the observer); may be the *kind* of -jection a jective admits",
+      "non_example": "A projection with an external observer role",
+      "source": "docs/phase-2/ontum-evolution.md:188"
+    },
+    {
+      "term": "Site",
+      "status": "SETTLED",
+      "referent": "A primitive treated as a local frame; holds its local stalk (with dynamics), an inward encoding, axis/antipode structure, and outgoing maps. Simultaneously a whole and a part.",
+      "non_example": "A global object authored as its own file",
+      "source": "docs/phase-2/autojective-polysheaf.md:37"
+    },
+    {
+      "term": "Seam",
+      "status": "SETTLED",
+      "referent": "A primitive that is a join. Connects Sites and carries the comparison between them as a cocycle. A Seam that does not close is not a bug; it is data.",
+      "non_example": "A boolean joined/not-joined flag",
+      "source": "docs/phase-2/autojective-polysheaf.md:39"
+    },
+    {
+      "term": "Atlas",
+      "status": "SETTLED",
+      "referent": "Not authored. The emergent index: the collection of Sites and Seams plus their incidence. The whole is read off the Atlas, never written as its own file.",
+      "non_example": "A hand-maintained global map",
+      "source": "docs/phase-2/autojective-polysheaf.md:41"
+    },
+    {
+      "term": "Autojective",
+      "status": "SETTLED",
+      "referent": "Self-casting (thrown-by-itself): a structure that generates its own slots and the constraint that shapes what may fill them.",
+      "non_example": "A projection with an external observer role",
+      "source": "docs/phase-2/autojective-polysheaf.md:52"
+    },
+    {
+      "term": "Spindle",
+      "status": "SETTLED",
+      "referent": "The 27th grid position, dead center: not a piece. A void with an axis through it — what enables rotation is the absence of a cubie.",
+      "non_example": "A 27th cubie",
+      "source": "docs/phase-2/cube-alphabet.md:73"
+    },
+    {
+      "term": "The empty-center law",
+      "status": "SETTLED",
+      "referent": "Symbol systems work because their center is empty. The mechanism is the negative space. Structure rotates around an absence.",
+      "non_example": "A token system whose semantics live inside one privileged symbol",
+      "source": "docs/phase-2/cube-alphabet.md:81"
+    },
+    {
+      "term": "Ontogram",
+      "status": "SETTLED",
+      "referent": "A typed form whose source, structure, and downstream effects are all inspectable — the atomic unit of trust.",
+      "non_example": "A generated artifact whose formation chain died in the conversation",
+      "source": "docs/phase-2/ontogrammatic-systems.md:107"
+    },
+    {
+      "term": "The Machine",
+      "status": "SETTLED",
+      "referent": "The gating mechanism: certifies (never generates) ontograms; six checks, three verdicts — admit, refuse, instrumentation-needed.",
+      "non_example": "A generator that grades its own output",
+      "source": "docs/phase-2/ontogrammatic-systems.md:166"
+    }
+  ],
+  "trio": {
+    "glyphs": [
+      "S",
+      "I",
+      "O"
+    ],
+    "status": "OPEN",
+    "note": "Three candidate readings, knolled side by side. A grip needs a non-example; until bdo pins one reading (or mints a fourth), the trio is a named hole, not a referent.",
+    "readings": [
+      {
+        "frame": "polysheaf (addresses)",
+        "status": "DERIVED",
+        "reading": {
+          "I": "x-seam (0,−,−) = seam(A,E)",
+          "O": "y-seam (+,0,−) = seam(E,G)",
+          "S": "z-seam (+,−,0) = seam(E,F)"
+        },
+        "gloss": "One seam per axis — I on x, O on y, S on z — and all three share the corner E = (+,−,−): S·I·O is exactly the request set of one Self, E's seam-star. (The worked example's corner A requests I, M, Q; the corner that requests I, O, S is E.) A seam basis for the compression frame, issued by a single point."
+      },
+      {
+        "frame": "cube-alphabet (occupants)",
+        "status": "PINNED",
+        "reading": {
+          "S": "corner UFR — the first corner, the canonical home piece",
+          "I": "edge UB",
+          "O": "edge FR"
+        },
+        "gloss": "S leads the corner octave (S–Z); I and O are edges. All three carry state — none is a stateless anchor."
+      },
+      {
+        "frame": "letterform (semiotic)",
+        "status": "MINTED",
+        "reading": {
+          "O": "the ring: a stroke enclosing a void — the empty center made visible; the spindle/wildcard drawn as a glyph",
+          "I": "the stroke: one decided axis — a line, the minimal edge; the unit presence",
+          "S": "the seam: one curve crossing between two lobes — the join drawn as a glyph; also the initial of Site, Seam, Self, settle, spindle"
+        },
+        "gloss": "I/O is additionally the binary pair — 1 and 0, two stickers around a void (cube-alphabet §5) — and S is the path between them. Ontology (O), instance (I), seam (S): the fabric, a fiber, and the stitch."
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "seam.lettering-collision",
+      "kind": "non-closing seam, resolved as complementarity",
+      "status": "MINTED",
+      "between": [
+        "docs/phase-2/cube-alphabet.md §7",
+        "docs/phase-2/autojective-polysheaf.md (worked example)"
+      ],
+      "observation": "The same 26 letters are assigned twice, incompatibly: cube-alphabet gives A = U center / S = corner UFR; the polysheaf gives A = corner (−,−,−) / S = a z-edge. I and O are edges in both; A and S change kind entirely.",
+      "resolution": "Read as the (position, value) split both docs already name (cube-alphabet §3): polysheaf letters name fixed CELLS (addresses), cube-alphabet letters name mobile PIECES (occupants). One alphabet for where, one for what. A full state is a pairing of the two; the solved cube is the canonical pairing. Held MINTED until bdo admits or refuses the reading."
+    },
+    {
+      "id": "seam.codim-wording",
+      "kind": "internal inconsistency (wording)",
+      "status": "PINNED",
+      "between": [
+        "docs/phase-2/autojective-polysheaf.md:111",
+        "docs/phase-2/autojective-polysheaf.md:115"
+      ],
+      "observation": "Line 111 says 'the count of zeros in a cell's coordinate is its codimension', but line 115 calls corner (−,−,−) — zero zeros — 'codim 3'. Count-of-zeros is the cell's DIMENSION (open axes); codimension is 3 minus that (decided axes). One of the two lines is mis-worded.",
+      "resolution": "Vault is read-only for this stream: reported, not patched. The registry records both numbers per cell (dim = zeros, codim = decided) so either fix leaves the data correct."
+    },
+    {
+      "id": "note.two-voids",
+      "kind": "alignment worth keeping",
+      "status": "PINNED",
+      "between": [
+        "docs/phase-2/cube-alphabet.md:73",
+        "docs/phase-2/autojective-polysheaf.md:146"
+      ],
+      "observation": "Both letterings leave (0,0,0) letterless, for different reasons: the spindle ∅ is the mechanism void (absence enables rotation); the obscured wildcard ⊘ is the generative null (requests nothing, terminates the cascade). Two readings of one empty center — the system's load-bearing absence.",
+      "resolution": "No action; knolled here so the alignment stays visible."
+    }
+  ]
+}
