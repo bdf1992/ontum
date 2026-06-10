@@ -1,0 +1,59 @@
+{
+  "atom": {
+    "id": "atom.surface-registry.v0",
+    "story": {
+      "from": "bdo's amend on atom.github-verdict-mirror.v0 (rcp.558ad49545cd, routed verbatim from issue #7): the mirror wired one surface; he asked for the pattern — 'distributed external surfaces for us to register, so the external information becomes local.'",
+      "framing": "The mirror story treated GitHub issues as the one owner surface. bdo's amend names the law underneath: every place we work that is not this repo — issues, chat, mail, whatever carries review next — is somewhere our information visits, never where it lives. 'If anything we plan on doing stays externally, that's a problem.' That is a registry-shaped requirement, not a mirror-shaped one: each surface admitted on the log as a signed record, each watched, all of it folding home. The log stays the only truth; the surfaces are borrowed UI/UX — bdo picked issues precisely to piggyback a platform whose review experience is already good on his phone.",
+      "work": "(1) The registered-surface record: a signed admission per surface — id, platform, direction (outbound projection, inbound verdicts, or both), speed band, and how its information reflects onto the log. (2) The four speeds, named as working vocabulary and carried on every registration, fastest to slowest: ambient automation (orchestrator ticks, no human), self-paced loops (a session pacing itself), chat (owner present, synchronous), external surfaces (owner roaming, asynchronous). The system runs at all four at once; a verdict is valid arriving at any of them. (3) Per-surface watchers: at session start and orchestrator runs, a fold over the surface routes inbound owner words through the one pen verbatim with provenance, and projects the stamp queue outward; github-issues is the first registrant, so the v0 mirror's both-ways wiring becomes the first watcher built under the pattern rather than a special case. (4) loop/web.py retires once the first watcher is stamped and proven (carried from v0).",
+      "need": "bdo's stamp before any watcher runs — every watcher acts on an external platform and is costly by definition — and his call on which surfaces earn registration after issues.",
+      "value": "Nothing bdo says into any surface ever drops, no matter where he says it or how slowly we look; he reviews on whichever platform has the best UI/UX for the moment, at whatever speed the moment allows; and every plan, direction, and verdict ends up local — on the log, foldable, his.",
+      "text": "From bdo's amend asking for the pattern behind the mirror, I need every external surface registered on the log and watched — its information reflected local, its speed named — because bdo steers from many places at many speeds, and nothing said into the system may stay external or drop.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "costly",
+      "reversible": true,
+      "persistence": true,
+      "external": true,
+      "rationale": "Watchers act on external platforms (read comments, create and close issues, eventually other channels) — the floor is costly and honestly met. The registry itself is admitted records: reversible by superseding admission without touching truth. Nothing is built or drafted before the stamp; this story is the ratification request, exactly as v0 was.",
+      "built_at_risk": false
+    },
+    "briefing": {
+      "headline": "register the surfaces, reflect them home",
+      "value": "You said it: external information becomes local. Stamp this and every place you give direction — issues today, more channels as they earn registration — is a watched surface whose words land on the log verbatim, while you keep the UI/UX of platforms that already feel good on your phone. Your amend on #7 sat external for hours and entered the log only because you pointed at it in chat; that gap is the first thing the watcher closes.",
+      "why_now": "Your amend on issue #7 is the design brief: the mirror as proposed wired one surface well; you asked for the working pattern that makes every surface safe to use, at every speed.",
+      "if_accepted": "The registry becomes the record of where we work and how fast; the GitHub watcher is built first under it (the v0 mirror, now one instance of the pattern, not a special case); web.py retires when it is proven.",
+      "if_rejected": "Each surface stays a hand-wired special case, and anything you say outside chat keeps depending on a session being told to look.",
+      "cost_of_wrong_call": "Costly by honest flags — watchers touch external platforms — which is why nothing runs before your stamp. The registry records are one superseding admission to retire; the log never depends on any surface.",
+      "mechanism": "Signed surface admissions in the log (superseding, never erased); per-surface watcher = a fold at session start and orchestrator runs; inbound owner words route through loop.node judge verbatim with provenance (rcp.558ad49545cd is the hand-run prototype of exactly this); outbound projection renders the stamp queue onto the surface; the pen stays the only writer of receipts.",
+      "reading": [
+        ".ai-native/done/0016-external-verdict-routed.md",
+        ".ai-native/atoms/atom.github-verdict-mirror.v0.json",
+        "https://github.com/bdf1992/ontum/issues/7"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/", ".ai-native/log", "github:bdf1992/ontum/issues"],
+      "must_not_collide_with": ["atom.github-verdict-mirror.v0"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "atom.github-verdict-mirror.v0 (the amended story; parked by rcp.558ad49545cd)",
+        "https://github.com/bdf1992/ontum/issues/7#issuecomment-4667084732 (the amend, verbatim on the receipt)"
+      ],
+      "receipts": ["rcp.0fdb453b3fae", "rcp.558ad49545cd"]
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated (D-5). Story fields follow the v2 form bdo reviewed on issue #7. Nothing described here is built: costly external work waits for the stamp — this story is the ratification request, second draft, per the owner's amend."
+}

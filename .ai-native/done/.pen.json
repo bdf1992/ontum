@@ -1,0 +1,14 @@
+{
+  "kind": "done-line",
+  "pattern": "^\\d{4}-[a-z0-9][a-z0-9-]*\\.md$",
+  "required_sections": ["# Done-line", "> **Done when:**"],
+  "pen": "python -m loop.pen new done --slug <slug> --title \"<title>\"",
+  "scaffold": [
+    "# Done-line {id} — {title}",
+    "",
+    "Written before code, per §9.4. When this line is met, stop.",
+    "",
+    "> **Done when:** <the one line that, when true, means stop>",
+    ""
+  ]
+}

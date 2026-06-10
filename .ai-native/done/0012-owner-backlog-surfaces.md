@@ -1,4 +1,9 @@
-# Done-line 0011 — the hook surfaces the owner's backlog
+# Done-line 0012 — the hook surfaces the owner's backlog
+
+(Renumbered from 0011: two sessions allocated the same id within
+eleven minutes — this file and `0011-pr-pen.md`. The commit messages
+both say 0011; this rename resolves the file-level collision, and
+done-line 0013 builds the pen that makes the next one impossible.)
 
 Written before code, per §9.4. When this line is met, stop.
 
