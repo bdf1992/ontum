@@ -87,6 +87,19 @@ typed capacity for future term placements; when assigning non-spatial
 terms into frames, record the placement as a derived rule in `knoll.py`,
 never as hand-edited registry data.
 
+## Term frames (contract v0, session 0010)
+
+Each glyph's own cube carries its 27 terms mapped on its cubies
+(registry `term_frames`, derived by `build_term_frames()` in knoll.py):
+center = the Self/void term; faces = directional relations + the cell's
+own decisions (pure geometry); corners = settled facts; edges =
+relations (antipode, live occupant, trio), unfilled edge slots OPEN.
+The inspector shows this as the default **terms** view (LOCAL/self
+first), with the **neighborhood** view kept as the second tab. To place
+new terms into open slots, extend the relation queue in
+`build_term_frames()` — never hand-edit the registry; re-arranging is
+re-knolling.
+
 ## Extending
 
 - **A new lettering** (a third alphabet over the solid): add a derivation

@@ -114,6 +114,14 @@ Non-example: A grip-ledger word without an address — cant, drift, jective: ope
 | **Z** | `(0,0,+)` | face | keystone — the Self/void term of its own frame | 17 | 9 |
 | **⊘** | `(0,0,0)` | center | keystone — the Self/void term of its own frame | 26 | 0 |
 
+### The term-frame contract (v0)
+
+Each core term's own cube carries **its terms mapped on its 27 cubies**, self-similar to the global solid:
+
+v0 — center: the Self/void term (the glyph). faces: directional relations derived from coordinates (seams decide, requests open, out-of-bounds directions carry the cell's own decisions). corners: settled facts in lex slot order (kind, dim, codim, axis, status, frame capacity, wing, home piece). edges: relations in queue order (antipode, live occupant, trio membership); unfilled edge slots stay OPEN — capacity for future relationships. Derived in knoll.py; re-arranging is re-knolling.
+
+Worked example — **S** `(+,−,0)`: center holds S; faces −z/+z hold its seams E and F (they decide z), faces −x/+y hold its requests W and V (the axes they open), faces +x/−y hold its decisions (`x+`, `y−` — why no neighbor lies that way); corners hold its settled facts; edges hold antipode R, the live occupant, the trio tag; the rest stay open.
+
 ---
 
 ## 4. Terms (grip ledger + primitives)

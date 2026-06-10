@@ -1475,6 +1475,8813 @@
       }
     ]
   },
+  "term_frames": {
+    "contract": "v0 — center: the Self/void term (the glyph). faces: directional relations derived from coordinates (seams decide, requests open, out-of-bounds directions carry the cell's own decisions). corners: settled facts in lex slot order (kind, dim, codim, axis, status, frame capacity, wing, home piece). edges: relations in queue order (antipode, live occupant, trio membership); unfilled edge slots stay OPEN — capacity for future relationships. Derived in knoll.py; re-arranging is re-knolling.",
+    "frames": {
+      "A": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "A",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "I",
+          "ref": "I",
+          "gloss": "request — opening x reaches I"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "M",
+          "ref": "M",
+          "gloss": "request — opening y reaches M"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Q",
+          "ref": "Q",
+          "gloss": "request — opening z reaches Q"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "PINNED",
+          "ref": null,
+          "gloss": "status: PINNED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "Z·DBL",
+          "ref": null,
+          "gloss": "home piece: Z·DBL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "H",
+          "ref": "H",
+          "gloss": "antipode — reflection through the center reaches H"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "B": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "B",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "J",
+          "ref": "J",
+          "gloss": "request — opening x reaches J"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "N",
+          "ref": "N",
+          "gloss": "request — opening y reaches N"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Q",
+          "ref": "Q",
+          "gloss": "request — opening z reaches Q"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "X·DFL",
+          "ref": null,
+          "gloss": "home piece: X·DFL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "G",
+          "ref": "G",
+          "gloss": "antipode — reflection through the center reaches G"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "C": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "C",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "K",
+          "ref": "K",
+          "gloss": "request — opening x reaches K"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "M",
+          "ref": "M",
+          "gloss": "request — opening y reaches M"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "R",
+          "ref": "R",
+          "gloss": "request — opening z reaches R"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "V·UBL",
+          "ref": null,
+          "gloss": "home piece: V·UBL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "F",
+          "ref": "F",
+          "gloss": "antipode — reflection through the center reaches F"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "D": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "D",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "L",
+          "ref": "L",
+          "gloss": "request — opening x reaches L"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "N",
+          "ref": "N",
+          "gloss": "request — opening y reaches N"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "R",
+          "ref": "R",
+          "gloss": "request — opening z reaches R"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "T·UFL",
+          "ref": null,
+          "gloss": "home piece: T·UFL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "E",
+          "ref": "E",
+          "gloss": "antipode — reflection through the center reaches E"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "E": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "E",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "I",
+          "ref": "I",
+          "gloss": "request — opening x reaches I"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "O",
+          "ref": "O",
+          "gloss": "request — opening y reaches O"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "S",
+          "ref": "S",
+          "gloss": "request — opening z reaches S"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "PINNED",
+          "ref": null,
+          "gloss": "status: PINNED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "Y·DBR",
+          "ref": null,
+          "gloss": "home piece: Y·DBR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "D",
+          "ref": "D",
+          "gloss": "antipode — reflection through the center reaches D"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "F": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "F",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "J",
+          "ref": "J",
+          "gloss": "request — opening x reaches J"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "P",
+          "ref": "P",
+          "gloss": "request — opening y reaches P"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "S",
+          "ref": "S",
+          "gloss": "request — opening z reaches S"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "W·DFR",
+          "ref": null,
+          "gloss": "home piece: W·DFR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "C",
+          "ref": "C",
+          "gloss": "antipode — reflection through the center reaches C"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "G": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "G",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "K",
+          "ref": "K",
+          "gloss": "request — opening x reaches K"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "O",
+          "ref": "O",
+          "gloss": "request — opening y reaches O"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "T",
+          "ref": "T",
+          "gloss": "request — opening z reaches T"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "U·UBR",
+          "ref": null,
+          "gloss": "home piece: U·UBR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "B",
+          "ref": "B",
+          "gloss": "antipode — reflection through the center reaches B"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "H": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "H",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "L",
+          "ref": "L",
+          "gloss": "request — opening x reaches L"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "P",
+          "ref": "P",
+          "gloss": "request — opening y reaches P"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "T",
+          "ref": "T",
+          "gloss": "request — opening z reaches T"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "corner",
+          "ref": null,
+          "gloss": "cell: corner"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 open",
+          "ref": null,
+          "gloss": "dim: 0 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 decided",
+          "ref": null,
+          "gloss": "codim: 3 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "PINNED",
+          "ref": null,
+          "gloss": "status: PINNED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "7/19",
+          "ref": null,
+          "gloss": "frame: 7/19"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "S·UFR",
+          "ref": null,
+          "gloss": "home piece: S·UFR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "A",
+          "ref": "A",
+          "gloss": "antipode — reflection through the center reaches A"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "I": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "I",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "A",
+          "ref": "A",
+          "gloss": "seam — A decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "E",
+          "ref": "E",
+          "gloss": "seam — E decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Y",
+          "ref": "Y",
+          "gloss": "request — opening y reaches Y"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "W",
+          "ref": "W",
+          "gloss": "request — opening z reaches W"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "x",
+          "ref": null,
+          "gloss": "axis: x"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "PINNED",
+          "ref": null,
+          "gloss": "status: PINNED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "M·DB",
+          "ref": null,
+          "gloss": "home piece: M·DB"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "L",
+          "ref": "L",
+          "gloss": "antipode — reflection through the center reaches L"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "S·I·O",
+          "ref": null,
+          "gloss": "member of the S·I·O trio — status OPEN, bdo's pin pending"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "J": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "J",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "B",
+          "ref": "B",
+          "gloss": "seam — B decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "F",
+          "ref": "F",
+          "gloss": "seam — F decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Z",
+          "ref": "Z",
+          "gloss": "request — opening y reaches Z"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "W",
+          "ref": "W",
+          "gloss": "request — opening z reaches W"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "x",
+          "ref": null,
+          "gloss": "axis: x"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "K·DF",
+          "ref": null,
+          "gloss": "home piece: K·DF"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "K",
+          "ref": "K",
+          "gloss": "antipode — reflection through the center reaches K"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "K": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "K",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "C",
+          "ref": "C",
+          "gloss": "seam — C decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "G",
+          "ref": "G",
+          "gloss": "seam — G decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Y",
+          "ref": "Y",
+          "gloss": "request — opening y reaches Y"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "X",
+          "ref": "X",
+          "gloss": "request — opening z reaches X"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "x",
+          "ref": null,
+          "gloss": "axis: x"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "I·UB",
+          "ref": null,
+          "gloss": "home piece: I·UB"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "J",
+          "ref": "J",
+          "gloss": "antipode — reflection through the center reaches J"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "L": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "L",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "D",
+          "ref": "D",
+          "gloss": "seam — D decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "H",
+          "ref": "H",
+          "gloss": "seam — H decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Z",
+          "ref": "Z",
+          "gloss": "request — opening y reaches Z"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "X",
+          "ref": "X",
+          "gloss": "request — opening z reaches X"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "x",
+          "ref": null,
+          "gloss": "axis: x"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "G·UF",
+          "ref": null,
+          "gloss": "home piece: G·UF"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "I",
+          "ref": "I",
+          "gloss": "antipode — reflection through the center reaches I"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "M": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "M",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Y",
+          "ref": "Y",
+          "gloss": "request — opening x reaches Y"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "A",
+          "ref": "A",
+          "gloss": "seam — A decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "C",
+          "ref": "C",
+          "gloss": "seam — C decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "U",
+          "ref": "U",
+          "gloss": "request — opening z reaches U"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "y",
+          "ref": null,
+          "gloss": "axis: y"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "PINNED",
+          "ref": null,
+          "gloss": "status: PINNED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "R·BL",
+          "ref": null,
+          "gloss": "home piece: R·BL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "P",
+          "ref": "P",
+          "gloss": "antipode — reflection through the center reaches P"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "N": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "N",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Z",
+          "ref": "Z",
+          "gloss": "request — opening x reaches Z"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "B",
+          "ref": "B",
+          "gloss": "seam — B decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "D",
+          "ref": "D",
+          "gloss": "seam — D decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "U",
+          "ref": "U",
+          "gloss": "request — opening z reaches U"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "y",
+          "ref": null,
+          "gloss": "axis: y"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "P·FL",
+          "ref": null,
+          "gloss": "home piece: P·FL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "O",
+          "ref": "O",
+          "gloss": "antipode — reflection through the center reaches O"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "O": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "O",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Y",
+          "ref": "Y",
+          "gloss": "request — opening x reaches Y"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "E",
+          "ref": "E",
+          "gloss": "seam — E decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "G",
+          "ref": "G",
+          "gloss": "seam — G decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "V",
+          "ref": "V",
+          "gloss": "request — opening z reaches V"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "y",
+          "ref": null,
+          "gloss": "axis: y"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "Q·BR",
+          "ref": null,
+          "gloss": "home piece: Q·BR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "N",
+          "ref": "N",
+          "gloss": "antipode — reflection through the center reaches N"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "S·I·O",
+          "ref": null,
+          "gloss": "member of the S·I·O trio — status OPEN, bdo's pin pending"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "P": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "P",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "Z",
+          "ref": "Z",
+          "gloss": "request — opening x reaches Z"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "F",
+          "ref": "F",
+          "gloss": "seam — F decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "H",
+          "ref": "H",
+          "gloss": "seam — H decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "V",
+          "ref": "V",
+          "gloss": "request — opening z reaches V"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "y",
+          "ref": null,
+          "gloss": "axis: y"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "O·FR",
+          "ref": null,
+          "gloss": "home piece: O·FR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "M",
+          "ref": "M",
+          "gloss": "antipode — reflection through the center reaches M"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "Q": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "Q",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "W",
+          "ref": "W",
+          "gloss": "request — opening x reaches W"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "U",
+          "ref": "U",
+          "gloss": "request — opening y reaches U"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "A",
+          "ref": "A",
+          "gloss": "seam — A decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "B",
+          "ref": "B",
+          "gloss": "seam — B decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "z",
+          "ref": null,
+          "gloss": "axis: z"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "PINNED",
+          "ref": null,
+          "gloss": "status: PINNED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "N·DL",
+          "ref": null,
+          "gloss": "home piece: N·DL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "T",
+          "ref": "T",
+          "gloss": "antipode — reflection through the center reaches T"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "R": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "R",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "X",
+          "ref": "X",
+          "gloss": "request — opening x reaches X"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "U",
+          "ref": "U",
+          "gloss": "request — opening y reaches U"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "C",
+          "ref": "C",
+          "gloss": "seam — C decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "D",
+          "ref": "D",
+          "gloss": "seam — D decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "z",
+          "ref": null,
+          "gloss": "axis: z"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "J·UL",
+          "ref": null,
+          "gloss": "home piece: J·UL"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "S",
+          "ref": "S",
+          "gloss": "antipode — reflection through the center reaches S"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "S": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "S",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "W",
+          "ref": "W",
+          "gloss": "request — opening x reaches W"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "V",
+          "ref": "V",
+          "gloss": "request — opening y reaches V"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "E",
+          "ref": "E",
+          "gloss": "seam — E decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "F",
+          "ref": "F",
+          "gloss": "seam — F decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "z",
+          "ref": null,
+          "gloss": "axis: z"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "L·DR",
+          "ref": null,
+          "gloss": "home piece: L·DR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "R",
+          "ref": "R",
+          "gloss": "antipode — reflection through the center reaches R"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "S·I·O",
+          "ref": null,
+          "gloss": "member of the S·I·O trio — status OPEN, bdo's pin pending"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "T": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "T",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "X",
+          "ref": "X",
+          "gloss": "request — opening x reaches X"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "V",
+          "ref": "V",
+          "gloss": "request — opening y reaches V"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "G",
+          "ref": "G",
+          "gloss": "seam — G decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "H",
+          "ref": "H",
+          "gloss": "seam — H decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "edge",
+          "ref": null,
+          "gloss": "cell: edge"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 open",
+          "ref": null,
+          "gloss": "dim: 1 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 decided",
+          "ref": null,
+          "gloss": "codim: 2 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "z",
+          "ref": null,
+          "gloss": "axis: z"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "11/15",
+          "ref": null,
+          "gloss": "frame: 11/15"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "H·UR",
+          "ref": null,
+          "gloss": "home piece: H·UR"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "Q",
+          "ref": "Q",
+          "gloss": "antipode — reflection through the center reaches Q"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "U": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "U",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x−",
+          "ref": null,
+          "gloss": "decided — x = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "⊘",
+          "ref": "⊘",
+          "gloss": "request — opening x reaches ⊘"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "Q",
+          "ref": "Q",
+          "gloss": "seam — Q decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "R",
+          "ref": "R",
+          "gloss": "seam — R decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "M",
+          "ref": "M",
+          "gloss": "seam — M decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "N",
+          "ref": "N",
+          "gloss": "seam — N decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "face",
+          "ref": null,
+          "gloss": "cell: face"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 open",
+          "ref": null,
+          "gloss": "dim: 2 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 decided",
+          "ref": null,
+          "gloss": "codim: 1 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "x",
+          "ref": null,
+          "gloss": "axis: x"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "17/9",
+          "ref": null,
+          "gloss": "frame: 17/9"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "C·L",
+          "ref": null,
+          "gloss": "home piece: C·L"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "V",
+          "ref": "V",
+          "gloss": "antipode — reflection through the center reaches V"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "V": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "V",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "⊘",
+          "ref": "⊘",
+          "gloss": "request — opening x reaches ⊘"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "x+",
+          "ref": null,
+          "gloss": "decided — x = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "S",
+          "ref": "S",
+          "gloss": "seam — S decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "T",
+          "ref": "T",
+          "gloss": "seam — T decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "O",
+          "ref": "O",
+          "gloss": "seam — O decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "P",
+          "ref": "P",
+          "gloss": "seam — P decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "face",
+          "ref": null,
+          "gloss": "cell: face"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 open",
+          "ref": null,
+          "gloss": "dim: 2 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 decided",
+          "ref": null,
+          "gloss": "codim: 1 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "x",
+          "ref": null,
+          "gloss": "axis: x"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "17/9",
+          "ref": null,
+          "gloss": "frame: 17/9"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "D·R",
+          "ref": null,
+          "gloss": "home piece: D·R"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "U",
+          "ref": "U",
+          "gloss": "antipode — reflection through the center reaches U"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "W": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "W",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "Q",
+          "ref": "Q",
+          "gloss": "seam — Q decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "S",
+          "ref": "S",
+          "gloss": "seam — S decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y−",
+          "ref": null,
+          "gloss": "decided — y = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "⊘",
+          "ref": "⊘",
+          "gloss": "request — opening y reaches ⊘"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "I",
+          "ref": "I",
+          "gloss": "seam — I decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "J",
+          "ref": "J",
+          "gloss": "seam — J decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "face",
+          "ref": null,
+          "gloss": "cell: face"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 open",
+          "ref": null,
+          "gloss": "dim: 2 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 decided",
+          "ref": null,
+          "gloss": "codim: 1 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "y",
+          "ref": null,
+          "gloss": "axis: y"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "17/9",
+          "ref": null,
+          "gloss": "frame: 17/9"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "B·D",
+          "ref": null,
+          "gloss": "home piece: B·D"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "X",
+          "ref": "X",
+          "gloss": "antipode — reflection through the center reaches X"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "X": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "X",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "R",
+          "ref": "R",
+          "gloss": "seam — R decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "T",
+          "ref": "T",
+          "gloss": "seam — T decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "⊘",
+          "ref": "⊘",
+          "gloss": "request — opening y reaches ⊘"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "y+",
+          "ref": null,
+          "gloss": "decided — y = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "K",
+          "ref": "K",
+          "gloss": "seam — K decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "L",
+          "ref": "L",
+          "gloss": "seam — L decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "face",
+          "ref": null,
+          "gloss": "cell: face"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 open",
+          "ref": null,
+          "gloss": "dim: 2 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 decided",
+          "ref": null,
+          "gloss": "codim: 1 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "y",
+          "ref": null,
+          "gloss": "axis: y"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "17/9",
+          "ref": null,
+          "gloss": "frame: 17/9"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "A·U",
+          "ref": null,
+          "gloss": "home piece: A·U"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "W",
+          "ref": "W",
+          "gloss": "antipode — reflection through the center reaches W"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "Y": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "Y",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "M",
+          "ref": "M",
+          "gloss": "seam — M decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "O",
+          "ref": "O",
+          "gloss": "seam — O decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "I",
+          "ref": "I",
+          "gloss": "seam — I decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "K",
+          "ref": "K",
+          "gloss": "seam — K decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z−",
+          "ref": null,
+          "gloss": "decided — z = − is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "⊘",
+          "ref": "⊘",
+          "gloss": "request — opening z reaches ⊘"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "face",
+          "ref": null,
+          "gloss": "cell: face"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 open",
+          "ref": null,
+          "gloss": "dim: 2 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 decided",
+          "ref": null,
+          "gloss": "codim: 1 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "z",
+          "ref": null,
+          "gloss": "axis: z"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "17/9",
+          "ref": null,
+          "gloss": "frame: 17/9"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "F·B",
+          "ref": null,
+          "gloss": "home piece: F·B"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "Z",
+          "ref": "Z",
+          "gloss": "antipode — reflection through the center reaches Z"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "Z": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "Z",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "N",
+          "ref": "N",
+          "gloss": "seam — N decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "P",
+          "ref": "P",
+          "gloss": "seam — P decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "J",
+          "ref": "J",
+          "gloss": "seam — J decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "L",
+          "ref": "L",
+          "gloss": "seam — L decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "request",
+          "label": "⊘",
+          "ref": "⊘",
+          "gloss": "request — opening z reaches ⊘"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "decided",
+          "label": "z+",
+          "ref": null,
+          "gloss": "decided — z = + is why no neighbor lies this way"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "face",
+          "ref": null,
+          "gloss": "cell: face"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "2 open",
+          "ref": null,
+          "gloss": "dim: 2 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "1 decided",
+          "ref": null,
+          "gloss": "codim: 1 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "z",
+          "ref": null,
+          "gloss": "axis: z"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "DERIVED",
+          "ref": null,
+          "gloss": "status: DERIVED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "17/9",
+          "ref": null,
+          "gloss": "frame: 17/9"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "E·F",
+          "ref": null,
+          "gloss": "home piece: E·F"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "relation",
+          "label": "Y",
+          "ref": "Y",
+          "gloss": "antipode — reflection through the center reaches Y"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ],
+      "⊘": [
+        {
+          "d": [
+            0,
+            0,
+            0
+          ],
+          "slot": "center",
+          "kind": "self",
+          "label": "⊘",
+          "ref": null,
+          "gloss": "the Self/void term — the keystone holds the glyph"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "U",
+          "ref": "U",
+          "gloss": "seam — U decides x = −"
+        },
+        {
+          "d": [
+            1,
+            0,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "V",
+          "ref": "V",
+          "gloss": "seam — V decides x = +"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "W",
+          "ref": "W",
+          "gloss": "seam — W decides y = −"
+        },
+        {
+          "d": [
+            0,
+            1,
+            0
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "X",
+          "ref": "X",
+          "gloss": "seam — X decides y = +"
+        },
+        {
+          "d": [
+            0,
+            0,
+            -1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "Y",
+          "ref": "Y",
+          "gloss": "seam — Y decides z = −"
+        },
+        {
+          "d": [
+            0,
+            0,
+            1
+          ],
+          "slot": "face",
+          "kind": "seam",
+          "label": "Z",
+          "ref": "Z",
+          "gloss": "seam — Z decides z = +"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "center",
+          "ref": null,
+          "gloss": "cell: center"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "3 open",
+          "ref": null,
+          "gloss": "dim: 3 open"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "0 decided",
+          "ref": null,
+          "gloss": "codim: 0 decided"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "·",
+          "ref": null,
+          "gloss": "axis: ·"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "PINNED",
+          "ref": null,
+          "gloss": "status: PINNED"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "26/0",
+          "ref": null,
+          "gloss": "frame: 26/0"
+        },
+        {
+          "d": [
+            1,
+            1,
+            -1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "address",
+          "ref": null,
+          "gloss": "wing: address"
+        },
+        {
+          "d": [
+            1,
+            1,
+            1
+          ],
+          "slot": "corner",
+          "kind": "fact",
+          "label": "∅·spindle",
+          "ref": null,
+          "gloss": "home piece: ∅·spindle"
+        },
+        {
+          "d": [
+            -1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "live",
+          "label": "@",
+          "ref": null,
+          "gloss": "occupant — the piece currently at this address (live; the viewer fills it)"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            -1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            -1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            0,
+            1,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            -1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            -1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            0,
+            1
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        },
+        {
+          "d": [
+            1,
+            1,
+            0
+          ],
+          "slot": "edge",
+          "kind": "open",
+          "label": null,
+          "ref": null,
+          "gloss": "open — capacity for a future relationship"
+        }
+      ]
+    }
+  },
   "findings": [
     {
       "id": "seam.lettering-collision",
