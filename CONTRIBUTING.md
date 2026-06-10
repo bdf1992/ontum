@@ -43,6 +43,23 @@ up the discipline without re-deriving it.
   full lifecycle is the
   [branch-ritual skill](.claude/skills/branch-ritual/SKILL.md) — run it at
   hand-off, and when the Branches page needs gardening.
+- **The primary checkout is the owner's viewport (bdo, 2026-06-10).** The
+  main repo folder stays parked on `main`; sessions never run
+  `git checkout`/`git switch` in it. Session work happens in a git worktree
+  — one tree per branch, taken at session start:
+
+  ```sh
+  git worktree add -b claude/<slug> ..\ontum-wt\<slug> main
+  ```
+
+  Parallel sessions stop re-pointing the owner's explorer (and each
+  other's floors); after the stamp, the worktree is removed with the
+  branch (`git worktree remove ..\ontum-wt\<slug>`), and the viewport
+  catches up with `git pull` — the merge is the distribution event, the
+  pull is its return leg. *(This rule exists because it happened: on
+  2026-06-10 the shared checkout switched branches four times under the
+  owner's explorer while merged work seemed to vanish, and local `main`
+  proved 38 commits behind — it had never been pulled.)*
 - **Stdlib only** in `loop/` for now. No broker, no daemon, no network. Every
   invocation ends with a clear stdout result: `done` | `report` | `needs-you`.
 

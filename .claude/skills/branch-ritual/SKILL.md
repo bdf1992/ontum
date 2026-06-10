@@ -5,9 +5,21 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.6.1
+version: 0.6.2
 owner: bdo
 changelog:
+  - version: 0.6.2
+    note: >
+      The viewport and the workbenches (done-line 0022, bdo in
+      conversation). The primary checkout is the owner's reading
+      surface and stays parked on main; a session's container is now
+      a branch plus its own git worktree (git worktree add -b
+      claude/<slug> ..\ontum-wt\<slug> main). Behind it, one
+      afternoon's evidence: the shared checkout switched branches
+      four times under the owner's explorer while merged work seemed
+      to vanish, and local main was 38 commits stale — the merge
+      distributes, but nothing had ever taken the return leg.
+      Dissolution now removes the worktree along with the branch.
   - version: 0.6.1
     note: >
       The rescue is updatable. `create --recover` opens a PR from a dead
@@ -95,6 +107,19 @@ section), don't work around it.
 - **One session, one branch, one PR, one stamp.** The auto-named `claude/*`
   branch is the session's container; its name carries no meaning — the PR
   title and the session report do.
+- **One worktree per session; the primary checkout is the owner's.** The
+  primary checkout is bdo's viewport and stays parked on `main` — sessions
+  never run `git checkout`/`git switch` there. At session start, take a
+  workbench and do everything from inside it:
+
+  ```sh
+  git worktree add -b claude/<slug> ..\ontum-wt\<slug> main
+  ```
+
+  Parallel sessions stop re-pointing each other's floors, and the owner's
+  explorer always reads the trunk. *(This rule exists because it happened:
+  2026-06-10, four branch switches under the owner's explorer in one
+  afternoon — done-line 0020.)*
 - **A merged branch is dead. Never push to it.** A commit pushed after the PR
   merged is stranded — nothing is watching it, and it silently never reaches
   `main`. New work means a new branch. *(This rule exists because it
@@ -142,10 +167,11 @@ section), don't work around it.
 
 1. **Tests first:** `python -m unittest discover -s tests -v`. Red means fix
    or shrink scope (§9.5) — don't hand off red without saying so.
-2. Confirm you're on this session's `claude/*` branch and everything is
-   committed — stage named paths and commit through the git pen
-   (`git.py add <paths>`, then `git.py commit -m "<what landed>"`):
-   small, step-shaped commits, no sweep.
+2. Confirm you're on this session's `claude/*` branch *in its own worktree*
+   (not the primary checkout) and everything is committed — stage named
+   paths and commit through the git pen (`git.py add <paths>`, then
+   `git.py commit -m "<what landed>"`): small, step-shaped commits, no
+   sweep.
    Mid-session increments leave the machine only through the branded push:
    `python .claude/skills/branch-ritual/pr.py push` (red suite refuses
    unless declared with `--red-ok`, and the declaration is owed to the PR
@@ -172,7 +198,9 @@ section), don't work around it.
    by design — the story is validated, not requested.
 4. **Stop.** Do not merge it. Tell bdo it's at the stamp.
 5. After the stamp lands, the branch gets deleted (the button on the merged
-   PR page). Dissolved, not archived — `main` already holds the truth.
+   PR page) and its worktree removed
+   (`git worktree remove ..\ontum-wt\<slug>`). Dissolved, not archived —
+   `main` already holds the truth.
 
 ## Gardening — run when the Branches page confuses or accumulates
 
