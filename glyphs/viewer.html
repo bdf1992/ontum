@@ -72,7 +72,14 @@
     margin: 5px 0 7px; white-space: nowrap; }
   #stateStr.solved { color: var(--pin); text-shadow: 0 0 12px rgba(127,217,98,.55); }
   #moves { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-  .mv { min-width: 34px; padding: 5px 0; text-align: center; }
+  .mv { min-width: 34px; padding: 4px 0 3px; text-align: center;
+    border-bottom: 3px solid transparent; }
+  .mv[data-mv="U"] { border-bottom-color: #f2f3ee; }
+  .mv[data-mv="D"] { border-bottom-color: #ffd200; }
+  .mv[data-mv="L"] { border-bottom-color: #ff8a1e; }
+  .mv[data-mv="R"] { border-bottom-color: #e03e3e; }
+  .mv[data-mv="F"] { border-bottom-color: #27b54e; }
+  .mv[data-mv="B"] { border-bottom-color: #2f6fe0; }
   #cube .src { color: var(--dim); font-size: 10px; margin-top: 5px; }
 </style>
 </head>
@@ -85,6 +92,7 @@
   <button class="btn on" id="bLetterPoly" title="polysheaf ternary lettering — letters name fixed cells">addresses ⊘</button>
   <button class="btn" id="bLetterCube" title="cube-alphabet piece lettering — letters name mobile pieces">occupants ∅</button>
   <button class="btn" id="bKnoll" title="flat-lay: sorted by kind, laid at right angles, labeled">knolled</button>
+  <button class="btn on" id="bLabels" title="floating letters on the pieces">letters</button>
   <button class="btn" id="bTrioSpot" title="spotlight S, I, O in the current frame">S·I·O</button>
   <button class="btn" id="bCascade" title="the worked example: A's seams request the next sites">cascade ▸</button>
   <button class="btn" id="bTrio">trio</button>
@@ -109,8 +117,9 @@
     <button class="btn" id="bScramble" title="a 20-letter word — God's number says that reaches everything">scramble</button>
     <button class="btn" id="bUnwind" title="replay the word backwards, every letter inverted">unwind</button>
     <button class="btn" id="bReset" title="instant: every piece home, the word erased">reset</button>
+    <button class="btn on" id="bSound" title="synthesized clicks — no assets">sound</button>
   </div>
-  <div class="src">the generative minimum: 6 letters around a void · click = CW, shift/′/right-click = CCW · keys u d l r f b</div>
+  <div class="src">the generative minimum: 6 letters around a void · drag a facelet to turn its layer · click = CW, shift/′/right-click = CCW · keys u d l r f b</div>
 </div>
 
 <div class="panel" id="pCell"><span class="x" data-close="pCell">✕</span><div id="pCellBody"></div></div>
@@ -794,7 +803,8 @@ const REGISTRY = {
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md:118"
+          "source": "docs/phase-2/cube-alphabet.md:118",
+          "face_color": "white"
         },
         {
           "letter": "B",
@@ -808,7 +818,8 @@ const REGISTRY = {
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "yellow"
         },
         {
           "letter": "C",
@@ -822,7 +833,8 @@ const REGISTRY = {
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "orange"
         },
         {
           "letter": "D",
@@ -836,7 +848,8 @@ const REGISTRY = {
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "red"
         },
         {
           "letter": "E",
@@ -850,7 +863,8 @@ const REGISTRY = {
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "green"
         },
         {
           "letter": "F",
@@ -864,7 +878,8 @@ const REGISTRY = {
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "blue"
         },
         {
           "letter": "G",
@@ -1514,6 +1529,14 @@ function stateStringOf(ps) {
 
 // ---------------------------------------------------------------- data prep
 const KINDCOLOR = { corner: "#ffb454", edge: "#3fd9c9", face: "#b18cff", center: "#8a93a6" };
+// Face colors as the registry pins them from cube-alphabet §7 — the hexes
+// are the authored rendering of the pinned names (white/yellow/orange/red/
+// green/blue), tuned for the dark background.
+const FACE_HEX = { U: "#f2f3ee", D: "#ffd200", L: "#ff8a1e", R: "#e03e3e", F: "#27b54e", B: "#2f6fe0" };
+const DIRFACE = { "0,1,0": "U", "0,-1,0": "D", "-1,0,0": "L", "1,0,0": "R", "0,0,1": "F", "0,0,-1": "B" };
+const PLASTIC = "#161922";
+const HB = 0.53;            // cubie half-size: tight gaps, plastic look
+
 const key = c => c.join(",");
 const kindOf = c => ["corner", "edge", "face", "center"][c.filter(v => v === 0).length];
 
@@ -1527,10 +1550,19 @@ const pieces = newPieces();
 for (const p of pieces) {
   p.kind = kindOf(p.home);
   p.entryCube = cubeByKey[key(p.home)];
-  p.oriDir = homePrimary(p);
   p.lat = p.cell.map(v => v * 1.15);
   p.knoll = [0, 0, 0]; p.pos = p.lat.slice();
   p.lit = 0; p.alpha = 1;
+}
+// stickers: for each box face (FACES order), the doc color of the home
+// sticker currently showing there — Mᵀ pulls the world normal back to the
+// home frame, so flips and twists render truthfully, never painted on.
+function updateStickers(p) {
+  p.stickers = FACES.map(([idx, n]) => {
+    const hn = mulMv(transpose(p.M), n);
+    const ax = hn[0] !== 0 ? 0 : hn[1] !== 0 ? 1 : 2;
+    return p.home[ax] === hn[ax] ? FACE_HEX[DIRFACE[key(hn)]] : null;
+  });
 }
 const dispEntry = (p, lettering) =>
   lettering === "polysheaf" ? polyByKey[key(p.cell)] : p.entryCube;
@@ -1551,6 +1583,8 @@ const st = {
   lastTouch: performance.now(),
   flash: null,            // {text, until}
   prime: false,
+  labels: true,
+  sound: true,
 };
 
 // the cube's word: the move history over the 6-letter generator set
@@ -1574,13 +1608,14 @@ computeKnoll();
 
 // ------------------------------------------------------------------ camera
 const cv = document.getElementById("c"), ctx = cv.getContext("2d");
-let W = 0, H = 0, DPR = 1;
+let W = 0, H = 0, DPR = 1, bgGrad = null;
 function resize() {
   DPR = Math.min(2, window.devicePixelRatio || 1);
   W = window.innerWidth; H = window.innerHeight;
   cv.width = W * DPR; cv.height = H * DPR;
   cv.style.width = W + "px"; cv.style.height = H + "px";
   view.f = Math.min(W, H) * 1.05;
+  bgGrad = null;
 }
 window.addEventListener("resize", resize); resize();
 
@@ -1613,36 +1648,54 @@ const FACES = [  // [indices CCW from outside, outward normal]
 const LIGHT = (() => { const l = [-0.45, 0.75, 0.55], n = Math.hypot(...l); return l.map(v => v / n); })();
 function shade(hex, k) {
   const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-  return `rgb(${Math.round(r * k)},${Math.round(g * k)},${Math.round(b * k)})`;
+  return `rgb(${Math.min(255, Math.round(r * k))},${Math.min(255, Math.round(g * k))},${Math.min(255, Math.round(b * k))})`;
+}
+function quadPath(q) {
+  ctx.beginPath();
+  ctx.moveTo(q[0].x, q[0].y); ctx.lineTo(q[1].x, q[1].y);
+  ctx.lineTo(q[2].x, q[2].y); ctx.lineTo(q[3].x, q[3].y);
+  ctx.closePath();
 }
 
-function drawCube(p, h, color, lit, alpha, spin) {
+function drawCube(p, h, lit, alpha, spin) {
   const off = v => spin ? rotVec(spin.axis, spin.ang, [v[0] * h, v[1] * h, v[2] * h]) : [v[0] * h, v[1] * h, v[2] * h];
   const pts = VERT.map(v => { const o = off(v); return proj([p.pos[0] + o[0], p.pos[1] + o[1], p.pos[2] + o[2]]); });
   ctx.globalAlpha = alpha;
-  if (lit > 0.05) { ctx.shadowColor = color; ctx.shadowBlur = 26 * lit; } else ctx.shadowBlur = 0;
-  const fs = FACES.map(([idx, n]) => {
+  if (lit > 0.05) { ctx.shadowColor = KINDCOLOR[p.kind]; ctx.shadowBlur = 28 * lit; } else ctx.shadowBlur = 0;
+  const order = FACES.map(([idx, n], fi) => {
     const wn = spin ? rotVec(spin.axis, spin.ang, n) : n;
     const rn = rot3(wn);
-    return { idx, z: idx.reduce((a, i) => a + pts[i].zc, 0) / 4, d: rn[0] * LIGHT[0] + rn[1] * LIGHT[1] + rn[2] * LIGHT[2], front: rn[2] < 0 };
+    return { idx, fi, z: idx.reduce((a, i) => a + pts[i].zc, 0) / 4,
+             d: rn[0] * LIGHT[0] + rn[1] * LIGHT[1] + rn[2] * LIGHT[2], front: rn[2] < 0 };
   }).sort((a, b) => b.z - a.z);
-  for (const f of fs) {
+  for (const f of order) {
     if (!f.front) continue;
-    ctx.beginPath();
-    f.idx.forEach((i, j) => j ? ctx.lineTo(pts[i].x, pts[i].y) : ctx.moveTo(pts[i].x, pts[i].y));
-    ctx.closePath();
-    const k = 0.42 + 0.5 * Math.max(0, f.d) + lit * 0.25;
-    ctx.fillStyle = shade(color, Math.min(1.25, k));
+    const quad = f.idx.map(i => pts[i]);
+    const sc = (quad[0].s + quad[1].s + quad[2].s + quad[3].s) / 4;
+    // plastic body with rounded bevel edges
+    quadPath(quad);
+    ctx.fillStyle = shade(PLASTIC, 0.7 + 0.55 * Math.max(0, f.d) + 0.3 * lit);
     ctx.fill();
-    ctx.strokeStyle = "rgba(11,14,20,.65)"; ctx.lineWidth = 1; ctx.stroke();
-  }
-  // orientation tick: a dot on the primary-sticker face. Watch F/B flips.
-  if (p.oriDir) {
-    const d = spin ? rotVec(spin.axis, spin.ang, mulMv(p.M, p.oriDir)) : mulMv(p.M, p.oriDir);
-    if (rot3(d)[2] < 0) {
-      const q = proj([p.pos[0] + d[0] * h, p.pos[1] + d[1] * h, p.pos[2] + d[2] * h]);
-      ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(1.2, h * q.s * 0.13), 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(11,14,20,.85)"; ctx.fill();
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "rgba(7,9,13,.92)";
+    ctx.lineWidth = Math.max(1, sc * h * 0.12);
+    ctx.stroke();
+    // facelet: inset sticker, lit by the same lamp, with a soft specular
+    const col = p.stickers[f.fi];
+    if (col) {
+      ctx.shadowBlur = 0;
+      const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
+      const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
+      const inset = quad.map(q => ({ x: cx + (q.x - cx) * 0.80, y: cy + (q.y - cy) * 0.80 }));
+      quadPath(inset);
+      ctx.fillStyle = shade(col, Math.min(1.22, 0.62 + 0.5 * Math.max(0, f.d) + 0.22 * lit));
+      ctx.fill();
+      let hi = 0, hv = -2;
+      f.idx.forEach((vi, j) => { const dd = vdot(VERT[vi], LIGHT); if (dd > hv) { hv = dd; hi = j; } });
+      const g = ctx.createLinearGradient(inset[hi].x, inset[hi].y, cx, cy);
+      g.addColorStop(0, "rgba(255,255,255,.20)"); g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g; ctx.fill();
+      if (lit > 0.05) { ctx.shadowColor = KINDCOLOR[p.kind]; ctx.shadowBlur = 28 * lit; }
     }
   }
   ctx.shadowBlur = 0; ctx.globalAlpha = 1;
@@ -1666,6 +1719,52 @@ function drawLine(a, b, color, w, alpha) {
   ctx.shadowBlur = 0; ctx.globalAlpha = 1;
 }
 
+// ------------------------------------------------------------------ sound
+// Synthesized, no assets: a filtered tick at turn start is skipped (too
+// chatty); the snap lands at commit, a soft triad when the cube comes home.
+let actx = null, noiseBuf = null, master = null;
+function audio() {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    actx = new AC();
+    master = actx.createGain(); master.gain.value = 0.5; master.connect(actx.destination);
+    noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.1, actx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  if (actx.state === "suspended") actx.resume();
+  return actx;
+}
+function snapSound() {
+  if (!st.sound) return;
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const s = a.createBufferSource(); s.buffer = noiseBuf;
+  const bp = a.createBiquadFilter(); bp.type = "bandpass";
+  bp.frequency.value = 2100 + Math.random() * 600; bp.Q.value = 9;
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+  s.connect(bp); bp.connect(g); g.connect(master); s.start(t); s.stop(t + 0.09);
+  const o = a.createOscillator(); o.type = "triangle";
+  o.frequency.setValueAtTime(175, t); o.frequency.exponentialRampToValueAtTime(118, t + 0.05);
+  const og = a.createGain();
+  og.gain.setValueAtTime(0.22, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  o.connect(og); og.connect(master); o.start(t); o.stop(t + 0.08);
+}
+function chime() {
+  if (!st.sound) return;
+  const a = audio(); if (!a) return;
+  [523.25, 659.25, 783.99].forEach((f, i) => {
+    const t = a.currentTime + i * 0.10;
+    const o = a.createOscillator(); o.type = "sine"; o.frequency.value = f;
+    const g = a.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.55);
+  });
+}
+
 // ------------------------------------------------------------- cube moves
 const PILISH = "Now I turn a facet carefully, to settle every odd cubie " +
   "homeward — spiraling through emptiness.   (Pilish: word lengths spell " +
@@ -1675,19 +1774,23 @@ function enqueueMove(face, dir, record, dur) {
   if (queue.length > 40) return;
   if (st.knollOn) { st.knollOn = false; document.getElementById("bKnoll").classList.remove("on"); }
   st.lastTouch = performance.now();
+  audio();  // unlock the context inside the user gesture
   queue.push({ face, dir, record, dur: dur || 0.2 });
 }
 
 function commitTurn(t) {
   const wasSolved = stateStringOf(pieces) === SOLVED_STRING;
   applyMoveTo(pieces, t.face, t.dir);
-  for (const p of pieces) p.lat = p.cell.map(v => v * 1.15);
+  for (const p of pieces) { p.lat = p.cell.map(v => v * 1.15); updateStickers(p); }
   if (t.record) history.push(t.face + (t.dir < 0 ? "′" : ""));
   else history.pop();
   computeKnoll();
   updateCubeUI();
-  if (!wasSolved && stateStringOf(pieces) === SOLVED_STRING)
+  snapSound();
+  if (!wasSolved && stateStringOf(pieces) === SOLVED_STRING) {
     st.flash = { text: PILISH, until: performance.now() + 10000 };
+    chime();
+  }
 }
 
 function resetCube(flashText) {
@@ -1695,10 +1798,12 @@ function resetCube(flashText) {
   for (const p of pieces) {
     p.cell = p.home.slice(); p.M = ID3;
     p.lat = p.cell.map(v => v * 1.15);
+    updateStickers(p);
   }
   computeKnoll(); updateCubeUI();
   if (flashText) st.flash = { text: flashText, until: performance.now() + 4000 };
 }
+for (const p of pieces) updateStickers(p);
 
 function scramble() {
   if (turn || queue.length) return;
@@ -1726,7 +1831,7 @@ function updateCubeUI() {
   el.textContent = s;
   el.classList.toggle("solved", s === SOLVED_STRING);
   const w = document.getElementById("moveWord");
-  if (!history.length) w.textContent = "∅ — turn a face";
+  if (!history.length) w.textContent = "∅ — turn a face (or drag one)";
   else {
     const shown = history.length > 24 ? "… " + history.slice(-24).join(" ") : history.join(" ");
     w.textContent = shown + "   (" + history.length + ")";
@@ -1803,7 +1908,8 @@ function frame(now) {
   }
   view.rx = Math.max(-1.45, Math.min(1.45, view.rx));
 
-  // face turns: one at a time off the queue, eased, then committed
+  // face turns: one at a time off the queue, eased, then committed.
+  // Manual turns get a slight overshoot (the snap); fast replays stay cubic.
   if (!turn && queue.length) {
     const q = queue.shift();
     turn = { ...q, ...FACEDEF[q.face], t: 0 };
@@ -1811,7 +1917,10 @@ function frame(now) {
   let spin = null;
   if (turn) {
     turn.t += dt / turn.dur;
-    const e = turn.t >= 1 ? 1 : 1 - Math.pow(1 - turn.t, 3);
+    const tt = Math.min(1, turn.t);
+    let e;
+    if (turn.dur >= 0.15) { const k = 0.9, u = tt - 1; e = 1 + (k + 1) * u * u * u + k * u * u; }
+    else e = 1 - Math.pow(1 - tt, 3);
     spin = { axis: turn.axis, sign: turn.sign, ang: e * (-turn.sign * turn.dir * Math.PI / 2) };
     if (turn.t >= 1) { commitTurn(turn); turn = null; spin = null; }
   }
@@ -1830,9 +1939,24 @@ function frame(now) {
     for (let i = 0; i < 3; i++) p.pos[i] = lat[i] + (p.knoll[i] - lat[i]) * e;
   }
 
-  // render
+  // render: vignette, ground shadow, then pieces far-to-near
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.clearRect(0, 0, W, H);
+  if (!bgGrad) {
+    bgGrad = ctx.createRadialGradient(W / 2, H * 0.42, 0, W / 2, H * 0.42, Math.max(W, H) * 0.75);
+    bgGrad.addColorStop(0, "#11151d"); bgGrad.addColorStop(1, "#06080c");
+  }
+  ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+
+  if (st.knollT < 0.5) {
+    const g = proj([0, -2.7, 0]);
+    const rr = 2.3 * g.s;
+    const sg = ctx.createRadialGradient(g.x, g.y, 0, g.x, g.y, rr);
+    sg.addColorStop(0, "rgba(0,0,0,.42)"); sg.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.globalAlpha = 1 - st.knollT * 2;
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.ellipse(g.x, g.y, rr, rr * 0.32, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
 
   const order = pieces.slice().sort((a, b) => proj(b.pos).zc - proj(a.pos).zc);
 
@@ -1844,26 +1968,31 @@ function frame(now) {
     const entry = dispEntry(p, cur);
     const isVoid = p.kind === "center";
     const sel = st.sel === p || st.hover === p;
-    const h = 0.42 * (1 + 0.1 * p.lit + (sel ? 0.08 : 0));
+    const h = HB * (1 + 0.07 * p.lit + (sel ? 0.05 : 0));
     const pSpin = spin && p.cell[spin.axis] === spin.sign ? spin : null;
-    if (isVoid) drawVoid(p, h, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, 0.5));
-    else drawCube(p, h, KINDCOLOR[p.kind], Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin);
-    // floating letter
+    if (isVoid) drawVoid(p, h * 0.8, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, 0.5));
+    else drawCube(p, h, Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin);
+    // floating letter (the void keeps its glyph even with labels off)
     const q = proj(p.pos);
-    const fs = Math.max(9, h * q.s * 0.95);
-    ctx.globalAlpha = Math.min(1, p.alpha + p.lit);
-    ctx.font = `700 ${fs}px ui-monospace, Menlo, monospace`;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillStyle = isVoid ? "#d7dce6" : "#0b0e14";
-    ctx.fillText(entry.letter, q.x, q.y + 1);
-    ctx.globalAlpha = 1;
+    const fs = Math.max(9, h * q.s * 0.8);
+    if (st.labels || isVoid || p.lit > 0.5) {
+      ctx.globalAlpha = Math.min(1, p.alpha + p.lit);
+      ctx.font = `700 ${fs}px ui-monospace, Menlo, monospace`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(7,9,13,.85)"; ctx.lineWidth = Math.max(1.5, fs * 0.18);
+      if (!isVoid) ctx.strokeText(entry.letter, q.x, q.y + 1);
+      ctx.fillStyle = isVoid ? "#d7dce6" : "#fff";
+      ctx.fillText(entry.letter, q.x, q.y + 1);
+      ctx.globalAlpha = 1;
+    }
     // sublabel: knolled mode always; lattice on hover/select/lit
-    if (st.knollT > 0.6 || sel || p.lit > 0.5) {
+    if (st.labels && (st.knollT > 0.6 || sel || p.lit > 0.5)) {
       const sub = cur === "polysheaf" ? entry.coord_str : entry.cubie;
       ctx.globalAlpha = Math.max(0.25, p.alpha) * (st.knollT > 0.6 ? 1 : 0.9);
-      ctx.font = `400 ${Math.max(8, fs * 0.42)}px ui-monospace, Menlo, monospace`;
-      ctx.fillStyle = "#8a93a6";
-      ctx.fillText(sub, q.x, q.y + h * q.s + fs * 0.55);
+      ctx.font = `400 ${Math.max(8, fs * 0.45)}px ui-monospace, Menlo, monospace`;
+      ctx.fillStyle = "#8a93a6"; ctx.textAlign = "center";
+      ctx.fillText(sub, q.x, q.y + h * q.s + fs * 0.6);
       ctx.globalAlpha = 1;
     }
   }
@@ -1887,15 +2016,81 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // ------------------------------------------------------------- interaction
-let drag = null;
+// Left-drag on a facelet turns its layer; left-drag on space orbits;
+// right-drag always orbits. A click (no drag) selects the piece.
+let drag = null;       // orbit drag
+let faceDrag = null;   // pending layer turn from a facelet grab
+
+function inQuad(x, y, q) {
+  let s = 0;
+  for (let i = 0; i < 4; i++) {
+    const a = q[i], b = q[(i + 1) % 4];
+    const c = (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
+    if (c > 0) s |= 1; else if (c < 0) s |= 2;
+  }
+  return s !== 3;
+}
+
+function pickFace(mx, my) {
+  let best = null;
+  for (const p of pieces) {
+    if (p.kind === "center") continue;
+    const pts = VERT.map(v => proj([p.pos[0] + v[0] * HB, p.pos[1] + v[1] * HB, p.pos[2] + v[2] * HB]));
+    for (const [idx, n] of FACES) {
+      if (rot3(n)[2] >= 0) continue;
+      const quad = idx.map(i => pts[i]);
+      if (!inQuad(mx, my, quad)) continue;
+      const z = quad.reduce((a, q) => a + q.zc, 0) / 4;
+      if (!best || z < best.z)
+        best = { p, n, z, point: [p.pos[0] + n[0] * HB, p.pos[1] + n[1] * HB, p.pos[2] + n[2] * HB] };
+    }
+  }
+  return best;
+}
+
+// Which layer does this drag mean? For each candidate axis perpendicular
+// to the grabbed facelet, project the turn's tangent direction to screen
+// space and pick the axis that best matches the drag. Middle slices are
+// not in the generator set, so they fall through to orbit.
+function tryFaceTurn(hit, dx, dy) {
+  const naxis = hit.n[0] !== 0 ? 0 : hit.n[1] !== 0 ? 1 : 2;
+  let best = null;
+  for (const a of [0, 1, 2]) {
+    if (a === naxis) continue;
+    const s = hit.p.cell[a];
+    if (s === 0) continue;
+    const axv = [0, 0, 0]; axv[a] = 1;
+    const tv = cross(axv, hit.point);
+    const q0 = proj(hit.point);
+    const q1 = proj([hit.point[0] + tv[0] * 0.2, hit.point[1] + tv[1] * 0.2, hit.point[2] + tv[2] * 0.2]);
+    const ux = q1.x - q0.x, uy = q1.y - q0.y, ul = Math.hypot(ux, uy) || 1;
+    const align = (ux * dx + uy * dy) / ul;
+    const c = Math.abs(align) / (Math.hypot(dx, dy) || 1);
+    if (!best || c > best.c) best = { a, s, tsign: align >= 0 ? 1 : -1, c };
+  }
+  if (!best || best.c < 0.35) return false;
+  const face = Object.keys(FACEDEF).find(f => FACEDEF[f].axis === best.a && FACEDEF[f].sign === best.s);
+  enqueueMove(face, -best.s * best.tsign, true);  // θ sign = −sign·dir
+  return true;
+}
+
+cv.addEventListener("contextmenu", e => e.preventDefault());
 cv.addEventListener("pointerdown", e => {
-  drag = { x: e.clientX, y: e.clientY, moved: false };
   st.lastTouch = performance.now();
-  cv.classList.add("dragging"); cv.setPointerCapture(e.pointerId);
+  cv.setPointerCapture(e.pointerId);
+  const hit = (e.button === 0 && st.knollT < 0.3) ? pickFace(e.clientX, e.clientY) : null;
+  if (hit) { faceDrag = { hit, x: e.clientX, y: e.clientY, fired: false }; }
+  else { drag = { x: e.clientX, y: e.clientY, moved: false }; cv.classList.add("dragging"); }
 });
 cv.addEventListener("pointermove", e => {
   st.lastTouch = performance.now();
-  if (drag) {
+  if (faceDrag && !faceDrag.fired) {
+    const dx = e.clientX - faceDrag.x, dy = e.clientY - faceDrag.y;
+    if (Math.hypot(dx, dy) > 14) {
+      if (tryFaceTurn(faceDrag.hit, dx, dy)) faceDrag.fired = true;
+      else { drag = { x: e.clientX, y: e.clientY, moved: true }; faceDrag = null; cv.classList.add("dragging"); }
+    }
+  } else if (drag) {
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
     if (!st.knollOn) { view.vry = dx * 0.005; view.vrx = dy * 0.005; }
@@ -1908,12 +2103,14 @@ cv.addEventListener("pointermove", e => {
 });
 cv.addEventListener("pointerup", e => {
   cv.classList.remove("dragging");
-  if (drag && !drag.moved) {
+  if (faceDrag && !faceDrag.fired) {
+    st.sel = faceDrag.hit.p; showCell(faceDrag.hit.p);
+  } else if (drag && !drag.moved) {
     const p = pick(e.clientX, e.clientY);
     st.sel = p;
     if (p) showCell(p); else hide("pCell");
   }
-  drag = null;
+  faceDrag = null; drag = null;
 });
 cv.addEventListener("wheel", e => {
   e.preventDefault();
@@ -1931,9 +2128,9 @@ window.addEventListener("keydown", e => {
 function pick(mx, my) {
   let best = null, bd = 1e9;
   for (const p of pieces) {
-    const q = proj(p.pos), r = Math.max(16, 0.5 * q.s);
+    const q = proj(p.pos), r = Math.max(16, 0.6 * q.s);
     const d = Math.hypot(q.x - mx, q.y - my);
-    if (d < r && q.zc < (best ? bd : 1e9) && d < r) { best = p; bd = q.zc; }
+    if (d < r && q.zc < (best ? bd : 1e9)) { best = p; bd = q.zc; }
   }
   return best;
 }
@@ -1961,6 +2158,10 @@ $("bKnoll").onclick = () => {
   $("bKnoll").classList.toggle("on", st.knollOn);
   if (st.knollOn) computeKnoll();
 };
+$("bLabels").onclick = () => {
+  st.labels = !st.labels;
+  $("bLabels").classList.toggle("on", st.labels);
+};
 $("bTrioSpot").onclick = () => {
   st.spot = !st.spot; st.cascade = null;
   $("bTrioSpot").classList.toggle("on", st.spot);
@@ -1983,6 +2184,12 @@ $("bPrime").onclick = () => { st.prime = !st.prime; $("bPrime").classList.toggle
 $("bScramble").onclick = scramble;
 $("bUnwind").onclick = unwind;
 $("bReset").onclick = () => resetCube("reset: every piece home, the word erased — no Pilish for shortcuts");
+$("bSound").onclick = () => {
+  st.sound = !st.sound;
+  $("bSound").classList.toggle("on", st.sound);
+  $("bSound").textContent = st.sound ? "sound" : "muted";
+  if (st.sound) audio();
+};
 updateCubeUI();
 
 function badge(s) { return `<span class="badge ${s}">${s}</span>`; }
@@ -2007,6 +2214,7 @@ function showCell(p) {
       ["carries state", e.carries_state ? "yes" : "no — frame anchor"],
       ["now at", `${addr.letter} <code>${addr.coord_str}</code>`],
       ["home", `${home.letter} <code>${home.coord_str}</code>`]];
+    if (e.face_color) rows.push(["face color", e.face_color + " — pinned, §7"]);
     if (p.kind === "edge") rows.push(["orientation", edgeOrientOf(p) ? "1 — flipped" : "0 — good"]);
     if (p.kind === "corner") rows.push(["twist", String(cornerOrientOf(p))]);
   }

@@ -86,16 +86,25 @@ result.
   spotlight, cascade (the worked example from the polysheaf doc, animated:
   A → seams I,M,Q → endpoint E → faces → the obscured wildcard ⊘).
 - **Cube controls:** the viewer is a working cube over the generative
-  minimum {U,D,L,R,F,B} — buttons or keys, shift/′ for counterclockwise,
-  scramble (a 20-letter word; God's number), unwind (the word read
-  backwards), reset. The live state string follows cube-alphabet.md §7
-  exactly (`edge word | EO bits | corner word | CO trits`). The cube
+  minimum {U,D,L,R,F,B} — buttons, keys, or **dragging a facelet** to turn
+  its layer (shift/′/right-click for counterclockwise; drag on empty space
+  orbits). Scramble (a 20-letter word; God's number), unwind (the word
+  read backwards), reset. The live state string follows cube-alphabet.md
+  §7 exactly (`edge word | EO bits | corner word | CO trits`). The cube
   mathematics lives in the pure `CUBE_MATH` block inside the viewer;
   `tests/test_viewer_cube.py` extracts it and checks the group laws under
   node (auto-skipped if node is absent). Keep that block free of DOM and
   registry references — the purity is tested. Addresses stay put under
   turns; occupants travel — the two-alphabet split, demonstrated live.
   Solving the cube earns the Pilish line (word lengths spell π).
+- **Facelets and colors:** sticker colors are the §7 pinned names
+  (white/yellow/orange/red/green/blue), recorded as `face_color` on the
+  six center entries in the registry; the hexes are authored in the
+  viewer's `FACE_HEX`. Stickers are derived per frame from each piece's
+  rotation matrix (`Mᵀ·n` pulls a world normal back to the home frame), so
+  flips and twists render truthfully — never repaint them by hand. Letters
+  are a toggle (`letters`); sound is synthesized Web Audio (`sound`
+  toggle, no assets).
 - **The two alphabets are complementary, not in conflict:** polysheaf
   letters name fixed **cells** (addresses), cube-alphabet letters name
   mobile **pieces** (occupants). Keep that split intact in anything new —

@@ -668,7 +668,8 @@
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md:118"
+          "source": "docs/phase-2/cube-alphabet.md:118",
+          "face_color": "white"
         },
         {
           "letter": "B",
@@ -682,7 +683,8 @@
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "yellow"
         },
         {
           "letter": "C",
@@ -696,7 +698,8 @@
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "orange"
         },
         {
           "letter": "D",
@@ -710,7 +713,8 @@
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "red"
         },
         {
           "letter": "E",
@@ -724,7 +728,8 @@
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "green"
         },
         {
           "letter": "F",
@@ -738,7 +743,8 @@
           "carries_state": false,
           "orientation_states": 0,
           "status": "PINNED",
-          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)"
+          "source": "docs/phase-2/cube-alphabet.md §7 (bijection table)",
+          "face_color": "blue"
         },
         {
           "letter": "G",

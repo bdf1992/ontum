@@ -258,6 +258,9 @@ def polysheaf_cells(letters, pin_lines):
 # ---------------------------------------------------------------------------
 
 CUBE_CENTERS = ["U", "D", "L", "R", "F", "B"]                      # A–F
+# face colors as the §7 table pins them: "Up (white)", "Down (yellow)" …
+CUBE_FACE_COLORS = {"U": "white", "D": "yellow", "L": "orange",
+                    "R": "red", "F": "green", "B": "blue"}
 CUBE_EDGES = ["UF", "UR", "UB", "UL", "DF", "DR", "DB", "DL",
               "FR", "FL", "BR", "BL"]                               # G–R
 CUBE_CORNERS = ["UFR", "UFL", "UBR", "UBL", "DFR", "DFL", "DBR", "DBL"]  # S–Z
@@ -301,6 +304,8 @@ def cube_alphabet_cells(pin_lines):
                 else f"{CUBE_DOC} §7 (bijection table)"
             ),
         }
+        if piece == "center":
+            entry["face_color"] = CUBE_FACE_COLORS[cubie]
         cells.append(entry)
     cells.append({
         "letter": SPINDLE_GLYPH,

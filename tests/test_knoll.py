@@ -87,6 +87,16 @@ class CubeAlphabetTest(unittest.TestCase):
         self.assertEqual(table[14], "FR")      # O
         self.assertEqual(table[18], "UFR")     # S
 
+    def test_face_colors_match_doc_table(self):
+        # §7 pins them in prose: Up (white), Down (yellow), Left (orange),
+        # Right (red), Front (green), Back (blue)
+        self.assertEqual(knoll.CUBE_FACE_COLORS,
+                         {"U": "white", "D": "yellow", "L": "orange",
+                          "R": "red", "F": "green", "B": "blue"})
+        text = (REPO / "docs/phase-2/cube-alphabet.md").read_text(encoding="utf-8")
+        for face, color in knoll.CUBE_FACE_COLORS.items():
+            self.assertIn(f"({color})", text)
+
     def test_home_slots_cover_the_27_cell_solid(self):
         coords = {knoll.cubie_coord(n) for n in
                   knoll.CUBE_CENTERS + knoll.CUBE_EDGES + knoll.CUBE_CORNERS}
