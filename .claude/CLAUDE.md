@@ -16,13 +16,16 @@ be, landed as stamped increments, never hand-tuned silently.
     pattern, required sections (the records pen `loop/pen.py` is the
     paved path).
   - `SessionStart` + `UserPromptSubmit` → `loop.summon --hook`: open
-    summons and the owner-backlog count, injected ambiently.
+    summons, the owner-backlog count, and unreflected surface drift,
+    injected ambiently.
 - `hooks/` — the guards. Deny = exit 2 + reason on stderr; guards fail
   open on their own errors and never gate the owner.
 - `skills/` — versioned rituals (prompt-as-code): `branch-ritual` (with
   `pr.py`, the PR pen), `glyph-knolling`, `envoy` (with `envoy.py`, the
   export pen — the repo leaves as a sealed ≤10-file package, receipted
-  on `exports/log.jsonl`).
+  on `exports/log.jsonl`), `reflect` (with `reflect.py`, the reflector
+  pen — the owner's stamp queue mirrored onto registered external
+  surfaces, every applied act receipted on the log; done-line 0018).
 
 Direction, on the record (bdo, 2026-06-10): least permissions from now
 on — wrappers and denials are how the hand is forced; the watcher's
