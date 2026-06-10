@@ -29,6 +29,11 @@ import re
 import sys
 import traceback
 
+try:  # the cross-ref fold lives beside this hook (done-line 0023); fail open
+    import placement as _placement
+except Exception:
+    _placement = None
+
 ROOT = pathlib.Path(os.environ.get("ONTUM_REPO_ROOT")
                     or pathlib.Path(__file__).resolve().parents[2])
 WATCH_LOG = pathlib.Path(
@@ -54,6 +59,15 @@ def deny(rule, rel, message):
 
 
 def next_id(dirpath):
+    """The next id, folded across the whole fleet when git is reachable
+    (placement.py), else the local directory fold. Cross-ref so a session
+    writing its own record in its worktree is not handed an id another
+    branch already claimed — the colliding 0020s (done-line 0023)."""
+    if _placement is not None:
+        try:
+            return _placement.next_id(dirpath)
+        except Exception:
+            pass  # a broken sensor falls back; it never blocks the write
     ids = [int(m.group(1)) for p in dirpath.iterdir()
            for m in [NUMBERED.match(p.name)] if m]
     return max(ids) + 1 if ids else 1
