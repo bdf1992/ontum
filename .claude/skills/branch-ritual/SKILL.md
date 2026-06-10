@@ -5,9 +5,18 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.2.0
+version: 0.3.0
 owner: bdo
 changelog:
+  - version: 0.3.0
+    note: >
+      The story is validated, not requested (done-line 0011). Hand-off
+      now runs through the pen (pr.py beside this file); the raw
+      mutating gh verbs and pushes to the trunk are denied by the
+      command_guard PreToolUse hook, which also watches every other
+      raw external command into a log so the next wrapper is built
+      from observed use. 0.2.0 sharpened the prose; 0.3.0 makes it
+      structural.
   - version: 0.2.0
     note: >
       Sharpened after PR #8 reached the stamp story-less: a recovery PR
@@ -50,9 +59,15 @@ section), don't work around it.
   wearing the auto-title (the branch name) over an empty body is an
   unwritten story: not at the stamp, however green the merge button.
   GitHub's "Compare & pull request" button produces exactly this — fill
-  the form, or repair after the fact with `gh pr edit <n> --title --body`.
+  the form, or repair after the fact through the pen (`edit` verb).
   *(This rule exists because it happened: PR #1 and PR #8 both reached
   bdo story-less.)*
+- **The pen is the only write path to a PR.** `pr.py` (beside this file)
+  validates the story before anything is submitted; the `command_guard`
+  hook denies the raw verbs (`gh pr create/edit/merge/close/review`,
+  `git push` to the trunk) and watches every other raw external command
+  into `.ai-native/log/tool-use.jsonl`. One pen per seam, the
+  `loop/node.py` pattern.
 
 ## Hand-off — run at session end, or when the work is done
 
@@ -60,20 +75,28 @@ section), don't work around it.
    or shrink scope (§9.5) — don't hand off red without saying so.
 2. Confirm you're on this session's `claude/*` branch and everything is
    committed — small, step-shaped commits with messages that say what landed.
-3. **Confirm the branch is alive** before pushing: if a PR from it has
-   already merged (`gh pr list --head <branch> --state merged`), the
-   branch is dead — cut a fresh branch from where you stand and push that
-   instead. *(The PR #6 → #8 stranding happened exactly here: nine commits
-   pushed to a branch whose PR had merged an hour earlier.)*
-4. Push: `git push -u origin <branch>`.
-5. Open **exactly one PR** to `main`, story written in — explicit
-   `--title` and `--body`, never the defaults. The description carries:
-   what landed, which done-line it serves, the session report number, the
-   end-state (`done | report | needs-you`), and anything the commits
-   flagged *for bdo* — the PR is where those flags surface, or they
-   scroll away with the log.
-6. **Stop.** Do not merge it. Tell bdo it's at the stamp.
-7. After the stamp lands, the branch gets deleted (the button on the merged
+3. Run the pen:
+
+   ```sh
+   python .claude/skills/branch-ritual/pr.py create \
+     --title "<what this session did, one line>" \
+     --landed "<a thing that landed>" --landed "<another>" \
+     --done-line 0011 --report 0013 \
+     --end-state report \
+     --flag "<anything raised for bdo>"
+   ```
+
+   The pen refuses to submit without the story — title that isn't the
+   branch name, what landed, the done-line it serves (or `none --why`),
+   the report number, the end-state (`done | report | needs-you`), and
+   any flags raised *for bdo* (the PR is where those surface, or they
+   scroll away with the log). It also checks the branch is alive (no
+   merged PR from this head — the PR #6 → #8 stranding), reruns the
+   suite (red refuses unless declared with `--red-ok`), pushes, and
+   opens **exactly one PR**. Raw `gh pr create` is hook-denied; that is
+   by design — the story is validated, not requested.
+4. **Stop.** Do not merge it. Tell bdo it's at the stamp.
+5. After the stamp lands, the branch gets deleted (the button on the merged
    PR page). Dissolved, not archived — `main` already holds the truth.
 
 ## Gardening — run when the Branches page confuses or accumulates
@@ -91,12 +114,21 @@ Recovery moves:
 
 | situation | move |
 |---|---|
-| commit stranded on a merged branch | PR that branch → `main` — with its story (what stranded, how, what it carries); stamp; delete (the PR #4 pattern) |
+| commit stranded on a merged branch | pen `create --recover` from that branch — the story says what stranded, how, what it carries; stamp; delete (the PR #4 pattern) |
 | PR conflicts with `main` | rebase the session branch onto `main` and force-push *your own branch* (never `main`); the stamp still belongs to bdo |
 | a branch nobody remembers | `0` ahead → delete; otherwise read its diff, then PR it or write it off in a report — don't leave it to rot |
 
 The page is clean when it reads: `main`, plus whatever is in flight right
 now — and nothing else.
+
+Two folds belong to gardening as well:
+
+- `python .claude/skills/branch-ritual/pr.py check` — open PRs wearing an
+  auto-title or an empty body (the owner's button can still make these;
+  the hook only gates sessions). Repair each through the pen's `edit`.
+- `python .claude/hooks/command_guard.py --report` — which external tools
+  sessions are using raw. The heaviest is the next wrapper worth
+  building; we only build what we use.
 
 ## When the ritual itself is wrong
 
