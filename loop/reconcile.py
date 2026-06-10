@@ -240,14 +240,18 @@ def make_event(type_, seam, from_node, atom_id, artifact_hash, requires, termina
     }
 
 
-def make_receipt(event, stage, atom_id, artifact_hash, node=None, verdict=None, reason=None):
+def make_receipt(event, stage, atom_id, artifact_hash, node=None, verdict=None, reason=None,
+                 prompt_hash=None):
     """Defaults are the stage's mock; a summoned real node passes its own
     identity, verdict, and reason. A non-advancing verdict suggests no next
-    event — the atom parks for a human (D-4)."""
+    event — the atom parks for a human (D-4). prompt_hash, when a versioned
+    node prompt was in force (§7), makes the verdict attributable to the
+    exact prompt that judged; it never enters the receipt id, so a prompt
+    edit can't reopen a settled verdict (I-2)."""
     node = node or stage["node"]
     verdict = verdict if verdict is not None else stage["verdict"]
     reason = reason if reason is not None else stage["reason"]
-    return {
+    rc = {
         "id": "rcp." + short_hash(node, atom_id, artifact_hash, event["id"]),
         "event_id": event["id"],
         "node": node,
@@ -258,6 +262,21 @@ def make_receipt(event, stage, atom_id, artifact_hash, node=None, verdict=None, 
         "next_suggested_event": stage["next_event"] if verdict == stage["verdict"] else None,
         "ts": now_ts(),
     }
+    if prompt_hash:
+        rc["prompt_hash"] = prompt_hash
+    return rc
+
+
+def node_prompt(root, node):
+    """The node's versioned prompt (§7): .ai-native/nodes/<node>.md, hashed
+    over bytes like every identity here. Returns (text, "sha256:<hash>") or
+    (None, None) — absence is information, not an error: a node without a
+    prompt file judges on its summons alone."""
+    path = root / "nodes" / f"{node}.md"
+    if not path.exists():
+        return None, None
+    data = path.read_bytes()
+    return data.decode("utf-8"), "sha256:" + hashlib.sha256(data).hexdigest()
 
 
 def atom_state(fold, artifact_hash):

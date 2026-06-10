@@ -23,7 +23,7 @@ from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, append_line,
                             epic_of, glue_of, load_atoms, load_epics,
-                            make_receipt, now_ts, real_nodes,
+                            make_receipt, node_prompt, now_ts, real_nodes,
                             receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 
@@ -84,8 +84,10 @@ def judge(root, atom_id, node, verdict, reason):
         print(f"result: needs-you — verdict {verdict!r} is not in this seam's terminal set: "
               f"{', '.join(target['terminal_expected'])}")
         return 2
+    _, prompt_hash = node_prompt(root, node)  # the prompt in force, if any (§7)
     rc = make_receipt(event, target, atom_id, artifact_hash,
-                      node=node, verdict=verdict, reason=reason)
+                      node=node, verdict=verdict, reason=reason,
+                      prompt_hash=prompt_hash)
     append_line(root / "log" / "receipts.jsonl", rc)
     advancing = verdict == target["verdict"]
     print(f"result: report — {node} judged {target['event']} -> {verdict} ({rc['id']}); "
