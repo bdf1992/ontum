@@ -1,0 +1,47 @@
+{
+  "atom": {
+    "id": "atom.owner-inbox.v1",
+    "story": {
+      "text": "As an AI, I need to brief bdo on each open item well enough to judge it in under a minute — value first, mechanism after — on a page he can open from a laptop or phone, because bdo arrives blind or distracted and his stamp should be leverage, not homework.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Approve the inbox you are reading right now",
+      "value": "You asked: 'do you have a way of showing me my open items and a way for me to clear them?' This is that — one place showing everything waiting on you, each item briefed well enough to judge in under a minute without re-validating the whole project, readable from a laptop or phone.",
+      "why_now": "Your stamp is the system's slowest and most valuable stage. v0 shipped as a terse CLI list and you amended it (rcp.efd40f7169c8): too thin to judge blind, not reachable from a phone. This v1 carries the web rendering and the richer briefing you asked for — and is the first atom told this way.",
+      "if_accepted": "The web inbox becomes the owner surface; atoms are expected to carry a briefing like this one from now on; later versions grow it toward a served, authenticated page you can open anywhere.",
+      "if_rejected": "The CLI list stays the only surface, the briefing expectation is dropped, and your queue stays terse — judging keeps costing you the 30 minutes you said you don't have.",
+      "cost_of_wrong_call": "Low and reversible: this changes views and the ticket schema only — no gate logic, no truth moved, no new write path. Reverting is deleting a renderer.",
+      "mechanism": "A pure fold over atoms/ + log/ renders a self-contained inbox.html (works from disk, as an artifact, or on any static host); 'python -m loop.web serve' serves it locally with verdict buttons that write through the one existing pen (node judge). Localhost-only until auth is built.",
+      "reading": [
+        ".ai-native/done/0005-owner-briefing-web-inbox.md",
+        ".ai-native/reports/0006-owner-inbox.md",
+        "loop/web.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["v-next.owner-briefing-web-inbox"],
+      "touches": ["loop/web.py", "loop/node.py"],
+      "must_not_collide_with": ["atom.real-value-gate.v0"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "atom.owner-inbox.v0 (retired by amend rcp.efd40f7169c8)",
+        ".ai-native/done/0005-owner-briefing-web-inbox.md",
+        "ai-native-loop-substrate.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated: current verdicts and state are always the fold over .ai-native/log/ (D-5). v0's history stays on the log; this version answers its amend receipt."
+}
