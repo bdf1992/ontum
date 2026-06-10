@@ -1248,6 +1248,233 @@
       }
     ]
   },
+  "core27": {
+    "name": "Core 27",
+    "status": "MINTED",
+    "coined_by": "bdo — 'one term of those 27 glyphs ends up being the S/Void term for each letter; these are like our CORE 27 operational terms' (glyph-knolling session 0009)",
+    "principle": "Every glyph of the 27 is the Self/void term of its own local frame: globally a cell among cells, locally the keystone occupying its frame's empty center. The 27 glyphs are therefore the system's core operational terms — 26 letters and ⊘, each one anchoring a neighborhood. Globally there is one void; locally, every glyph voids its own center.",
+    "gradient": "openness by kind — corner frames hold 7 neighbors (19 slots open), edges 11/15, faces 17/9, and ⊘ 26/0: the root's frame is the whole specimen and closes completely.",
+    "non_example": "A grip-ledger word without an address — cant, drift, jective: operational vocabulary, but not core-27; they have no cell and anchor no local frame.",
+    "terms": [
+      {
+        "glyph": "A",
+        "coord_str": "(−,−,−)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "B",
+        "coord_str": "(−,−,+)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "C",
+        "coord_str": "(−,+,−)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "D",
+        "coord_str": "(−,+,+)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "E",
+        "coord_str": "(+,−,−)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "F",
+        "coord_str": "(+,−,+)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "G",
+        "coord_str": "(+,+,−)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "H",
+        "coord_str": "(+,+,+)",
+        "global_role": "corner",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 7,
+        "open_slots": 19
+      },
+      {
+        "glyph": "I",
+        "coord_str": "(0,−,−)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "J",
+        "coord_str": "(0,−,+)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "K",
+        "coord_str": "(0,+,−)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "L",
+        "coord_str": "(0,+,+)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "M",
+        "coord_str": "(−,0,−)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "N",
+        "coord_str": "(−,0,+)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "O",
+        "coord_str": "(+,0,−)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "P",
+        "coord_str": "(+,0,+)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "Q",
+        "coord_str": "(−,−,0)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "R",
+        "coord_str": "(−,+,0)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "S",
+        "coord_str": "(+,−,0)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "T",
+        "coord_str": "(+,+,0)",
+        "global_role": "edge",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 11,
+        "open_slots": 15
+      },
+      {
+        "glyph": "U",
+        "coord_str": "(−,0,0)",
+        "global_role": "face",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 17,
+        "open_slots": 9
+      },
+      {
+        "glyph": "V",
+        "coord_str": "(+,0,0)",
+        "global_role": "face",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 17,
+        "open_slots": 9
+      },
+      {
+        "glyph": "W",
+        "coord_str": "(0,−,0)",
+        "global_role": "face",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 17,
+        "open_slots": 9
+      },
+      {
+        "glyph": "X",
+        "coord_str": "(0,+,0)",
+        "global_role": "face",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 17,
+        "open_slots": 9
+      },
+      {
+        "glyph": "Y",
+        "coord_str": "(0,0,−)",
+        "global_role": "face",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 17,
+        "open_slots": 9
+      },
+      {
+        "glyph": "Z",
+        "coord_str": "(0,0,+)",
+        "global_role": "face",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 17,
+        "open_slots": 9
+      },
+      {
+        "glyph": "⊘",
+        "coord_str": "(0,0,0)",
+        "global_role": "center",
+        "local_role": "keystone — the Self/void term of its own frame",
+        "neighbors_in_frame": 26,
+        "open_slots": 0,
+        "note": "the root: zero open slots — its local frame is the entire specimen"
+      }
+    ]
+  },
   "findings": [
     {
       "id": "seam.lettering-collision",

@@ -509,6 +509,58 @@ def build_trio(poly_cells, cube_cells):
 
 
 # ---------------------------------------------------------------------------
+# The Core 27 — bdo's leap (session 0009): "one term of those 27 glyphs ends
+# up being the S/Void term for each letter; these are like our CORE 27
+# operational terms." Each glyph, opened as its own local frame, occupies
+# that frame's void — the keystone. Globally one void; locally every glyph
+# voids its own center. Scale-recursive restatement of the cube principle:
+# every Feature is the Token of its own subtree.
+# ---------------------------------------------------------------------------
+
+def build_core27(poly_cells):
+    terms = []
+    for c in poly_cells:
+        in_frame = 1
+        for v in c["coord"]:
+            in_frame *= 3 if v == 0 else 2
+        in_frame -= 1  # neighbors of the cell that stay inside {−,0,+}³
+        entry = {
+            "glyph": c["letter"],
+            "coord_str": c["coord_str"],
+            "global_role": c["cell"],
+            "local_role": "keystone — the Self/void term of its own frame",
+            "neighbors_in_frame": in_frame,
+            "open_slots": 26 - in_frame,
+        }
+        if c["letter"] == CENTER_GLYPH:
+            entry["note"] = ("the root: zero open slots — its local frame is "
+                             "the entire specimen")
+        terms.append(entry)
+    return {
+        "name": "Core 27",
+        "status": "MINTED",
+        "coined_by": "bdo — 'one term of those 27 glyphs ends up being the "
+                     "S/Void term for each letter; these are like our CORE "
+                     "27 operational terms' (glyph-knolling session 0009)",
+        "principle": "Every glyph of the 27 is the Self/void term of its own "
+                     "local frame: globally a cell among cells, locally the "
+                     "keystone occupying its frame's empty center. The 27 "
+                     "glyphs are therefore the system's core operational "
+                     "terms — 26 letters and ⊘, each one anchoring a "
+                     "neighborhood. Globally there is one void; locally, "
+                     "every glyph voids its own center.",
+        "gradient": "openness by kind — corner frames hold 7 neighbors (19 "
+                    "slots open), edges 11/15, faces 17/9, and ⊘ 26/0: the "
+                    "root's frame is the whole specimen and closes "
+                    "completely.",
+        "non_example": "A grip-ledger word without an address — cant, drift, "
+                       "jective: operational vocabulary, but not core-27; "
+                       "they have no cell and anchor no local frame.",
+        "terms": terms,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Findings — seams between the docs that do not close. Per the polysheaf's
 # own doctrine these are preserved as comparison structs, not "fixed":
 # the vault is read-only, so findings are reported, never patched around.
@@ -605,6 +657,7 @@ def build_registry():
         },
         "terms": terms,
         "trio": build_trio(poly_cells, cube_cells),
+        "core27": build_core27(poly_cells),
         "findings": FINDINGS,
     }
 
@@ -673,7 +726,27 @@ def render_knolling_md(reg):
         w("")
     w("---")
     w("")
-    w("## 3. Terms (grip ledger + primitives)")
+    w("## 3. The Core 27")
+    w("")
+    c27 = reg["core27"]
+    w(f"Status: **{c27['status']}** — coined by {c27['coined_by']}")
+    w("")
+    w(c27["principle"])
+    w("")
+    w(f"*{c27['gradient']}*")
+    w("")
+    w(f"Non-example: {c27['non_example']}")
+    w("")
+    w("| Glyph | Address | Global role | Local role | In frame | Open slots |")
+    w("|---|---|---|---|---|---|")
+    for t in c27["terms"]:
+        w("| **{}** | `{}` | {} | {} | {} | {} |".format(
+            t["glyph"], t["coord_str"], t["global_role"],
+            t["local_role"], t["neighbors_in_frame"], t["open_slots"]))
+    w("")
+    w("---")
+    w("")
+    w("## 4. Terms (grip ledger + primitives)")
     w("")
     w("| Term | Status | Referent | Non-example | Source |")
     w("|---|---|---|---|---|")
@@ -684,7 +757,7 @@ def render_knolling_md(reg):
     w("")
     w("---")
     w("")
-    w("## 4. Findings — seams that do not close")
+    w("## 5. Findings — seams that do not close")
     w("")
     for f in reg["findings"]:
         w(f"### `{f['id']}` — {f['kind']}  [{f['status']}]")

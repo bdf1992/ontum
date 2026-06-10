@@ -144,6 +144,22 @@ class RegistryTest(unittest.TestCase):
         self.assertEqual({poly[g]["axis"] for g in ("S", "I", "O")},
                          {"x", "y", "z"})
 
+    def test_core27_inventory(self):
+        c27 = self.reg["core27"]
+        self.assertEqual(c27["status"], "MINTED")
+        self.assertTrue(c27["non_example"])
+        self.assertEqual(len(c27["terms"]), 27)
+        # the openness gradient: corner 7/19, edge 11/15, face 17/9, ⊘ 26/0
+        expect = {"corner": (7, 19), "edge": (11, 15),
+                  "face": (17, 9), "center": (26, 0)}
+        for t in c27["terms"]:
+            inf, opn = expect[t["global_role"]]
+            self.assertEqual(t["neighbors_in_frame"], inf, t["glyph"])
+            self.assertEqual(t["open_slots"], opn, t["glyph"])
+        # the root closes completely: its frame is the whole specimen
+        root = next(t for t in c27["terms"] if t["glyph"] == "⊘")
+        self.assertEqual(root["open_slots"], 0)
+
     def test_dim_codim_split_recorded(self):
         # finding seam.codim-wording: both numbers kept per cell
         for cell in self.reg["letterings"]["polysheaf"]["cells"]:

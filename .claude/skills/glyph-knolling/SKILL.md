@@ -76,6 +76,17 @@ result.
    was re-derived, what was minted, what stays open, end-state
    `done | report | needs-you`.
 
+## The Core 27 (MINTED, session 0009)
+
+Every glyph of the 27 is the Self/void term of its own local frame —
+globally a cell, locally the keystone of its neighborhood. The registry's
+`core27` section carries the principle, the coining utterance, the
+non-example, and the openness gradient (corner 7/19, edge 11/15, face
+17/9, ⊘ 26/0 — in-frame neighbors / open slots). The open slots are the
+typed capacity for future term placements; when assigning non-spatial
+terms into frames, record the placement as a derived rule in `knoll.py`,
+never as hand-edited registry data.
+
 ## Extending
 
 - **A new lettering** (a third alphabet over the solid): add a derivation
