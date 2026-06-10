@@ -12,3 +12,5 @@ that is a scope error and gets reported, not coded around.
 
 - `compression-prediction-entropy.md` — prediction ≡ compression; the
   information-theoretic spine under the glyph-field direction.
+- `rosetta-creole.md` — ontum is a living third language between code and
+  models, not a finished translation key; what the language surface is *for*.
