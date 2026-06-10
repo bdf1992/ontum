@@ -82,41 +82,54 @@ def validate_story(story, branch):
     return problems
 
 
-def _ref_line(directory, value, why):
-    if value == "none":
-        return f"none — {why.strip()}"
-    if re.fullmatch(r"\d{4}", value):
-        return f"{value} (under `{directory}/`)"
-    return f"`{directory}/{value}.md`"
+def _status_line(end_state, rolling):
+    """The end-state in plain words a person reads cold — not a jargon code."""
+    if rolling:
+        return "**Status: still being worked — please don't merge yet.**"
+    return {
+        "report": "**Status: done and ready to merge.**",
+        "done": "**Status: done.**",
+        "needs-you": "**Status: needs your eyes — see _Before you merge_ below.**",
+    }.get(end_state, f"**Status: {end_state}.**")
+
+
+def _receipts(story):
+    """The done-line/report demoted to a quiet trail footer — a reference for
+    the record, never a headline filepath a cold reader can't open."""
+    dl, rep = story["done_line"], story["report"]
+    why = (story.get("why") or "").strip()
+    if dl == "none" and rep == "none":
+        body = f"no separate done-line or report — {why}"
+    else:
+        def part(label, value):
+            return f"no {label} ({why})" if value == "none" else f"{label} {value}"
+        body = part("done-line", dl) + " · " + part("report", rep)
+    return f"*Trail for the record: {body}.*"
 
 
 ROLLING_BANNER = (
-    "> 🟡 **Rolling draft — not at the stamp.** The session is still\n"
-    "> appending; `pr.py ready <n>` flips it when the story is final.\n"
-    "> Open and not a draft means *please merge* (done-line 0017)."
+    "> 🟡 **Still being worked — please don't merge yet.** This is a draft the\n"
+    "> session is still adding to; when it's final it flips out of draft.\n"
+    "> Open and not a draft means it's ready for you."
 )
 
 
 def compose_body(story, rolling=False):
-    """The standard story form. Validation has already passed."""
+    """The story as a person reads it cold: what changed, whether it's ready,
+    and what's left for the owner to decide — no machine jargon, no filepaths
+    as headings. Validation has already passed."""
     lines = [ROLLING_BANNER, ""] if rolling else []
-    lines += ["## What landed", ""]
+    lines += ["## What changed", ""]
     lines += [f"- {b.strip()}" for b in story["landed"] if b.strip()]
-    lines += ["", "## Done-line", ""]
-    lines.append(_ref_line(".ai-native/done", story["done_line"], story["why"]))
-    lines += ["", "## Report", ""]
-    lines.append(_ref_line(".ai-native/reports", story["report"], story["why"]))
     red = (story.get("red_reason") or "").strip()
     if red:
-        lines += ["", "## Red hand-off (declared)", "", red]
-    lines += ["", f"## End-state: `{story['end_state']}`", ""]
+        lines += ["", "> ⚠️ **Handed off with failing tests, on purpose:** " + red]
+    lines += ["", _status_line(story["end_state"], rolling)]
     flags = [f.strip() for f in story.get("flags", []) if f.strip()]
     if flags:
-        lines.append("Flagged for bdo:")
+        lines += ["", "### Before you merge", ""]
         lines += [f"- {f}" for f in flags]
-    else:
-        lines.append("Nothing flagged for bdo.")
-    lines += ["", FOOTER, ""]
+    lines += ["", "---", "", _receipts(story), "", FOOTER, ""]
     return "\n".join(lines)
 
 

@@ -89,44 +89,67 @@ class TestStoryValidation(unittest.TestCase):
 
 
 class TestBodyForm(unittest.TestCase):
-    def test_body_carries_every_section(self):
+    """The body reads cold: what changed, a plain status, the owner's
+    decisions, and a quiet trail — no jargon section over a bare filepath."""
+
+    def test_body_reads_cold_not_as_machine_jargon(self):
         body = pen.compose_body(_story(flags=["the Core 27 awaits the pin"]))
-        for needle in ("## What landed", "## Done-line", "## Report",
-                       "## End-state: `report`", "Flagged for bdo:",
+        for needle in ("## What changed", "Status: done and ready to merge",
+                       "### Before you merge", "Trail for the record",
                        pen.FOOTER):
             self.assertIn(needle, body)
+        # the machine-jargon scaffold bdo rejected is gone
+        for banned in ("## Done-line", "## Report", "## End-state",
+                       ".ai-native/done/", "Flagged for bdo:"):
+            self.assertNotIn(banned, body)
 
-    def test_nothing_flagged_is_said_not_omitted(self):
-        self.assertIn("Nothing flagged for bdo.", pen.compose_body(_story()))
+    def test_no_flags_omits_the_section_cleanly(self):
+        # nothing to decide → no "Before you merge" at all (not "Nothing flagged")
+        self.assertNotIn("### Before you merge", pen.compose_body(_story()))
 
-    def test_red_handoff_is_declared_in_the_body(self):
+    def test_status_speaks_plainly_per_end_state(self):
+        self.assertIn("ready to merge", pen.compose_body(_story(end_state="report")))
+        self.assertIn("needs your eyes",
+                      pen.compose_body(_story(end_state="needs-you",
+                                              flags=["one open question"])))
+
+    def test_trail_demotes_the_refs_to_a_footer(self):
+        body = pen.compose_body(_story())
+        self.assertIn("Trail for the record: done-line 0011 · report 0013", body)
+
+    def test_none_refs_render_with_their_why_not_a_bare_path(self):
+        body = pen.compose_body(
+            _story(done_line="none", report="none",
+                   why="ritual self-sharpening, recorded in the changelog"))
+        self.assertIn("no separate done-line or report — ritual self-sharpening", body)
+
+    def test_red_handoff_is_declared_in_plain_words(self):
         body = pen.compose_body(
             _story(red_reason="two web tests red; scope shrunk per §9.5"))
-        self.assertIn("## Red hand-off (declared)", body)
+        self.assertIn("Handed off with failing tests, on purpose", body)
 
-    def test_green_body_has_no_red_section(self):
-        self.assertNotIn("Red hand-off", pen.compose_body(_story()))
+    def test_green_body_has_no_red_warning(self):
+        self.assertNotIn("Handed off with failing tests", pen.compose_body(_story()))
 
     def test_body_is_deterministic(self):
         self.assertEqual(pen.compose_body(_story()), pen.compose_body(_story()))
 
 
 class TestMergeSignal(unittest.TestCase):
-    """Done-line 0017: a rolling draft says so in its own body; the flip
-    is the one merge signal."""
+    """Done-line 0017: a rolling draft says so in its own body, in plain
+    words; the flip out of draft is the one merge signal."""
 
-    def test_rolling_body_wears_the_banner(self):
+    def test_rolling_body_says_dont_merge_yet(self):
         body = pen.compose_body(_story(), rolling=True)
-        self.assertIn("Rolling draft", body)
-        self.assertIn("not at the stamp", body)
+        self.assertIn("please don't merge yet", body)
         self.assertTrue(body.startswith(pen.ROLLING_BANNER))
 
     def test_final_body_carries_no_banner(self):
-        self.assertNotIn("Rolling draft", pen.compose_body(_story()))
+        self.assertNotIn("please don't merge yet", pen.compose_body(_story()))
 
     def test_banner_states_the_reading_rule(self):
-        # the rule the owner reads: open and not a draft means please merge
-        self.assertIn("please merge", pen.ROLLING_BANNER)
+        # the rule the owner reads, in plain words: not-a-draft = ready for you
+        self.assertIn("ready for you", pen.ROLLING_BANNER)
 
 
 class TestBrandedPush(unittest.TestCase):
