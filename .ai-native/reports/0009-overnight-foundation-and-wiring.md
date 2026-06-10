@@ -97,7 +97,8 @@ catch up with tonight's substrate; `CLAUDE.md` is finally committed.
 - **knoll.py byte-determinism on Windows: verified clean.** Live run —
   "changed: nothing (byte-identical — idempotent re-run)", tree stays
   clean. No fix needed; box ticked.
-- **Done-line 0011 — the hook surfaces the owner's backlog.** One line
+- **Done-line 0012 (né 0011) — the hook surfaces the owner's
+  backlog.** One line
   when items await the admitted-real stamp (count + the inbox command,
   never the briefings — surfacing per §6, the inbox stays the briefing
   surface per D-4); silent when the stamp is mocked or the queue is

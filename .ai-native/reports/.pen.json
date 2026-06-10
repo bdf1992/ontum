@@ -1,0 +1,22 @@
+{
+  "kind": "report",
+  "pattern": "^\\d{4}-[a-z0-9][a-z0-9-]*\\.md$",
+  "required_sections": ["# Report", "## End-state"],
+  "pen": "python -m loop.pen new reports --slug <slug> --title \"<title>\"",
+  "scaffold": [
+    "# Report {id} — {title}",
+    "",
+    "## What landed",
+    "",
+    "<by done-line>",
+    "",
+    "## needs-you",
+    "",
+    "<the owner's queue, or 'nothing'>",
+    "",
+    "## End-state",
+    "",
+    "`report` — <one line>",
+    ""
+  ]
+}
