@@ -39,7 +39,9 @@ up the discipline without re-deriving it.
 - **No one signs their own line (D-2).** A node never judges its own writer's
   work; every gate reads someone else's output.
 - **bdo merges (D-4).** Sessions develop on their assigned `claude/*` branch
-  and push there; merging to main is the owner's act, not the session's.
+  and push there; merging to main is the owner's act, not the session's. The
+  full branch lifecycle is in
+  [docs/sop/branch-management.md](docs/sop/branch-management.md).
 - **Stdlib only** in `loop/` for now. No broker, no daemon, no network. Every
   invocation ends with a clear stdout result: `done` | `report` | `needs-you`.
 
