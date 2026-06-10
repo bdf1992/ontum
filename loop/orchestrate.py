@@ -28,26 +28,23 @@ from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, SEED_EVENT, TERMINAL_EVENT,
                             Fold, append_line, atom_state, canon, load_atoms,
-                            now_ts, pass_once, read_jsonl, short_hash)
+                            now_ts, pass_once, real_nodes, receipt_for_stage,
+                            short_hash)
 
 SETPOINT_DIAL = "orchestration.temperature"
 SETPOINT_KEYS = ("step_budget_per_tick", "max_inflight_atoms", "human_queue_cap")
 HUMAN_NODE = "owner-stamp.mock-bdo.v0"
+STAMP_STAGE = next(s for s in PIPELINE if s["node"] == HUMAN_NODE)
 # the step that *enters* the human queue: announcing this event puts an atom
 # in front of the (rate-limited) stamp — it is the valve the cool path closes
 HUMAN_QUEUE_EVENT = "value.accepted"
 
 
 def read_admissions(root):
-    """Admissions are log, not cache: setpoint dials and tick records,
-    deduped by id like every other fold input."""
-    records, dropped = read_jsonl(root / "log" / "admissions.jsonl")
-    out, seen = [], set()
-    for rc in records:
-        if isinstance(rc, dict) and rc.get("id") and rc["id"] not in seen:
-            seen.add(rc["id"])
-            out.append(rc)
-    return out, dropped
+    """Admissions are log, not cache: setpoint dials, realness, tick records
+    — one fold, one dedup (Fold's)."""
+    fold = Fold(root)
+    return fold.admissions, fold.admissions_dropped
 
 
 def read_setpoint(admissions):
@@ -78,24 +75,30 @@ def admit_setpoint(root, value, by, supersedes=None):
     return adm
 
 
-def next_action(fold, atom, ahash):
+def next_action(fold, atom, ahash, real_map=None):
     """The one step pass_once would take for this atom — classified read-only,
     in pass_once's exact order (seed, then derive, then judge), so the
     controller can budget steps without acting. A pure fold.
 
-    Returns ("seed"|"derive"|"judge"|"parked", target) or None when settled.
+    Returns ("seed"|"derive"|"judge"|"await"|"parked", target) or None when
+    settled. "await" names a summoned real node the loop must not stand in
+    for (D-2, D-10).
     """
+    if real_map is None:
+        real_map = real_nodes(fold)
     if not fold.event(SEED_EVENT, ahash):
         return ("seed", SEED_EVENT)
     for stage in PIPELINE:
-        rc = fold.receipt_by_node(stage["node"], ahash)
+        rc = receipt_for_stage(fold, stage, ahash, real_map)
         if rc and rc.get("verdict") == stage["verdict"] and not fold.event(stage["next_event"], ahash):
             return ("derive", stage["next_event"])
     for stage in PIPELINE:
         ev = fold.event(stage["event"], ahash)
         if ev is None:
             break
-        if fold.receipt_by_node(stage["node"], ahash) is None:
+        if receipt_for_stage(fold, stage, ahash, real_map) is None:
+            if stage["node"] in real_map:
+                return ("await", real_map[stage["node"]])
             return ("judge", stage["node"])
     if atom_state(fold, ahash) == atom["desired_state"] and fold.event(TERMINAL_EVENT, ahash):
         return None
@@ -106,9 +109,10 @@ def sense(fold, atoms):
     """Field-state (§15): every signal a pure fold over the log — never a
     number the loop kept in memory."""
     pressure = {"unborn": 0, "inflight": 0, "settled": 0, "parked": 0,
-                "human_backlog": 0, "queue_depth": 0}
+                "awaiting": 0, "human_backlog": 0, "queue_depth": 0}
+    real_map = real_nodes(fold)
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash)
+        action = next_action(fold, atom, ahash, real_map)
         if action is None:
             pressure["settled"] += 1
         elif action[0] == "seed":
@@ -117,10 +121,12 @@ def sense(fold, atoms):
             pressure["inflight"] += 1
             if action[0] == "parked":
                 pressure["parked"] += 1
-        if fold.event(HUMAN_QUEUE_EVENT, ahash) and fold.receipt_by_node(HUMAN_NODE, ahash) is None:
+            elif action[0] == "await":
+                pressure["awaiting"] += 1
+        if fold.event(HUMAN_QUEUE_EVENT, ahash) and receipt_for_stage(fold, STAMP_STAGE, ahash, real_map) is None:
             pressure["human_backlog"] += 1
         for stage in PIPELINE:
-            if fold.event(stage["event"], ahash) and fold.receipt_by_node(stage["node"], ahash) is None:
+            if fold.event(stage["event"], ahash) and receipt_for_stage(fold, stage, ahash, real_map) is None:
                 pressure["queue_depth"] += 1
     return pressure
 
@@ -155,11 +161,12 @@ def control(pressure, setpoint, fold, atoms, human_rate):
     inflight = pressure["inflight"]
     human_spent = 0
 
+    real_map = real_nodes(fold)
     field = []
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash)
-        if action is None or action[0] == "parked":
-            continue
+        action = next_action(fold, atom, ahash, real_map)
+        if action is None or action[0] in ("parked", "await"):
+            continue  # settled, held for a human, or held for a summoned node
         field.append((atom, ahash, action))
     field.sort(key=lambda t: (-_rank(t[2]), t[0]["id"]))
 
@@ -226,8 +233,7 @@ def orchestrate(root, human_rate=1, max_ticks=200, quiet=False):
         if not atoms:
             print(f"result: needs-you — no atoms in {root / 'atoms'}")
             return 2
-        admissions, dropped = read_admissions(root)
-        setpoint = read_setpoint(admissions)
+        setpoint = read_setpoint(fold.admissions)
         if setpoint is None:
             print("result: needs-you — no admitted setpoint for "
                   f"{SETPOINT_DIAL} (I-8: the dial is an admitted record, "
@@ -240,7 +246,13 @@ def orchestrate(root, human_rate=1, max_ticks=200, quiet=False):
             if pressure["settled"] == len(atoms):
                 print(f"result: done — {len(atoms)} atoms settled after {n - 1} ticks")
                 return 0
-            print(f"result: needs-you — nothing schedulable: {canon(pressure)}")
+            real_map = real_nodes(fold)
+            waits = [f"{atom['id']} -> {action[1]}"
+                     for atom, ahash in atoms
+                     for action in [next_action(fold, atom, ahash, real_map)]
+                     if action and action[0] == "await"]
+            print(f"result: needs-you — nothing schedulable: {canon(pressure)}"
+                  + (f"; awaiting summons: {'; '.join(waits)}" if waits else ""))
             return 2
 
         for atom, ahash, kind, target in scheduled:
