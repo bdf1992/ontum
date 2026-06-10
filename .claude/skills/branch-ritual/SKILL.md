@@ -5,9 +5,20 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.6.0
+version: 0.6.1
 owner: bdo
 changelog:
+  - version: 0.6.1
+    note: >
+      The rescue is updatable. `create --recover` opens a PR from a dead
+      branch, but `push` refused that same branch — so a recovery PR
+      that conflicted with main could never be rebased and pushed (the
+      PR #20 incident: union-merged logs conflict on GitHub's side,
+      which cannot run merge drivers; the local rebase is the fix and
+      the push was the wall). Now a dead branch counts as alive for
+      `push` exactly when an open PR exists from it — the pen names the
+      rescue it is updating; a dead branch with no open PR refuses as
+      before. Pure rule, pinned in tests/test_pr_ritual.py.
   - version: 0.6.0
     note: >
       The git wrapper, mirroring the gh wrapper (done-line 0020). A
