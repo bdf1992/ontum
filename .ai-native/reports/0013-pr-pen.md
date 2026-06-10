@@ -34,22 +34,33 @@ compliance, applied to our own process.
   the story*. `edit` is the repair path through the same validation;
   `check` audits open PRs for unwritten stories (the owner's button
   still exists — `check` is the sensor for that gap).
-- **The guard + watcher** — `.claude/hooks/command_guard.py`, wired
-  as a PreToolUse hook on Bash/PowerShell in `.claude/settings.json`.
-  Denies (exit 2, message points at the pen): `gh pr
-  create/edit/merge/close/reopen/review`, `git push` to the trunk in
-  any refspec spelling. Everything else passes, but raw external-tool
-  use (gh, curl, network git, …) is recorded to
+- **The guard + watcher + shame** — `.claude/hooks/command_guard.py`,
+  wired as PreToolUse *and* PostToolUse hooks on Bash/PowerShell in
+  `.claude/settings.json`. Denies (exit 2, message points at the
+  pen): `gh pr create/edit/merge/close/reopen/review`, `git push` to
+  the trunk in any refspec spelling. Everything else passes, but raw
+  external-tool use (gh, curl, network git, …) is recorded to
   `.ai-native/log/tool-use.jsonl` — a sensor trace, gitignored,
   deletable, not truth. `--report` folds it: which raw tools sessions
   actually reach for, heaviest first — the next wrapper worth
-  building. We only build what we use.
+  building. We only build what we use. And per bdo's third directive:
+  collection alone is silent, so the PostToolUse pass (`--post`)
+  *shames* unbranded use into the context window via
+  `additionalContext` — once per tool per session, with the running
+  audit count — so the generic brand surfaces naturally in
+  conversation and becomes a judgment call (mint the wrapper or keep
+  it raw). All `gh` use is collected, including read-only; the pen's
+  own internal `gh` subprocess calls are sanctioned and invisible to
+  the hook by construction (hooks see top-level commands only).
 - **Skill 0.2.0 → 0.3.0** — earlier this session, 0.2.0 sharpened the
   prose (story binds every PR including recovery, dead-branch check
   before push, flags-for-bdo surface in the description). 0.3.0 makes
   it structural: hand-off runs through the pen; gardening gains the
   two folds (`pr.py check`, `command_guard.py --report`).
-- **Tests** — `tests/test_pr_ritual.py`, 23 tests. The §10 case is
+- **Tests** — `tests/test_pr_ritual.py`, 27 tests. The shame path is
+  pinned: first unbranded use injects context, repeat use in the same
+  session stays quiet, a new session is shamed afresh with the
+  cumulative count, local work is never shamed. The §10 case is
   pinned: a locally-fine, story-less create refuses to fit; the
   guard denies each raw verb and stays blind to local work; the
   watch log tolerates a torn tail (it never happened). Probed live

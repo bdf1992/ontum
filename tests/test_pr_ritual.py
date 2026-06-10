@@ -117,12 +117,18 @@ class TestGuardAndWatcher(unittest.TestCase):
         self.watch_log = pathlib.Path(path)
         self.addCleanup(self.watch_log.unlink)
 
-    def _invoke(self, command, tool="Bash"):
-        payload = json.dumps({"tool_name": tool, "tool_input": {"command": command}})
+    def _invoke(self, command, tool="Bash", session="s1", post=False):
+        payload = json.dumps({"session_id": session, "tool_name": tool,
+                              "tool_input": {"command": command}})
         env = dict(os.environ, ONTUM_TOOL_WATCH_LOG=str(self.watch_log))
-        return subprocess.run(
-            [sys.executable, str(GUARD_PATH)], input=payload,
-            capture_output=True, text=True, env=env)
+        args = [sys.executable, str(GUARD_PATH)] + (["--post"] if post else [])
+        return subprocess.run(args, input=payload,
+                              capture_output=True, text=True, env=env)
+
+    def _use(self, command, session="s1"):
+        """One full watched use: the pre hook logs, the post hook shames."""
+        self._invoke(command, session=session)
+        return self._invoke(command, session=session, post=True)
 
     def _entries(self):
         text = self.watch_log.read_text(encoding="utf-8")
@@ -188,6 +194,29 @@ class TestGuardAndWatcher(unittest.TestCase):
         self.assertIn("gh", proc.stdout)
         self.assertIn("curl", proc.stdout)
         self.assertIn("result: report", proc.stdout)
+
+    def test_unbranded_use_is_shamed_into_context(self):
+        proc = self._use("gh pr view 8 --json body")
+        out = json.loads(proc.stdout)
+        context = out["hookSpecificOutput"]["additionalContext"]
+        self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "PostToolUse")
+        self.assertIn("`gh`", context)
+        self.assertIn("branded", context)
+
+    def test_shame_fires_once_per_tool_per_session(self):
+        self._use("gh pr view 8")
+        proc = self._use("gh pr list --state open")
+        self.assertEqual(proc.stdout.strip(), "")
+
+    def test_new_session_is_shamed_afresh_with_the_running_count(self):
+        self._use("gh pr view 8", session="s1")
+        proc = self._use("gh pr list", session="s2")
+        context = json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("`gh` ×2", context)
+
+    def test_local_work_is_never_shamed(self):
+        proc = self._use("git status --porcelain")
+        self.assertEqual(proc.stdout.strip(), "")
 
     def test_torn_tail_never_happened(self):
         self._invoke("gh pr view 8")

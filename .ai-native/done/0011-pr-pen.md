@@ -24,6 +24,13 @@ gitignored, deletable — not truth), and a `--report` fold over it
 says which raw tools are actually in use, so the next wrapper gets
 built from observed use, not speculation. We only build what we use.
 
+Amended again (bdo): collection alone is silent — the watcher must
+also *shame*: when a session uses the generic brand where no branded
+wrapper exists, a PostToolUse hook injects the fact into the context
+window (once per tool per session, with the running audit count), so
+it gets brought up naturally and becomes a judgment call. Surfaced or
+silent — never silently tolerated.
+
 Named on the record: the hook gates *sessions*, not the owner —
 GitHub's "Compare & pull request" button still exists for bdo. The
 pen's `check` verb (story audit over open PRs) is the gardening-side

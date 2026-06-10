@@ -15,8 +15,10 @@ changelog:
       mutating gh verbs and pushes to the trunk are denied by the
       command_guard PreToolUse hook, which also watches every other
       raw external command into a log so the next wrapper is built
-      from observed use. 0.2.0 sharpened the prose; 0.3.0 makes it
-      structural.
+      from observed use — and (PostToolUse) shames unbranded use into
+      the context window, once per tool per session, so it surfaces
+      naturally and becomes a judgment call. 0.2.0 sharpened the
+      prose; 0.3.0 makes it structural.
   - version: 0.2.0
     note: >
       Sharpened after PR #8 reached the stamp story-less: a recovery PR
@@ -66,8 +68,11 @@ section), don't work around it.
   validates the story before anything is submitted; the `command_guard`
   hook denies the raw verbs (`gh pr create/edit/merge/close/review`,
   `git push` to the trunk) and watches every other raw external command
-  into `.ai-native/log/tool-use.jsonl`. One pen per seam, the
-  `loop/node.py` pattern.
+  into `.ai-native/log/tool-use.jsonl`. Branded tools over the generic
+  brand: raw use that isn't denied gets called out in-context (once per
+  tool per session, with the audit count) so it surfaces naturally —
+  surfaced it's a judgment call, unsurfaced it stays silent. One pen
+  per seam, the `loop/node.py` pattern.
 
 ## Hand-off — run at session end, or when the work is done
 

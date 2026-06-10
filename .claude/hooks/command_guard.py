@@ -15,6 +15,13 @@ Done-line 0011 / branch-ritual v0.3.0. Two jobs, one hook:
    heaviest unwrapped tool is the next wrapper worth building. We only
    build what we use.
 
+3. Shame (`--post`, a PostToolUse hook): using the generic brand when
+   no branded wrapper exists gets called out *in the context window*
+   via additionalContext — once per tool per session, with the running
+   audit count. Surfaced, it becomes a judgment call (mint the wrapper
+   or keep it raw); never surfaced, it stays silent. That asymmetry is
+   the point.
+
 Stdlib only. As a hook it reads the PreToolUse JSON on stdin and exits
 0 (allow) or 2 (deny, stderr explains). Run `--report` by hand or
 during branch gardening.
@@ -112,22 +119,32 @@ def record(entry):
         pass  # the watcher never breaks the command it watches
 
 
-def hook():
+def _payload():
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
-        return 0
+        return None
     if payload.get("tool_name") not in ("Bash", "PowerShell"):
+        return None
+    return payload
+
+
+def hook():
+    payload = _payload()
+    if payload is None:
         return 0
     command = (payload.get("tool_input") or {}).get("command") or ""
+    session = payload.get("session_id") or ""
 
     for rule, pattern, message in DENY_RULES:
         if re.search(pattern, command):
-            record({"status": "denied", "rule": rule, "command": command})
+            record({"status": "denied", "rule": rule, "command": command,
+                    "session": session})
             print(message, file=sys.stderr)
             return 2
     if pushes_to_trunk(command):
-        record({"status": "denied", "rule": "git-push-trunk", "command": command})
+        record({"status": "denied", "rule": "git-push-trunk",
+                "command": command, "session": session})
         print(
             "denied, firm: never push to main — push the session's claude/* "
             "branch and PR it through the pen (branch-ritual).",
@@ -137,7 +154,59 @@ def hook():
 
     bins = external_bins(command)
     if bins:
-        record({"status": "watched", "bins": bins, "command": command})
+        record({"status": "watched", "bins": bins, "command": command,
+                "session": session})
+    return 0
+
+
+def _fold_counts(session):
+    """Total and this-session use per tool, from the watch log."""
+    total, in_session = {}, {}
+    if WATCH_LOG.exists():
+        for line in WATCH_LOG.read_text(encoding="utf-8").splitlines():
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue  # torn tail: it never happened
+            if entry.get("status") != "watched":
+                continue
+            for bin_ in entry.get("bins", []):
+                total[bin_] = total.get(bin_, 0) + 1
+                if session and entry.get("session") == session:
+                    in_session[bin_] = in_session.get(bin_, 0) + 1
+    return total, in_session
+
+
+def post():
+    """PostToolUse: shame unbranded tool use into the context window."""
+    payload = _payload()
+    if payload is None:
+        return 0
+    command = (payload.get("tool_input") or {}).get("command") or ""
+    bins = external_bins(command)
+    if not bins:
+        return 0
+    session = payload.get("session_id") or ""
+    total, in_session = _fold_counts(session)
+    # The PreToolUse watcher already logged this very call, so a tool's
+    # first use this session folds to 1. Beyond that it has been
+    # surfaced — stay silent.
+    fresh = [b for b in bins if in_session.get(b, 1) <= 1]
+    if not fresh:
+        return 0
+    uses = ", ".join(f"`{b}` ×{total.get(b, 1)}" for b in fresh)
+    print(json.dumps({"hookSpecificOutput": {
+        "hookEventName": "PostToolUse",
+        "additionalContext": (
+            f"[command_guard] unbranded tool use, on the audit record: {uses}. "
+            "No branded wrapper exists for this yet — the only branded verb "
+            "set is the PR pen (.claude/skills/branch-ritual/pr.py). The "
+            "ritual prefers branded tools over the generic brand: if this "
+            "tool keeps recurring, surface it to bdo and mint its wrapper "
+            "(`python .claude/hooks/command_guard.py --report` for the fold). "
+            "Surfaced, it is a judgment call; unsurfaced, it stays silent."
+        ),
+    }}))
     return 0
 
 
@@ -172,4 +241,9 @@ if __name__ == "__main__":
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
-    sys.exit(report() if "--report" in sys.argv[1:] else hook())
+    if "--report" in sys.argv[1:]:
+        sys.exit(report())
+    elif "--post" in sys.argv[1:]:
+        sys.exit(post())
+    else:
+        sys.exit(hook())
