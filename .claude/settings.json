@@ -45,6 +45,17 @@
         ]
       }
     ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/reflect_auto.py",
+            "timeout": 150
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [

@@ -20,11 +20,22 @@ pen): it applies exactly this drift and records each act back here.
 Verdicts never flow in from a surface: the issue is a mirror, not a
 second write path (D-4) — clearing stays loop.node judge.
 
-CLI (read-only except register):
+Automation (done-line 0020) is the same fold with a dial: a reflection
+*rule* — kind × surface → enabled — is an admitted record, and the auto
+beat (a Stop hook running the pen's `auto` verb) applies exactly the
+drift the enabled rules name. The log is the topic, rules are the
+subscriptions, reflection records are the acks, drift is the unconsumed
+backlog — pub/sub semantics, level-triggered, no broker, no daemon
+(bdo's directive and stamp, chat 2026-06-10).
+
+CLI (read-only except register and rule):
   python -m loop.reflect                    drift status across surfaces
   python -m loop.reflect register --surface github-issues \
       --address owner/repo --by bdo        admit a surface (omit --address
                                             to deregister; latest wins, I-8)
+  python -m loop.reflect rule --kind owner-stamp-queue \
+      --surface github-issues --on --by bdo    admit a rule (--off disables;
+                                                latest wins, I-8)
 """
 
 import argparse
@@ -38,6 +49,12 @@ from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 
 REFLECTED_EVENT = "surface.reflected"
 PEN = "python .claude/skills/reflect/reflect.py"
+
+# The kinds table — the extension point (done-line 0020). A kind is a
+# named drift fold; a new kind joins as an entry here (plus rules to
+# enable it), never as a new system. One kind exists today: the owner's
+# stamp queue, computed by drift().
+RULE_KINDS = ("owner-stamp-queue",)
 
 
 def admit_surface(root, surface, address, by, kind="github-issues"):
@@ -67,6 +84,55 @@ def registered_surfaces(fold):
             else:
                 surfaces.pop(adm["surface"], None)
     return surfaces
+
+
+def admit_rule(root, kind, surface, enabled, by):
+    """A reflection rule is the translation matrix's cell, admitted (I-8):
+    this kind reflects to this surface, or stops doing so. Latest
+    (kind, surface) admission wins; disabling is a superseding record,
+    never an erasure."""
+    adm = {
+        "id": "adm." + short_hash("reflection_rule", kind, surface,
+                                  str(enabled), str(by), now_ts()),
+        "type": "reflection_rule",
+        "kind": kind,
+        "surface": surface,
+        "enabled": bool(enabled),
+        "by": by,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm
+
+
+def rules(fold):
+    """The matrix: latest admission per (kind, surface) cell wins."""
+    out = {}
+    for adm in fold.admissions:
+        if adm.get("type") == "reflection_rule" and adm.get("kind") and adm.get("surface"):
+            out[(adm["kind"], adm["surface"])] = adm
+    return out
+
+
+def enabled_rules(fold):
+    return {key: adm for key, adm in rules(fold).items() if adm.get("enabled")}
+
+
+def auto_plan(root):
+    """What the beat would do, as a read-only fold: for every enabled rule
+    whose kind is known and whose surface is registered, the drift to
+    apply. Unknown kinds and unregistered surfaces are skipped here — the
+    beat must never break a turn; status() names them for eyes instead."""
+    fold = Fold(root)
+    surfaces = registered_surfaces(fold)
+    plan = []
+    for (kind, surface), adm in sorted(enabled_rules(fold).items()):
+        if kind not in RULE_KINDS or surface not in surfaces:
+            continue
+        acts = drift(root, surface)
+        if acts:
+            plan.append({"kind": kind, "surface": surface, "acts": acts})
+    return plan
 
 
 def reflections(fold, surface):
@@ -212,20 +278,34 @@ def status(root):
               "this repo (register one: python -m loop.reflect register "
               "--surface <id> --address <owner/repo> --by <who>)")
         return 0
+    matrix = rules(fold)
+    auto_pairs = set()
+    for (kind, surface), adm in sorted(matrix.items()):
+        state = "on" if adm.get("enabled") else "off"
+        note = ""
+        if kind not in RULE_KINDS:
+            note = " (unknown kind — the beat skips it)"
+        elif surface not in surfaces:
+            note = " (surface not registered — the beat skips it)"
+        elif adm.get("enabled"):
+            auto_pairs.add(surface)
+        print(f"rule: {kind} x {surface} = {state} "
+              f"(admitted by {adm['by']}, {adm['id']}){note}")
     total = 0
     for sid, adm in sorted(surfaces.items()):
         acts = drift(root, sid)
         total += len(acts)
+        beat = "auto (rule on)" if sid in auto_pairs else "manual only (no enabled rule)"
         print(f"surface: {sid} ({adm['kind']}) -> {adm['address']} "
-              f"(admitted by {adm['by']}, {adm['id']})")
+              f"(admitted by {adm['by']}, {adm['id']}; {beat})")
         for a in acts:
             ref = f" [{a.get('external_ref')}]" if a.get("external_ref") else ""
             print(f"  {a['act']}: {a['atom_id']}{ref}")
         if not acts:
             print("  no drift — the surface mirrors the log")
     if total:
-        print(f"result: report — {total} act(s) of drift; apply through the "
-              f"reflector pen: {PEN} apply --surface <id> --by <who>")
+        print(f"result: report — {total} act(s) of drift; the beat clears what "
+              f"rules name, or apply by hand: {PEN} apply --surface <id> --by <who>")
     else:
         print("result: done — every registered surface mirrors the log")
     return 0
@@ -247,7 +327,27 @@ def main(argv=None):
     reg.add_argument("--by", required=True,
                      help="who admits it (D-4: surfaces are signed, never self-set)")
 
+    ru = sub.add_parser("rule", help="admit a reflection rule: kind x surface -> enabled (I-8)")
+    ru.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    ru.add_argument("--kind", required=True, help=f"one of: {', '.join(RULE_KINDS)}")
+    ru.add_argument("--surface", required=True)
+    onoff = ru.add_mutually_exclusive_group(required=True)
+    onoff.add_argument("--on", dest="enabled", action="store_true")
+    onoff.add_argument("--off", dest="enabled", action="store_false")
+    ru.add_argument("--by", required=True,
+                    help="who admits it (the dial is signed, never self-set)")
+
     args = ap.parse_args(argv)
+    if args.cmd == "rule":
+        if args.kind not in RULE_KINDS:
+            print(f"result: needs-you — unknown kind {args.kind!r}; the kinds "
+                  f"table in loop/reflect.py holds: {', '.join(RULE_KINDS)} "
+                  f"(a new kind is a new fold — its own stamped increment)")
+            return 2
+        adm = admit_rule(args.root, args.kind, args.surface, args.enabled, args.by)
+        print(f"result: report — {adm['id']}: rule {args.kind} x {args.surface} "
+              f"= {'on' if args.enabled else 'off'} (admitted by {args.by})")
+        return 0
     if args.cmd == "register":
         adm = admit_surface(args.root, args.surface, args.address, args.by, kind=args.kind)
         print(f"result: report — {adm['id']}: surface {args.surface} "

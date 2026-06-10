@@ -18,6 +18,11 @@ be, landed as stamped increments, never hand-tuned silently.
   - `SessionStart` + `UserPromptSubmit` → `loop.summon --hook`: open
     summons, the owner-backlog count, and unreflected surface drift,
     injected ambiently.
+  - `Stop` → `hooks/reflect_auto.py`: the auto beat (done-line 0020),
+    the repo's first *writing* hook — contract change stamped by bdo.
+    After each turn it runs the reflector pen's `auto` verb: only what
+    admitted, enabled reflection rules name leaves the machine; every
+    act receipted on the log; fail-open, exit 0 always.
 - `hooks/` — the guards. Deny = exit 2 + reason on stderr; guards fail
   open on their own errors and never gate the owner.
 - `skills/` — versioned rituals (prompt-as-code): `branch-ritual` (with
