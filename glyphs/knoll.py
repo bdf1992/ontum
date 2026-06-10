@@ -633,20 +633,23 @@ def build_term_frames(poly_cells, cube_cells, core27, trio):
         cube_here = cube_by_coord[coord]
         core = core_by_glyph[c["letter"]]
         facts = [
-            ("cell", c["cell"]),
-            ("dim", f"{c['dim']} open"),
-            ("codim", f"{c['codim']} decided"),
-            ("axis", c["axis"] or "·"),
-            ("status", c["status"]),
-            ("frame", f"{core['neighbors_in_frame']}/{core['open_slots']}"),
-            ("wing", "address"),
-            ("home piece", f"{cube_here['letter']}·{cube_here['cubie']}"),
+            (c["cell"], f"cell kind: {c['cell']}"),
+            (f"dim {c['dim']}", f"dimension: {c['dim']} open axis"),
+            (f"codim {c['codim']}", f"codimension: {c['codim']} decided"),
+            (f"axis {c['axis'] or '·'}", f"axis: {c['axis'] or 'none'}"),
+            (c["status"], f"provenance: {c['status']}"),
+            (f"{core['neighbors_in_frame']}/{core['open_slots']}",
+             f"frame capacity: {core['neighbors_in_frame']} in frame, "
+             f"{core['open_slots']} open"),
+            ("addr", "wing: address (polysheaf lettering)"),
+            (f"{cube_here['letter']}·{cube_here['cubie']}",
+             f"home piece: {cube_here['letter']} ({cube_here['cubie']})"),
         ]
         corner_ds = sorted([x, y, z] for x in (-1, 1) for y in (-1, 1)
                            for z in (-1, 1))
-        for d, (k, v) in zip(corner_ds, facts):
+        for d, (v, gl) in zip(corner_ds, facts):
             slots.append({"d": d, "slot": "corner", "kind": "fact",
-                          "label": v, "ref": None, "gloss": f"{k}: {v}"})
+                          "label": v, "ref": None, "gloss": gl})
         # edges: relations in queue order; the rest stay open
         rels = []
         if c["antipode"] != c["letter"]:
