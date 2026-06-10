@@ -5,9 +5,23 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.6.2
+version: 0.7.0
 owner: bdo
 changelog:
+  - version: 0.7.0
+    note: >
+      Dissolution is structural, not a remembered button (gardening
+      pass, 2026-06-10; 0.7.0 at bdo's word on PR #15). The owner's
+      Branches page had grown nine dead branches: hand-off step 5 —
+      delete the branch after the stamp — was a manual click on the
+      merged-PR page, skipped on every merge. `delete_branch_on_merge`
+      is now on, so GitHub deletes the head branch the instant the PR
+      merges; a merged branch no longer lingers to be pushed to (the
+      stranding rule, now enforced by absence). The session still
+      removes its own worktree. Gardening drops to the exceptions:
+      stranded no-PR work and orphans the setting can't reach. The
+      ritual's own "when wrong" clause was the prompt — bdo: "I'm not
+      your only prompting source."
   - version: 0.6.2
     note: >
       The viewport and the workbenches (done-line 0022, bdo in
@@ -126,7 +140,10 @@ section), don't work around it.
   happened twice: after PR #2, recovered in PR #4; after PR #6, recovered
   in PR #8.)* Since done-line 0014 the rule is structural: raw `git push`
   is denied, and the pen's `push` verb checks the branch is alive before
-  anything leaves the machine.
+  anything leaves the machine. Since 2026-06-10 the trunk also
+  self-cleans — `delete_branch_on_merge` is on, so a merged head branch
+  is deleted at the moment of merge and a stray post-merge push fails on
+  a missing ref instead of stranding silently.
 - **Never merge your own PR; never push to `main`.** Work propels itself, it
   never authorizes itself (§4). The stamp is bdo's. *(Firm.)*
 - **Every PR to `main` carries its story — recovery PRs included.** A PR
@@ -197,12 +214,18 @@ section), don't work around it.
    opens **exactly one PR**. Raw `gh pr create` is hook-denied; that is
    by design — the story is validated, not requested.
 4. **Stop.** Do not merge it. Tell bdo it's at the stamp.
-5. After the stamp lands, the branch gets deleted (the button on the merged
-   PR page) and its worktree removed
-   (`git worktree remove ..\ontum-wt\<slug>`). Dissolved, not archived —
-   `main` already holds the truth.
+5. After the stamp lands, the branch dissolves itself —
+   `delete_branch_on_merge` is on, so GitHub deletes the head branch the
+   instant the PR merges; nothing to click. The session removes its own
+   worktree (`git worktree remove ..\ontum-wt\<slug>`). Dissolved, not
+   archived — `main` already holds the truth. (A branch the setting can't
+   reach — a no-PR orphan — is gardening's job, below.)
 
 ## Gardening — run when the Branches page confuses or accumulates
+
+With `delete_branch_on_merge` on, routine merge-branches self-dissolve; what
+reaches gardening now is the exceptions — stranded no-PR work, orphans the
+setting can't reach, and the owner's button-made story-less PRs.
 
 Decode every branch against `main` using the `Behind | Ahead` columns:
 
