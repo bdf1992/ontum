@@ -115,6 +115,8 @@
   <button class="btn" id="bKnoll" title="flat-lay: sorted by kind, laid at right angles, labeled">knolled</button>
   <button class="btn on" id="bLabels" title="the 26 letters printed on the facelets">letters</button>
   <button class="btn" id="bLinks" title="relationship web: off → seams (incidence skeleton) → drift (displacement chords)">links off</button>
+  <button class="btn" id="bXray" title="only the colored facelets — see through the cube">x-ray</button>
+  <button class="btn" id="bExplode" title="lift the pieces apart on struts — the inside stays connected and visible">explode</button>
   <button class="btn" id="bTrioSpot" title="spotlight S, I, O in the current frame">S·I·O</button>
   <button class="btn" id="bCascade" title="the worked example: A's seams request the next sites">cascade ▸</button>
   <button class="btn" id="bTrio">trio</button>
@@ -10656,6 +10658,8 @@ const st = {
   labels: true,
   sound: true,
   links: 0,               // 0 off · 1 seams (incidence skeleton) · 2 drift
+  xray: false,            // only the colored facelets — see through
+  explodeOn: false, explodeT: 0,  // lift the pieces apart on struts
 };
 
 // the cube's word: the move history over the 6-letter generator set
@@ -10730,6 +10734,64 @@ function quadPath(q) {
   ctx.closePath();
 }
 
+function printFaceLetter(p, n, h, spin, letterInfo, col) {
+  let tu, tv;
+  if (letterInfo.glued) {
+    const hn = mulMv(transpose(p.M), n);
+    const tg = TANG[key(hn)];
+    tu = mulMv(p.M, tg[0]); tv = mulMv(p.M, tg[1]);
+  } else { const tg = TANG[key(n)]; tu = tg[0]; tv = tg[1]; }
+  let nw = n, tuw = tu, tvw = tv;
+  if (spin) {
+    nw = rotVec(spin.axis, spin.ang, n);
+    tuw = rotVec(spin.axis, spin.ang, tu);
+    tvw = rotVec(spin.axis, spin.ang, tv);
+  }
+  const c3 = [p.pos[0] + nw[0] * h, p.pos[1] + nw[1] * h, p.pos[2] + nw[2] * h];
+  const p0 = proj(c3);
+  const pu = proj([c3[0] + tuw[0] * h * 0.5, c3[1] + tuw[1] * h * 0.5, c3[2] + tuw[2] * h * 0.5]);
+  const pv = proj([c3[0] + tvw[0] * h * 0.5, c3[1] + tvw[1] * h * 0.5, c3[2] + tvw[2] * h * 0.5]);
+  const Q = 32;
+  ctx.save();
+  ctx.transform((pu.x - p0.x) / Q, (pu.y - p0.y) / Q,
+                (pv.x - p0.x) / Q, (pv.y - p0.y) / Q, p0.x, p0.y);
+  ctx.font = "700 42px ui-monospace, Menlo, monospace";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = INK[col] || "rgba(12,14,18,.88)";
+  ctx.fillText(letterInfo.text, 0, 2);
+  ctx.restore();
+}
+
+// x-ray: no plastic, only the colored facelets — the value layer floating
+// free. Front tiles bright, back tiles dimmed so the inside shows.
+function drawFacelets(p, h, lit, alpha, spin, letterInfo) {
+  const off = v => spin ? rotVec(spin.axis, spin.ang, [v[0] * h, v[1] * h, v[2] * h]) : [v[0] * h, v[1] * h, v[2] * h];
+  const pts = VERT.map(v => { const o = off(v); return proj([p.pos[0] + o[0], p.pos[1] + o[1], p.pos[2] + o[2]]); });
+  const order = FACES.map(([idx, n], fi) => {
+    const wn = spin ? rotVec(spin.axis, spin.ang, n) : n;
+    const rn = rot3(wn);
+    return { idx, fi, n, z: idx.reduce((a, i) => a + pts[i].zc, 0) / 4,
+             d: rn[0] * LIGHT[0] + rn[1] * LIGHT[1] + rn[2] * LIGHT[2], front: rn[2] > 0 };
+  }).sort((a, b) => b.z - a.z);
+  for (const f of order) {
+    const col = p.stickers[f.fi];
+    if (!col) continue;
+    const quad = f.idx.map(i => pts[i]);
+    const cx = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 4;
+    const cy = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 4;
+    const inset = quad.map(q => ({ x: cx + (q.x - cx) * 0.86, y: cy + (q.y - cy) * 0.86 }));
+    ctx.globalAlpha = alpha * (f.front ? 0.96 : 0.30);
+    if (lit > 0.05 && f.front) { ctx.shadowColor = KINDCOLOR[p.kind]; ctx.shadowBlur = 22 * lit; }
+    quadPath(inset);
+    ctx.fillStyle = shade(col, f.front ? Math.min(1.22, 0.62 + 0.5 * Math.max(0, f.d) + 0.22 * lit) : 0.5);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(7,9,13,.55)"; ctx.lineWidth = 1; ctx.stroke();
+    if (letterInfo && f.front) printFaceLetter(p, f.n, h, spin, letterInfo, col);
+    ctx.globalAlpha = 1;
+  }
+}
+
 function drawCube(p, h, lit, alpha, spin, letterInfo) {
   const off = v => spin ? rotVec(spin.axis, spin.ang, [v[0] * h, v[1] * h, v[2] * h]) : [v[0] * h, v[1] * h, v[2] * h];
   const pts = VERT.map(v => { const o = off(v); return proj([p.pos[0] + o[0], p.pos[1] + o[1], p.pos[2] + o[2]]); });
@@ -10772,34 +10834,7 @@ function drawCube(p, h, lit, alpha, spin, letterInfo) {
       // glued: their home-face text frame rides the piece's rotation, so a
       // flipped edge shows its letter flipped, a twisted corner shows it
       // turned. Address letters print upright — labels of fixed space.
-      if (letterInfo) {
-        const n = FACES[f.fi][1];
-        let tu, tv;
-        if (letterInfo.glued) {
-          const hn = mulMv(transpose(p.M), n);
-          const t = TANG[key(hn)];
-          tu = mulMv(p.M, t[0]); tv = mulMv(p.M, t[1]);
-        } else { const t = TANG[key(n)]; tu = t[0]; tv = t[1]; }
-        let nw = n, tuw = tu, tvw = tv;
-        if (spin) {
-          nw = rotVec(spin.axis, spin.ang, n);
-          tuw = rotVec(spin.axis, spin.ang, tu);
-          tvw = rotVec(spin.axis, spin.ang, tv);
-        }
-        const c3 = [p.pos[0] + nw[0] * h, p.pos[1] + nw[1] * h, p.pos[2] + nw[2] * h];
-        const p0 = proj(c3);
-        const pu = proj([c3[0] + tuw[0] * h * 0.5, c3[1] + tuw[1] * h * 0.5, c3[2] + tuw[2] * h * 0.5]);
-        const pv = proj([c3[0] + tvw[0] * h * 0.5, c3[1] + tvw[1] * h * 0.5, c3[2] + tvw[2] * h * 0.5]);
-        const Q = 32;
-        ctx.save();
-        ctx.transform((pu.x - p0.x) / Q, (pu.y - p0.y) / Q,
-                      (pv.x - p0.x) / Q, (pv.y - p0.y) / Q, p0.x, p0.y);
-        ctx.font = "700 42px ui-monospace, Menlo, monospace";
-        ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillStyle = INK[col] || "rgba(12,14,18,.88)";
-        ctx.fillText(letterInfo.text, 0, 2);
-        ctx.restore();
-      }
+      if (letterInfo) printFaceLetter(p, FACES[f.fi][1], h, spin, letterInfo, col);
       if (lit > 0.05) { ctx.shadowColor = KINDCOLOR[p.kind]; ctx.shadowBlur = 28 * lit; }
     }
   }
@@ -11005,7 +11040,8 @@ function frame(now) {
 
   // motion: easing toward mode targets
   st.knollT += ((st.knollOn ? 1 : 0) - st.knollT) * Math.min(1, dt * 6);
-  const wantDist = st.knollOn ? 13.5 : 8.2;
+  st.explodeT += ((st.explodeOn ? 1 : 0) - st.explodeT) * Math.min(1, dt * 5);
+  const wantDist = st.knollOn ? 13.5 : 8.2 * (1 + 0.5 * st.explodeT);
   view.dist += (wantDist - view.dist) * Math.min(1, dt * 4);
   if (st.knollOn) {
     view.rx += (0.16 - view.rx) * Math.min(1, dt * 4);
@@ -11043,6 +11079,8 @@ function frame(now) {
     p.lit += (wantLit - p.lit) * Math.min(1, dt * 8);
     p.alpha += (wantA - p.alpha) * Math.min(1, dt * 8);
     let lat = p.lat;
+    const ek = st.explodeT * st.explodeT * (3 - 2 * st.explodeT);
+    if (ek > 0.001) lat = [lat[0] * (1 + 1.25 * ek), lat[1] * (1 + 1.25 * ek), lat[2] * (1 + 1.25 * ek)];
     if (spin && p.cell[spin.axis] === spin.sign) lat = rotVec(spin.axis, spin.ang, lat);
     const k = st.knollT, e = k * k * (3 - 2 * k); // smoothstep
     for (let i = 0; i < 3; i++) p.pos[i] = lat[i] + (p.knoll[i] - lat[i]) * e;
@@ -11072,6 +11110,20 @@ function frame(now) {
   // relation lines beneath the lit pieces
   const L = byLetter(cur);
   for (const [a, b] of tg.lines) if (L[a] && L[b]) drawLine(L[a], L[b], "#d7dce6", 1.4, 0.55);
+
+  // exploded struts: cell-adjacent pieces stay connected while lifted
+  // apart, so the inside — the empty center — shows
+  if (st.explodeT > 0.04) {
+    const at = {};
+    for (const q of pieces) at[key(q.cell)] = q;
+    const a = 0.22 * st.explodeT;
+    for (const q of pieces) {
+      for (const d of [[1, 0, 0], [0, 1, 0], [0, 0, 1]]) {
+        const nb = at[key([q.cell[0] + d[0], q.cell[1] + d[1], q.cell[2] + d[2]])];
+        if (nb) drawLine(q, nb, "#6b7385", 1, a);
+      }
+    }
+  }
 
   // the links web: live in lattice and knolled view, follows every turn.
   // seams — the incidence skeleton between the pieces currently occupying
@@ -11103,7 +11155,8 @@ function frame(now) {
     const pSpin = spin && p.cell[spin.axis] === spin.sign ? spin : null;
     const letterInfo = st.labels && st.knollT <= 0.5 && !isVoid
       ? { text: entry.letter, glued: cur !== "polysheaf" } : null;
-    if (isVoid) drawVoid(p, h * 0.8, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, 0.5));
+    if (isVoid) drawVoid(p, h * 0.8, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, st.xray ? 0.85 : 0.5));
+    else if (st.xray) drawFacelets(p, h, Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin, letterInfo);
     else drawCube(p, h, Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin, letterInfo);
     // billboard letter: knolled flat-lay only (faces go edge-on there);
     // the void keeps its glyph always — the 27th term has no faces
@@ -11290,7 +11343,10 @@ $("bLetterCube").onclick = () => setLettering("cube_alphabet");
 $("bKnoll").onclick = () => {
   st.knollOn = !st.knollOn;
   $("bKnoll").classList.toggle("on", st.knollOn);
-  if (st.knollOn) computeKnoll();
+  if (st.knollOn) {
+    computeKnoll();
+    st.explodeOn = false; $("bExplode").classList.remove("on");
+  }
 };
 $("bLabels").onclick = () => {
   st.labels = !st.labels;
@@ -11304,6 +11360,19 @@ $("bLinks").onclick = () => {
     "seams: the incidence skeleton — every cell tied to the cells that decide it (edge→corners, face→edges, faces→⊘); scramble and watch which pieces the web lands on",
     "drift: each displaced piece tied to whoever squats its home — the permutation's cycles drawn as chords; solved = no chords. (A loose borrow of the ledger's word — bdo may rename.)"];
   if (caps[st.links]) st.flash = { text: caps[st.links], until: performance.now() + 6000 };
+};
+$("bXray").onclick = () => {
+  st.xray = !st.xray;
+  $("bXray").classList.toggle("on", st.xray);
+  if (st.xray) st.flash = { text: "x-ray: the 54 facelets alone — the value layer floating free; the void shows at the center", until: performance.now() + 4500 };
+};
+$("bExplode").onclick = () => {
+  st.explodeOn = !st.explodeOn;
+  $("bExplode").classList.toggle("on", st.explodeOn);
+  if (st.explodeOn) {
+    st.knollOn = false; $("bKnoll").classList.remove("on");
+    st.flash = { text: "exploded: pieces lifted apart on their struts — the empty center visible; turns still work", until: performance.now() + 4500 };
+  }
 };
 $("bTrioSpot").onclick = () => {
   st.spot = !st.spot; st.cascade = null;
