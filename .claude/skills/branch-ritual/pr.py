@@ -240,13 +240,18 @@ def cmd_create(ns):
         print("do not merge it; tell bdo. (open + not a draft = please merge)")
 
 
-def push_refusal(branch, merged_numbers):
-    """The pure reasons a push may not happen. None means it may."""
+def push_refusal(branch, merged_numbers, open_numbers=()):
+    """The pure reasons a push may not happen. None means it may.
+
+    A branch with a merged PR is dead — unless an open PR also exists from
+    it: that open PR is a recovery (create --recover opens exactly this),
+    and the rescue must be updatable or a conflicted recovery PR can never
+    be rebased (the PR #20 incident)."""
     if not branch:
         return "detached HEAD — a session pushes its claude/* branch"
     if branch in ("main", "master"):
         return "never push the trunk — the stamp is bdo's (firm)"
-    if merged_numbers:
+    if merged_numbers and not open_numbers:
         nums = ", ".join(f"#{n}" for n in merged_numbers)
         return (
             f"branch '{branch}' is dead — PR {nums} already merged from it; "
@@ -275,13 +280,21 @@ def cmd_push(ns):
         _refuse(reason)
     branch = _run(["git", "branch", "--show-current"]).strip()
     merged = []
+    open_prs = []
     if branch and branch not in ("main", "master"):
         merged = [p["number"] for p in json.loads(_run(
             ["gh", "pr", "list", "--head", branch, "--state", "merged",
              "--json", "number"]))]
-    reason = push_refusal(branch, merged)
+        open_prs = [p["number"] for p in json.loads(_run(
+            ["gh", "pr", "list", "--head", branch, "--state", "open",
+             "--json", "number"]))]
+    reason = push_refusal(branch, merged, open_prs)
     if reason:
         _refuse(reason)
+    if merged and open_prs:
+        nums = ", ".join(f"#{n}" for n in open_prs)
+        print(f"note: dead branch carrying open recovery PR {nums} — "
+              "this push updates the rescue")
     story = {"red_reason": ns.red_ok or ""}
     _check_tests(story)
     args = ["git", "push"]
