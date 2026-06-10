@@ -1,0 +1,33 @@
+{
+  "atom": {
+    "id": "atom.real-value-gate.v0",
+    "story": {
+      "text": "As an AI, I need the value gate to be a summoned real judgement instead of a fixed accept, because bdo wants a second set of eyes that can actually say no before worthless work propagates into spec, plan, and code.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["v-next.real-l0"],
+      "touches": [".ai-native/log", "loop/reconcile.py", "loop/orchestrate.py"],
+      "must_not_collide_with": ["atom.loop-skeleton.v0", "atom.fast-ambient-loop.v0"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "ai-native-loop-substrate.md",
+        ".ai-native/reports/0004-the-frame-harness-and-fabric.md",
+        ".ai-native/done/0003-real-l0-real-stamp.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated: current verdicts and state are always the fold over .ai-native/log/ (D-5). The verdicts block above records the state at authoring time only."
+}

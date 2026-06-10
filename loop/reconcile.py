@@ -112,23 +112,26 @@ def read_jsonl(path):
     return records, dropped
 
 
+def dedup_by_id(records):
+    """First occurrence wins (replay-safe)."""
+    out, seen = [], set()
+    for rec in records:
+        if isinstance(rec, dict) and rec.get("id") and rec["id"] not in seen:
+            seen.add(rec["id"])
+            out.append(rec)
+    return out
+
+
 class Fold:
     """The state of the world is this fold over log/ — never the cache."""
 
     def __init__(self, root):
         self.events_raw, self.events_dropped = read_jsonl(root / "log" / "events.jsonl")
         self.receipts_raw, self.receipts_dropped = read_jsonl(root / "log" / "receipts.jsonl")
-        # dedup by id, first occurrence wins (replay-safe)
-        self.events, seen = [], set()
-        for ev in self.events_raw:
-            if isinstance(ev, dict) and ev.get("id") and ev["id"] not in seen:
-                seen.add(ev["id"])
-                self.events.append(ev)
-        self.receipts, seen = [], set()
-        for rc in self.receipts_raw:
-            if isinstance(rc, dict) and rc.get("id") and rc["id"] not in seen:
-                seen.add(rc["id"])
-                self.receipts.append(rc)
+        self.admissions_raw, self.admissions_dropped = read_jsonl(root / "log" / "admissions.jsonl")
+        self.events = dedup_by_id(self.events_raw)
+        self.receipts = dedup_by_id(self.receipts_raw)
+        self.admissions = dedup_by_id(self.admissions_raw)
 
     def event(self, type_, artifact_hash):
         for ev in self.events:
@@ -144,14 +147,82 @@ class Fold:
         return None
 
 
+def real_nodes(fold):
+    """Which stages are judged by a real node, read from admitted records
+    (I-8) — never a code literal. Latest node_real admission per stage wins;
+    a null real_node reverts the stage to its mock."""
+    real = {}
+    for adm in fold.admissions:
+        if adm.get("type") == "node_real" and adm.get("stage_node"):
+            if adm.get("real_node"):
+                real[adm["stage_node"]] = adm["real_node"]
+            else:
+                real.pop(adm["stage_node"], None)
+    return real
+
+
+def receipt_for_stage(fold, stage, artifact_hash, real_map=None):
+    """The receipt that satisfies a stage: from the stage's mock node, or
+    from its admitted real node. History is never retro-invalidated (D-5):
+    a receipt valid when written stays valid after realness is admitted."""
+    if real_map is None:
+        real_map = real_nodes(fold)
+    rc = fold.receipt_by_node(stage["node"], artifact_hash)
+    if rc is None and stage["node"] in real_map:
+        rc = fold.receipt_by_node(real_map[stage["node"]], artifact_hash)
+    return rc
+
+
+def load_atoms(root):
+    """The field: every atom in atoms/, each with its content hash."""
+    out = []
+    for path in sorted((root / "atoms").glob("*.json")):
+        raw = path.read_bytes()
+        atom = json.loads(raw)["atom"]
+        out.append((atom, "sha256:" + hashlib.sha256(raw).hexdigest()))
+    return out
+
+
 def load_atom(root):
-    atoms = sorted((root / "atoms").glob("*.json"))
+    """The single-atom (phase-1) driver's loader; the orchestrator uses load_atoms."""
+    atoms = load_atoms(root)
     if len(atoms) != 1:
         raise SystemExit(f"result: needs-you — expected exactly one atom in {root / 'atoms'}, found {len(atoms)}")
-    raw = atoms[0].read_bytes()
-    atom = json.loads(raw)["atom"]
-    artifact_hash = "sha256:" + hashlib.sha256(raw).hexdigest()
-    return atom, artifact_hash
+    return atoms[0]
+
+
+def load_epics(root):
+    """The arcs bdo steers (done-line 0006): first-class records read like
+    atoms — the file is truth for what an epic claims, the log for what its
+    pieces have earned."""
+    out = []
+    edir = root / "epics"
+    if not edir.exists():
+        return out
+    for path in sorted(edir.glob("*.json")):
+        out.append(json.loads(path.read_bytes())["epic"])
+    return out
+
+
+def epic_of(atom, epics):
+    """An atom files under an epic via its own incidence.serves, or via the
+    epic's pieces list — the latter lets settled atoms retro-file without
+    re-judging (the epic points at them; their hashes never move)."""
+    serves = set(atom.get("incidence", {}).get("serves", []))
+    for epic in epics:
+        if epic["id"] in serves:
+            return epic
+        if any(p.get("atom") == atom["id"] for p in epic.get("pieces", [])):
+            return epic
+    return None
+
+
+def glue_of(atom, epic):
+    """How this local piece composes into the arc, in the epic's words."""
+    for piece in (epic or {}).get("pieces", []):
+        if piece.get("atom") == atom["id"]:
+            return piece.get("glue")
+    return None
 
 
 def make_event(type_, seam, from_node, atom_id, artifact_hash, requires, terminal_expected):
@@ -169,16 +240,22 @@ def make_event(type_, seam, from_node, atom_id, artifact_hash, requires, termina
     }
 
 
-def make_receipt(event, stage, atom_id, artifact_hash):
+def make_receipt(event, stage, atom_id, artifact_hash, node=None, verdict=None, reason=None):
+    """Defaults are the stage's mock; a summoned real node passes its own
+    identity, verdict, and reason. A non-advancing verdict suggests no next
+    event — the atom parks for a human (D-4)."""
+    node = node or stage["node"]
+    verdict = verdict if verdict is not None else stage["verdict"]
+    reason = reason if reason is not None else stage["reason"]
     return {
-        "id": "rcp." + short_hash(stage["node"], atom_id, artifact_hash, event["id"]),
+        "id": "rcp." + short_hash(node, atom_id, artifact_hash, event["id"]),
         "event_id": event["id"],
-        "node": stage["node"],
+        "node": node,
         "artifact_id": atom_id,
         "artifact_hash": artifact_hash,
-        "verdict": stage["verdict"],
-        "reason": stage["reason"],
-        "next_suggested_event": stage["next_event"],
+        "verdict": verdict,
+        "reason": reason,
+        "next_suggested_event": stage["next_event"] if verdict == stage["verdict"] else None,
         "ts": now_ts(),
     }
 
@@ -188,8 +265,9 @@ def atom_state(fold, artifact_hash):
     if not fold.event(SEED_EVENT, artifact_hash):
         return "unborn"
     state = "created"
+    real_map = real_nodes(fold)
     for stage in PIPELINE:
-        rc = fold.receipt_by_node(stage["node"], artifact_hash)
+        rc = receipt_for_stage(fold, stage, artifact_hash, real_map)
         if rc and rc.get("verdict") == stage["verdict"]:
             state = stage["state"]
         else:
@@ -197,27 +275,36 @@ def atom_state(fold, artifact_hash):
     return state
 
 
-def rebuild_cache(root, fold, artifact_hash):
+def rebuild_cache(root, fold, artifact_hashes):
     """queues/ and offsets/ are a pure fold over log/ — rebuilt from scratch
     each time, byte-deterministic, so deletion + replay is always lossless."""
+    if isinstance(artifact_hashes, str):
+        artifact_hashes = [artifact_hashes]
     qdir, odir = root / "queues", root / "offsets"
     qdir.mkdir(parents=True, exist_ok=True)
     odir.mkdir(parents=True, exist_ok=True)
     event_index = {ev["id"]: i + 1 for i, ev in enumerate(fold.events)}
+    real_map = real_nodes(fold)
     for stage in PIPELINE:
         pending = []
-        ev = fold.event(stage["event"], artifact_hash)
-        if ev is not None and fold.receipt_by_node(stage["node"], artifact_hash) is None:
-            pending.append(ev)
+        for artifact_hash in artifact_hashes:
+            ev = fold.event(stage["event"], artifact_hash)
+            if ev is not None and receipt_for_stage(fold, stage, artifact_hash, real_map) is None:
+                pending.append(ev)
         (qdir / f"{stage['seam']}.pending.jsonl").write_text(
             "".join(canon(ev) + "\n" for ev in pending), encoding="utf-8")
+        stage_nodes = {stage["node"], real_map.get(stage["node"])}
         receipted = [event_index[rc["event_id"]] for rc in fold.receipts
-                     if rc.get("node") == stage["node"] and rc.get("event_id") in event_index]
+                     if rc.get("node") in stage_nodes and rc.get("event_id") in event_index]
         (odir / f"{stage['node']}.offset").write_text(f"{max(receipted, default=0)}\n", encoding="utf-8")
 
 
-def pass_once(root, pace=0.0, quiet=False):
+def pass_once(root, pace=0.0, quiet=False, atom=None, artifact_hash=None):
     """One reconcile pass: re-read the log, move the atom at most one step.
+
+    With no atom given, the single atom in atoms/ is loaded (the phase-1
+    driver). The orchestrator hands in which atom to advance; everything
+    below keys on artifact_hash, so many atoms share one log safely.
 
     The pass asks §14.4's questions, each time:
       1. What goal state does this atom want?
@@ -226,12 +313,15 @@ def pass_once(root, pace=0.0, quiet=False):
       4. What is missing?
       5. Which seam should receive the next event?
     """
-    atom, artifact_hash = load_atom(root)
+    if atom is None:
+        atom, artifact_hash = load_atom(root)
     desired = atom["desired_state"]
     fold = Fold(root)
 
+    real_map = real_nodes(fold)
     step = None
     next_seam = None
+    awaited = None
     if pace:
         time.sleep(pace)
 
@@ -246,7 +336,7 @@ def pass_once(root, pace=0.0, quiet=False):
     else:
         # missing: an event a receipt already implies (repair before new work)
         for i, stage in enumerate(PIPELINE):
-            rc = fold.receipt_by_node(stage["node"], artifact_hash)
+            rc = receipt_for_stage(fold, stage, artifact_hash, real_map)
             if rc and rc.get("verdict") == stage["verdict"] and not fold.event(stage["next_event"], artifact_hash):
                 if stage["next_event"] == TERMINAL_EVENT:
                     seam, requires, terminal = TERMINAL_SEAM, [], []
@@ -254,7 +344,7 @@ def pass_once(root, pace=0.0, quiet=False):
                     nxt = PIPELINE[i + 1]
                     seam, requires, terminal = nxt["seam"], [nxt["node"]], nxt["terminal_expected"]
                 append_line(root / "log" / "events.jsonl", make_event(
-                    stage["next_event"], seam, stage["node"], atom["id"], artifact_hash,
+                    stage["next_event"], seam, rc["node"], atom["id"], artifact_hash,
                     requires, terminal))
                 step = f"derived {stage['next_event']} from receipt {rc['id']}"
                 next_seam = seam
@@ -265,8 +355,14 @@ def pass_once(root, pace=0.0, quiet=False):
                 ev = fold.event(stage["event"], artifact_hash)
                 if ev is None:
                     break
-                if fold.receipt_by_node(stage["node"], artifact_hash) is not None:
+                if receipt_for_stage(fold, stage, artifact_hash, real_map) is not None:
                     continue  # already handled this version of the atom (I-2): skip
+                if stage["node"] in real_map:
+                    # an admitted-real stage is judged by a summoned node,
+                    # never by this loop (D-2, D-10): park and name who
+                    awaited = real_map[stage["node"]]
+                    next_seam = stage["seam"]
+                    break
                 append_line(root / "log" / "receipts.jsonl",
                             make_receipt(ev, stage, atom["id"], artifact_hash))
                 step = f"{stage['node']} judged {stage['event']} -> {stage['verdict']}"
@@ -274,7 +370,7 @@ def pass_once(root, pace=0.0, quiet=False):
                 break
 
     fold = Fold(root)  # re-read: the log, not our memory, is what happened
-    rebuild_cache(root, fold, artifact_hash)
+    rebuild_cache(root, fold, [h for _, h in load_atoms(root)])
     state = atom_state(fold, artifact_hash)
 
     if state == desired and fold.event(TERMINAL_EVENT, artifact_hash):
@@ -289,7 +385,8 @@ def pass_once(root, pace=0.0, quiet=False):
         print(f"pass: goal={desired} state={state} events={len(fold.events)} "
               f"receipts={len(fold.receipts)} dropped_lines={torn} "
               f"step={step or 'none'} next_seam={next_seam or '-'}")
-        print(f"result: {result} — atom {atom['id']} at {state}, desired {desired}")
+        print(f"result: {result} — atom {atom['id']} at {state}, desired {desired}"
+              + (f" (awaiting summoned node {awaited})" if awaited else ""))
     return result, state, step
 
 
@@ -305,17 +402,19 @@ def until_done(root, pace=0.0, max_passes=50):
 
 
 def status(root):
-    atom, artifact_hash = load_atom(root)
+    entries = load_atoms(root)
     fold = Fold(root)
-    state = atom_state(fold, artifact_hash)
-    print(f"atom: {atom['id']}")
-    print(f"artifact_hash: {artifact_hash}")
-    print(f"state: {state}")
-    print(f"desired_state: {atom['desired_state']}")
+    print(f"atoms: {len(entries)}")
     print(f"events: {len(fold.events)} (dropped lines: {fold.events_dropped})")
     print(f"receipts: {len(fold.receipts)} (dropped lines: {fold.receipts_dropped})")
-    for rc in fold.receipts:
-        print(f"  {rc['node']}: {rc['verdict']} ({rc['id']})")
+    for atom, artifact_hash in entries:
+        state = atom_state(fold, artifact_hash)
+        print(f"atom: {atom['id']}")
+        print(f"  artifact_hash: {artifact_hash}")
+        print(f"  state: {state} (desired: {atom['desired_state']})")
+        for rc in fold.receipts:
+            if rc.get("artifact_hash") == artifact_hash:
+                print(f"  {rc['node']}: {rc['verdict']} ({rc['id']})")
     return 0
 
 
@@ -331,8 +430,7 @@ def main(argv=None):
     if args.status:
         return status(args.root)
     if args.rebuild_cache_only:
-        atom, artifact_hash = load_atom(args.root)
-        rebuild_cache(args.root, Fold(args.root), artifact_hash)
+        rebuild_cache(args.root, Fold(args.root), [h for _, h in load_atoms(args.root)])
         print("result: report — cache rebuilt from log/ (fold only, no mutation)")
         return 0
     if args.until_done:
