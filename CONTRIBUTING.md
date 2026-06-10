@@ -40,8 +40,9 @@ up the discipline without re-deriving it.
   work; every gate reads someone else's output.
 - **bdo merges (D-4).** Sessions develop on their assigned `claude/*` branch
   and push there; merging to main is the owner's act, not the session's. The
-  full branch lifecycle is in
-  [docs/sop/branch-management.md](docs/sop/branch-management.md).
+  full lifecycle is the
+  [branch-ritual skill](.claude/skills/branch-ritual/SKILL.md) — run it at
+  hand-off, and when the Branches page needs gardening.
 - **Stdlib only** in `loop/` for now. No broker, no daemon, no network. Every
   invocation ends with a clear stdout result: `done` | `report` | `needs-you`.
 
