@@ -132,6 +132,22 @@ class SummonTest(unittest.TestCase):
         text = self.hook_text(Path(self.tmp) / "nowhere", "{}")
         self.assertEqual(text, "")
 
+    def test_hook_surfaces_the_owner_backlog_as_a_count(self):
+        self.judge("atom.summon-00.v0")                 # L0 accepts atom 00
+        orchestrate.orchestrate(self.root, quiet=True)  # it advances to the stamp
+        text = self.hook_text(self.root, "{}")
+        self.assertIn("1 item(s) await bdo's stamp", text)
+        self.assertIn("python -m loop.node inbox", text)
+        # the count is a pointer, not a briefing: no stamp briefing leaks here
+        self.assertNotIn("atom.summon-00.v0", text.split("await bdo's stamp")[1])
+
+    def test_mocked_stamp_surfaces_nothing_for_the_owner(self):
+        fresh = make_root(tempfile.mkdtemp(dir=self.tmp), 1)
+        orchestrate.admit_setpoint(fresh, SETPOINT, by="test-bdo")
+        node.admit_real(fresh, L0_STAGE, L0_REAL, by="test-bdo")  # stamp stays mock
+        orchestrate.orchestrate(fresh, quiet=True)
+        self.assertNotIn("bdo's stamp", self.hook_text(fresh, "{}"))
+
     def test_rendering_writes_nothing(self):
         before = log_bytes(self.root)
         self.cli_text()

@@ -91,3 +91,17 @@ catch up with tonight's substrate; `CLAUDE.md` is finally committed.
 
 `report` — four done-lines met and pushed; field healthy (4 settled,
 1 at your stamp, 0 parked); nothing blocked except on your verdicts.
+
+## Addendum, later the same night (~01:45)
+
+- **knoll.py byte-determinism on Windows: verified clean.** Live run —
+  "changed: nothing (byte-identical — idempotent re-run)", tree stays
+  clean. No fix needed; box ticked.
+- **Done-line 0011 — the hook surfaces the owner's backlog.** One line
+  when items await the admitted-real stamp (count + the inbox command,
+  never the briefings — surfacing per §6, the inbox stays the briefing
+  surface per D-4); silent when the stamp is mocked or the queue is
+  empty; still read-only, still exit 0. Two new tests; suite 53/53.
+  Honest flag: this is the dual-benefit zone report 0006 named — an
+  owner-surface change you didn't verbatim request tonight. It ships as
+  its own commit so your stamp can reject it alone.

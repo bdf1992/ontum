@@ -86,6 +86,19 @@ def briefing(s):
     return "\n".join(lines)
 
 
+def owner_backlog(root):
+    """Atoms awaiting the admitted-real owner stamp (D-4). Surfaced as a
+    count only — the inbox is the briefing surface, this is the surfacer's
+    pointer at it (§6)."""
+    fold = Fold(root)
+    real_map = real_nodes(fold)
+    human = real_map.get(HUMAN_NODE)
+    if human is None:
+        return []
+    return [atom["id"] for atom, ahash in load_atoms(root)
+            if next_action(fold, atom, ahash, real_map) == ("await", human)]
+
+
 def resolve_root(arg_root):
     """Hooks run wherever the harness runs them; the project dir is the
     anchor when given (CLAUDE_PROJECT_DIR), the CWD default otherwise."""
@@ -114,6 +127,10 @@ def main(argv=None):
                       " judge through the one pen; otherwise leave them parked:")
                 for s in summons:
                     print(briefing(s))
+            backlog = owner_backlog(root)
+            if backlog:
+                print(f"[loop] {len(backlog)} item(s) await bdo's stamp"
+                      " — python -m loop.node inbox")
         except Exception:
             pass  # a broken hook must never block the owner's prompt
         return 0
