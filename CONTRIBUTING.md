@@ -1,8 +1,12 @@
 # Contributing
 
-This is not a conventional open-contribution repo. It runs as a two-party
-loop — **bdo** (PM, owner) and **Claude** (engineering) — under the doctrine in
-[`ai-native-loop-substrate.md`](ai-native-loop-substrate.md). The doctrine is
+This is not a conventional open-contribution repo. It runs as an
+owner-and-engineering loop — **bdo** (PM, owner) and an engineering
+family: **Claude**, and (done-line 0024) **Codex** as an admitted *guest
+engineer* who works to [AGENTS.md](AGENTS.md) — under the doctrine in
+[`ai-native-loop-substrate.md`](ai-native-loop-substrate.md). The party
+that engineers can vary; bdo remains the owner and the last stop. The
+doctrine is
 the contract: it is a doc we work from, not a rulebook we answer to, and if
 something in it is wrong or in the way, the move is to say so and change it —
 not to quietly work around it.

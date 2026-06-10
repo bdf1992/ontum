@@ -27,9 +27,12 @@ canonical spec is [`ai-native-loop-substrate.md`](ai-native-loop-substrate.md)
 working contract: if it's wrong or in the way, say so and change it —
 don't quietly work around it.
 
-The repo runs as a two-party loop: **bdo** (PM, owner) and **Claude**
-(engineering). See [CONTRIBUTING.md](CONTRIBUTING.md) before changing
-anything.
+The repo runs as an owner-and-engineering loop: **bdo** (PM, owner) and
+an engineering family — **Claude**, and (done-line 0024) **Codex** as an
+admitted *guest engineer*, whose composition surface is
+[AGENTS.md](AGENTS.md). The party that engineers can vary; the owner does
+not — bdo is the last stop (D-4). See [CONTRIBUTING.md](CONTRIBUTING.md)
+before changing anything.
 
 ## The horizon (what the substrate is for)
 
