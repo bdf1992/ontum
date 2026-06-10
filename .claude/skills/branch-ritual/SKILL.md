@@ -5,9 +5,23 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.5.0
+version: 0.6.0
 owner: bdo
 changelog:
+  - version: 0.6.0
+    note: >
+      The git wrapper, mirroring the gh wrapper (done-line 0020). A
+      sibling pen, git.py, brands the two highest-risk verbs in the
+      shared-tree fleet: `add` refuses a sweep (`add .` / `-A` / `-u`)
+      and stages only named paths; `commit` refuses `-a`/`--all`,
+      requires a real step-shaped message, and never commits the trunk.
+      Raw `git add` / `git commit` join the command_guard deny-list,
+      routed to the pen; everything else git add/commit take is
+      forwarded for parity. The watcher now sees standalone local
+      mutating git (checkout, branch, merge, ...) so the next verb to
+      brand nominates itself — read-only git (status/log/diff) stays
+      raw-and-watched, exactly as gh pr list does. One pen per seam;
+      the command commits, it never authorizes itself.
   - version: 0.5.0
     note: >
       The merge signal is mechanical (done-line 0017). PR #9 was
@@ -89,12 +103,20 @@ section), don't work around it.
 - **The pen is the only write path to a PR.** `pr.py` (beside this file)
   validates the story before anything is submitted; the `command_guard`
   hook denies the raw verbs (`gh pr create/edit/merge/close/review/ready`,
-  `git push` to the trunk) and watches every other raw external command
-  into `.ai-native/log/tool-use.jsonl`. Branded tools over the generic
-  brand: raw use that isn't denied gets called out in-context (once per
-  tool per session, with the audit count) so it surfaces naturally —
-  surfaced it's a judgment call, unsurfaced it stays silent. One pen
-  per seam, the `loop/node.py` pattern.
+  and raw `git add`/`git commit`/`git push`) and watches every other raw
+  external command into `.ai-native/log/tool-use.jsonl`. Branded tools
+  over the generic brand: raw use that isn't denied gets called out
+  in-context (once per tool per session, with the audit count) so it
+  surfaces naturally — surfaced it's a judgment call, unsurfaced it stays
+  silent. One pen per seam, the `loop/node.py` pattern.
+- **Stage and commit through the git pen.** `git.py` (beside `pr.py`) is
+  the only path to `git add`/`git commit`: it stages **named paths only**
+  (`add .` / `-A` / `-u` are refused — a sweep would pull another
+  session's uncommitted work into the shared tree), requires a real
+  step-shaped message, and never commits the trunk. Everything else git
+  add/commit take is forwarded for parity. Raw `git add`/`git commit` are
+  hook-denied; read-only git (`status`/`log`/`diff`) stays raw, exactly
+  as `gh pr list` does. *(done-line 0020.)*
 - **Open non-draft PR = please merge; draft = not yet.** A PR the
   session is still appending to is a **rolling draft** (`pr.py create
   --rolling`) — the platform disables the merge button, so an early
@@ -110,7 +132,9 @@ section), don't work around it.
 1. **Tests first:** `python -m unittest discover -s tests -v`. Red means fix
    or shrink scope (§9.5) — don't hand off red without saying so.
 2. Confirm you're on this session's `claude/*` branch and everything is
-   committed — small, step-shaped commits with messages that say what landed.
+   committed — stage named paths and commit through the git pen
+   (`git.py add <paths>`, then `git.py commit -m "<what landed>"`):
+   small, step-shaped commits, no sweep.
    Mid-session increments leave the machine only through the branded push:
    `python .claude/skills/branch-ritual/pr.py push` (red suite refuses
    unless declared with `--red-ok`, and the declaration is owed to the PR
