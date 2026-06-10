@@ -181,6 +181,17 @@ def hook():
             file=sys.stderr,
         )
         return 2
+    if re.search(r"\bgit\s+push\b", acting):
+        record({"status": "denied", "rule": "git-push-raw",
+                "command": command, "session": session})
+        print(
+            "raw `git push` is denied (branch-ritual, done-line 0014): the "
+            f"branded push is `{PEN} push` — it checks the branch is alive "
+            "and the suite is green (or declared red) before anything "
+            "leaves the machine.",
+            file=sys.stderr,
+        )
+        return 2
 
     bins = external_bins(command)
     if bins:

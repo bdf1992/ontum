@@ -127,6 +127,22 @@ class RecordsPenTest(unittest.TestCase):
         self.assertEqual(pen.new(str(self.rec), "second", None), 0)
         self.assertTrue((self.rec / "0002-second.md").exists())
 
+    def test_pen_takes_the_body_in_one_move(self):
+        # bdo, live: "shouldn't the tool allow you to pass along the
+        # content you intended without having to edit it?" — it does now
+        code = pen.new(str(self.rec), "one-move", "one move",
+                       body="> **Done when:** the mint is one move, not mint-then-edit.")
+        self.assertEqual(code, 0)
+        text = (self.rec / "0001-one-move.md").read_text(encoding="utf-8")
+        self.assertIn("# Done-line 0001 — one move", text)
+        self.assertIn("the mint is one move", text)
+        self.assertNotIn("<the one line", text)  # no placeholder left behind
+
+    def test_pen_refuses_a_body_that_breaks_the_form(self):
+        code = pen.new(str(self.rec), "formless", None, body="just prose")
+        self.assertEqual(code, 2)
+        self.assertFalse((self.rec / "0001-formless.md").exists())
+
     def test_pen_refusals(self):
         self.assertEqual(pen.new(str(self.rec), "Bad_Slug", None), 2)
         plain = Path(self.tmp) / "plain"

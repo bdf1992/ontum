@@ -111,6 +111,40 @@ class TestBodyForm(unittest.TestCase):
         self.assertEqual(pen.compose_body(_story()), pen.compose_body(_story()))
 
 
+class TestBrandedPush(unittest.TestCase):
+    """Done-line 0014: the pure refusal rules of the pen's push verb."""
+
+    def test_healthy_session_branch_may_push(self):
+        self.assertIsNone(pen.push_refusal("claude/quiet-hopper-ovn8x1", []))
+
+    def test_trunk_is_refused(self):
+        for trunk in ("main", "master"):
+            self.assertIn("firm", pen.push_refusal(trunk, []))
+
+    def test_detached_head_is_refused(self):
+        self.assertIn("detached", pen.push_refusal("", []))
+
+    def test_dead_branch_cannot_strand_commits(self):
+        reason = pen.push_refusal("claude/busy-feynman-4hd46k", [6])
+        self.assertIn("dead", reason)
+        self.assertIn("#6", reason)
+
+    def test_plain_force_does_not_exist_even_forwarded(self):
+        for tokens in (["--force"], ["-f"], ["origin", "claude/x", "--force"]):
+            self.assertIn("force-with-lease", pen.forward_refusal(tokens))
+
+    def test_forwarding_has_parity_but_never_the_trunk(self):
+        # parity: the everyday shapes of git push all pass through
+        for tokens in ([], ["--tags"], ["--dry-run"], ["origin", "claude/x"],
+                       ["origin", "--delete", "claude/dead-branch"],
+                       ["upstream", "HEAD:claude/x"]):
+            self.assertIsNone(pen.forward_refusal(tokens), tokens)
+        # ...except the trunk, in any spelling
+        for tokens in (["origin", "main"], ["origin", "HEAD:main"],
+                       ["origin", "--delete", "main"], ["upstream", "master"]):
+            self.assertIsNotNone(pen.forward_refusal(tokens), tokens)
+
+
 class TestQuotedProse(unittest.TestCase):
     """Caught live: the shame hook read a here-string commit message as
     tool heads. Quoted content is prose, never commands."""
@@ -202,13 +236,28 @@ class TestGuardAndWatcher(unittest.TestCase):
                         "git push origin --delete main"):
             self.assertEqual(self._invoke(command).returncode, 2, command)
 
-    def test_session_branch_push_allowed_and_watched(self):
+    def test_raw_push_is_denied_toward_the_branded_verb(self):
+        # done-line 0014: even the session's own branch goes through the pen
         proc = self._invoke("git push -u origin claude/quiet-hopper-ovn8x1")
-        self.assertEqual(proc.returncode, 0)
-        self.assertEqual(self._entries()[0]["bins"], ["git"])
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("branded push", proc.stderr)
+        self.assertEqual(self._entries()[0]["rule"], "git-push-raw")
+
+    def test_trunk_push_still_gets_the_firm_message(self):
+        proc = self._invoke("git push origin main")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("never push to main", proc.stderr)
 
     def test_branch_named_like_trunk_is_not_a_trunk_push(self):
-        self.assertEqual(self._invoke("git push origin claude/fix-main-page").returncode, 0)
+        # denied like any raw push, but not with the firm trunk message
+        proc = self._invoke("git push origin claude/fix-main-page")
+        self.assertEqual(proc.returncode, 2)
+        self.assertNotIn("never push to main", proc.stderr)
+
+    def test_non_push_git_network_is_still_watched(self):
+        proc = self._invoke("git fetch origin")
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(self._entries()[0]["bins"], ["git"])
 
     def test_read_only_gh_allowed_but_watched(self):
         proc = self._invoke("gh pr view 8 --json body")

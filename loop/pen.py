@@ -46,7 +46,7 @@ def next_id(dirpath):
     return max(ids) + 1 if ids else 1
 
 
-def new(kind_or_path, slug, title):
+def new(kind_or_path, slug, title, body=None):
     dirpath = resolve_dir(kind_or_path)
     if not dirpath.is_dir():
         print(f"result: needs-you — {dirpath} is not a directory here; "
@@ -68,13 +68,27 @@ def new(kind_or_path, slug, title):
         print(f"result: needs-you — {target} already exists; the fold and the "
               "directory disagree, look before writing")
         return 2
-    text = "\n".join(cfg["scaffold"]).format(
-        id=f"{iid:04d}", slug=slug, title=title or slug.replace("-", " "))
+    if body is None:
+        text = "\n".join(cfg["scaffold"]).format(
+            id=f"{iid:04d}", slug=slug, title=title or slug.replace("-", " "))
+        note = "; fill the placeholders before committing"
+    else:
+        # one-move mint: the pen owns the id-bearing heading (scaffold's
+        # first line), the caller brings the rest — and the form still holds
+        heading = cfg["scaffold"][0].format(
+            id=f"{iid:04d}", slug=slug, title=title or slug.replace("-", " "))
+        text = heading + "\n\n" + body.strip("\n") + "\n"
+        missing = [s for s in cfg.get("required_sections", []) if s not in text]
+        if missing:
+            print("result: needs-you — the body is missing required "
+                  f"section(s): {', '.join(missing)}; the form is "
+                  f"{(dirpath / '.pen.json').as_posix()}")
+            return 2
+        note = ""
     if not text.endswith("\n"):
         text += "\n"
     target.write_bytes(text.encode("utf-8"))  # LF bytes: identity-safe
-    print(f"result: report — created {target.as_posix()} (id {iid:04d}); "
-          "fill the placeholders before committing")
+    print(f"result: report — created {target.as_posix()} (id {iid:04d}){note}")
     return 0
 
 
@@ -85,11 +99,15 @@ def main(argv=None):
     n.add_argument("kind", help="done | reports | a path to a directory carrying .pen.json")
     n.add_argument("--slug", required=True, help="kebab-case filename part after the id")
     n.add_argument("--title", default=None, help="heading title (defaults to the slug, de-kebabed)")
+    n.add_argument("--body", default=None,
+                   help="everything after the heading, complete (one-move "
+                        "mint); '-' reads stdin; required sections still hold")
     x = sub.add_parser("next", help="print the next id for a records directory")
     x.add_argument("kind")
     args = ap.parse_args(argv)
     if args.cmd == "new":
-        return new(args.kind, args.slug, args.title)
+        body = sys.stdin.read() if args.body == "-" else args.body
+        return new(args.kind, args.slug, args.title, body)
     dirpath = resolve_dir(args.kind)
     if not dirpath.is_dir():
         print(f"result: needs-you — {dirpath} is not a directory here")

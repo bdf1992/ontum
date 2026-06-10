@@ -83,6 +83,33 @@ compliance, applied to our own process.
 - **The watch log is a trace, not truth** — gitignored beside the
   cache entries, torn-tail-tolerant at read, deletable any time.
 
+## The first nomination: git push is branded (done-line 0014)
+
+The shame layer's first *correct* firing was raw `git push` — and bdo
+stamped the nomination in conversation ("git push does"). The pen
+gains the `push` verb: current `claude/*` branch only, alive-branch
+check (a push cannot strand on a merged branch by construction — the
+PR #2 / PR #6→#8 class is closed), the suite runs and red refuses
+unless declared (`--red-ok`, the declaration owed to the PR story at
+hand-off), and force exists only as `--force-with-lease`. Per bdo's
+explicit intent, the verb has *feature parity*: anything else
+`git push` takes (tags, deletes, remotes, refspecs, dry-run) is
+forwarded after the checks — a branded tool that loses features
+invites workarounds; only the two forbidden things (the trunk by
+name, plain `--force`) are refused in forwarded args too. Raw
+`git push` joined the deny-list pointing at the verb. This increment
+itself reached origin through the branded push — the tool ships
+through itself.
+
+Mid-build, two of the parallel workstream's guards corrected *this*
+session — the write_guard refused a done-line numbered by eyeball
+(0013 was taken; the records pen allocated 0014), and bdo asked why
+minting a record still required a follow-up edit. So `loop.pen new`
+gained `--body` (one-move mint: the pen owns the id-bearing heading,
+the caller brings the body, the directory's required sections still
+hold; `-` reads stdin). The guards governing the guards' author, in
+one session — the loop eating its own cooking.
+
 ## End-state: `report`
 
 Work is on `claude/quiet-hopper-ovn8x1`, joining open PR #9 at the

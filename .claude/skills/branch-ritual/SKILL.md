@@ -5,9 +5,19 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.3.0
+version: 0.4.0
 owner: bdo
 changelog:
+  - version: 0.4.0
+    note: >
+      The watcher's first nomination, stamped by bdo in conversation:
+      git push is branded (done-line 0014). The pen gains the push
+      verb — alive-branch check, suite green or declared red, force
+      only with lease, and feature parity (anything else git push
+      takes is forwarded after the checks; a branded tool that loses
+      features invites workarounds). Raw git push joins the
+      deny-list. A push can no longer strand on a merged branch by
+      construction.
   - version: 0.3.0
     note: >
       The story is validated, not requested (done-line 0011). Hand-off
@@ -53,8 +63,10 @@ section), don't work around it.
 - **A merged branch is dead. Never push to it.** A commit pushed after the PR
   merged is stranded — nothing is watching it, and it silently never reaches
   `main`. New work means a new branch. *(This rule exists because it
-  happened: the README/LICENSE commit stranded after PR #2, recovered in
-  PR #4.)*
+  happened twice: after PR #2, recovered in PR #4; after PR #6, recovered
+  in PR #8.)* Since done-line 0014 the rule is structural: raw `git push`
+  is denied, and the pen's `push` verb checks the branch is alive before
+  anything leaves the machine.
 - **Never merge your own PR; never push to `main`.** Work propels itself, it
   never authorizes itself (§4). The stamp is bdo's. *(Firm.)*
 - **Every PR to `main` carries its story — recovery PRs included.** A PR
@@ -80,6 +92,10 @@ section), don't work around it.
    or shrink scope (§9.5) — don't hand off red without saying so.
 2. Confirm you're on this session's `claude/*` branch and everything is
    committed — small, step-shaped commits with messages that say what landed.
+   Mid-session increments leave the machine only through the branded push:
+   `python .claude/skills/branch-ritual/pr.py push` (red suite refuses
+   unless declared with `--red-ok`, and the declaration is owed to the PR
+   story at hand-off).
 3. Run the pen:
 
    ```sh
@@ -120,7 +136,7 @@ Recovery moves:
 | situation | move |
 |---|---|
 | commit stranded on a merged branch | pen `create --recover` from that branch — the story says what stranded, how, what it carries; stamp; delete (the PR #4 pattern) |
-| PR conflicts with `main` | rebase the session branch onto `main` and force-push *your own branch* (never `main`); the stamp still belongs to bdo |
+| PR conflicts with `main` | rebase the session branch onto `main`, then pen `push --force-with-lease` (*your own branch* only, never `main`, plain `--force` doesn't exist); the stamp still belongs to bdo |
 | a branch nobody remembers | `0` ahead → delete; otherwise read its diff, then PR it or write it off in a report — don't leave it to rot |
 
 The page is clean when it reads: `main`, plus whatever is in flight right

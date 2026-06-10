@@ -11,6 +11,9 @@ Verbs:
     create  validate the story, run the ritual checks, push, open the PR
     edit    rewrite an existing open PR's story through the same validation
     check   story audit — open PRs wearing the auto-title or an empty body
+    push    the branded git push (done-line 0014): alive branch, green
+            suite (or declared red), force only with lease — with
+            feature parity: anything else git push takes is forwarded
 
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report`: it tells the
@@ -208,6 +211,65 @@ def cmd_create(ns):
     print("do not merge it; tell bdo.")
 
 
+def push_refusal(branch, merged_numbers):
+    """The pure reasons a push may not happen. None means it may."""
+    if not branch:
+        return "detached HEAD — a session pushes its claude/* branch"
+    if branch in ("main", "master"):
+        return "never push the trunk — the stamp is bdo's (firm)"
+    if merged_numbers:
+        nums = ", ".join(f"#{n}" for n in merged_numbers)
+        return (
+            f"branch '{branch}' is dead — PR {nums} already merged from it; "
+            "new work means a new branch (commits already stranded here go "
+            "through create --recover)"
+        )
+    return None
+
+
+def forward_refusal(tokens):
+    """Feature parity, minus the two forbidden things: anything git push
+    takes is forwarded, except plain force and the trunk by name."""
+    for token in tokens:
+        bare = token.strip("'\"")
+        if bare in ("-f", "--force"):
+            return "plain --force does not exist here; use --force-with-lease"
+        if bare in ("main", "master") or re.fullmatch(r"[^:]*:(main|master)", bare):
+            return "the trunk is not a push target — the stamp is bdo's (firm)"
+    return None
+
+
+def cmd_push(ns):
+    forward = [t for t in getattr(ns, "forward", []) if t != "--"]
+    reason = forward_refusal(forward)
+    if reason:
+        _refuse(reason)
+    branch = _run(["git", "branch", "--show-current"]).strip()
+    merged = []
+    if branch and branch not in ("main", "master"):
+        merged = [p["number"] for p in json.loads(_run(
+            ["gh", "pr", "list", "--head", branch, "--state", "merged",
+             "--json", "number"]))]
+    reason = push_refusal(branch, merged)
+    if reason:
+        _refuse(reason)
+    story = {"red_reason": ns.red_ok or ""}
+    _check_tests(story)
+    args = ["git", "push"]
+    if ns.force_with_lease:
+        args.append("--force-with-lease")
+    # parity: forwarded args replace the defaults, they don't fight them
+    args += forward if forward else ["-u", "origin", branch]
+    _run(args)
+    declared = (
+        f"; pushed red, declared: {story['red_reason']} — carry this into "
+        "the PR story at hand-off"
+        if story["red_reason"] else ""
+    )
+    pushed = " ".join(forward) if forward else branch
+    print(f"result: done — pushed {pushed}{declared}")
+
+
 def cmd_edit(ns):
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json", "state,headRefName"]))
@@ -296,7 +358,22 @@ def main(argv=None):
     check = verbs.add_parser("check", help="audit open PRs for unwritten stories")
     check.set_defaults(func=cmd_check)
 
-    ns = parser.parse_args(argv)
+    push = verbs.add_parser(
+        "push", help="the branded git push (feature parity: extra args "
+                     "are forwarded to git push after the checks)")
+    push.add_argument("--red-ok", dest="red_ok", default="", metavar="WHY",
+                      help="push with a red suite anyway, declaring why "
+                           "(§9.5); the declaration is owed to the PR story")
+    push.add_argument("--force-with-lease", dest="force_with_lease",
+                      action="store_true",
+                      help="after rebasing your own branch; plain --force "
+                           "does not exist here")
+    push.set_defaults(func=cmd_push)
+
+    ns, extra = parser.parse_known_args(argv)
+    if extra and getattr(ns, "verb", None) != "push":
+        parser.error("unrecognized arguments: " + " ".join(extra))
+    ns.forward = extra
     ns.func(ns)
 
 
