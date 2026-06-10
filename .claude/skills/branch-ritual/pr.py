@@ -44,16 +44,7 @@ def _squash(text):
     return re.sub(r"[^a-z0-9]+", "", text.lower())
 
 
-MOVEMENTS = ("from", "framing", "work", "need", "value")
-MOVEMENT_PROMPT = {
-    "from": "what occasioned this",
-    "framing": "the idea underneath, in your own understanding",
-    "work": "what concretely happens",
-    "need": "the genuine dependency — what binds others / is costly / only "
-            "the owner owns; never 'approve me'",
-    "value": "what becomes true after",
-}
-# a movement that is only a path or a bare numbered ref is homework, not a story
+# a body that is only a path or a bare numbered ref is homework, not writing
 _POINTER = re.compile(
     r"^[`'\"\s]*(\.?(ai-native|\.\.)/\S+|[\w./\-]+\.md|\d{4}(-[a-z0-9-]+)?)[`'\"\s]*$",
     re.I)
@@ -64,13 +55,13 @@ def _is_pointer(text):
 
 
 def validate_story(story, branch):
-    """Return the reasons this story may not be submitted — empty means it holds.
-
-    A story is the five movements (from / framing / work / need / value), each
-    told for a cold reader. The pen composes a story or nothing: a movement that
-    is empty, or only a path/ref, is refused. Whether the prose is *really* a
-    story — not a rip, not a synopsis — is a Reader's judgment, not the pen's
-    (story-gate.claude.v1); the pen holds only the deterministic floor.
+    """The pen's deterministic floor, nothing more. A pen carries the author's
+    written narrative whole; it does not break it into fields and does not judge
+    whether it reads as a story — that flow is the author's to write and the
+    Reader's to grade (story-gate.claude.v1), in the loop, before this reaches
+    the owner. The pen refuses only what is plainly not writing: an empty title
+    or body, a title that is just the branch name, or a body that is only a
+    path/ref.
     """
     problems = []
     title = (story.get("title") or "").strip()
@@ -80,14 +71,13 @@ def validate_story(story, branch):
         problems.append(
             "the title is the branch name — an unwritten story; "
             "say what the work did, not where it sat")
-    for m in MOVEMENTS:
-        text = (story.get(m) or "").strip()
-        if not text:
-            problems.append(f"--{m} is required — {MOVEMENT_PROMPT[m]}")
-        elif _is_pointer(text):
-            problems.append(
-                f"--{m} is a pointer, not a story — a path/ref is homework for a "
-                "cold reader; tell it on the page")
+    text = (story.get("story") or "").strip()
+    if not text:
+        problems.append("--story is required — the written narrative this PR carries")
+    elif _is_pointer(text):
+        problems.append(
+            "--story is a pointer, not writing — a path/ref is homework; write "
+            "the narrative for a cold reader")
     return problems
 
 
@@ -99,11 +89,11 @@ ROLLING_BANNER = (
 
 
 def compose_body(story, rolling=False):
-    """The story form — the five movements, told for a cold reader (the pattern
-    commons). A pen writes the story it is handed; there is no other body."""
+    """A pen carries the author's written narrative, whole — it imposes no
+    shape. The flow is the author's; the verdict is the Reader's. The body is
+    the story it was handed and nothing else."""
     lines = [ROLLING_BANNER, ""] if rolling else []
-    for m in MOVEMENTS:
-        lines += [f"**{m}** — {story[m].strip()}", ""]
+    lines += [story["story"].strip(), ""]
     red = (story.get("red_reason") or "").strip()
     if red:
         lines += [f"*Handed off with a declared-red suite: {red}*", ""]
@@ -134,11 +124,7 @@ def _run(args):
 def _story_from(ns):
     return {
         "title": ns.title,
-        "from": ns.from_,
-        "framing": ns.framing,
-        "work": ns.work,
-        "need": ns.need,
-        "value": ns.value,
+        "story": ns.story,
         "red_reason": getattr(ns, "red_ok", "") or "",
     }
 
@@ -376,17 +362,9 @@ def cmd_check(_ns):
 def _story_args(parser):
     parser.add_argument("--title", required=True,
                         help="one line: what this PR did (never the branch name)")
-    parser.add_argument("--from", dest="from_", required=True, metavar="TEXT",
-                        help="movement: what occasioned this")
-    parser.add_argument("--framing", required=True, metavar="TEXT",
-                        help="movement: the idea underneath, in your own understanding")
-    parser.add_argument("--work", required=True, metavar="TEXT",
-                        help="movement: what concretely happens")
-    parser.add_argument("--need", required=True, metavar="TEXT",
-                        help="movement: the genuine dependency — what binds others, "
-                             "is costly, or only the owner owns; never 'approve me'")
-    parser.add_argument("--value", required=True, metavar="TEXT",
-                        help="movement: what becomes true after")
+    parser.add_argument("--story", required=True, metavar="TEXT",
+                        help="the written narrative — one flowing story for a cold "
+                             "reader: not fields, not a path, not a synopsis")
 
 
 def main(argv=None):

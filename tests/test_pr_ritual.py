@@ -35,12 +35,11 @@ guard = _load("command_guard", GUARD_PATH)
 
 def _story(**overrides):
     story = {
-        "title": "the pen writes the story",
-        "from": "a gardening pass found the pen emitting path-pointers onto the owner's page",
-        "framing": "a pen writes the story it is handed; its body is the five movements, never a generated reference",
-        "work": "compose_body now renders from/framing/work/need/value and nothing else",
-        "need": "yours, because it sets the body form the whole fleet inherits",
-        "value": "no path-pointer can reach a surface through the pen again",
+        "title": "the pen carries the written story",
+        "story": ("You found a path sitting where a story should be, so I rebuilt the "
+                  "pen to carry the narrative whole — the way it carries this one — and "
+                  "left whether it reads as a story to a separate reader. Nothing about "
+                  "the pen forces a shape onto the writing anymore."),
         "red_reason": "",
     }
     story.update(overrides)
@@ -54,8 +53,8 @@ class TestStoryValidation(unittest.TestCase):
         self.assertEqual(pen.validate_story(_story(), self.BRANCH), [])
 
     def test_storyless_create_refuses(self):
-        # an empty title and an empty movement are each no story
-        problems = pen.validate_story(_story(**{"title": "", "from": ""}), self.BRANCH)
+        # an empty title and an empty body are each not writing
+        problems = pen.validate_story(_story(title="", story=""), self.BRANCH)
         self.assertGreaterEqual(len(problems), 2)
 
     def test_auto_title_refused(self):
@@ -64,37 +63,39 @@ class TestStoryValidation(unittest.TestCase):
             _story(title="Claude/busy feynman 4hd46k"), self.BRANCH)
         self.assertTrue(any("branch name" in p for p in problems))
 
-    def test_each_movement_is_required(self):
-        for m in pen.MOVEMENTS:
-            problems = pen.validate_story(_story(**{m: "  "}), self.BRANCH)
-            self.assertTrue(any(f"--{m} is required" in p for p in problems), m)
-
-    def test_a_movement_that_is_only_a_pointer_refuses(self):
-        # the pen's deterministic floor: a path/ref where prose belongs is homework
+    def test_a_body_that_is_only_a_pointer_refuses(self):
+        # the pen's deterministic floor: a path/ref where writing belongs is homework
         for pointer in (".ai-native/done/0020-x.md", "`0020-story-gate-prompt`", "0020"):
-            problems = pen.validate_story(_story(work=pointer), self.BRANCH)
+            problems = pen.validate_story(_story(story=pointer), self.BRANCH)
             self.assertTrue(any("pointer" in p for p in problems), pointer)
 
-    def test_real_prose_is_not_mistaken_for_a_pointer(self):
-        # a sentence that merely mentions a path is still prose
+    def test_prose_that_mentions_a_path_is_still_writing(self):
         self.assertEqual(
             pen.validate_story(
-                _story(work="compose_body in .ai-native is rewritten to the five movements"),
+                _story(story="I rewrote compose_body under .ai-native to carry the whole narrative"),
                 self.BRANCH),
+            [])
+
+    def test_the_pen_does_not_judge_whether_it_is_a_story(self):
+        # a flat, un-story-like body still passes the pen — whether it reads as a
+        # story is the Reader's verdict, never the pen's (an author writes; the pen
+        # carries; the reader grades)
+        self.assertEqual(
+            pen.validate_story(_story(story="it works. it is done. ship it."), self.BRANCH),
             [])
 
 
 class TestBodyForm(unittest.TestCase):
-    def test_body_is_the_five_movements(self):
-        body = pen.compose_body(_story())
-        for m in pen.MOVEMENTS:
-            self.assertIn(f"**{m}** —", body)
+    def test_body_is_the_narrative_it_was_handed(self):
+        body = pen.compose_body(_story(story="one continuous written thing"))
+        self.assertIn("one continuous written thing", body)
         self.assertIn(pen.FOOTER, body)
 
-    def test_the_pointer_body_is_gone(self):
-        # the schema that put a path on PR #18 no longer exists
+    def test_no_imposed_shape_survives(self):
+        # neither the path-pointer schema nor the field-headers the pen used to stamp
         body = pen.compose_body(_story())
-        for ghost in ("## What landed", "## Done-line", "## Report", "## End-state"):
+        for ghost in ("## What landed", "## Done-line", "## Report",
+                      "**from** —", "**framing** —", "**need** —"):
             self.assertNotIn(ghost, body)
 
     def test_red_handoff_is_disclosed(self):
