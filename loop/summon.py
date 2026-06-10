@@ -29,7 +29,7 @@ import sys
 from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, load_atoms,
-                            real_nodes, receipt_for_stage)
+                            node_prompt, real_nodes, receipt_for_stage)
 from loop.orchestrate import HUMAN_NODE, next_action
 
 
@@ -53,23 +53,37 @@ def open_summons(root):
             if ev is None:
                 break
             if receipt_for_stage(fold, stage, ahash, real_map) is None:
+                ptext, phash = node_prompt(root, target)
                 out.append({"atom": atom, "artifact_hash": ahash,
-                            "node": target, "stage": stage})
+                            "node": target, "stage": stage,
+                            "prompt_text": ptext, "prompt_hash": phash})
                 break
     return out
 
 
 def briefing(s):
     atom, stage = s["atom"], s["stage"]
-    return "\n".join([
+    lines = [
         f"summons: {s['node']} — {atom['id']} awaits your verdict at seam {stage['seam']}",
         f"  story: {atom['story']['text']}",
         f"  verdicts: {' | '.join(stage['terminal_expected'])}",
+    ]
+    if s.get("prompt_text"):
+        # the session's operating prompt arrives with the summons (§7);
+        # the hash on the receipt will say this exact version judged
+        lines += [
+            f"  prompt-version: {s['prompt_hash']} (.ai-native/nodes/{s['node']}.md)",
+            "  --- your operating prompt, versioned (§7) ---",
+            s["prompt_text"].rstrip(),
+            "  --- end prompt ---",
+        ]
+    lines += [
         f"  judge: python -m loop.node judge --atom {atom['id']} --node {s['node']}"
         f" --verdict <verdict> --reason \"<why>\"",
         "  contract: judge this one event only; never an event you announced"
         " (D-2); the receipt is your only pen (I-2).",
-    ])
+    ]
+    return "\n".join(lines)
 
 
 def resolve_root(arg_root):
