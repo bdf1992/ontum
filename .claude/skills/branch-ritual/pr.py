@@ -44,12 +44,24 @@ def _squash(text):
     return re.sub(r"[^a-z0-9]+", "", text.lower())
 
 
-def validate_story(story, branch):
-    """Return the list of reasons this story may not be submitted.
+# a body that is only a path or a bare numbered ref is homework, not writing
+_POINTER = re.compile(
+    r"^[`'\"\s]*(\.?(ai-native|\.\.)/\S+|[\w./\-]+\.md|\d{4}(-[a-z0-9-]+)?)[`'\"\s]*$",
+    re.I)
 
-    `story` is a dict: title, landed (list of bullets), done_line,
-    report, why, end_state, flags (list), red_reason. An empty list
-    means the story holds.
+
+def _is_pointer(text):
+    return bool(_POINTER.match(text.strip()))
+
+
+def validate_story(story, branch):
+    """The pen's deterministic floor, nothing more. A pen carries the author's
+    written narrative whole; it does not break it into fields and does not judge
+    whether it reads as a story — that flow is the author's to write and the
+    Reader's to grade (story-gate.claude.v1), in the loop, before this reaches
+    the owner. The pen refuses only what is plainly not writing: an empty title
+    or body, a title that is just the branch name, or a body that is only a
+    path/ref.
     """
     problems = []
     title = (story.get("title") or "").strip()
@@ -58,53 +70,15 @@ def validate_story(story, branch):
     elif _squash(title) == _squash(branch):
         problems.append(
             "the title is the branch name — an unwritten story; "
-            "say what the work did, not where it sat"
-        )
-    if not [b for b in story.get("landed", []) if b.strip()]:
-        problems.append("--landed is required (repeatable) — what actually landed")
-    why = (story.get("why") or "").strip()
-    for field in ("done_line", "report"):
-        value = (story.get(field) or "").strip()
-        label = field.replace("_", "-")
-        if value != "none" and not REF.fullmatch(value):
-            problems.append(
-                f"--{label} must be a numbered entry (0011 or 0011-slug) or 'none'"
-            )
-        elif value == "none" and not why:
-            problems.append(
-                f"--{label} none requires --why — absence is information, name it"
-            )
-    end_state = (story.get("end_state") or "").strip()
-    if end_state not in END_STATES:
-        problems.append("--end-state must be one of: " + " | ".join(END_STATES))
-    if end_state == "needs-you" and not [f for f in story.get("flags", []) if f.strip()]:
-        problems.append("end-state needs-you requires at least one --flag saying what")
+            "say what the work did, not where it sat")
+    text = (story.get("story") or "").strip()
+    if not text:
+        problems.append("--story is required — the written narrative this PR carries")
+    elif _is_pointer(text):
+        problems.append(
+            "--story is a pointer, not writing — a path/ref is homework; write "
+            "the narrative for a cold reader")
     return problems
-
-
-def _status_line(end_state, rolling):
-    """The end-state in plain words a person reads cold — not a jargon code."""
-    if rolling:
-        return "**Status: still being worked — please don't merge yet.**"
-    return {
-        "report": "**Status: done and ready to merge.**",
-        "done": "**Status: done.**",
-        "needs-you": "**Status: needs your eyes — see _Before you merge_ below.**",
-    }.get(end_state, f"**Status: {end_state}.**")
-
-
-def _receipts(story):
-    """The done-line/report demoted to a quiet trail footer — a reference for
-    the record, never a headline filepath a cold reader can't open."""
-    dl, rep = story["done_line"], story["report"]
-    why = (story.get("why") or "").strip()
-    if dl == "none" and rep == "none":
-        body = f"no separate done-line or report — {why}"
-    else:
-        def part(label, value):
-            return f"no {label} ({why})" if value == "none" else f"{label} {value}"
-        body = part("done-line", dl) + " · " + part("report", rep)
-    return f"*Trail for the record: {body}.*"
 
 
 ROLLING_BANNER = (
@@ -115,21 +89,15 @@ ROLLING_BANNER = (
 
 
 def compose_body(story, rolling=False):
-    """The story as a person reads it cold: what changed, whether it's ready,
-    and what's left for the owner to decide — no machine jargon, no filepaths
-    as headings. Validation has already passed."""
+    """A pen carries the author's written narrative, whole — it imposes no
+    shape. The flow is the author's; the verdict is the Reader's. The body is
+    the story it was handed and nothing else."""
     lines = [ROLLING_BANNER, ""] if rolling else []
-    lines += ["## What changed", ""]
-    lines += [f"- {b.strip()}" for b in story["landed"] if b.strip()]
+    lines += [story["story"].strip(), ""]
     red = (story.get("red_reason") or "").strip()
     if red:
-        lines += ["", "> ⚠️ **Handed off with failing tests, on purpose:** " + red]
-    lines += ["", _status_line(story["end_state"], rolling)]
-    flags = [f.strip() for f in story.get("flags", []) if f.strip()]
-    if flags:
-        lines += ["", "### Before you merge", ""]
-        lines += [f"- {f}" for f in flags]
-    lines += ["", "---", "", _receipts(story), "", FOOTER, ""]
+        lines += [f"*Handed off with a declared-red suite: {red}*", ""]
+    lines += [FOOTER, ""]
     return "\n".join(lines)
 
 
@@ -156,12 +124,7 @@ def _run(args):
 def _story_from(ns):
     return {
         "title": ns.title,
-        "landed": ns.landed,
-        "done_line": ns.done_line,
-        "report": ns.report,
-        "why": ns.why,
-        "end_state": ns.end_state,
-        "flags": ns.flags,
+        "story": ns.story,
         "red_reason": getattr(ns, "red_ok", "") or "",
     }
 
@@ -399,22 +362,9 @@ def cmd_check(_ns):
 def _story_args(parser):
     parser.add_argument("--title", required=True,
                         help="one line: what this PR did (never the branch name)")
-    parser.add_argument("--landed", action="append", default=[],
-                        metavar="BULLET", help="what landed; repeatable")
-    parser.add_argument("--done-line", dest="done_line", required=True,
-                        help="the .ai-native/done entry served (0011 or "
-                             "0011-slug), or 'none' with --why")
-    parser.add_argument("--report", required=True,
-                        help="the .ai-native/reports entry (0013 or "
-                             "0013-slug), or 'none' with --why")
-    parser.add_argument("--why", default="",
-                        help="required when done-line or report is 'none'")
-    parser.add_argument("--end-state", dest="end_state", required=True,
-                        choices=END_STATES)
-    parser.add_argument("--flag", action="append", default=[], dest="flags",
-                        metavar="FOR_BDO",
-                        help="anything raised for bdo; repeatable; required "
-                             "when end-state is needs-you")
+    parser.add_argument("--story", required=True, metavar="TEXT",
+                        help="the written narrative — one flowing story for a cold "
+                             "reader: not fields, not a path, not a synopsis")
 
 
 def main(argv=None):

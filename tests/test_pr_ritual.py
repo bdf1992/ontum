@@ -35,13 +35,11 @@ guard = _load("command_guard", GUARD_PATH)
 
 def _story(**overrides):
     story = {
-        "title": "the pen writes the story",
-        "landed": ["a validated story form"],
-        "done_line": "0011",
-        "report": "0013",
-        "why": "",
-        "end_state": "report",
-        "flags": [],
+        "title": "the pen carries the written story",
+        "story": ("You found a path sitting where a story should be, so I rebuilt the "
+                  "pen to carry the narrative whole — the way it carries this one — and "
+                  "left whether it reads as a story to a separate reader. Nothing about "
+                  "the pen forces a shape onto the writing anymore."),
         "red_reason": "",
     }
     story.update(overrides)
@@ -55,7 +53,8 @@ class TestStoryValidation(unittest.TestCase):
         self.assertEqual(pen.validate_story(_story(), self.BRANCH), [])
 
     def test_storyless_create_refuses(self):
-        problems = pen.validate_story(_story(title="", landed=[]), self.BRANCH)
+        # an empty title and an empty body are each not writing
+        problems = pen.validate_story(_story(title="", story=""), self.BRANCH)
         self.assertGreaterEqual(len(problems), 2)
 
     def test_auto_title_refused(self):
@@ -64,72 +63,48 @@ class TestStoryValidation(unittest.TestCase):
             _story(title="Claude/busy feynman 4hd46k"), self.BRANCH)
         self.assertTrue(any("branch name" in p for p in problems))
 
-    def test_none_requires_why(self):
-        problems = pen.validate_story(_story(done_line="none"), self.BRANCH)
-        self.assertTrue(any("--why" in p for p in problems))
+    def test_a_body_that_is_only_a_pointer_refuses(self):
+        # the pen's deterministic floor: a path/ref where writing belongs is homework
+        for pointer in (".ai-native/done/0020-x.md", "`0021-story-gate-prompt`", "0020"):
+            problems = pen.validate_story(_story(story=pointer), self.BRANCH)
+            self.assertTrue(any("pointer" in p for p in problems), pointer)
+
+    def test_prose_that_mentions_a_path_is_still_writing(self):
         self.assertEqual(
             pen.validate_story(
-                _story(done_line="none",
-                       why="recovery of another session's stranded work"),
+                _story(story="I rewrote compose_body under .ai-native to carry the whole narrative"),
                 self.BRANCH),
             [])
 
-    def test_needs_you_requires_flag(self):
-        problems = pen.validate_story(_story(end_state="needs-you"), self.BRANCH)
-        self.assertTrue(any("--flag" in p for p in problems))
+    def test_the_pen_does_not_judge_whether_it_is_a_story(self):
+        # a flat, un-story-like body still passes the pen — whether it reads as a
+        # story is the Reader's verdict, never the pen's (an author writes; the pen
+        # carries; the reader grades)
         self.assertEqual(
-            pen.validate_story(
-                _story(end_state="needs-you", flags=["the Core 27 awaits the pin"]),
-                self.BRANCH),
+            pen.validate_story(_story(story="it works. it is done. ship it."), self.BRANCH),
             [])
-
-    def test_end_state_vocabulary(self):
-        problems = pen.validate_story(_story(end_state="finished"), self.BRANCH)
-        self.assertTrue(any("--end-state" in p for p in problems))
 
 
 class TestBodyForm(unittest.TestCase):
-    """The body reads cold: what changed, a plain status, the owner's
-    decisions, and a quiet trail — no jargon section over a bare filepath."""
+    def test_body_is_the_narrative_it_was_handed(self):
+        body = pen.compose_body(_story(story="one continuous written thing"))
+        self.assertIn("one continuous written thing", body)
+        self.assertIn(pen.FOOTER, body)
 
-    def test_body_reads_cold_not_as_machine_jargon(self):
-        body = pen.compose_body(_story(flags=["the Core 27 awaits the pin"]))
-        for needle in ("## What changed", "Status: done and ready to merge",
-                       "### Before you merge", "Trail for the record",
-                       pen.FOOTER):
-            self.assertIn(needle, body)
-        # the machine-jargon scaffold bdo rejected is gone
-        for banned in ("## Done-line", "## Report", "## End-state",
-                       ".ai-native/done/", "Flagged for bdo:"):
-            self.assertNotIn(banned, body)
-
-    def test_no_flags_omits_the_section_cleanly(self):
-        # nothing to decide → no "Before you merge" at all (not "Nothing flagged")
-        self.assertNotIn("### Before you merge", pen.compose_body(_story()))
-
-    def test_status_speaks_plainly_per_end_state(self):
-        self.assertIn("ready to merge", pen.compose_body(_story(end_state="report")))
-        self.assertIn("needs your eyes",
-                      pen.compose_body(_story(end_state="needs-you",
-                                              flags=["one open question"])))
-
-    def test_trail_demotes_the_refs_to_a_footer(self):
+    def test_no_imposed_shape_survives(self):
+        # neither the path-pointer schema nor the field-headers the pen used to stamp
         body = pen.compose_body(_story())
-        self.assertIn("Trail for the record: done-line 0011 · report 0013", body)
+        for ghost in ("## What landed", "## Done-line", "## Report",
+                      "**from** —", "**framing** —", "**need** —"):
+            self.assertNotIn(ghost, body)
 
-    def test_none_refs_render_with_their_why_not_a_bare_path(self):
-        body = pen.compose_body(
-            _story(done_line="none", report="none",
-                   why="ritual self-sharpening, recorded in the changelog"))
-        self.assertIn("no separate done-line or report — ritual self-sharpening", body)
-
-    def test_red_handoff_is_declared_in_plain_words(self):
+    def test_red_handoff_is_disclosed(self):
         body = pen.compose_body(
             _story(red_reason="two web tests red; scope shrunk per §9.5"))
-        self.assertIn("Handed off with failing tests, on purpose", body)
+        self.assertIn("declared-red suite", body)
 
-    def test_green_body_has_no_red_warning(self):
-        self.assertNotIn("Handed off with failing tests", pen.compose_body(_story()))
+    def test_green_body_has_no_red_line(self):
+        self.assertNotIn("declared-red", pen.compose_body(_story()))
 
     def test_body_is_deterministic(self):
         self.assertEqual(pen.compose_body(_story()), pen.compose_body(_story()))

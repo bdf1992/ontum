@@ -135,5 +135,50 @@ class PromptsAsCodeTest(unittest.TestCase):
             self.assertNotIn("prompt_hash", rc)
 
 
+class StoryGatePromptContractTest(unittest.TestCase):
+    """The story gate's versioned prompt (done-line 0021) carries a contract
+    the loop will depend on once it is wired real: a cold-reader bar, the
+    two-verdict route-back loop, the source-handed (warm-reader) requirement,
+    and no self-judgment. A future edit may sharpen the wording; it may not
+    gut the contract. Semantic evals — does the rubric actually route back a
+    synopsis — are owed with the next change to the prompt (§7)."""
+
+    PROMPT = (REPO / ".ai-native" / "nodes" / "story-gate.claude.v1.md").read_text(
+        encoding="utf-8")
+    # normalized: collapse line-wrapping so a contract test pins meaning, not
+    # the prose's column width
+    NORM = " ".join(PROMPT.split())
+
+    def test_route_back_is_a_loop_not_a_rejection(self):
+        self.assertIn("conform | route_back", self.NORM)
+        self.assertIn("loop, not a rejection", self.NORM)
+        self.assertIn("the author's next move", self.NORM)
+
+    def test_grader_must_be_handed_the_source(self):
+        # the warm-reader edge: prose-only grading is itself only a cold read
+        self.assertIn("without its source cannot be graded", self.NORM)
+
+    def test_the_three_mechanical_fakes_are_named(self):
+        for fake in ("Not a pointer", "Not a rip", "synopsis"):
+            self.assertIn(fake, self.NORM)
+
+    def test_the_five_movements_are_the_bar(self):
+        for movement in ("`from`", "`framing`", "`work`", "`need`", "`value`"):
+            self.assertIn(movement, self.NORM)
+        # need is the genuine dependency, never validation-seeking (caught live)
+        self.assertIn('never "approve me"', self.NORM)
+
+    def test_cold_reader_is_the_standard(self):
+        self.assertIn("cold reader", self.NORM)
+        self.assertIn("reader with zero context", self.NORM)
+
+    def test_author_cannot_grade_its_own_line(self):
+        self.assertIn("did not write this body", self.NORM)
+        self.assertIn("D-2", self.NORM)
+
+    def test_versioned_per_section_7(self):
+        self.assertIn("version: 1.0.0", self.NORM)
+
+
 if __name__ == "__main__":
     unittest.main()
