@@ -61,3 +61,18 @@ sessions seconds earlier — see below):
 surface-registry story waits on his stamp (#11); the GitHub surface
 and the local fold agree; the stranded sibling lineage is surfaced,
 not silently merged.
+
+## Addendum — the stamp landed in chat
+
+bdo answered the briefing with one word — "approved" — and it did not
+drop: routed verbatim through the pen as `rcp.f68f73f3fee8`
+(`owner-stamp.bdo.v1 → accept`), the mock gates ran, and
+`atom.surface-registry.v0` settled `value_confirmed`. The watcher
+build (registry records, the GitHub watcher, `web.py` retirement) is
+now authorized work for a next done-line; it was deliberately not
+started inside this one (§9: the line was met — stop). Issue #11
+closed as settled. The one-word stamp arriving in chat while the
+issue sat open is the speed ladder the story names, working: chat
+outran the surface, and both ended up agreeing with the log.
+`atom.epic-layer.v0` still awaits its own verdict — one word was one
+stamp, not two.
