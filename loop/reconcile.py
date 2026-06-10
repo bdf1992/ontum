@@ -144,14 +144,22 @@ class Fold:
         return None
 
 
+def load_atoms(root):
+    """The field: every atom in atoms/, each with its content hash."""
+    out = []
+    for path in sorted((root / "atoms").glob("*.json")):
+        raw = path.read_bytes()
+        atom = json.loads(raw)["atom"]
+        out.append((atom, "sha256:" + hashlib.sha256(raw).hexdigest()))
+    return out
+
+
 def load_atom(root):
-    atoms = sorted((root / "atoms").glob("*.json"))
+    """The single-atom (phase-1) driver's loader; the orchestrator uses load_atoms."""
+    atoms = load_atoms(root)
     if len(atoms) != 1:
         raise SystemExit(f"result: needs-you — expected exactly one atom in {root / 'atoms'}, found {len(atoms)}")
-    raw = atoms[0].read_bytes()
-    atom = json.loads(raw)["atom"]
-    artifact_hash = "sha256:" + hashlib.sha256(raw).hexdigest()
-    return atom, artifact_hash
+    return atoms[0]
 
 
 def make_event(type_, seam, from_node, atom_id, artifact_hash, requires, terminal_expected):
@@ -197,18 +205,21 @@ def atom_state(fold, artifact_hash):
     return state
 
 
-def rebuild_cache(root, fold, artifact_hash):
+def rebuild_cache(root, fold, artifact_hashes):
     """queues/ and offsets/ are a pure fold over log/ — rebuilt from scratch
     each time, byte-deterministic, so deletion + replay is always lossless."""
+    if isinstance(artifact_hashes, str):
+        artifact_hashes = [artifact_hashes]
     qdir, odir = root / "queues", root / "offsets"
     qdir.mkdir(parents=True, exist_ok=True)
     odir.mkdir(parents=True, exist_ok=True)
     event_index = {ev["id"]: i + 1 for i, ev in enumerate(fold.events)}
     for stage in PIPELINE:
         pending = []
-        ev = fold.event(stage["event"], artifact_hash)
-        if ev is not None and fold.receipt_by_node(stage["node"], artifact_hash) is None:
-            pending.append(ev)
+        for artifact_hash in artifact_hashes:
+            ev = fold.event(stage["event"], artifact_hash)
+            if ev is not None and fold.receipt_by_node(stage["node"], artifact_hash) is None:
+                pending.append(ev)
         (qdir / f"{stage['seam']}.pending.jsonl").write_text(
             "".join(canon(ev) + "\n" for ev in pending), encoding="utf-8")
         receipted = [event_index[rc["event_id"]] for rc in fold.receipts
@@ -216,8 +227,12 @@ def rebuild_cache(root, fold, artifact_hash):
         (odir / f"{stage['node']}.offset").write_text(f"{max(receipted, default=0)}\n", encoding="utf-8")
 
 
-def pass_once(root, pace=0.0, quiet=False):
+def pass_once(root, pace=0.0, quiet=False, atom=None, artifact_hash=None):
     """One reconcile pass: re-read the log, move the atom at most one step.
+
+    With no atom given, the single atom in atoms/ is loaded (the phase-1
+    driver). The orchestrator hands in which atom to advance; everything
+    below keys on artifact_hash, so many atoms share one log safely.
 
     The pass asks §14.4's questions, each time:
       1. What goal state does this atom want?
@@ -226,7 +241,8 @@ def pass_once(root, pace=0.0, quiet=False):
       4. What is missing?
       5. Which seam should receive the next event?
     """
-    atom, artifact_hash = load_atom(root)
+    if atom is None:
+        atom, artifact_hash = load_atom(root)
     desired = atom["desired_state"]
     fold = Fold(root)
 
@@ -274,7 +290,7 @@ def pass_once(root, pace=0.0, quiet=False):
                 break
 
     fold = Fold(root)  # re-read: the log, not our memory, is what happened
-    rebuild_cache(root, fold, artifact_hash)
+    rebuild_cache(root, fold, [h for _, h in load_atoms(root)])
     state = atom_state(fold, artifact_hash)
 
     if state == desired and fold.event(TERMINAL_EVENT, artifact_hash):
@@ -305,17 +321,19 @@ def until_done(root, pace=0.0, max_passes=50):
 
 
 def status(root):
-    atom, artifact_hash = load_atom(root)
+    entries = load_atoms(root)
     fold = Fold(root)
-    state = atom_state(fold, artifact_hash)
-    print(f"atom: {atom['id']}")
-    print(f"artifact_hash: {artifact_hash}")
-    print(f"state: {state}")
-    print(f"desired_state: {atom['desired_state']}")
+    print(f"atoms: {len(entries)}")
     print(f"events: {len(fold.events)} (dropped lines: {fold.events_dropped})")
     print(f"receipts: {len(fold.receipts)} (dropped lines: {fold.receipts_dropped})")
-    for rc in fold.receipts:
-        print(f"  {rc['node']}: {rc['verdict']} ({rc['id']})")
+    for atom, artifact_hash in entries:
+        state = atom_state(fold, artifact_hash)
+        print(f"atom: {atom['id']}")
+        print(f"  artifact_hash: {artifact_hash}")
+        print(f"  state: {state} (desired: {atom['desired_state']})")
+        for rc in fold.receipts:
+            if rc.get("artifact_hash") == artifact_hash:
+                print(f"  {rc['node']}: {rc['verdict']} ({rc['id']})")
     return 0
 
 
@@ -331,8 +349,7 @@ def main(argv=None):
     if args.status:
         return status(args.root)
     if args.rebuild_cache_only:
-        atom, artifact_hash = load_atom(args.root)
-        rebuild_cache(args.root, Fold(args.root), artifact_hash)
+        rebuild_cache(args.root, Fold(args.root), [h for _, h in load_atoms(args.root)])
         print("result: report — cache rebuilt from log/ (fold only, no mutation)")
         return 0
     if args.until_done:
