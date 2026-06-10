@@ -186,9 +186,12 @@ class TestQuotedProse(unittest.TestCase):
         self.assertEqual(guard.external_bins(command), ["gh"])
 
     def test_prose_mentioning_a_forbidden_verb_is_not_denied(self):
-        # the deny rules must read the acting command, not the message
-        command = ("git commit -m @'\ndocs: explain why raw gh pr create "
-                   "and gh pr merge are denied\n'@")
+        # the deny rules must read the acting command, not the message. The
+        # vehicle is the git pen — raw `git commit` is itself denied now
+        # (done-line 0020), so the pen is the command that legitimately
+        # carries a message mentioning gh verbs.
+        command = ("python .claude/skills/branch-ritual/git.py commit -m @'\n"
+                   "docs: explain why raw gh pr create and gh pr merge are denied\n'@")
         self.assertEqual(guard.external_bins(command), [])
         acting = guard.strip_quoted(command)
         self.assertNotIn("gh pr create", acting)

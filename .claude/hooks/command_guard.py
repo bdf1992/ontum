@@ -4,12 +4,14 @@
 Done-line 0011 / branch-ritual v0.3.0. Two jobs, one hook:
 
 1. Guard: the firm rules are denied outright (exit 2) — raw `gh pr`
-   mutations go through the pen (.claude/skills/branch-ritual/pr.py),
-   nothing pushes to the trunk, no one merges or approves their own
-   line. The deny-list is this file; tightening it is adding a rule.
+   mutations and raw `git add` / `git commit` go through their pens
+   (.claude/skills/branch-ritual/{pr,git}.py), nothing pushes to the
+   trunk, no one merges or approves their own line. The deny-list is
+   this file; tightening it is adding a rule.
 
 2. Watcher: every other raw invocation of an external tool (gh, curl,
-   network git, ...) is allowed but recorded to the watch log
+   network git, *and now local mutating git* — checkout, branch, merge,
+   ...) is allowed but recorded to the watch log
    (.ai-native/log/tool-use.jsonl — a sensor trace, gitignored and
    deletable, not truth). `--report` folds the log into counts: the
    heaviest unwrapped tool is the next wrapper worth building. We only
@@ -41,6 +43,7 @@ WATCH_LOG = pathlib.Path(
     os.environ.get("ONTUM_TOOL_WATCH_LOG", ROOT / ".ai-native" / "log" / "tool-use.jsonl")
 )
 PEN = "python .claude/skills/branch-ritual/pr.py"
+GIT_PEN = "python .claude/skills/branch-ritual/git.py"
 
 DENY_RULES = (
     ("gh-pr-create", r"\bgh\s+pr\s+create\b",
@@ -61,6 +64,14 @@ DENY_RULES = (
      "raw `gh pr ready` is denied (done-line 0017): the draft flip IS the "
      f"merge signal — it goes through the pen: {PEN} ready <n> ... "
      f"(or {PEN} unready <n> to roll back to draft)."),
+    ("git-add-raw", r"\bgit\s+add\b",
+     "raw `git add` is denied (done-line 0020): staging goes through the "
+     f"git pen — {GIT_PEN} add <path> <path> — explicit paths only; `add .` "
+     "/ `-A` / `-u` would stage another session's work in the shared tree."),
+    ("git-commit-raw", r"\bgit\s+commit\b(?!-)",
+     "raw `git commit` is denied (done-line 0020): the branded commit is "
+     f"{GIT_PEN} commit -m \"<what landed>\" [paths] — named paths, a real "
+     "message, never the trunk (the same line pr.py holds for push)."),
 )
 
 # Heads that stay invisible to the watcher: local work, not external reach.
@@ -72,6 +83,17 @@ LOCAL_HEADS = {
     "false", "test", "exit",
 }
 GIT_NETWORK = {"push", "fetch", "pull", "clone", "remote", "ls-remote"}
+# Local git that *changes* the tree, index, history or refs — visible to
+# the watcher so the next verb to brand nominates itself (done-line 0020).
+# `add`/`commit` are already denied above and never reach the watcher;
+# they sit here so the set means what it says. Read-only git
+# (status/log/diff/show) is deliberately absent: a session may always look.
+GIT_MUTATING = {
+    "add", "commit", "checkout", "switch", "branch", "merge", "rebase",
+    "reset", "revert", "cherry-pick", "stash", "tag", "worktree", "clean",
+    "restore", "rm", "mv", "am", "apply", "update-ref", "update-index",
+    "gc", "prune", "notes", "replace", "commit-tree",
+}
 # PowerShell cmdlets are Verb-Noun shaped and local by default; these
 # reach the network and stay visible to the watcher.
 PS_NETWORK_CMDLETS = {"invoke-webrequest", "invoke-restmethod", "send-mailmessage"}
@@ -132,7 +154,7 @@ def external_bins(command):
             continue  # a local cmdlet (caught live: Remove-Item shamed)
         if head == "git":
             sub = next((w for w in words[1:] if not w.startswith("-")), "")
-            if sub not in GIT_NETWORK:
+            if sub not in GIT_NETWORK and sub not in GIT_MUTATING:
                 continue
         if head not in seen:
             seen.add(head)
