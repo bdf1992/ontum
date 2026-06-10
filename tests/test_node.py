@@ -5,6 +5,8 @@ D-2-guarded, terminal-set-checked; a real accept advances, a real reject
 parks; and atoms settled under mock receipts never regress when realness
 is admitted."""
 
+import contextlib
+import io
 import json
 import shutil
 import sys
@@ -145,6 +147,44 @@ class RealNodeTest(unittest.TestCase):
         self.assertEqual(orchestrate.orchestrate(fresh, quiet=True), 0)
         self.assertEqual(set(states(fresh).values()), {"value_confirmed"})
         self.assertEqual(before, (fresh / "log" / "receipts.jsonl").read_bytes())
+
+    def inbox_text(self, root=None):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(node.main(["inbox", "--root", str(root or self.root)]), 0)
+        return out.getvalue()
+
+    def test_inbox_shows_open_items_and_how_to_clear_them(self):
+        orchestrate.orchestrate(self.root, quiet=True)
+        # both atoms still await the L0 summons: nothing is bdo's yet
+        text = self.inbox_text()
+        self.assertIn("0 item(s) awaiting your stamp, 2 awaiting summons", text)
+        # atom 00 passes L0 and reaches the stamp: it is bdo's, fully briefed
+        self.judge("atom.real-00.v0", reason="serves the owner")
+        orchestrate.orchestrate(self.root, quiet=True)
+        text = self.inbox_text()
+        self.assertIn("atom.real-00.v0 — awaiting your stamp", text)
+        self.assertIn("real atom 0 judged for real", text)         # the story
+        self.assertIn("serves the owner", text)                     # L0's reasoning
+        self.assertIn("--node owner-stamp.bdo.v1 --verdict", text)  # the clear line
+        # atom 01 is rejected by L0: it parks as bdo's to amend, with the why
+        self.judge("atom.real-01.v0", verdict="reject_no_value", reason="no owner value found")
+        orchestrate.orchestrate(self.root, quiet=True)
+        text = self.inbox_text()
+        self.assertIn("atom.real-01.v0 — parked", text)
+        self.assertIn("no owner value found", text)
+        # clearing uses the one existing pen; the inbox then empties
+        self.judge("atom.real-00.v0", who=STAMP_REAL, reason="stamped")
+        orchestrate.orchestrate(self.root, quiet=True)
+        text = self.inbox_text()
+        self.assertIn("0 item(s) awaiting your stamp, 0 awaiting summons, 1 parked", text)
+
+    def test_inbox_with_mocked_stamp_owns_nothing(self):
+        fresh = make_root(tempfile.mkdtemp(dir=self.tmp), 1)
+        orchestrate.admit_setpoint(fresh, SETPOINT, by="test-bdo")
+        text = self.inbox_text(fresh)
+        self.assertIn("the owner stamp is still mocked", text)
+        self.assertIn("0 item(s) awaiting your stamp", text)
 
     def test_reverting_to_mock_is_a_superseding_admission(self):
         orchestrate.orchestrate(self.root, quiet=True)

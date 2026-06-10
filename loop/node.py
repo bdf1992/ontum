@@ -24,6 +24,7 @@ from pathlib import Path
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, append_line,
                             load_atoms, make_receipt, now_ts, real_nodes,
                             receipt_for_stage, short_hash)
+from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 
 
 def admit_real(root, stage_node, real_node, by, supersedes=None):
@@ -92,6 +93,56 @@ def judge(root, atom_id, node, verdict, reason):
     return 0
 
 
+def inbox(root):
+    """The owner's open items, read-only (I-3: this view writes nothing).
+
+    Three sections: atoms awaiting bdo's stamp (yours — everything needed
+    to judge is printed, plus the one line that clears it); atoms awaiting
+    other summoned nodes (the control session routes those, not you); and
+    atoms parked by a reject or a dead end (yours to amend or retire,
+    D-4). Clearing stays the one existing pen: judge."""
+    fold = Fold(root)
+    atoms = load_atoms(root)
+    real_map = real_nodes(fold)
+    human = real_map.get(HUMAN_NODE)
+    mine, summons, parked = [], [], []
+    for atom, ahash in atoms:
+        action = next_action(fold, atom, ahash, real_map)
+        if action is None:
+            continue
+        kind, target = action
+        if kind == "await" and target == human:
+            mine.append((atom, ahash))
+        elif kind == "await":
+            summons.append((atom, target))
+        elif kind == "parked":
+            parked.append((atom, ahash))
+
+    if human is None:
+        print("note: the owner stamp is still mocked — nothing waits on you "
+              "until it is admitted real (node admit-real)")
+    for atom, ahash in mine:
+        print(f"\n{atom['id']} — awaiting your stamp ({human})")
+        print(f"  story: {atom['story']['text']}")
+        print(f"  author's confidence: {atom['story']['value_confidence']}")
+        for rc in fold.receipts:
+            if rc.get("artifact_hash") == ahash:
+                print(f"  {rc['node']}: {rc['verdict']} — {rc['reason']}")
+        print(f"  verdicts: {' | '.join(STAMP_STAGE['terminal_expected'])}")
+        print(f"  clear: python -m loop.node judge --atom {atom['id']} "
+              f"--node {human} --verdict <verdict> --reason \"<why>\"")
+    for atom, target in summons:
+        print(f"\n{atom['id']} — awaiting summons: {target} (the control session routes this, not you)")
+    for atom, ahash in parked:
+        print(f"\n{atom['id']} — parked (yours to amend or retire, D-4)")
+        for rc in fold.receipts:
+            if rc.get("artifact_hash") == ahash and rc.get("next_suggested_event") is None:
+                print(f"  held by {rc['node']}: {rc['verdict']} — {rc['reason']}")
+    print(f"\nresult: report — {len(mine)} item(s) awaiting your stamp, "
+          f"{len(summons)} awaiting summons, {len(parked)} parked")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -103,6 +154,9 @@ def main(argv=None):
     j.add_argument("--verdict", required=True)
     j.add_argument("--reason", required=True)
 
+    i = sub.add_parser("inbox", help="the owner's open items, read-only")
+    i.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+
     r = sub.add_parser("admit-real", help="admit that a stage is judged by a real node from now on")
     r.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     r.add_argument("--stage", required=True, help="the pipeline stage's node id being replaced")
@@ -112,6 +166,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.cmd == "judge":
         return judge(args.root, args.atom, args.node, args.verdict, args.reason)
+    if args.cmd == "inbox":
+        return inbox(args.root)
     stages = {s["node"] for s in PIPELINE}
     if args.stage not in stages:
         print(f"result: needs-you — unknown stage {args.stage}; stages: {', '.join(sorted(stages))}")
