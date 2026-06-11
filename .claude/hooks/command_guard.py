@@ -53,7 +53,9 @@ DENY_RULES = (
      "raw `gh pr edit` is denied (branch-ritual): reshape the story through "
      f"the pen: {PEN} edit <number> ..."),
     ("gh-pr-merge", r"\bgh\s+pr\s+merge\b",
-     "denied, firm: never merge your own PR — the stamp is bdo's (branch-ritual)."),
+     "raw `gh pr merge` is denied: merging into main is bdo's — the stamp is "
+     "bdo's (firm). A piece-PR into an epic branch goes through the pen: "
+     f"{PEN} integrate <n> (it refuses a main base; done-line 0029)."),
     ("gh-pr-close", r"\bgh\s+pr\s+(close|reopen)\b",
      "denied: opening and closing PRs is ritual work — surface it to bdo "
      "instead of doing it raw."),
