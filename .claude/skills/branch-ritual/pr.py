@@ -437,11 +437,47 @@ def arc_confirmed_in(admissions_text, epic):
 
 
 def _trunk_confirmation(epic):
-    """Read bdo's arc confirmation from the trunk (main), never the working
-    branch — the authorization lives where he stamps it, and a piece branch
-    may predate the confirmation."""
-    rc, out, _ = _capture(["git", "show", "main:.ai-native/log/admissions.jsonl"])
+    """Read bdo's arc confirmation from the trunk — the pushed `origin/main`,
+    never a local `main` ref that drifts stale when a viewport falls behind,
+    never the working branch (a piece branch may predate the confirmation).
+    Fetch first so the read is current; `confirm` below pushes the stamp here."""
+    _capture(["git", "fetch", "origin", "main"])
+    rc, out, _ = _capture(["git", "show", "origin/main:.ai-native/log/admissions.jsonl"])
     return arc_confirmed_in(out, epic) if rc == 0 else None
+
+
+def cmd_confirm(ns):
+    """bdo's arc stamp that actually reaches the merge-node. `loop.node
+    confirm-arc` only appends to the working tree; the merge-node reads the
+    pushed trunk. This is the missing seam: append the same admission and push
+    it to `origin/main` in one command, so one stamp authorizes the node — no
+    hand-git. The owner's act (D-4): refused unless `--by bdo`. Done on a fresh
+    worktree off origin/main, so a stale or dirty viewport never blocks it."""
+    import shutil
+    import tempfile
+    if (ns.by or "").strip().lower() != "bdo":
+        _refuse("arc confirmation is bdo's stamp — run with --by bdo (D-4)")
+    _run(["git", "fetch", "origin", "main"])
+    wt = pathlib.Path(tempfile.mkdtemp(prefix="ontum-confirm-"))
+    try:
+        _run(["git", "worktree", "add", "--detach", str(wt), "origin/main"])
+        sys.path.insert(0, str(ROOT))
+        from loop.node import confirm_arc  # the schema, not a second copy
+        adm = confirm_arc(wt / ".ai-native", ns.epic, "bdo", enabled=not ns.off)
+        rel = ".ai-native/log/admissions.jsonl"
+        _run(["git", "-C", str(wt), "add", rel])
+        word = "withdraw" if ns.off else "confirm"
+        _run(["git", "-C", str(wt), "commit", "-m", f"{word} arc {ns.epic} (bdo)"])
+        _run(["git", "-C", str(wt), "push", "origin", "HEAD:main"])
+        did = "withdrew" if ns.off else "confirmed"
+        print(f"result: done — bdo {did} arc {ns.epic} on the trunk ({adm['id']}). "
+              "The merge-node can land its PRs now: "
+              "python .claude/skills/branch-ritual/pr.py land <n> "
+              f"--epic {ns.epic} --by merge-node.claude.v0")
+    finally:
+        _capture(["git", "worktree", "remove", str(wt), "--force"])
+        if wt.exists():
+            shutil.rmtree(wt, ignore_errors=True)
 
 
 CHECK_OK = {"SUCCESS", "NEUTRAL", "SKIPPED"}
@@ -626,6 +662,17 @@ def main(argv=None):
     land.add_argument("--dry-run", dest="dry_run", action="store_true",
                       help="run every guard and print the decision; merge nothing")
     land.set_defaults(func=cmd_land)
+
+    confirm = verbs.add_parser(
+        "confirm", help="bdo's arc stamp, pushed to the trunk: confirm-arc that "
+                        "actually reaches origin/main so the merge-node reads it")
+    confirm.add_argument("--epic", required=True,
+                         help="the arc to confirm, e.g. epic.owner-harness")
+    confirm.add_argument("--by", required=True,
+                         help="bdo — the owner's stamp, refused otherwise (D-4)")
+    confirm.add_argument("--off", action="store_true",
+                         help="withdraw a prior confirmation (supersede, never erase)")
+    confirm.set_defaults(func=cmd_confirm)
 
     ns, extra = parser.parse_known_args(argv)
     if extra and getattr(ns, "verb", None) != "push":
