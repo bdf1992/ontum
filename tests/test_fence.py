@@ -1,11 +1,14 @@
-"""The fence registry holds its seams (done-line 0027).
+"""The fence registry holds its seams (done-lines 0027, 0029).
 
-Three directions of refusal, so neither surface can drift alone:
+Parity between the surfaces is structural — command_guard derives its
+deny-list from the registry — so what's left to refuse is behavior and
+freshness:
 
 1. registry <-> command_guard behavior: every forbidden rule's match
    examples are denied by the live Claude guard (subprocess, exit 2),
-   its not_match examples pass; the claude_guard cross-references cover
-   the guard's whole deny-list, both ways.
+   its not_match examples pass; the derived table is exactly the
+   registry's forbidden rows; a registry that can't load degrades
+   loudly, never silently.
 2. registry <-> rendered bytes: the committed .codex/ layer equals a
    fresh render — a registry edit without a re-render fails here.
 3. examples <-> prefix semantics: each rule's own match/not_match
@@ -98,16 +101,23 @@ class ClaudeParity(unittest.TestCase):
                         f"command_guard denies what the registry treats "
                         f"as outside the rule: {example!r}")
 
-    def test_registry_covers_the_whole_claude_deny_list(self):
-        # the two push rules live in command_guard's hook body, not its
-        # DENY_RULES table; they are part of the deny surface all the same
-        claude_ids = {rule for rule, _, _ in command_guard.DENY_RULES}
-        claude_ids |= {"git-push-raw", "git-push-trunk"}
-        mirrored = {gid for r in policy.RULES for gid in r["claude_guard"]}
-        self.assertEqual(
-            mirrored, claude_ids,
-            "the deny-lists drifted: a rule was added on one surface "
-            "without its twin (fence/policy.py <-> command_guard.py)")
+    def test_claude_deny_list_is_the_registry(self):
+        # structural parity (done-line 0029): the guard's table is a
+        # derivation, not a twin — ids and messages come from the registry
+        derived = {(rid, msg) for rid, _, msg in command_guard.DENY_RULES}
+        expected = {(r["id"], r["justification"]) for r in FORBIDDEN}
+        self.assertEqual(derived, expected)
+
+    def test_degraded_fence_is_loud_not_silent(self):
+        # _deny_rules() under a broken registry: empty list, a degraded
+        # entry on the watch log — never an exception, never quiet
+        import unittest.mock as mock
+        recorded = []
+        with mock.patch.object(command_guard, "record", recorded.append), \
+             mock.patch.dict(sys.modules, {"fence": None}):
+            rules = command_guard._deny_rules()
+        self.assertEqual(rules, ())
+        self.assertEqual([e["status"] for e in recorded], ["degraded"])
 
     def test_prompt_rules_are_at_least_watched_by_claude(self):
         for rule in PROMPT:
@@ -142,16 +152,30 @@ class RenderedSurface(unittest.TestCase):
         self.assertIn('["gh", "pr", ["close", "reopen"]]',
                       render_codex.render_rules())
 
-    def test_hooks_carry_only_the_summon(self):
+    def test_hooks_carry_only_summon_and_probe(self):
         hooks = json.loads(render_codex.render_hooks())["hooks"]
         commands = [h["command"]
                     for groups in hooks.values()
                     for group in groups
                     for h in group["hooks"]]
         self.assertTrue(commands)
-        self.assertEqual(set(commands), {"python -m loop.summon --hook"},
-                         "the Codex hook surface is read-only by design "
-                         "(D-10): only the summons briefing runs")
+        for command in commands:
+            self.assertTrue(
+                command == "python -m loop.summon --hook"
+                or command.startswith("python fence/probe_codex.py "),
+                f"unexpected hook command: {command!r} — the Codex hook "
+                "surface stays read-only (D-10): the summons briefing "
+                "and the seam probe, nothing that acts")
+
+    def test_probe_events_cover_the_tool_seam(self):
+        hooks = json.loads(render_codex.render_hooks())["hooks"]
+        probed = {event for event, groups in hooks.items()
+                  for group in groups for h in group["hooks"]
+                  if h["command"].startswith("python fence/probe_codex.py")}
+        self.assertEqual(
+            probed, {"PreToolUse", "PostToolUse", "PermissionRequest"},
+            "the probe observes exactly the seams the watcher and the "
+            "apply_patch guard will be designed against (done-line 0029)")
 
 
 if __name__ == "__main__":

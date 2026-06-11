@@ -15,25 +15,32 @@ python -m unittest tests.test_fence -v
   argv prefix it matches, the decision (`forbidden` | `prompt`), a
   justification written as a story for a cold reader (the why and the
   paved path inline — a session reading only the refusal knows what to
-  do instead), inline `match`/`not_match` examples, and the
-  `command_guard` rule ids it mirrors on the Claude side.
+  do instead), and inline `match`/`not_match` examples.
 - [render_codex.py](render_codex.py) — the deterministic renderer:
   emits `.codex/rules/ontum.rules` (native `prefix_rule` entries,
-  Starlark) and `.codex/hooks.json` (the ambient summons). The outputs
-  are committed but **never hand-edited** — edit the registry and
-  re-render.
+  Starlark) and `.codex/hooks.json` (the ambient summons + the hook
+  probe). The outputs are committed but **never hand-edited** — edit
+  the registry and re-render.
+- [probe_codex.py](probe_codex.py) — the hook-seam probe (done-line
+  0029): wired through the rendered `hooks.json`, it records each
+  `PreToolUse`/`PostToolUse`/`PermissionRequest` firing (argv, raw
+  stdin, environment) to the gitignored sensor trace
+  `.ai-native/log/codex-hook-probe.jsonl`. The Codex watcher and any
+  `apply_patch` write-guard get designed from those readings — never
+  against the undocumented contract.
 
 Rules of this directory:
 
-- **Parity is tested, not trusted.** `tests/test_fence.py` refuses
-  drift in three directions: every forbidden rule's examples must be
-  *denied by the live `command_guard`* (subprocess, exit 2); the
-  rendered `.codex/` bytes must match a fresh render; every example
-  must fit its own rule's prefix semantics. Tightening one surface
-  without the other is a failing test, by design.
-- **`command_guard.py` still carries its own `DENY_RULES` today.**
-  Converging it to read this registry is a named later piece (done-line
-  0027); until then the parity test holds the seam.
+- **Parity is structural** (done-line 0029): `command_guard.py` derives
+  its `DENY_RULES` from this registry at runtime — one table, two
+  surfaces, no twin lists to drift. A registry that fails to load
+  degrades the Claude guard *loudly* (watch-log `degraded` entry +
+  stderr) and fails open.
+- **And still tested behaviorally.** `tests/test_fence.py` runs every
+  forbidden rule's examples through the live `command_guard`
+  (subprocess, exit 2), requires the committed `.codex/` bytes to equal
+  a fresh render, and checks every example against its own rule's
+  prefix semantics.
 - **Stdlib only.** The registry is data; the renderer is a pen — small,
   deterministic, no dependencies.
 - A new family arrives by adding a renderer (`render_<family>.py`),

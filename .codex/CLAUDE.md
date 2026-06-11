@@ -13,9 +13,14 @@ re-render (`tests/test_fence.py` refuses a stale render).
   viewport. Codex validates the inline `match`/`not_match` examples at
   load; `codex execpolicy check --pretty --rules .codex/rules/ontum.rules
   -- <cmd>` tests a command by hand.
-- `hooks.json` — the ambient summons: `SessionStart` and
+- `hooks.json` — the ambient summons (`SessionStart` and
   `UserPromptSubmit` run `python -m loop.summon --hook`, the same
-  read-only briefing a Claude session is handed each turn. Hooks need a
+  read-only briefing a Claude session is handed each turn) and the
+  hook-seam probe (done-line 0029: `fence/probe_codex.py` on
+  `PreToolUse`/`PostToolUse`/`PermissionRequest`, recording each
+  firing's real payload to the gitignored
+  `.ai-native/log/codex-hook-probe.jsonl` so the watcher and any
+  `apply_patch` guard are designed from observation). Hooks need a
   one-time review and trust via `/hooks` inside Codex (re-required
   whenever the rendered definition changes — trust is recorded against
   the hash).

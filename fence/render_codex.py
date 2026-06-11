@@ -9,7 +9,11 @@ and emits, deterministically,
 - .codex/hooks.json          the ambient summons: SessionStart and
                              UserPromptSubmit run `python -m
                              loop.summon --hook`, the same briefing a
-                             Claude session is handed
+                             Claude session is handed; plus the hook
+                             seam probe (fence/probe_codex.py) on
+                             PreToolUse/PostToolUse/PermissionRequest,
+                             recording real payloads until the contract
+                             is observed (done-line 0029)
 
 Outputs are committed but never hand-edited - tests/test_fence.py
 refuses a stale render. Codex loads the layer only once the project is
@@ -31,9 +35,28 @@ RULES_OUT = ROOT / ".codex" / "rules" / "ontum.rules"
 HOOKS_OUT = ROOT / ".codex" / "hooks.json"
 
 SUMMON = "python -m loop.summon --hook"
+PROBE = "python fence/probe_codex.py"
+
+
+def _probe(event):
+    """One probe wiring: record the event's real payload, never interfere."""
+    return {
+        "hooks": [
+            {
+                "type": "command",
+                "command": f"{PROBE} {event}",
+                "timeout": 30,
+                "statusMessage": "ontum: probing the hook seam",
+            }
+        ]
+    }
+
 
 HOOKS = {
     "hooks": {
+        "PreToolUse": [_probe("PreToolUse")],
+        "PostToolUse": [_probe("PostToolUse")],
+        "PermissionRequest": [_probe("PermissionRequest")],
         "SessionStart": [
             {
                 "hooks": [
