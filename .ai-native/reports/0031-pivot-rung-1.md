@@ -128,3 +128,34 @@ center is one cell. Cross-family via envoy is still the real verdict.)
 This replaces needs-you #1's framing: the path forward is convergence
 over independent generations (vocabulary varying too, the harder test),
 not grading against any one guess.
+
+## Addendum 2 — generation-convergence, and a tension that flips sign
+
+The harder test, run: `pivot/seed.py` carries the seed as data — three
+*explicit* axes (location / agency / visibility, each with its −1/0/+1
+reading), one anchor ("the parts of a bounded system"), the 27 addresses
+— and `generation_prompt` expands it. **4 cold generators invented their
+own 27 terms** from the seed; the battery measured convergence with
+vocabulary now varying.
+
+| reading | recovery run (given vocab, fuzzy law) | generation run (explicit axes) |
+|---|---|---|
+| placement exact | 0.380 | **0.750** |
+| placement kind | 0.769 | 0.789 |
+| orientation_slack | 0.389 | **0.039** |
+| convention_slack | 0.123 | **0.000** |
+| vocab ⊖ placement | **+0.62** | **−0.39** |
+| vocabulary jaccard | 1.000 (fixed) | 0.364 (generated) |
+
+The finding: **stating the axes in the seed collapses the orientation
+ambiguity** — convention_slack 0.00 (no cube symmetry improves agreement;
+every generator is in the same frame) and exact placement jumps to 0.75.
+The vocab⊖placement tension **flips sign**: independent generators
+disagree on *which word* more than on *where it goes*. `reservoir` /
+`filter` / `sink` / `engine` land at the same coordinates across
+independent runs; the variance is lexical. **The geometry is more
+canonical than the vocabulary** — strong evidence the structure is real
+and recoverable, with the irreducible noise localized to naming, not
+position. (Still N=4, same family, one seed — cross-family via envoy is
+the verdict; minimal-seed search and definition-convergence are the next
+dials.)
