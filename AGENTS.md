@@ -47,10 +47,24 @@ a Claude session does — so read them yourself:
 A Claude session here is fenced by **hooks** it can't see around:
 `command_guard` denies raw `git add/commit/push` and `gh pr` mutations;
 `write_guard` refuses a file that lands in the wrong place; a session-start
-hook injects the loop's state; a Stop beat reflects. **None of that
-machinery runs for you.** So these stop being guardrails and become
-**discipline you uphold yourself** — this file is the only fence you
-have:
+hook injects the loop's state; a Stop beat reflects.
+
+As of done-line 0027, part of that fence is **machine-held for you
+too**, when you run as Codex CLI with this project's `.codex/` layer
+trusted: [`.codex/rules/ontum.rules`](.codex/rules/ontum.rules) —
+rendered from the family-neutral registry
+[`fence/policy.py`](fence/policy.py) — *forbids* the raw verbs
+(`git add`/`commit`/`push`, the `gh pr` mutations; each refusal names
+the pen to use instead) and *prompts* on `git checkout`/`git switch`
+(the repo root is bdo's viewport), and
+[`.codex/hooks.json`](.codex/hooks.json) hands you the open summons the
+way Claude's ambient hook does, once reviewed and trusted via `/hooks`.
+Test a command against the fence with
+`codex execpolicy check --pretty --rules .codex/rules/ontum.rules -- <cmd>`.
+
+Everywhere that layer can't see — cloud runs, untrusted checkouts, file
+edits, the log itself — the fence is still **discipline you uphold
+yourself**:
 
 - **Never `git push` to `main`, never merge your own PR.** Develop on
   your branch; bdo merges (D-4). Check the branch is still alive before

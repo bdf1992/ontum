@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -m loop.summon --hook",
+            "timeout": 30,
+            "statusMessage": "ontum: open summons"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -m loop.summon --hook",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
