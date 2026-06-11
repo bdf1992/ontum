@@ -1,0 +1,134 @@
+"""Done-line 0026: the branded spawn rail gates a node-spawn.
+
+The §10 case for spawns: a branded node-spawn of value-gate.claude.v1 is denied
+while branded-subagent holds no judge rung, and permitted once it does; an
+unbranded helper passes (watched), and a headless `claude` invocation is seen.
+Pure parsing and the refusal are hit directly; the hook runs as a real
+subprocess fed PreToolUse JSON, the watch log pointed at a temp file.
+"""
+
+import importlib.util
+import json
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+GUARD = ROOT / ".claude" / "hooks" / "spawn_guard.py"
+
+
+def _load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+spawn = _load("spawn_guard", GUARD)
+
+
+class TestParsing(unittest.TestCase):
+    def test_brand_read_from_prompt(self):
+        self.assertEqual(
+            spawn.brand_of({"prompt": "do the thing\nontum-node: value-gate.claude.v1\n"}),
+            "value-gate.claude.v1")
+
+    def test_unbranded_is_none(self):
+        self.assertIsNone(spawn.brand_of({"prompt": "just explore the repo"}))
+
+    def test_headless_claude_detected(self):
+        self.assertTrue(spawn.is_headless_claude("claude -p 'judge this'"))
+        self.assertTrue(spawn.is_headless_claude("claude --version"))
+
+    def test_a_dotclaude_path_is_not_headless(self):
+        self.assertFalse(spawn.is_headless_claude("python .claude/hooks/x.py"))
+        self.assertFalse(spawn.is_headless_claude("echo claude is great"))
+
+
+class TestRefusalAgainstRepo(unittest.TestCase):
+    """Against the real records: the ladder is empty, so a real node-spawn is
+    refused for want of a rung, and a node with no prompt cannot be pinned."""
+
+    def test_real_node_without_rung_is_refused(self):
+        reason = spawn.node_spawn_refusal("value-gate.claude.v1")
+        self.assertIsNotNone(reason)
+        self.assertIn("rung", reason)
+
+    def test_unknown_node_has_no_prompt_to_pin(self):
+        reason = spawn.node_spawn_refusal("no.such.node.v9")
+        self.assertIsNotNone(reason)
+        self.assertIn("no versioned prompt", reason)
+
+
+class TestPermittedOnceGranted(unittest.TestCase):
+    """Give the class its rung and a pinnable prompt in a temp records root —
+    the same spawn now passes."""
+
+    def test_granted_rung_permits_a_pinned_node(self):
+        ai = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, ai, ignore_errors=True)
+        (ai / "nodes").mkdir()
+        (ai / "log").mkdir()
+        (ai / "nodes" / "demo.node.v1.md").write_text("# demo node prompt", encoding="utf-8")
+        rung = {"type": "trust_rung", "agent_class": "branded-subagent",
+                "capability": "judge", "by": "bdo", "id": "adm.test", "ts": "t"}
+        (ai / "log" / "admissions.jsonl").write_text(json.dumps(rung) + "\n", encoding="utf-8")
+        self.assertIsNone(spawn.node_spawn_refusal("demo.node.v1", root=ai))
+
+
+class TestHook(unittest.TestCase):
+    def setUp(self):
+        fd, path = tempfile.mkstemp(suffix=".jsonl")
+        os.close(fd)
+        self.watch_log = pathlib.Path(path)
+        self.addCleanup(self.watch_log.unlink)
+
+    def _invoke(self, payload, post=False):
+        env = dict(os.environ, ONTUM_TOOL_WATCH_LOG=str(self.watch_log))
+        args = [sys.executable, str(GUARD)] + (["--post"] if post else [])
+        return subprocess.run(args, input=json.dumps(payload),
+                              capture_output=True, text=True, env=env)
+
+    def _entries(self):
+        text = self.watch_log.read_text(encoding="utf-8")
+        return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+    def test_unbranded_agent_passes_and_is_watched(self):
+        proc = self._invoke({"tool_name": "Agent", "session_id": "s1",
+                             "tool_input": {"prompt": "explore the repo"}})
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(self._entries()[0]["status"], "spawn-unbranded")
+
+    def test_branded_node_spawn_denied_without_a_rung(self):
+        proc = self._invoke({"tool_name": "Agent", "session_id": "s1",
+                             "tool_input": {"prompt": "ontum-node: value-gate.claude.v1\njudge it"}})
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("rung", proc.stderr)
+        self.assertEqual(self._entries()[0]["status"], "spawn-denied")
+        self.assertEqual(self._entries()[0]["node"], "value-gate.claude.v1")
+
+    def test_headless_claude_is_a_spawn(self):
+        proc = self._invoke({"tool_name": "Bash", "session_id": "s1",
+                             "tool_input": {"command": "claude -p 'go'"}})
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(self._entries()[0]["kind"], "headless")
+
+    def test_a_plain_shell_command_is_not_a_spawn(self):
+        proc = self._invoke({"tool_name": "Bash", "session_id": "s1",
+                             "tool_input": {"command": "echo hello"}})
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(self._entries(), [])
+
+    def test_post_shames_an_unbranded_spawn_once(self):
+        proc = self._invoke({"tool_name": "Agent", "session_id": "s1",
+                             "tool_input": {"prompt": "explore"}}, post=True)
+        ctx = json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("unbranded spawn", ctx)
+
+
+if __name__ == "__main__":
+    unittest.main()
