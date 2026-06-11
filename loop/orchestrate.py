@@ -28,8 +28,9 @@ from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, SEED_EVENT, STAMP_NODE,
                             TERMINAL_EVENT, Fold, append_line, arc_confirmation,
-                            atom_state, canon, epic_of, load_atoms, now_ts,
-                            pass_once, real_nodes, receipt_for_stage, short_hash)
+                            atom_state, canon, epic_of, load_atoms, load_epics,
+                            now_ts, pass_once, real_nodes, receipt_for_stage,
+                            short_hash)
 
 SETPOINT_DIAL = "orchestration.temperature"
 SETPOINT_KEYS = ("step_budget_per_tick", "max_inflight_atoms", "human_queue_cap")
@@ -111,14 +112,27 @@ def next_action(fold, atom, ahash, real_map=None, epics=None):
     return ("parked", None)  # short of goal, nothing derivable: a needs-you, held
 
 
-def sense(fold, atoms):
+def _arc_auto_stampable(fold, atom, epics):
+    """True when this atom's owner-stamp is the loop's to take, not the human's
+    — its arc is confirmed (done-line 0028). The one predicate the scheduler and
+    the backlog counter must agree on, or a confirmed arc's piece both fails to
+    schedule and falsely inflates his queue (the first-light divergence)."""
+    if epics is None:
+        return False
+    epic = epic_of(atom, epics)
+    return epic is not None and arc_confirmation(fold, epic["id"]) is not None
+
+
+def sense(fold, atoms, epics=None):
     """Field-state (§15): every signal a pure fold over the log — never a
-    number the loop kept in memory."""
+    number the loop kept in memory. `epics` lets the field see a confirmed
+    arc's stamp as the loop's to take (done-line 0028), so its pieces neither
+    classify as 'await' nor count against his backlog."""
     pressure = {"unborn": 0, "inflight": 0, "settled": 0, "parked": 0,
                 "awaiting": 0, "human_backlog": 0, "queue_depth": 0}
     real_map = real_nodes(fold)
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash, real_map)
+        action = next_action(fold, atom, ahash, real_map, epics)
         if action is None:
             pressure["settled"] += 1
         elif action[0] == "seed":
@@ -129,7 +143,9 @@ def sense(fold, atoms):
                 pressure["parked"] += 1
             elif action[0] == "await":
                 pressure["awaiting"] += 1
-        if fold.event(HUMAN_QUEUE_EVENT, ahash) and receipt_for_stage(fold, STAMP_STAGE, ahash, real_map) is None:
+        if (fold.event(HUMAN_QUEUE_EVENT, ahash)
+                and receipt_for_stage(fold, STAMP_STAGE, ahash, real_map) is None
+                and not _arc_auto_stampable(fold, atom, epics)):
             pressure["human_backlog"] += 1
         for stage in PIPELINE:
             if fold.event(stage["event"], ahash) and receipt_for_stage(fold, stage, ahash, real_map) is None:
@@ -151,7 +167,7 @@ def _rank(action):
     return len(PIPELINE) * 2
 
 
-def control(pressure, setpoint, fold, atoms, human_rate):
+def control(pressure, setpoint, fold, atoms, human_rate, epics=None):
     """The bidirectional law (D-11): map (pressure - setpoint) to this tick's
     spend. Heat is the default — spend the budget on whatever is short of
     goal. Cool closes the valves: no seeding past the cap, no announcement
@@ -170,7 +186,7 @@ def control(pressure, setpoint, fold, atoms, human_rate):
     real_map = real_nodes(fold)
     field = []
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash, real_map)
+        action = next_action(fold, atom, ahash, real_map, epics)
         if action is None or action[0] in ("parked", "await"):
             continue  # settled, held for a human, or held for a summoned node
         field.append((atom, ahash, action))
@@ -245,8 +261,9 @@ def orchestrate(root, human_rate=1, max_ticks=200, quiet=False):
                   f"{SETPOINT_DIAL} (I-8: the dial is an admitted record, "
                   "not a default; admit one with --admit-setpoint)")
             return 2
-        pressure = sense(fold, atoms)
-        scheduled, deferred, cooled = control(pressure, setpoint, fold, atoms, human_rate)
+        epics = load_epics(root)
+        pressure = sense(fold, atoms, epics)
+        scheduled, deferred, cooled = control(pressure, setpoint, fold, atoms, human_rate, epics)
 
         if not scheduled:
             if pressure["settled"] == len(atoms):
@@ -255,7 +272,7 @@ def orchestrate(root, human_rate=1, max_ticks=200, quiet=False):
             real_map = real_nodes(fold)
             waits = [f"{atom['id']} -> {action[1]}"
                      for atom, ahash in atoms
-                     for action in [next_action(fold, atom, ahash, real_map)]
+                     for action in [next_action(fold, atom, ahash, real_map, epics)]
                      if action and action[0] == "await"]
             print(f"result: needs-you — nothing schedulable: {canon(pressure)}"
                   + (f"; awaiting summons: {'; '.join(waits)}" if waits else ""))
@@ -279,14 +296,15 @@ def field_status(root):
     atoms = load_atoms(root)
     admissions, dropped = read_admissions(root)
     setpoint = read_setpoint(admissions)
-    pressure = sense(fold, atoms)
+    epics = load_epics(root)
+    pressure = sense(fold, atoms, epics)
     ticks = [a for a in admissions if a.get("type") == "tick"]
     print(f"setpoint: {canon(setpoint['value']) if setpoint else 'NONE ADMITTED'}"
           + (f" (by {setpoint['by']}, {setpoint['id']})" if setpoint else ""))
     print(f"pressure: {canon(pressure)}")
     print(f"ticks admitted: {len(ticks)} (dropped lines: {dropped})")
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash)
+        action = next_action(fold, atom, ahash, epics=epics)
         nxt = "settled" if action is None else f"{action[0]}:{action[1]}"
         print(f"  {atom['id']}: state={atom_state(fold, ahash)} next={nxt}")
     return 0

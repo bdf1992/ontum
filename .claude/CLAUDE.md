@@ -44,11 +44,15 @@ be, landed as stamped increments, never hand-tuned silently.
     fake work cannot hide behind a clean ledger. Read-only on the log,
     fail-open, exit 0 always.
   - `SessionStart` → `skills/branch-ritual/git.py sync --hook`
-    (done-line 0031): the merge's return leg — fast-forwards the
-    viewport (the primary worktree, bdo's reading surface) to
-    origin/main, refusing an off-trunk or locally-ahead viewport
-    (surfaced, never acted on). A writing hook like the Stop beat,
-    stamped by bdo the same way; fail-open, exit 0 always.
+    (done-line 0031; amended 2026-06-11): the merge's return leg —
+    fast-forwards the viewport (the primary worktree, bdo's reading
+    surface) to origin/main, and **restores a stranded off-trunk
+    viewport to main when its branch work is safe** (clean, pushed) —
+    the session does the cleanup, it is never surfaced to bdo as a
+    chore. It surfaces only to preserve work a restore would lose
+    (uncommitted/unpushed, or local commits on main), naming the
+    session's own fix. A writing hook like the Stop beat, stamped by bdo
+    the same way; fail-open, exit 0 always.
   - `Stop` → `hooks/reflect_auto.py`: the auto beat (done-line 0020),
     the repo's first *writing* hook — contract change stamped by bdo.
     After each turn it runs the reflector pen's `auto` verb: only what

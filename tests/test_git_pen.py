@@ -95,28 +95,49 @@ class TestCommitRefusal(unittest.TestCase):
 
 
 class TestSyncRefusal(unittest.TestCase):
-    """Done-line 0031: the viewport only ever moves forward to origin/main.
+    """Done-line 0031, amended 2026-06-11 (rules expect support, not offload):
+    a viewport stranded off the trunk is the session's to RESTORE, not bdo's
+    to be handed. sync_refusal now stops only what cannot be auto-acted —
+    local commits sitting on main. The off-trunk case moved to restore_blocked,
+    which refuses a restore *only* to preserve work it would lose.
 
-    The §10 case: a viewport that drifted off the trunk, or a trunk
-    carrying local commits, is locally fine git — sync must still refuse
-    to fit, because acting there would re-point or bury bdo's reading
-    surface instead of surfacing it to him."""
+    The §10 case: a clean, pushed off-trunk viewport is locally fine and the
+    old rule surfaced it to bdo; the new rule restores it (restore_blocked is
+    None). The refusal now fires on the opposite shape — uncommitted/unpushed
+    work — because acting *there* would lose it."""
 
-    def test_off_trunk_viewport_refused(self):
-        self.assertIn("not the trunk", gitpen.sync_refusal("claude/stray", 0))
-
-    def test_detached_viewport_refused(self):
-        self.assertIn("detached HEAD", gitpen.sync_refusal("", 0))
+    def test_off_trunk_is_not_a_sync_refusal_anymore(self):
+        # off-trunk is handled by restore, no longer a flat refusal
+        self.assertIsNone(gitpen.sync_refusal("claude/stray", 0))
 
     def test_locally_ahead_trunk_refused(self):
-        # never committed locally (firm) — sync surfaces, never syncs over
+        # main is never committed locally (firm); the session branches + PRs it
         reason = gitpen.sync_refusal("main", 2)
         self.assertIn("2 local commit", reason)
-        self.assertIn("surface this to bdo", reason)
+        self.assertNotIn("surface this to bdo", reason)
 
     def test_clean_trunk_viewport_passes(self):
         for trunk in ("main", "master"):
             self.assertIsNone(gitpen.sync_refusal(trunk, 0), trunk)
+
+
+class TestRestoreBlocked(unittest.TestCase):
+    """The new teeth: a stranded viewport restores to main when its work is
+    safe (clean + pushed), and is blocked only to preserve work a restore
+    would lose — never handed to bdo."""
+
+    def test_clean_and_pushed_restores(self):
+        self.assertIsNone(gitpen.restore_blocked(clean=True, pushed=True))
+
+    def test_uncommitted_blocks_to_preserve(self):
+        reason = gitpen.restore_blocked(clean=False, pushed=True)
+        self.assertIn("uncommitted", reason)
+        self.assertIn("never bdo's", reason)
+
+    def test_unpushed_blocks_to_preserve(self):
+        reason = gitpen.restore_blocked(clean=True, pushed=False)
+        self.assertIn("not on origin", reason)
+        self.assertIn("never bdo's", reason)
 
 
 class TestGitGuard(unittest.TestCase):

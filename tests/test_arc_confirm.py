@@ -132,5 +132,57 @@ class TestNextActionArcAware(_Temp):
             ("judge", "owner-stamp.bdo.v1"))
 
 
+class TestSchedulerHonorsConfirmedArc(_Temp):
+    """The first-light divergence — the §10 case that hid in the gap between a
+    unit and its caller. next_action learned the arc bypass (done-line 0028) and
+    TestNextActionArcAware proves the unit; but sense()/control()/orchestrate()
+    called next_action WITHOUT epics, so a confirmed arc's piece still classified
+    as 'await', sat in his backlog, and was never scheduled to auto-stamp. The
+    unit passed green while the live loop left bdo holding work he'd confirmed.
+    These exercise the integration the unit test couldn't see."""
+
+    SP = {"step_budget_per_tick": 3, "max_inflight_atoms": 8, "human_queue_cap": 2}
+
+    def setUp(self):
+        super().setUp()
+        _owner_stamp_real(self.root)
+        for _ in range(8):  # advance to the owner-stamp seam, where it parks
+            reconcile.pass_once(self.root, quiet=True)
+
+    def _sense(self):
+        fold = reconcile.Fold(self.root)
+        atoms = reconcile.load_atoms(self.root)
+        epics = reconcile.load_epics(self.root)
+        return orchestrate.sense(fold, atoms, epics)
+
+    def test_unconfirmed_arc_is_his_backlog(self):
+        self.assertEqual(self._sense()["human_backlog"], 1)
+
+    def test_confirmed_arc_leaves_his_backlog(self):
+        node.confirm_arc(self.root, "epic.test", "bdo")
+        pressure = self._sense()
+        self.assertEqual(pressure["human_backlog"], 0)
+        self.assertEqual(pressure["awaiting"], 0)
+
+    def test_confirmed_arc_is_scheduled_not_deferred(self):
+        node.confirm_arc(self.root, "epic.test", "bdo")
+        fold = reconcile.Fold(self.root)
+        atoms = reconcile.load_atoms(self.root)
+        epics = reconcile.load_epics(self.root)
+        pressure = orchestrate.sense(fold, atoms, epics)
+        scheduled, _deferred, _cooled = orchestrate.control(
+            pressure, {"value": self.SP, "id": "adm.test"}, fold, atoms,
+            human_rate=1, epics=epics)
+        self.assertIn("atom.loop-skeleton.v0", [a["id"] for a, _, _, _ in scheduled])
+
+    def test_confirmed_arc_settles_through_the_full_loop(self):
+        node.confirm_arc(self.root, "epic.test", "bdo")
+        orchestrate.admit_setpoint(self.root, self.SP, by="test-bdo")
+        self.assertEqual(orchestrate.orchestrate(self.root, human_rate=1, quiet=True), 0)
+        states = {a["id"]: reconcile.atom_state(reconcile.Fold(self.root), h)
+                  for a, h in reconcile.load_atoms(self.root)}
+        self.assertEqual(states["atom.loop-skeleton.v0"], "value_confirmed")
+
+
 if __name__ == "__main__":
     unittest.main()

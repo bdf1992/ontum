@@ -1,0 +1,27 @@
+{
+  "atom": {
+    "id": "atom.gates-enumerated.v0",
+    "story": {
+      "text": "As the loop's owner, I want the remaining fixed-verdict mock gates (handoff-gate, value-confirm) de-mocked under admitted, rung-checked backings — inference or deterministic per the question each gate actually asks — and 'the five gates' enumerated once on the record, so the ambient hook's mock temperature reads 0/5 and every gate carries at least one non-accept verdict in its history. A gate that has never refused is a mock with a bigger bill (report 0004); first-light proved the value gate can say no (rcp.3b62807d5f6a), and this atom carries that proof across the rest of the pipeline.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.experience-layer"],
+      "touches": ["loop/reconcile.py", ".ai-native/nodes/", ".claude/skills/gate/gate.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [],
+      "receipts": []
+    }
+  },
+  "_note": "The accept pole of first-light's §10 proof: a genuine-value atom the same real value gate (value-gate.claude.v1) must be able to accept, where it refused atom.rename-vars.v0 — one prompt-hash, both verdicts, proving the verdict tracks the content not the turnstile. Not manufactured: epic.experience-layer (CONFIRMED by bdo, adm.6f34c7fe4654) already names this atom in its pieces (wave 4), so the gate sees it serves a confirmed arc. If the gate accepts this for the right reason it cites that arc; if it could not have refused, it did not gate."
+}

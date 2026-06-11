@@ -358,7 +358,11 @@ the system-level description.
 A few working agreements so this doesn't become a thing we polish forever:
 
 1. A version means a real capability landed, not "I added more structure."
-2. No receipt, no version bump.
+2. No receipt, no version bump. **Work is not real because it merged; work
+   is real because it passed through the loop and left receipts.** Every
+   particle of work is an atom on the log, or the ambient sensors are blind
+   to it (§15/D-5); the PR/merge seam enforces it — no atom-backed receipt,
+   no PR; no real gate receipt, no merge (retro 0037).
 3. Build the skeleton first, then one real node at a time — no second one until the
    first has a passing receipt.
 4. Write the one-line "done" before starting. When it's met, stop.
