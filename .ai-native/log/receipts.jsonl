@@ -76,3 +76,4 @@
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/session-handoff","id":"rcp.merge.76","kind":"merge","node":"merge-node.claude.v0","pr":76,"ts":"2026-06-11T23:34:25Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/stranded-receipts","id":"rcp.merge.74","kind":"merge","node":"merge-node.claude.v0","pr":74,"ts":"2026-06-11T23:49:36Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/gap-to-work","id":"rcp.merge.77","kind":"merge","node":"merge-node.claude.v0","pr":77,"ts":"2026-06-11T23:50:24Z","verdict":"landed"}
+{"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/report-0041","id":"rcp.merge.78","kind":"merge","node":"merge-node.claude.v0","pr":78,"ts":"2026-06-11T23:57:21Z","verdict":"landed"}
