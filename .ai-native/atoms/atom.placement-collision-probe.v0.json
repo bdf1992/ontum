@@ -1,0 +1,27 @@
+{
+  "atom": {
+    "id": "atom.placement-collision-probe.v0",
+    "story": {
+      "text": "As the loop's owner, I want the placement gate to carry at least one landed non-accept verdict in its history — it is the last real gate that has only ever said 'sound', and epic.experience-layer's bar is explicit that a gate which has never refused is a mock with a bigger bill (report 0004). This atom is the §10 proof for placement, transparently: it declares a hard shared-address conflict with atom.gates-enumerated.v2 over loop/reconcile.py, so the deterministic placement law must read it as a collision. The refusal is the point.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.experience-layer"],
+      "touches": ["loop/reconcile.py"],
+      "must_not_collide_with": ["atom.gates-enumerated.v2"],
+      "hands_off_to": ["seam.placement-to-handoff"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["atom.gates-enumerated.v2"],
+      "receipts": []
+    }
+  },
+  "_note": "Purpose-built and said so: this atom exists to give the placement gate its first landed refusal, the epic's explicit 'every gate carries a non-accept verdict' bar, not to advance unrelated work. The conflict it declares is real — it and atom.gates-enumerated.v2 both touch loop/reconcile.py and it names v2 off-limits, so the two genuinely cannot share that placement. The placement law (loop/placement_gate.py) computes collision from that structure, not from a constant; the verdict could have been sound had it declared no conflict. Transparency over a manufactured-organic story: the refusal is driven to meet a named bar, and named as such."
+}
