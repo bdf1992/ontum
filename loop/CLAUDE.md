@@ -37,11 +37,16 @@ python -m loop.web render                  # static owner inbox page
 python -m loop.web serve                   # localhost inbox with verdict forms
 
 python -m loop.census                      # the organ census: which organs carry weight, which are dormant
+
+python -m loop.digest                      # the owner's merge digest — read-only fold, arc-first
+python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
+python -m loop.digest --since 2026-06-01 --until 2026-06-11
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
-`node`, `summon`, `reflect`, and `web` import from the `loop` package
-and must run as modules (`python -m loop.<name>`) from the repo root.
+`node`, `summon`, `reflect`, `web`, `census`, and `digest` import from
+the `loop` package and must run as modules (`python -m loop.<name>`)
+from the repo root.
 
 Every invocation ends with a clear stdout result: `done | report |
 needs-you`. Treat `needs-you` as an escalation to surface, not an error
@@ -142,6 +147,22 @@ so a prompt edit can't reopen a settled verdict (I-2).
   owner's (D-4). Sibling to the watcher's `--report`, for code instead
   of tools. File-level, distinct from pipeline-stage realness
   (`node_real` admissions) — read both.
+- [digest.py](digest.py) — the owner's merge digest (done-line 0032):
+  the data-rich surface bdo watches *instead of operating the merge*.
+  A pure read-only fold over a span of the log, grouped arc-first
+  (done-line 0006): what landed, refused, awaits; the dial in play; the
+  field's heat/cool behaviour; and — the teeth — *divergences*, where
+  two locally-fine records refuse to fit (a *confirmed* arc harbouring a
+  *refused* piece; a tick whose backlog breached its own setpoint cap).
+  Verdicts are read generically (`next_suggested_event` is the
+  advance/refuse signal, a landing is the advance into `TERMINAL_EVENT`),
+  so the digest already speaks the merge-node's `{land, refuse,
+  send_back}` the day those receipts land — "landed" becomes
+  merged-to-main for free. Writes nothing; `--json` emits the dataset.
+  This is the *eyes* of the owner-harness arc's last stretch (bdo stepping
+  out of the merge seat); the merge-node is the *hand*, and it does not
+  move until bdo admits it real (`--by bdo`) and the `bdo merges` hard
+  rule is amended — both his, neither this surface's.
 
 ### Invariants the code is built around (firm)
 
