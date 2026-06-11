@@ -9,6 +9,10 @@
 # sensor trace: what Codex really hands a hook (done-line 0029) — deletable
 .ai-native/log/codex-hook-probe.jsonl
 
+# nag tally, not truth: turns the same mock set has sat (done-line 0033) —
+# the still-mock set is a fold over the log; this only counts the pressure
+.ai-native/mock-shame.json
+
 # envoy packages are rebuildable artifacts (done-line 0015); the
 # environment doc and the disclosure ledger are the committed trace
 exports/*
