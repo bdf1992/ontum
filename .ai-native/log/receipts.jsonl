@@ -40,3 +40,4 @@
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/mock-shame","id":"rcp.merge.45","kind":"merge","node":"merge-node.claude.v0","pr":45,"ts":"2026-06-11T06:31:37Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/confirm-trunk","id":"rcp.merge.52","kind":"merge","node":"merge-node.claude.v0","pr":52,"ts":"2026-06-11T06:38:17Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/gh-intake","id":"rcp.merge.55","kind":"merge","node":"merge-node.claude.v0","pr":55,"ts":"2026-06-11T06:58:51Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/merge-receipt","id":"rcp.merge.56","kind":"merge","node":"merge-node.claude.v0","pr":56,"ts":"2026-06-11T07:21:15Z","verdict":"landed"}
