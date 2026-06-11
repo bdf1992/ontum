@@ -8,6 +8,7 @@ is locally fine in every way the PR can see, yet it must not land — the
 confirmation is the independent stamp (D-4), and its absence refuses to fit.
 """
 
+import argparse
 import importlib.util
 import unittest
 from pathlib import Path
@@ -102,6 +103,22 @@ class ArcConfirmedIn(unittest.TestCase):
     def test_confirmed_returns_id(self):
         dump = '{"type":"arc_confirmed","epic":"e","by":"bdo","enabled":true,"id":"adm.ok"}'
         self.assertEqual(pr.arc_confirmed_in(dump, "e"), "adm.ok")
+
+
+class ConfirmIsBdosStamp(unittest.TestCase):
+    """`confirm` pushes bdo's arc stamp to the trunk so the merge-node can
+    read it (the seam confirm-arc alone never crossed). It is the owner's
+    act: anyone but bdo is refused before any git runs (D-4)."""
+
+    def test_refuses_non_bdo_before_touching_git(self):
+        ns = argparse.Namespace(epic="epic.owner-harness", by="claude", off=False)
+        with self.assertRaises(SystemExit):
+            pr.cmd_confirm(ns)
+
+    def test_refuses_empty_by(self):
+        ns = argparse.Namespace(epic="epic.owner-harness", by="", off=False)
+        with self.assertRaises(SystemExit):
+            pr.cmd_confirm(ns)
 
 
 if __name__ == "__main__":
