@@ -43,6 +43,58 @@ class Worktree(NamedTuple):
     branch: str
 
 
+class Story(NamedTuple):
+    slug: str
+    title: str
+    text: str
+    objective: str
+    task: str
+
+
+SUBSTRATE_STORIES = (
+    Story(
+        slug="overnight-loop-pickup",
+        title="Overnight loop picks the next arc",
+        text="overnight-loop arc pickup",
+        objective="extend the confident overnight loop from preflight into arc pickup",
+        task=(
+            "Advance the overnight-loop harness by one executable, read-only "
+            "selection step before any mutating work starts."
+        ),
+    ),
+    Story(
+        slug="overnight-loop-checkpoint",
+        title="Overnight loop checks the clock",
+        text="overnight-loop checkpoint",
+        objective="teach the overnight loop to check the clock between increments",
+        task=(
+            "Add the between-increments clock check so a done-line stops the "
+            "increment, not the whole overnight run."
+        ),
+    ),
+    Story(
+        slug="overnight-loop-pickup-progression",
+        title="Overnight loop skips landed stories",
+        text="overnight-loop pickup progression",
+        objective="teach pickup to skip already-landed overnight-loop stories",
+        task=(
+            "Make pickup choose the first substrate overnight-loop story whose "
+            "done-line is not already present."
+        ),
+    ),
+    Story(
+        slug="overnight-loop-handoff-refresh",
+        title="Overnight loop refreshes the rolling handoff",
+        text="overnight-loop handoff refresh",
+        objective="refresh the rolling PR handoff after continued overnight increments",
+        task=(
+            "Update the rolling handoff story after continued overnight-loop "
+            "increments, then checkpoint before deciding whether to keep working."
+        ),
+    ),
+)
+
+
 class RepoError(RuntimeError):
     """A repo fact could not be read."""
 
@@ -329,27 +381,32 @@ def choose_arc(
     return chosen, reason
 
 
-def story_for_arc(arc: str) -> str:
+def completed_done_slugs(done_records: Iterable[Record]) -> set[str]:
+    slugs = set()
+    for record in done_records:
+        name = record.name.removesuffix(".md")
+        slugs.add(re.sub(r"^\d+-", "", name))
+    return slugs
+
+
+def story_for_arc(arc: str, done_records: Iterable[Record] = ()) -> Story:
     if arc == "epic.substrate":
-        return "overnight-loop arc pickup"
-    return f"{arc.removeprefix('epic.')} arc pickup"
-
-
-def objective_for_arc(arc: str) -> str:
-    if arc == "epic.substrate":
-        return "extend the confident overnight loop from preflight into arc pickup"
-    return f"pick one bounded increment inside {arc}"
-
-
-def task_for_arc(arc: str) -> str:
-    if arc == "epic.substrate":
-        return (
-            "Advance the overnight-loop harness by one executable, read-only "
-            "selection step before any mutating work starts."
-        )
-    return (
+        landed = completed_done_slugs(done_records)
+        for story in SUBSTRATE_STORIES:
+            if story.slug not in landed:
+                return story
+        return SUBSTRATE_STORIES[-1]
+    text = f"{arc.removeprefix('epic.')} arc pickup"
+    title = text.replace("-", " ").title()
+    return Story(
+        slug=text.replace(" ", "-"),
+        title=title,
+        text=text,
+        objective=f"pick one bounded increment inside {arc}",
+        task=(
         f"Read {arc}, pick one bounded increment, and stop before any owner-only "
         "stamp, language pin, or missing context."
+        ),
     )
 
 
@@ -426,6 +483,7 @@ def build_pickup(
     epics: dict[str, dict],
     arc: str,
     reason: str,
+    story: Story,
     summons_text: str,
     done_records: list[Record],
     report_records: list[Record],
@@ -435,11 +493,7 @@ def build_pickup(
     allow_dirty: bool,
     dirty_count: int,
 ) -> str:
-    story = story_for_arc(arc)
-    task = task_for_arc(arc)
     summons_state = "open" if summons_open(summons_text) else "none"
-    slug = story.replace(" ", "-")
-    title = story.title()
     known = ", ".join(sorted(epics))
     lines = [
         "overnight-loop pickup",
@@ -453,8 +507,8 @@ def build_pickup(
         f"sibling worktrees read: {sibling_branches(worktrees, branch)}",
         "",
         f"recommended arc: {arc}",
-        f"next story: {story}",
-        f"next task: {task}",
+        f"next story: {story.text}",
+        f"next task: {story.task}",
         f"selection basis: {reason}",
         "",
         "arc shape:",
@@ -462,7 +516,7 @@ def build_pickup(
         "",
         "first commands:",
         f"- python .claude/skills/overnight-loop/overnight.py brief --arc {arc} --objective \"{objective}\"",
-        f"- python -m loop.pen new done --slug {slug} --title \"{title}\"",
+        f"- python -m loop.pen new done --slug {story.slug} --title \"{story.title}\"",
         "- read the `CLAUDE.md` for each directory touched before editing",
         "",
         "authority boundaries:",
@@ -480,7 +534,7 @@ def build_pickup(
     ]
     lines.extend(f"- {test}" for test in tests)
     lines.append("")
-    lines.append(f"result: report - overnight-loop pickup recommends {arc} / {story}")
+    lines.append(f"result: report - overnight-loop pickup recommends {arc} / {story.text}")
     return "\n".join(lines)
 
 
@@ -653,7 +707,8 @@ def cmd_pickup(ns: argparse.Namespace) -> int:
         records=records,
         worktrees=worktrees,
     )
-    objective = ns.objective or objective_for_arc(arc)
+    story = story_for_arc(arc, done_records)
+    objective = ns.objective or story.objective
     tests = tuple(ns.test or DEFAULT_PICKUP_TESTS)
     print(
         build_pickup(
@@ -662,6 +717,7 @@ def cmd_pickup(ns: argparse.Namespace) -> int:
             epics=epics,
             arc=arc,
             reason=basis,
+            story=story,
             summons_text=summons_text,
             done_records=done_records,
             report_records=report_records,

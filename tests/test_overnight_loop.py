@@ -67,6 +67,33 @@ class TestOvernightBrief(unittest.TestCase):
             self._git(root, "checkout", "-q", "-b", branch)
         return root
 
+    def _add_substrate_with_landed_pickup_and_checkpoint(self, root):
+        epic_dir = root / ".ai-native" / "epics"
+        (epic_dir / "epic.substrate.json").write_text(
+            json.dumps(
+                {
+                    "epic": {
+                        "id": "epic.substrate",
+                        "owner": "bdo",
+                        "arc": "A substrate arc for overnight-loop continuation.",
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        done_dir = root / ".ai-native" / "done"
+        done_dir.mkdir(parents=True, exist_ok=True)
+        (done_dir / "0032-overnight-loop-pickup.md").write_text(
+            "# Done-line 0032 - Overnight loop picks the next arc\n",
+            encoding="utf-8",
+        )
+        (done_dir / "0033-overnight-loop-checkpoint.md").write_text(
+            "# Done-line 0033 - Overnight loop checks the clock\n",
+            encoding="utf-8",
+        )
+        self._git(root, "add", ".ai-native")
+        self._git(root, "commit", "-q", "-m", "landed overnight stories")
+
     def _brief(self, root, *extra):
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
@@ -190,6 +217,16 @@ class TestOvernightBrief(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertIn("dirty tree", out)
         self.assertIn("--allow-dirty", out)
+
+    def test_pickup_skips_landed_substrate_stories(self):
+        root = self._repo()
+        self._add_substrate_with_landed_pickup_and_checkpoint(root)
+        rc, out = self._pickup(root, "--arc", "epic.substrate")
+        self.assertEqual(rc, 0)
+        self.assertIn("recommended arc: epic.substrate", out)
+        self.assertIn("next story: overnight-loop pickup progression", out)
+        self.assertIn("done --slug overnight-loop-pickup-progression", out)
+        self.assertIn("teach pickup to skip already-landed overnight-loop stories", out)
 
     def test_checkpoint_continues_before_eight(self):
         root = self._repo()

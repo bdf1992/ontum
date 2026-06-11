@@ -8,10 +8,17 @@ description: >-
   overnight.py beside this file; it refuses unsafe starts, emits the run
   contract, recommends one next arc/story/task from live repo state, and
   checks whether the overnight window is still open before the session
-  stops working.
-version: 0.3.0
+  stops working. Pickup advances through the overnight substrate queue
+  instead of repeating stories whose done-lines already exist.
+version: 0.4.0
 owner: bdo
 changelog:
+  - version: 0.4.0
+    note: >-
+      Done-line 0034 makes pickup progressive for the overnight-loop
+      substrate stories. It reads landed done-line slugs and recommends the
+      first unlanded story in the ordered queue, so checkpoint -> pickup does
+      not loop back onto work that already landed.
   - version: 0.3.0
     note: >-
       Done-line 0033 adds `overnight.py checkpoint`, the between-increments
@@ -69,7 +76,9 @@ known epics, open summons, recent done-lines and reports, and sibling
 worktrees. It emits one recommended arc, one next story, one next task,
 the first commands to run, stop conditions, and tests. It does not
 confirm arcs, stamp owner gates, edit logs, choose owner-only language
-pins, or widen authority beyond the selected arc.
+pins, or widen authority beyond the selected arc. For the substrate
+overnight-loop path, it skips ordered stories whose done-lines already
+exist and recommends the first unlanded story instead.
 
 After each bounded increment lands, do not treat the increment's done-line
 as the whole overnight run. Check the overnight clock:
