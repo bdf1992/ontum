@@ -159,3 +159,25 @@ and recoverable, with the irreducible noise localized to naming, not
 position. (Still N=4, same family, one seed — cross-family via envoy is
 the verdict; minimal-seed search and definition-convergence are the next
 dials.)
+
+## Addendum 3 — the envoy: Pivot leaves to be played
+
+bdo: "work on the full envoy export — we need to land more concepts." The
+real verdict is cross-family, and the way Pivot reaches a foreign model is
+an envoy package. Sealed **`exports/pivot-play`** (6 files, ~17.5k tokens,
+receipt on `exports/log.jsonl`, `--by claude`), framed to **play**, not
+review: a foreign family generates cube-states from two seeds (`s.v1`
+axes-stated; `s.min` axes-withheld — the compression probe) and returns
+gradeable JSON; the home instrument grades convergence. It ships the
+**question, never an answer key** (there is no key — convergence is the
+measure). The tensions name six seams honestly, sharpest being: same-family
+convergence may be a shared prior, not shared structure — exactly what an
+outside family settles. Returns come home as more generations toward the
+candidate canon (corpus-to-system).
+
+> A `git merge origin/main` mid-session left conflict markers in the three
+> Pivot files; resolved to the branch's evolved versions (each a strict
+> evolution of #40's). Full suite **389 green** post-merge.
+
+**needs-you:** the package is sealed but unsent — reaching GPT/Gemini is
+outside the loop. Sending it (or approving a channel) is bdo's.
