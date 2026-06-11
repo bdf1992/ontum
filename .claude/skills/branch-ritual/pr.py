@@ -568,7 +568,13 @@ def cmd_land(ns):
               f"({head} -> main) on arc {ns.epic} confirmed by bdo "
               f"({confirmation}); nothing merged")
         return
-    _run(["gh", "pr", "merge", str(ns.number), "--squash", "--delete-branch"])
+    # Merge only — never --delete-branch. Across the fleet the head branch is
+    # checked out in a worktree, and `gh pr merge --delete-branch` fails on the
+    # LOCAL branch delete *after* the remote merge has already succeeded — which
+    # raised here before the receipt was written, leaving the loop blind to real
+    # merges. The SessionStart gardener (done-line 0037) prunes the merged
+    # worktree and branch; GitHub's delete_branch_on_merge clears the remote head.
+    _run(["gh", "pr", "merge", str(ns.number), "--squash"])
     rc = _record_merge(ns.number, ns.epic, ns.by, confirmation, head)
     print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
           f"on bdo's confirmed arc {ns.epic}; receipt {rc['id']}. "
