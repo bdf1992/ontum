@@ -35,6 +35,8 @@ python -m loop.reflect rule --kind owner-stamp-queue --surface github-issues --o
 
 python -m loop.web render                  # static owner inbox page
 python -m loop.web serve                   # localhost inbox with verdict forms
+
+python -m loop.census                      # the organ census: which organs carry weight, which are dormant
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
@@ -129,6 +131,17 @@ so a prompt edit can't reopen a settled verdict (I-2).
 - [web.py](web.py) — the owner inbox, a rendered fold; its verdict POST
   calls the same `judge()` the CLI uses. There is deliberately no
   second write path.
+- [census.py](census.py) — the organ census (done-line 0029): the loop
+  sensing its own body. A pure fold (no subprocess, no git) over two
+  signals — *wired* (reachable from the working system, not the organ's
+  own test) and *exercised* (a controlled literal of the organ's is on
+  the record). Crossed, they give three verdicts that are bdo's three
+  movements: **alive** (give care), **wired·idle** (a writer plumbed in
+  but never fired — needs attention), **dormant** (disconnected — a
+  prune candidate). Read-only: it counts and names; the cut stays the
+  owner's (D-4). Sibling to the watcher's `--report`, for code instead
+  of tools. File-level, distinct from pipeline-stage realness
+  (`node_real` admissions) — read both.
 
 ### Invariants the code is built around (firm)
 
