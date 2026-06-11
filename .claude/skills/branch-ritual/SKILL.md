@@ -5,9 +5,21 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.7.0
+version: 0.8.0
 owner: bdo
 changelog:
+  - version: 0.8.0
+    note: >
+      Epic-integration topology (bdo's directive, 2026-06-10): "I only
+      need to merge into main when something is complete — its arc, and
+      when through, its epic." Too many merges reached him because every
+      piece was its own PR to main. Now a piece PRs into a long-lived
+      epic branch and the loop integrates it there (`pr.py integrate
+      <n>`, which refuses a main base); only the finished arc/epic PRs
+      to main, where bdo's one merge is the human second set of eyes.
+      The firm rule narrows: never merge into *main* (still bdo's,
+      firm) — a session may integrate a piece into an epic branch. Raw
+      `gh pr merge` stays denied and routes to the pen. Done-line 0029.
   - version: 0.7.0
     note: >
       Dissolution is structural, not a remembered button (gardening
@@ -116,8 +128,10 @@ section), don't work around it.
 
 ## Standing shape — hold these while doing anything below
 
-- **`main` is the trunk and the only long-lived branch.** Everything on it
-  carries the owner's stamp. The repo's default branch is `main`.
+- **`main` is the trunk; everything on it carries the owner's stamp.** The
+  repo's default branch is `main`. Long-lived **epic branches** sit below it
+  as integration targets — a piece PRs into its epic branch, and the finished
+  arc PRs from the epic branch to main (version 0.8.0).
 - **One session, one branch, one PR, one stamp.** The auto-named `claude/*`
   branch is the session's container; its name carries no meaning — the PR
   title and the session report do.
@@ -144,8 +158,14 @@ section), don't work around it.
   self-cleans — `delete_branch_on_merge` is on, so a merged head branch
   is deleted at the moment of merge and a stray post-merge push fails on
   a missing ref instead of stranding silently.
-- **Never merge your own PR; never push to `main`.** Work propels itself, it
-  never authorizes itself (§4). The stamp is bdo's. *(Firm.)*
+- **Never merge into `main`; never push to `main`.** The trunk is bdo's —
+  his one merge of a finished arc is the human second set of eyes (§4).
+  *(Firm.)* Below main, a session **may** integrate a piece-PR into an **epic
+  branch** through the pen (`pr.py integrate <n>`, which refuses a main base):
+  pieces flow `piece → epic branch` (the loop integrates), and only the
+  finished arc flows `epic branch → main` (bdo merges). The epic branch is
+  staging, not truth — truth is still only what bdo merges to the trunk (D-5).
+  *(bdo's directive, 2026-06-10; version 0.8.0.)*
 - **Every PR to `main` carries its story — recovery PRs included.** A PR
   wearing the auto-title (the branch name) over an empty body is an
   unwritten story: not at the stamp, however green the merge button.
