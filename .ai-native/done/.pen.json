@@ -3,6 +3,8 @@
   "pattern": "^\\d{4}-[a-z0-9][a-z0-9-]*\\.md$",
   "required_sections": ["# Done-line", "> **Done when:**"],
   "pen": "python -m loop.pen new done --slug <slug> --title \"<title>\"",
+  "frozen": true,
+  "change_request": "A written done-line is FROZEN — it is the contract you set before the work, and no session edits it in place (§9.4; the log's own rule: never edit a line, only append). Changing what \"done\" meant is not a typo fix — it is abandoning a bar you committed to, a moment of shame, and the path is deliberately loud and painful: python -m loop.pen supersede-done --abandoning <id> --slug <new-slug> --reason \"<an honest reflection on why the bar you set could not be met — glib excuses are refused>\" --by <who>. It writes a NEW done-line (the original stands forever as history), records a loud done_superseded admission, and is NEVER self-authorized: a session's supersede sits pending until bdo stamps it (no one signs their own line). Complete tasks and mark them done; do not move the line.",
   "scaffold": [
     "# Done-line {id} — {title}",
     "",

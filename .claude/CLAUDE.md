@@ -19,6 +19,16 @@ be, landed as stamped increments, never hand-tuned silently.
     records directories with a `.pen.json` enforce form — next id,
     pattern, required sections (the records pen `loop/pen.py` is the
     paved path).
+  - `PreToolUse` Write|Edit|MultiEdit|NotebookEdit →
+    `hooks/freeze_guard.py` (done-line 0033): a written done-line is a
+    contract, not a draft — an *existing* file in a records directory
+    whose `.pen.json` declares `"frozen": true` cannot be edited or
+    overwritten in place, absolutely, with no owner exception (Codex
+    editing its own done-line to add an exhaustion clause is exactly
+    what this refuses). The only way to change what done meant is the
+    additive, owner-gated supersede ritual the refusal names
+    (`loop.pen supersede-done`); the original stands as history. Creation
+    is untouched — that is write_guard's land. Fails open, loudly.
   - `SessionStart` + `UserPromptSubmit` → `loop.summon --hook`: open
     summons, the owner-backlog count, and unreflected surface drift,
     injected ambiently.

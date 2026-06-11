@@ -44,6 +44,9 @@ python -m loop.digest --since 2026-06-01 --until 2026-06-11
 
 python -m loop.tags                        # the intent tag pool and its drift, read-only
 python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a proposed value
+
+python -m loop.pen new done --slug <slug> --title "<t>"     # the next done-line, from the directory's form
+python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by <who>
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
