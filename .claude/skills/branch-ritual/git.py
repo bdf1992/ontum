@@ -50,6 +50,55 @@ PEN = "python .claude/skills/branch-ritual/git.py"
 TRUNK = ("main", "master")
 END_STATES = ("done", "report", "needs-you")
 
+
+def _tags():
+    """The shared tag pool (loop/tags.py, done-line 0032), or None if loop
+    isn't importable — intent tagging is additive; the pen runs untagged
+    without it (the same fail-soft the watcher uses for the classifier)."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from loop import tags
+        return tags
+    except Exception:  # noqa: BLE001 — additive feature, never breaks the pen
+        return None
+
+
+def intent_refusal(verb_intent, declared, in_pool):
+    """Why a declared `--intent` may not stand, or None.
+
+    Intent is *derivable* from the verb, so a declaration is a check, not
+    a proposal — anything but the truth is refused, never silently
+    swallowed (the §10 bite: a tag the tool can't trust is worse than no
+    tag). A *known* value contradicting the verb is a lie; an *unknown*
+    value is surfaced with the admit path (proposed-tier: a new word is
+    proposed through the pool, not smuggled in on a git flag)."""
+    if not declared or declared == verb_intent:
+        return None
+    if in_pool:
+        return (f"--intent {declared} lies about this verb — it is a "
+                f"{verb_intent}; drop the flag or declare {verb_intent}")
+    return (f"--intent {declared} is not a known intent value (the pool is "
+            f"read/mutate plus what's admitted); propose it first — "
+            f"`python -m loop.tags admit --dimension intent --value {declared} "
+            f"--by bdo` — or drop the flag")
+
+
+def _intent_precheck(ns, verb):
+    """Refuse a lying --intent and return (tags_module, verb_intent). The
+    branded act is noted by the caller after the verb succeeds."""
+    tags = _tags()
+    if tags is None:
+        return None, None
+    verb_intent = tags.verb_intent("git", verb) or "mutate"
+    declared = getattr(ns, "intent", None)
+    if declared:
+        fold = tags.Fold(ROOT / ".ai-native")
+        in_pool = tags.status_of(fold, "intent", declared) in ("core", "admitted")
+        reason = intent_refusal(verb_intent, declared, in_pool)
+        if reason:
+            _refuse(reason)
+    return tags, verb_intent
+
 # Tokens that stage more than the session named — the shared-tree hazard.
 ADD_SWEEPS = {".", "*", "-A", "--all", "-u", "--update", ":/", ":(top)"}
 ADD_INTERACTIVE = {"-i", "--interactive", "-p", "--patch", "-e", "--edit"}
@@ -172,10 +221,15 @@ def cmd_add(ns):
     reason = add_refusal(tokens)
     if reason:
         _refuse(reason)
+    tags, intent = _intent_precheck(ns, "add")
     _run(["git", "add"] + tokens)
     staged = _run(["git", "diff", "--cached", "--name-only"]).strip()
     names = staged.splitlines()
-    print(f"result: done — staged {len(names)} path(s): {', '.join(names) or '(none new)'}")
+    if tags:
+        tags.note(ROOT, status="branded", tool="git", verb="add",
+                  intent=intent, branded=True)
+    tag = f" [intent: {intent}]" if intent else ""
+    print(f"result: done — staged {len(names)} path(s): {', '.join(names) or '(none new)'}{tag}")
 
 
 def cmd_commit(ns):
@@ -183,6 +237,7 @@ def cmd_commit(ns):
     reason = commit_refusal(branch, ns.message, ns.forward)
     if reason:
         _refuse(reason)
+    tags, intent = _intent_precheck(ns, "commit")
     args = ["git", "commit"]
     for message in ns.message:
         args += ["-m", message]
@@ -190,7 +245,11 @@ def cmd_commit(ns):
     out = _run(args).strip()
     if out:
         print(out)
-    print(f"result: done — committed on {branch} "
+    if tags:
+        tags.note(ROOT, status="branded", tool="git", verb="commit",
+                  intent=intent, branded=True)
+    tag = f" [intent: {intent}]" if intent else ""
+    print(f"result: done — committed on {branch}{tag} "
           f"(hand-off still leaves the machine only through `{PEN.replace('git.py', 'pr.py')} push`)")
 
 
@@ -258,6 +317,9 @@ def main(argv=None):
     add = verbs.add_parser(
         "add", help="stage named paths only — `add .` / `-A` / `-u` are refused "
                     "(extra git-add flags forward for parity)")
+    add.add_argument("--intent", metavar="VALUE",
+                     help="optional intent tag; a known value that lies about "
+                          "the verb is refused, a new one rides as proposed")
     add.set_defaults(func=cmd_add)
 
     commit = verbs.add_parser(
@@ -267,6 +329,9 @@ def main(argv=None):
                         metavar="MSG",
                         help="the commit message (repeatable, like git); a real "
                              "step-shaped line saying what landed")
+    commit.add_argument("--intent", metavar="VALUE",
+                        help="optional intent tag; a known value that lies about "
+                             "the verb is refused, a new one rides as proposed")
     commit.set_defaults(func=cmd_commit)
 
     sync = verbs.add_parser(

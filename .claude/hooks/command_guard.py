@@ -178,6 +178,18 @@ def record(entry):
         pass  # the watcher never breaks the command it watches
 
 
+def classify_intent(command):
+    """The intent of a command via the one shared classifier (loop/tags.py,
+    done-line 0032), or None if it cannot be reached — the watcher never
+    breaks on the loop's absence (fail-open, the way the fence does)."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from loop import tags
+        return tags.classify(command)
+    except Exception:  # noqa: BLE001 — any failure degrades to untagged, never crashes
+        return None
+
+
 def _payload():
     try:
         # the harness pipes UTF-8; Windows' default stdin is cp1252 — read
@@ -221,8 +233,9 @@ def hook():
 
     bins = external_bins(command)
     if bins:
-        record({"status": "watched", "bins": bins, "command": command,
-                "session": session})
+        record({"status": "watched", "bins": bins,
+                "intent": classify_intent(command),
+                "command": command, "session": session})
     return 0
 
 
@@ -278,29 +291,58 @@ def post():
 
 
 def report():
-    """Fold the watch log: which raw tools are actually in use."""
-    counts, examples, denied = {}, {}, 0
+    """Fold the watch log, split by intent (done-line 0032). A raw *read*
+    is by-design-raw (a session may always look) and is NOT a wrapper
+    candidate; only a raw *mutation* nominates a wrapper. Before intent
+    tags, reads inflated the count and `gh pr list` ×65 read as 'wrap gh' —
+    the noise the organ census caught."""
+    mutate, read, unknown = {}, {}, {}
+    examples, denied, branded = {}, 0, 0
     if WATCH_LOG.exists():
         for line in WATCH_LOG.read_text(encoding="utf-8").splitlines():
             try:
                 entry = json.loads(line)
             except json.JSONDecodeError:
                 continue  # torn tail: it never happened
-            if entry.get("status") == "denied":
+            status = entry.get("status")
+            if status == "denied":
                 denied += 1
                 continue
+            if status == "branded":
+                branded += 1  # an act that went through a pen — fine
+                continue
+            # re-derive intent for entries logged before tags existed
+            intent = entry.get("intent") if "intent" in entry \
+                else classify_intent(entry.get("command", ""))
+            bucket = mutate if intent == "mutate" else read if intent == "read" else unknown
             for bin_ in entry.get("bins", []):
-                counts[bin_] = counts.get(bin_, 0) + 1
+                bucket[bin_] = bucket.get(bin_, 0) + 1
                 examples.setdefault(bin_, entry.get("command", "")[:100])
-    if not counts:
-        print(f"result: done — no unwrapped external use on record ({denied} denial(s))")
+
+    def show(title, counts):
+        if not counts:
+            return
+        print(title)
+        for bin_, n in sorted(counts.items(), key=lambda kv: -kv[1]):
+            print(f"  {bin_}: {n} raw call(s) — e.g. {examples[bin_]}")
+
+    show("raw MUTATIONS — the next wrapper worth building is the heaviest here:", mutate)
+    show("raw reads — by-design-raw (a session may look); not wrapper candidates:", read)
+    show("unclassified — teach loop/tags.py a verb→intent line so these resolve:", unknown)
+
+    if not (mutate or read or unknown):
+        print(f"result: done — no unwrapped external use on record "
+              f"({denied} denial(s), {branded} branded act(s))")
         return 0
-    for bin_, n in sorted(counts.items(), key=lambda kv: -kv[1]):
-        print(f"{bin_}: {n} raw call(s) — e.g. {examples[bin_]}")
-    print(
-        f"result: report — {len(counts)} unwrapped tool(s) in use "
-        f"({denied} denial(s)); the heaviest is the next wrapper worth building"
-    )
+    if mutate:
+        top = max(mutate, key=lambda b: mutate[b])
+        print(f"\nresult: report — {len(mutate)} raw-mutating tool(s); "
+              f"`{top}` is the next wrapper worth building "
+              f"({denied} denial(s), {branded} branded act(s))")
+    else:
+        print(f"\nresult: done — no raw mutations on record; the raw use is "
+              f"reads (by-design) {'and unclassified verbs ' if unknown else ''}"
+              f"({denied} denial(s), {branded} branded act(s))")
     return 0
 
 

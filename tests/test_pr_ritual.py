@@ -317,16 +317,20 @@ class TestGuardAndWatcher(unittest.TestCase):
         self.assertEqual(proc.returncode, 0)
         self.assertEqual(self._entries(), [])
 
-    def test_report_folds_the_log(self):
-        self._invoke("gh pr view 8")
-        self._invoke("curl https://example.com")
+    def test_report_splits_mutations_from_reads(self):
+        # done-line 0032: a raw read is by-design-raw, not a wrapper
+        # candidate; only a raw mutation nominates a wrapper.
+        self._invoke("gh pr view 8")                       # read
+        self._invoke("curl -X POST https://example.com")   # mutation
         env = dict(os.environ, ONTUM_TOOL_WATCH_LOG=str(self.watch_log))
         proc = subprocess.run(
             [sys.executable, str(GUARD_PATH), "--report"],
             capture_output=True, text=True, env=env)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("gh", proc.stdout)
-        self.assertIn("curl", proc.stdout)
+        # the mutation is the wrapper candidate; the read is not
+        self.assertIn("curl", proc.stdout.split("raw reads")[0])
+        self.assertIn("next wrapper", proc.stdout)
+        self.assertIn("gh", proc.stdout)            # present, under reads
         self.assertIn("result: report", proc.stdout)
 
     def test_unbranded_use_is_shamed_into_context(self):

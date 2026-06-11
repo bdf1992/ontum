@@ -41,6 +41,9 @@ python -m loop.census                      # the organ census: which organs carr
 python -m loop.digest                      # the owner's merge digest — read-only fold, arc-first
 python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
 python -m loop.digest --since 2026-06-01 --until 2026-06-11
+
+python -m loop.tags                        # the intent tag pool and its drift, read-only
+python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a proposed value
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
@@ -163,6 +166,19 @@ so a prompt edit can't reopen a settled verdict (I-2).
   out of the merge seat); the merge-node is the *hand*, and it does not
   move until bdo admits it real (`--by bdo`) and the `bdo merges` hard
   rule is amended — both his, neither this surface's.
+- [tags.py](tags.py) — the tag pool (done-line 0032): governed vocabulary
+  for what tools do, the census fix pushed upstream to the write seam.
+  Holds the one shared verb→intent `classify()` the watcher and the git
+  pen both import (I-4), and a dimension schema whose `core` is closed in
+  code while admitted `tag` records extend it — proposed-tier: an
+  unadmitted value reads as `proposed` drift and is promotable by `admit`
+  (`--by`), never blocked. Today's one dimension is `intent` (read /
+  mutate); `surface` and `arc` are the next slices. The watcher tags
+  every watched command and `--report` splits raw mutations (wrapper
+  candidates) from raw reads (raw-by-design); the git pen records its
+  verb's intent and refuses an `--intent` that lies about the verb. The
+  classifier returns None on an unknown verb — an honest gap surfaced by
+  `status`, never a silent guess.
 
 ### Invariants the code is built around (firm)
 
