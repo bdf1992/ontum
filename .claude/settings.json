@@ -8,6 +8,21 @@
             "type": "command",
             "command": "python .claude/hooks/command_guard.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/spawn_guard.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/spawn_guard.py",
+            "timeout": 10
           }
         ]
       },
@@ -29,6 +44,21 @@
           {
             "type": "command",
             "command": "python .claude/hooks/command_guard.py --post",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/spawn_guard.py --post",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/spawn_guard.py --post",
             "timeout": 10
           }
         ]
