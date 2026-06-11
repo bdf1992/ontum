@@ -30,6 +30,7 @@ from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, load_atoms,
                             node_prompt, real_nodes, receipt_for_stage)
+from loop.gaps import top_gap
 from loop.orchestrate import HUMAN_NODE, next_action
 from loop.reflect import drift, registered_surfaces
 
@@ -139,6 +140,19 @@ def main(argv=None):
                 # (done-line 0018); applying stays the reflector pen's act
                 print(f"[loop] surface drift: {unreflected} act(s) not yet "
                       "reflected — python -m loop.reflect")
+            gap = top_gap(root)
+            if gap:
+                # gap-to-work (done-line 0048): the idle default is the
+                # backlog the harness generated, never "wait for direction".
+                # The why is clipped to a line — the full text is one
+                # command away, and a briefing that floods stops being read.
+                why = gap["why"]
+                if len(why) > 200:
+                    why = why[:200].rstrip() + " …"
+                print(f"[loop] the next gap ({gap['kind']}): {gap['subject']}"
+                      f" — {why}")
+                print(f"[loop]   the move: {gap['move']}")
+                print("[loop]   full backlog: python -m loop.gaps")
         except Exception:
             pass  # a broken hook must never block the owner's prompt
         return 0

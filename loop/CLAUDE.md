@@ -38,6 +38,8 @@ python -m loop.web serve                   # localhost inbox with verdict forms
 
 python -m loop.census                      # the organ census: which organs carry weight, which are dormant
 
+python -m loop.gaps                        # the gap backlog, pressure-ordered — the top one is the work
+
 python -m loop.digest                      # the owner's merge digest — read-only fold, arc-first
 python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
 python -m loop.digest --since 2026-06-01 --until 2026-06-11
@@ -182,6 +184,19 @@ so a prompt edit can't reopen a settled verdict (I-2).
   verb's intent and refuses an `--intent` that lies about the verb. The
   classifier returns None on an unknown verb — an honest gap surfaced by
   `status`, never a silent guess.
+- [gaps.py](gaps.py) — the gap fold (done-line 0048): the loop's own
+  gaps become the next session's work. One pure read-only fold over
+  records already on disk, in one fixed pressure order — **mock-stage**
+  (the shame beat's still-mock set), **parked-piece** (an atom a gate
+  refused, holding), **surface-drift** (acts a registered surface does
+  not show), then **idle-organ**/**dormant-organ** (the census verdicts)
+  — each gap carrying kind, subject, why, and the one concrete next move
+  (always an existing pen's; this fold writes nothing, and the census
+  cut stays bdo's, D-4). Computes lazily in priority order so the cheap
+  log folds answer before the census walks the tree; a missing root is
+  an absence, not a field of mock stages. `loop.summon --hook` hands the
+  single top gap to every session that blinks in — the idle default is
+  "work the backlog the harness generated", never "wait for direction".
 
 ### Invariants the code is built around (firm)
 
