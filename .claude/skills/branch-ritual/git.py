@@ -23,6 +23,16 @@ Everything else git add / git commit take is forwarded for parity — a
 branded tool that loses features invites the workaround it exists to
 prevent (the lesson pr.py push records, changelog 0.4.0).
 
+Done-line 0031 adds `sync`, the merge's return leg: the primary
+worktree is bdo's viewport on the trunk, and merges land on origin —
+nothing ever carried them back, so the viewport drifted stale (4
+commits the day it was asked; 38 the day the workbenches were cut).
+`sync` fetches and fast-forwards the viewport to origin/main, and
+refuses a viewport that is off the trunk or locally ahead — each is a
+surface to bdo, never an act. ff-only cannot conflict: it succeeds or
+it surfaces. In hook mode (`--hook`, wired to SessionStart) it is
+fail-open and exits 0 always — it never gates a session's start.
+
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report` — it tells the
 session what the act is missing; nothing here escalates to bdo.
@@ -39,6 +49,55 @@ ROOT = pathlib.Path(__file__).resolve().parents[3]
 PEN = "python .claude/skills/branch-ritual/git.py"
 TRUNK = ("main", "master")
 END_STATES = ("done", "report", "needs-you")
+
+
+def _tags():
+    """The shared tag pool (loop/tags.py, done-line 0032), or None if loop
+    isn't importable — intent tagging is additive; the pen runs untagged
+    without it (the same fail-soft the watcher uses for the classifier)."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from loop import tags
+        return tags
+    except Exception:  # noqa: BLE001 — additive feature, never breaks the pen
+        return None
+
+
+def intent_refusal(verb_intent, declared, in_pool):
+    """Why a declared `--intent` may not stand, or None.
+
+    Intent is *derivable* from the verb, so a declaration is a check, not
+    a proposal — anything but the truth is refused, never silently
+    swallowed (the §10 bite: a tag the tool can't trust is worse than no
+    tag). A *known* value contradicting the verb is a lie; an *unknown*
+    value is surfaced with the admit path (proposed-tier: a new word is
+    proposed through the pool, not smuggled in on a git flag)."""
+    if not declared or declared == verb_intent:
+        return None
+    if in_pool:
+        return (f"--intent {declared} lies about this verb — it is a "
+                f"{verb_intent}; drop the flag or declare {verb_intent}")
+    return (f"--intent {declared} is not a known intent value (the pool is "
+            f"read/mutate plus what's admitted); propose it first — "
+            f"`python -m loop.tags admit --dimension intent --value {declared} "
+            f"--by bdo` — or drop the flag")
+
+
+def _intent_precheck(ns, verb):
+    """Refuse a lying --intent and return (tags_module, verb_intent). The
+    branded act is noted by the caller after the verb succeeds."""
+    tags = _tags()
+    if tags is None:
+        return None, None
+    verb_intent = tags.verb_intent("git", verb) or "mutate"
+    declared = getattr(ns, "intent", None)
+    if declared:
+        fold = tags.Fold(ROOT / ".ai-native")
+        in_pool = tags.status_of(fold, "intent", declared) in ("core", "admitted")
+        reason = intent_refusal(verb_intent, declared, in_pool)
+        if reason:
+            _refuse(reason)
+    return tags, verb_intent
 
 # Tokens that stage more than the session named — the shared-tree hazard.
 ADD_SWEEPS = {".", "*", "-A", "--all", "-u", "--update", ":/", ":(top)"}
@@ -116,6 +175,30 @@ def commit_refusal(branch, message, forwarded):
     return None
 
 
+def sync_refusal(branch, ahead):
+    """Why the viewport may not be fast-forwarded, or None.
+
+    The viewport is bdo's reading surface: it only ever moves forward to
+    what he already merged on origin. `branch` is what the viewport has
+    checked out; `ahead` is how many local commits the trunk carries
+    that origin does not. Either state out of place is a surface to bdo,
+    never an act.
+    """
+    if branch not in TRUNK:
+        return (
+            f"the viewport is on '{branch or 'a detached HEAD'}', not the "
+            "trunk — a session never re-points bdo's reading surface; "
+            "surface this to bdo"
+        )
+    if ahead:
+        return (
+            f"the trunk carries {ahead} local commit(s) origin does not have "
+            "— main is never committed locally (firm); surface this to bdo "
+            "instead of syncing over it"
+        )
+    return None
+
+
 # ------------------------------------------------------------------- runtime
 
 def _refuse(message):
@@ -138,10 +221,15 @@ def cmd_add(ns):
     reason = add_refusal(tokens)
     if reason:
         _refuse(reason)
+    tags, intent = _intent_precheck(ns, "add")
     _run(["git", "add"] + tokens)
     staged = _run(["git", "diff", "--cached", "--name-only"]).strip()
     names = staged.splitlines()
-    print(f"result: done — staged {len(names)} path(s): {', '.join(names) or '(none new)'}")
+    if tags:
+        tags.note(ROOT, status="branded", tool="git", verb="add",
+                  intent=intent, branded=True)
+    tag = f" [intent: {intent}]" if intent else ""
+    print(f"result: done — staged {len(names)} path(s): {', '.join(names) or '(none new)'}{tag}")
 
 
 def cmd_commit(ns):
@@ -149,6 +237,7 @@ def cmd_commit(ns):
     reason = commit_refusal(branch, ns.message, ns.forward)
     if reason:
         _refuse(reason)
+    tags, intent = _intent_precheck(ns, "commit")
     args = ["git", "commit"]
     for message in ns.message:
         args += ["-m", message]
@@ -156,8 +245,67 @@ def cmd_commit(ns):
     out = _run(args).strip()
     if out:
         print(out)
-    print(f"result: done — committed on {branch} "
+    if tags:
+        tags.note(ROOT, status="branded", tool="git", verb="commit",
+                  intent=intent, branded=True)
+    tag = f" [intent: {intent}]" if intent else ""
+    print(f"result: done — committed on {branch}{tag} "
           f"(hand-off still leaves the machine only through `{PEN.replace('git.py', 'pr.py')} push`)")
+
+
+def cmd_sync(ns):
+    """Fast-forward the viewport (the primary worktree) to origin/main —
+    the merge's return leg (done-line 0031). ff-only cannot conflict: it
+    succeeds or it surfaces. Hook mode never exits nonzero and never
+    gates a session's start; a refusal there is one ambient line."""
+    def emit(state, message):
+        print(f"result: {state} — viewport-sync: {message}")
+
+    def bail(message):
+        emit("report", message)
+        sys.exit(0 if ns.hook else 1)
+
+    def git(args, cwd, timeout=None):
+        return subprocess.run(
+            ["git"] + args, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", cwd=cwd, timeout=timeout)
+
+    try:
+        # The viewport is the primary worktree — `git worktree list`
+        # names it first from anywhere in the fleet.
+        listing = git(["worktree", "list", "--porcelain"], ROOT)
+        first = next((line for line in listing.stdout.splitlines()
+                      if line.startswith("worktree ")), None)
+        if listing.returncode != 0 or not first:
+            bail("could not locate the viewport (`git worktree list` gave nothing)")
+        viewport = first.split(" ", 1)[1].strip()
+        fetched = git(["fetch", "origin", "main"], viewport,
+                      timeout=ns.fetch_timeout)
+        if fetched.returncode != 0:
+            detail = (fetched.stderr or fetched.stdout).strip().splitlines()
+            bail("fetch failed (offline?): " + (detail[-1] if detail else "no detail"))
+        branch = git(["branch", "--show-current"], viewport).stdout.strip()
+        ahead = int(git(["rev-list", "--count", "origin/main..main"],
+                        viewport).stdout.strip() or 0)
+        reason = sync_refusal(branch, ahead)
+        if reason:
+            bail(reason)
+        behind = int(git(["rev-list", "--count", "main..origin/main"],
+                         viewport).stdout.strip() or 0)
+        if not behind:
+            if not ns.hook:  # ambient mode stays silent when there is nothing to say
+                emit("done", "the viewport is current")
+            return
+        merged = git(["merge", "--ff-only", "origin/main"], viewport)
+        if merged.returncode != 0:
+            detail = (merged.stderr or merged.stdout).strip().splitlines()
+            bail("fast-forward refused — " + (detail[-1] if detail else "no detail")
+                 + "; the viewport waits for a hand (surface this to bdo)")
+        emit("done", f"the viewport fast-forwarded {behind} commit(s) to origin/main")
+    except subprocess.TimeoutExpired:
+        bail(f"fetch exceeded {ns.fetch_timeout}s (offline?) — the viewport stays where it is")
+    except Exception as error:  # fail open: the pen's own bug never gates a session
+        bail(f"unexpected: {error}")
 
 
 def main(argv=None):
@@ -169,6 +317,9 @@ def main(argv=None):
     add = verbs.add_parser(
         "add", help="stage named paths only — `add .` / `-A` / `-u` are refused "
                     "(extra git-add flags forward for parity)")
+    add.add_argument("--intent", metavar="VALUE",
+                     help="optional intent tag; a known value that lies about "
+                          "the verb is refused, a new one rides as proposed")
     add.set_defaults(func=cmd_add)
 
     commit = verbs.add_parser(
@@ -178,7 +329,22 @@ def main(argv=None):
                         metavar="MSG",
                         help="the commit message (repeatable, like git); a real "
                              "step-shaped line saying what landed")
+    commit.add_argument("--intent", metavar="VALUE",
+                        help="optional intent tag; a known value that lies about "
+                             "the verb is refused, a new one rides as proposed")
     commit.set_defaults(func=cmd_commit)
+
+    sync = verbs.add_parser(
+        "sync", help="fast-forward the viewport (primary worktree) to "
+                     "origin/main — the merge's return leg; refuses an "
+                     "off-trunk or locally-ahead viewport")
+    sync.add_argument("--hook", action="store_true",
+                      help="hook mode: at most one line, exit 0 always — "
+                           "fail-open, never gates a session's start")
+    sync.add_argument("--fetch-timeout", dest="fetch_timeout", type=int,
+                      default=20, metavar="SECONDS",
+                      help="seconds to wait on the network before reporting")
+    sync.set_defaults(func=cmd_sync)
 
     ns, extra = parser.parse_known_args(argv)
     ns.forward = extra

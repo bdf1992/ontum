@@ -35,11 +35,24 @@ python -m loop.reflect rule --kind owner-stamp-queue --surface github-issues --o
 
 python -m loop.web render                  # static owner inbox page
 python -m loop.web serve                   # localhost inbox with verdict forms
+
+python -m loop.census                      # the organ census: which organs carry weight, which are dormant
+
+python -m loop.digest                      # the owner's merge digest — read-only fold, arc-first
+python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
+python -m loop.digest --since 2026-06-01 --until 2026-06-11
+
+python -m loop.tags                        # the intent tag pool and its drift, read-only
+python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a proposed value
+
+python -m loop.pen new done --slug <slug> --title "<t>"     # the next done-line, from the directory's form
+python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by <who>
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
-`node`, `summon`, `reflect`, and `web` import from the `loop` package
-and must run as modules (`python -m loop.<name>`) from the repo root.
+`node`, `summon`, `reflect`, `web`, `census`, and `digest` import from
+the `loop` package and must run as modules (`python -m loop.<name>`)
+from the repo root.
 
 Every invocation ends with a clear stdout result: `done | report |
 needs-you`. Treat `needs-you` as an escalation to surface, not an error
@@ -129,6 +142,46 @@ so a prompt edit can't reopen a settled verdict (I-2).
 - [web.py](web.py) — the owner inbox, a rendered fold; its verdict POST
   calls the same `judge()` the CLI uses. There is deliberately no
   second write path.
+- [census.py](census.py) — the organ census (done-line 0029): the loop
+  sensing its own body. A pure fold (no subprocess, no git) over two
+  signals — *wired* (reachable from the working system, not the organ's
+  own test) and *exercised* (a controlled literal of the organ's is on
+  the record). Crossed, they give three verdicts that are bdo's three
+  movements: **alive** (give care), **wired·idle** (a writer plumbed in
+  but never fired — needs attention), **dormant** (disconnected — a
+  prune candidate). Read-only: it counts and names; the cut stays the
+  owner's (D-4). Sibling to the watcher's `--report`, for code instead
+  of tools. File-level, distinct from pipeline-stage realness
+  (`node_real` admissions) — read both.
+- [digest.py](digest.py) — the owner's merge digest (done-line 0032):
+  the data-rich surface bdo watches *instead of operating the merge*.
+  A pure read-only fold over a span of the log, grouped arc-first
+  (done-line 0006): what landed, refused, awaits; the dial in play; the
+  field's heat/cool behaviour; and — the teeth — *divergences*, where
+  two locally-fine records refuse to fit (a *confirmed* arc harbouring a
+  *refused* piece; a tick whose backlog breached its own setpoint cap).
+  Verdicts are read generically (`next_suggested_event` is the
+  advance/refuse signal, a landing is the advance into `TERMINAL_EVENT`),
+  so the digest already speaks the merge-node's `{land, refuse,
+  send_back}` the day those receipts land — "landed" becomes
+  merged-to-main for free. Writes nothing; `--json` emits the dataset.
+  This is the *eyes* of the owner-harness arc's last stretch (bdo stepping
+  out of the merge seat); the merge-node is the *hand*, and it does not
+  move until bdo admits it real (`--by bdo`) and the `bdo merges` hard
+  rule is amended — both his, neither this surface's.
+- [tags.py](tags.py) — the tag pool (done-line 0032): governed vocabulary
+  for what tools do, the census fix pushed upstream to the write seam.
+  Holds the one shared verb→intent `classify()` the watcher and the git
+  pen both import (I-4), and a dimension schema whose `core` is closed in
+  code while admitted `tag` records extend it — proposed-tier: an
+  unadmitted value reads as `proposed` drift and is promotable by `admit`
+  (`--by`), never blocked. Today's one dimension is `intent` (read /
+  mutate); `surface` and `arc` are the next slices. The watcher tags
+  every watched command and `--report` splits raw mutations (wrapper
+  candidates) from raw reads (raw-by-design); the git pen records its
+  verb's intent and refuses an `--intent` that lies about the verb. The
+  classifier returns None on an unknown verb — an honest gap surfaced by
+  `status`, never a silent guess.
 
 ### Invariants the code is built around (firm)
 

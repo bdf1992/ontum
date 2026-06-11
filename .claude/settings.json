@@ -33,6 +33,21 @@
             "type": "command",
             "command": "python .claude/hooks/write_guard.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/freeze_guard.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/freeze_guard.py",
+            "timeout": 10
           }
         ]
       }
@@ -71,6 +86,11 @@
             "type": "command",
             "command": "python -m loop.summon --hook",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python .claude/skills/branch-ritual/git.py sync --hook",
+            "timeout": 45
           }
         ]
       }

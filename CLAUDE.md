@@ -69,10 +69,22 @@ between them) → the most recent reports.
   as provisional in the file itself.
 - **Stdlib only in `loop/` and `glyphs/`.** No broker, no daemon, no
   network, no dependencies.
-- **bdo merges.** Sessions develop on their assigned `claude/*` branch
-  and push there; never merge your own PR, never push to `main`, never
-  push to a merged branch (the commit strands silently). The full
-  lifecycle is the `branch-ritual` skill — run it at hand-off.
+- **The merge-node lands; bdo confirms arcs (amended 2026-06-11, his
+  stamp).** bdo no longer performs PR merges — he named it performative,
+  twice. An independent **merge-node** agent lands work to `main`: it
+  merges a *confirmed-arc* PR it did **not** author, once the suite is
+  green. D-4 is preserved at arc scale (done-line 0028): bdo's
+  `confirm-arc` is the authorization the merge-node *executes* — a node
+  propels work, it never authorizes it (§… D-4). No one signs their own
+  line: the merge-node never lands its own author's PR. Sessions still
+  develop on `claude/*` branches and never push to `main` directly; they
+  open a PR as the *unit the merge-node lands*, never as a thing for bdo
+  to merge. **Do not run the branch-ritual hand-off to route bdo into a
+  merge, and never tell him work is "at the stamp" — that loop is
+  retired.** bdo's only surfaces are **arc confirmation** and the **daily
+  arc digest**. The merge-node lands through the PR pen's `land` verb
+  (`.claude/skills/branch-ritual/pr.py land --epic <id> --by <node>`);
+  its eyes are `loop/merge.py`.
 
 ## Working method (doctrine §9)
 

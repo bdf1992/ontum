@@ -5,9 +5,24 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.8.0
+version: 0.9.0
 owner: bdo
 changelog:
+  - version: 0.9.0
+    note: >
+      The viewport syncs itself (done-line 0031, bdo's stamp in
+      conversation, 2026-06-10). His question — "why does this keep
+      happening?" — after local main sat 4 commits behind origin while
+      a tracked file haunted it as an untracked twin: the merge
+      distributes, but nothing ever took the return leg (0.6.2 named
+      the same staleness at 38 commits and fixed only the workbench
+      half). The git pen gains `sync`: locate the viewport (the primary
+      worktree), fetch, fast-forward the trunk to origin/main —
+      refusing a viewport that is off the trunk or locally ahead (each
+      a surface to bdo, never an act; ff-only cannot conflict, it
+      succeeds or it surfaces). SessionStart wires `git.py sync --hook`
+      (fail-open, exit 0 always): any session blinking in anywhere in
+      the fleet leaves the owner's reading surface current.
   - version: 0.8.0
     note: >
       Epic-integration topology (bdo's directive, 2026-06-10): "I only
@@ -233,8 +248,15 @@ section), don't work around it.
    suite (red refuses unless declared with `--red-ok`), pushes, and
    opens **exactly one PR**. Raw `gh pr create` is hook-denied; that is
    by design — the story is validated, not requested.
-4. **Stop.** Do not merge it. Tell bdo it's at the stamp.
-5. After the stamp lands, the branch dissolves itself —
+4. **Stop. Do not merge it, and do not route bdo to merge it** (amended
+   2026-06-11, his stamp — he named the "tell bdo it's at the stamp" loop
+   performative). The PR is the *unit the merge-node lands*, not a thing for
+   bdo. Leave it open; it lands when its arc is confirmed. **Never tell bdo a
+   PR is "at the stamp."** His only surfaces are arc confirmation
+   (`loop.node confirm-arc --epic <id> --by bdo`) and the daily arc digest.
+   The land is the merge-node's (`.claude/skills/merge-node/`), via
+   `pr.py land`.
+5. After the merge-node lands it, the branch dissolves itself —
    `delete_branch_on_merge` is on, so GitHub deletes the head branch the
    instant the PR merges; nothing to click. The session removes its own
    worktree (`git worktree remove ..\ontum-wt\<slug>`). Dissolved, not

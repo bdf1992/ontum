@@ -19,9 +19,25 @@ be, landed as stamped increments, never hand-tuned silently.
     records directories with a `.pen.json` enforce form — next id,
     pattern, required sections (the records pen `loop/pen.py` is the
     paved path).
+  - `PreToolUse` Write|Edit|MultiEdit|NotebookEdit →
+    `hooks/freeze_guard.py` (done-line 0033): a written done-line is a
+    contract, not a draft — an *existing* file in a records directory
+    whose `.pen.json` declares `"frozen": true` cannot be edited or
+    overwritten in place, absolutely, with no owner exception (Codex
+    editing its own done-line to add an exhaustion clause is exactly
+    what this refuses). The only way to change what done meant is the
+    additive, owner-gated supersede ritual the refusal names
+    (`loop.pen supersede-done`); the original stands as history. Creation
+    is untouched — that is write_guard's land. Fails open, loudly.
   - `SessionStart` + `UserPromptSubmit` → `loop.summon --hook`: open
     summons, the owner-backlog count, and unreflected surface drift,
     injected ambiently.
+  - `SessionStart` → `skills/branch-ritual/git.py sync --hook`
+    (done-line 0031): the merge's return leg — fast-forwards the
+    viewport (the primary worktree, bdo's reading surface) to
+    origin/main, refusing an off-trunk or locally-ahead viewport
+    (surfaced, never acted on). A writing hook like the Stop beat,
+    stamped by bdo the same way; fail-open, exit 0 always.
   - `Stop` → `hooks/reflect_auto.py`: the auto beat (done-line 0020),
     the repo's first *writing* hook — contract change stamped by bdo.
     After each turn it runs the reflector pen's `auto` verb: only what
@@ -36,7 +52,10 @@ be, landed as stamped increments, never hand-tuned silently.
   export pen — the repo leaves as a sealed ≤10-file package, receipted
   on `exports/log.jsonl`), `reflect` (with `reflect.py`, the reflector
   pen — the owner's stamp queue mirrored onto registered external
-  surfaces, every applied act receipted on the log; done-line 0018).
+  surfaces, every applied act receipted on the log; done-line 0018),
+  `overnight-loop` (with `overnight.py`, the read-only brief pen — a
+  long autonomous run starts only from a named arc, a session branch,
+  explicit stop conditions, tests, and a report handoff; done-line 0031).
 
 Direction, on the record (bdo, 2026-06-10): least permissions from now
 on — wrappers and denials are how the hand is forced; the watcher's
