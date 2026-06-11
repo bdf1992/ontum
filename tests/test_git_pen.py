@@ -116,13 +116,14 @@ class TestGitGuard(unittest.TestCase):
         proc = self._invoke("git add foo.py bar.py")
         self.assertEqual(proc.returncode, 2)
         self.assertIn("git pen", proc.stderr)
-        self.assertEqual(self._entries()[0]["rule"], "git-add-raw")
+        # rule ids are the fence registry's since done-line 0029
+        self.assertEqual(self._entries()[0]["rule"], "git-add")
 
     def test_raw_git_commit_denied_toward_the_pen(self):
         proc = self._invoke('git commit -m "x"')
         self.assertEqual(proc.returncode, 2)
-        self.assertIn("branded commit", proc.stderr)
-        self.assertEqual(self._entries()[0]["rule"], "git-commit-raw")
+        self.assertIn("branded through the git pen", proc.stderr)
+        self.assertEqual(self._entries()[0]["rule"], "git-commit")
 
     def test_commit_denied_in_powershell_too(self):
         self.assertEqual(self._invoke("git add x.py", tool="PowerShell").returncode, 2)

@@ -267,7 +267,8 @@ class TestGuardAndWatcher(unittest.TestCase):
         proc = self._invoke("git push -u origin claude/quiet-hopper-ovn8x1")
         self.assertEqual(proc.returncode, 2)
         self.assertIn("branded push", proc.stderr)
-        self.assertEqual(self._entries()[0]["rule"], "git-push-raw")
+        # rule id is the fence registry's since done-line 0029
+        self.assertEqual(self._entries()[0]["rule"], "git-push")
 
     def test_trunk_push_still_gets_the_firm_message(self):
         proc = self._invoke("git push origin main")

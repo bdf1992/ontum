@@ -7,8 +7,10 @@ be, landed as stamped increments, never hand-tuned silently.
 - `settings.json` — the hook wiring. Current hooks:
   - `PreToolUse` Bash|PowerShell → `hooks/command_guard.py`: denies raw
     `gh pr` mutations and raw `git add`/`git commit`/`git push` (the PR
-    pen and the git pen are the paved paths); watches every other
-    external tool — *including standalone local mutating git*
+    pen and the git pen are the paved paths) — the deny-list is derived
+    at runtime from the fence registry `fence/policy.py` (done-line
+    0029), so this guard and the rendered `.codex/` layer move
+    together; watches every other external tool — *including standalone local mutating git*
     (checkout, branch, merge, …) — into
     `.ai-native/log/tool-use.jsonl` (`--report` says which wrapper is
     worth building next; read-only git stays raw-and-watched).

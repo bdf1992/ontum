@@ -1,11 +1,11 @@
 """fence/policy.py - the family-neutral fence registry (done-line 0027).
 
 The firm denials live here once, as data, whatever harness a session
-arrives through. Claude Code reaches them via .claude/hooks/
-command_guard.py (its own DENY_RULES today - parity held by
-tests/test_fence.py until that guard converges onto this registry);
-Codex reaches them via the rendered .codex/ layer
-(fence/render_codex.py). A new family gets a renderer, not a rewrite.
+arrives through. Claude Code compiles them at runtime (done-line 0029:
+command_guard's DENY_RULES are derived from this table, justifications
+becoming refusal messages); Codex loads them through the rendered
+.codex/ layer (fence/render_codex.py). Parity is structural - one
+table, two surfaces - and a new family gets a renderer, not a rewrite.
 
 Each rule is one record:
 
@@ -13,12 +13,12 @@ Each rule is one record:
 - argv          the command prefix it matches, execvp-style; an element
                 is a literal or a tuple of alternatives at that position
 - decision      "forbidden" (blocked outright) or "prompt" (the human
-                approves each invocation)
+                approves each invocation; Claude's side watches these
+                rather than prompting - the watcher decides if that
+                ever hardens)
 - justification the refusal as a story for a cold reader: the why and
                 the paved path inline, so a session that sees only the
                 rejection knows what to do instead
-- claude_guard  the command_guard rule ids this mirrors on the Claude
-                side (empty for prompt rules - Claude watches those)
 - match /       example invocations that must / must not fit the rule;
   not_match     Codex re-validates them at load, our tests at suite time
 
@@ -40,7 +40,6 @@ RULES = (
             f"goes through the git pen, named paths only: {GIT_PEN} add "
             "<path> <path>."
         ),
-        "claude_guard": ("git-add-raw",),
         "match": ("git add .", "git add -A", "git add loop/reconcile.py"),
         "not_match": ("git status", "git diff"),
     },
@@ -54,7 +53,6 @@ RULES = (
             "landed>\" [paths] - named paths, a real message, never the "
             "trunk."
         ),
-        "claude_guard": ("git-commit-raw",),
         "match": ("git commit -m wip", "git commit -am wip"),
         "not_match": ("git log -1", "git commit-tree HEAD^{tree}"),
     },
@@ -68,7 +66,6 @@ RULES = (
             "checks the branch is still alive and the suite is green (or "
             "declared red) first. Pushing main is bdo's alone (D-4)."
         ),
-        "claude_guard": ("git-push-raw", "git-push-trunk"),
         "match": ("git push", "git push origin main",
                   "git push -u origin claude/x"),
         "not_match": ("git fetch origin", "git pull"),
@@ -82,7 +79,6 @@ RULES = (
             "main carries a validated story. The pen scaffolds and checks "
             f"it: {PR_PEN} create ... (-h lists the required fields)."
         ),
-        "claude_guard": ("gh-pr-create",),
         "match": ("gh pr create --title t --body b",),
         "not_match": ("gh pr view 7888", "gh pr list"),
     },
@@ -94,7 +90,6 @@ RULES = (
             "Raw `gh pr edit` is denied here (branch-ritual): reshape the "
             f"story through the pen - {PR_PEN} edit <number> ..."
         ),
-        "claude_guard": ("gh-pr-edit",),
         "match": ("gh pr edit 12 --body x",),
         "not_match": ("gh pr view 12",),
     },
@@ -106,7 +101,6 @@ RULES = (
             "Denied, firm: never merge your own PR - the stamp is bdo's, "
             "the last stop (D-4)."
         ),
-        "claude_guard": ("gh-pr-merge",),
         "match": ("gh pr merge 12 --squash",),
         "not_match": ("gh pr checks 12",),
     },
@@ -118,7 +112,6 @@ RULES = (
             "Denied: opening and closing PRs is ritual work - surface it to "
             "bdo instead of doing it raw."
         ),
-        "claude_guard": ("gh-pr-close",),
         "match": ("gh pr close 12", "gh pr reopen 12"),
         "not_match": ("gh pr view 12",),
     },
@@ -130,7 +123,6 @@ RULES = (
             "Denied: no one signs their own line (D-2) - a session does not "
             "review or approve PRs."
         ),
-        "claude_guard": ("gh-pr-review",),
         "match": ("gh pr review 12 --approve",),
         "not_match": ("gh pr diff 12",),
     },
@@ -143,7 +135,6 @@ RULES = (
             f"flip IS the merge signal - it goes through the pen: {PR_PEN} "
             f"ready <n> (or {PR_PEN} unready <n> to roll back)."
         ),
-        "claude_guard": ("gh-pr-ready",),
         "match": ("gh pr ready 12",),
         "not_match": ("gh pr view 12",),
     },
@@ -156,7 +147,6 @@ RULES = (
             "branches only inside its own worktree (../ontum-wt/<slug>; "
             "AGENTS.md). Approve only if this runs in your worktree."
         ),
-        "claude_guard": (),
         "match": ("git checkout main", "git checkout -b codex/x"),
         "not_match": ("git status",),
     },
@@ -169,7 +159,6 @@ RULES = (
             "branches only inside its own worktree (../ontum-wt/<slug>; "
             "AGENTS.md). Approve only if this runs in your worktree."
         ),
-        "claude_guard": (),
         "match": ("git switch main",),
         "not_match": ("git branch --list",),
     },

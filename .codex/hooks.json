@@ -1,5 +1,41 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python fence/probe_codex.py PreToolUse",
+            "timeout": 30,
+            "statusMessage": "ontum: probing the hook seam"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python fence/probe_codex.py PostToolUse",
+            "timeout": 30,
+            "statusMessage": "ontum: probing the hook seam"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python fence/probe_codex.py PermissionRequest",
+            "timeout": 30,
+            "statusMessage": "ontum: probing the hook seam"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

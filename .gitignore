@@ -6,6 +6,9 @@
 # sensor trace, not truth: the command watcher's log (done-line 0011) — deletable
 .ai-native/log/tool-use.jsonl
 
+# sensor trace: what Codex really hands a hook (done-line 0029) — deletable
+.ai-native/log/codex-hook-probe.jsonl
+
 # envoy packages are rebuildable artifacts (done-line 0015); the
 # environment doc and the disclosure ledger are the committed trace
 exports/*

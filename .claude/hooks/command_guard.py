@@ -7,7 +7,10 @@ Done-line 0011 / branch-ritual v0.3.0. Two jobs, one hook:
    mutations and raw `git add` / `git commit` go through their pens
    (.claude/skills/branch-ritual/{pr,git}.py), nothing pushes to the
    trunk, no one merges or approves their own line. The deny-list is
-   this file; tightening it is adding a rule.
+   NOT this file: it is the family-neutral fence registry
+   (fence/policy.py, done-line 0029), compiled to regex shape at
+   import — tightening the fence is adding a registry rule, and both
+   surfaces (this guard, the rendered .codex/ layer) move together.
 
 2. Watcher: every other raw invocation of an external tool (gh, curl,
    network git, *and now local mutating git* — checkout, branch, merge,
@@ -42,37 +45,40 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 WATCH_LOG = pathlib.Path(
     os.environ.get("ONTUM_TOOL_WATCH_LOG", ROOT / ".ai-native" / "log" / "tool-use.jsonl")
 )
-PEN = "python .claude/skills/branch-ritual/pr.py"
-GIT_PEN = "python .claude/skills/branch-ritual/git.py"
+def _compile(argv):
+    """A registry argv prefix in this guard's regex shape: the verbs in
+    sequence anywhere in the quote-stripped command, refusing to bleed
+    into hyphenated cousins (`git commit` is not `git commit-tree`)."""
+    parts = []
+    for element in argv:
+        alternatives = element if isinstance(element, tuple) else (element,)
+        escaped = [re.escape(a) for a in alternatives]
+        parts.append(escaped[0] if len(escaped) == 1
+                     else "(?:" + "|".join(escaped) + ")")
+    return r"\b" + r"\s+".join(parts) + r"\b(?!-)"
 
-DENY_RULES = (
-    ("gh-pr-create", r"\bgh\s+pr\s+create\b",
-     "raw `gh pr create` is denied (branch-ritual): every PR to main carries "
-     f"a validated story. Use the pen: {PEN} create ... (-h lists the required fields)"),
-    ("gh-pr-edit", r"\bgh\s+pr\s+edit\b",
-     "raw `gh pr edit` is denied (branch-ritual): reshape the story through "
-     f"the pen: {PEN} edit <number> ..."),
-    ("gh-pr-merge", r"\bgh\s+pr\s+merge\b",
-     "denied, firm: never merge your own PR — the stamp is bdo's (branch-ritual)."),
-    ("gh-pr-close", r"\bgh\s+pr\s+(close|reopen)\b",
-     "denied: opening and closing PRs is ritual work — surface it to bdo "
-     "instead of doing it raw."),
-    ("gh-pr-review", r"\bgh\s+pr\s+review\b",
-     "denied: no one signs their own line (CLAUDE.md) — a session does not "
-     "review or approve PRs."),
-    ("gh-pr-ready", r"\bgh\s+pr\s+ready\b",
-     "raw `gh pr ready` is denied (done-line 0017): the draft flip IS the "
-     f"merge signal — it goes through the pen: {PEN} ready <n> ... "
-     f"(or {PEN} unready <n> to roll back to draft)."),
-    ("git-add-raw", r"\bgit\s+add\b",
-     "raw `git add` is denied (done-line 0020): staging goes through the "
-     f"git pen — {GIT_PEN} add <path> <path> — explicit paths only; `add .` "
-     "/ `-A` / `-u` would stage another session's work in the shared tree."),
-    ("git-commit-raw", r"\bgit\s+commit\b(?!-)",
-     "raw `git commit` is denied (done-line 0020): the branded commit is "
-     f"{GIT_PEN} commit -m \"<what landed>\" [paths] — named paths, a real "
-     "message, never the trunk (the same line pr.py holds for push)."),
-)
+
+def _deny_rules():
+    """The deny-list IS the fence registry (done-line 0029): one home,
+    fence/policy.py, this surface compiled from it at import. A fence
+    that can't load fails open — but loudly, on the watch log and
+    stderr: a silently unguarded repo that still looks guarded is the
+    known failure mode (write_guard learned it first)."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from fence import policy
+        return tuple(
+            (rule["id"], _compile(rule["argv"]), rule["justification"])
+            for rule in policy.RULES if rule["decision"] == "forbidden"
+        )
+    except Exception as exc:  # noqa: BLE001 — any load failure degrades, none crashes
+        record({"status": "degraded", "rule": "fence-load", "error": repr(exc)})
+        print(
+            f"[command_guard] fence registry failed to load ({exc!r}) — the "
+            "deny-list is EMPTY for this call; fix fence/policy.py",
+            file=sys.stderr,
+        )
+        return ()
 
 # Heads that stay invisible to the watcher: local work, not external reach.
 LOCAL_HEADS = {
@@ -184,6 +190,9 @@ def _payload():
     return payload
 
 
+DENY_RULES = _deny_rules()  # compiled once per process, after record exists
+
+
 def hook():
     payload = _payload()
     if payload is None:
@@ -192,12 +201,8 @@ def hook():
     session = payload.get("session_id") or ""
     acting = strip_quoted(command)  # prose mentions a verb; only this acts
 
-    for rule, pattern, message in DENY_RULES:
-        if re.search(pattern, acting):
-            record({"status": "denied", "rule": rule, "command": command,
-                    "session": session})
-            print(message, file=sys.stderr)
-            return 2
+    # the trunk carve-out first: a push naming main deserves the firm
+    # line, not the generic git-push refusal the registry also carries
     if pushes_to_trunk(acting):
         record({"status": "denied", "rule": "git-push-trunk",
                 "command": command, "session": session})
@@ -207,17 +212,12 @@ def hook():
             file=sys.stderr,
         )
         return 2
-    if re.search(r"\bgit\s+push\b", acting):
-        record({"status": "denied", "rule": "git-push-raw",
-                "command": command, "session": session})
-        print(
-            "raw `git push` is denied (branch-ritual, done-line 0014): the "
-            f"branded push is `{PEN} push` — it checks the branch is alive "
-            "and the suite is green (or declared red) before anything "
-            "leaves the machine.",
-            file=sys.stderr,
-        )
-        return 2
+    for rule, pattern, message in DENY_RULES:
+        if re.search(pattern, acting):
+            record({"status": "denied", "rule": rule, "command": command,
+                    "session": session})
+            print(message, file=sys.stderr)
+            return 2
 
     bins = external_bins(command)
     if bins:
