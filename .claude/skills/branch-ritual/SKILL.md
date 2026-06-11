@@ -248,8 +248,15 @@ section), don't work around it.
    suite (red refuses unless declared with `--red-ok`), pushes, and
    opens **exactly one PR**. Raw `gh pr create` is hook-denied; that is
    by design — the story is validated, not requested.
-4. **Stop.** Do not merge it. Tell bdo it's at the stamp.
-5. After the stamp lands, the branch dissolves itself —
+4. **Stop. Do not merge it, and do not route bdo to merge it** (amended
+   2026-06-11, his stamp — he named the "tell bdo it's at the stamp" loop
+   performative). The PR is the *unit the merge-node lands*, not a thing for
+   bdo. Leave it open; it lands when its arc is confirmed. **Never tell bdo a
+   PR is "at the stamp."** His only surfaces are arc confirmation
+   (`loop.node confirm-arc --epic <id> --by bdo`) and the daily arc digest.
+   The land is the merge-node's (`.claude/skills/merge-node/`), via
+   `pr.py land`.
+5. After the merge-node lands it, the branch dissolves itself —
    `delete_branch_on_merge` is on, so GitHub deletes the head branch the
    instant the PR merges; nothing to click. The session removes its own
    worktree (`git worktree remove ..\ontum-wt\<slug>`). Dissolved, not

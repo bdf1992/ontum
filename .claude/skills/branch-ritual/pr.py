@@ -396,6 +396,149 @@ def cmd_integrate(ns):
           "(the finished arc is the PR he merges)")
 
 
+# ----------------------------------------------------------- land (merge-node)
+# bdo's amendment, 2026-06-11: he no longer merges PRs — that became
+# performative. An independent merge-node lands a *confirmed-arc* PR on main.
+# D-4 holds at arc scale (done-line 0028): bdo's confirm-arc is the
+# authorization this verb executes; the node propels, it never authorizes, and
+# bdo's confirmation — an independent human stamp — is what satisfies "no one
+# signs their own line" even when the Claude family authored the PR.
+
+def _now():
+    import time
+    return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()) + "Z"
+
+
+def _capture(args):
+    """Run without _run's exit-on-failure: the merge-node asks questions where
+    'no' is an answer (does this confirmation exist?), not a crash."""
+    proc = subprocess.run(args, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", cwd=ROOT)
+    return proc.returncode, proc.stdout, proc.stderr
+
+
+def arc_confirmed_in(admissions_text, epic):
+    """The active arc_confirmed admission id for an epic in a log dump, or
+    None. Pure. Latest enabled confirmation by bdo wins; `enabled:false`
+    withdraws (superseded, never erased)."""
+    active = None
+    for line in admissions_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            adm = json.loads(line)
+        except ValueError:
+            continue
+        if (adm.get("type") == "arc_confirmed" and adm.get("epic") == epic
+                and (adm.get("by") or "").strip().lower() == "bdo"):
+            active = adm["id"] if adm.get("enabled", True) else None
+    return active
+
+
+def _trunk_confirmation(epic):
+    """Read bdo's arc confirmation from the trunk (main), never the working
+    branch — the authorization lives where he stamps it, and a piece branch
+    may predate the confirmation."""
+    rc, out, _ = _capture(["git", "show", "main:.ai-native/log/admissions.jsonl"])
+    return arc_confirmed_in(out, epic) if rc == 0 else None
+
+
+CHECK_OK = {"SUCCESS", "NEUTRAL", "SKIPPED"}
+
+
+def checks_green(rollup):
+    """Every status check is success-like, or there are none. A pending or
+    failing check is not green — the merge-node never lands on a yellow light."""
+    for c in rollup or []:
+        state = (c.get("conclusion") or c.get("state") or "UNKNOWN").upper()
+        if state not in CHECK_OK:
+            return False
+    return True
+
+
+def land_refusal(info, confirmation, by):
+    """Why the merge-node may not land this PR on main, or None. Default is
+    refuse: it lands only a confirmed-arc, green, written, non-draft,
+    non-conflicting PR based on main, and only as a named node (no one signs
+    their own line; bdo's arc confirmation is the independent approval, D-4)."""
+    if not (by or "").strip():
+        return "the merge-node lands as a named node (--by) — no one signs their own line"
+    if info.get("state") != "OPEN":
+        return f"PR is {str(info.get('state')).lower()} — only an open PR lands"
+    if info.get("baseRefName") not in ("main", "master"):
+        return (f"land targets the trunk; this PR is based on "
+                f"{info.get('baseRefName')} — an epic piece uses `integrate`")
+    if info.get("isDraft"):
+        return "PR is a draft — a draft is 'not ready'; the merge-node never lands one"
+    if not confirmation:
+        return ("the arc is not confirmed by bdo on the trunk — the merge-node "
+                "lands only confirmed arcs (his confirm-arc is the authorization, D-4)")
+    if info.get("mergeable") == "CONFLICTING":
+        return f"PR conflicts with {info.get('baseRefName')} — rebase it first"
+    if not checks_green(info.get("statusCheckRollup")):
+        return "the suite is not green (a check is failing or pending) — the merge-node waits"
+    title = (info.get("title") or "").strip()
+    if not title or _squash(title) == _squash(info.get("headRefName") or ""):
+        return "the PR wears an unwritten story (auto-title) — not at landing readiness"
+    if not (info.get("body") or "").strip():
+        return "the PR has an empty body — an unwritten story does not land"
+    return None
+
+
+def _record_merge(pr, epic, by, authorized_by, head):
+    """The land is an act on the record (D-5): append a merge receipt to the
+    loop log, line-atomic with torn-tail tolerance. The merge-node leaves a
+    receipt like every node, citing the arc confirmation that authorized it."""
+    receipt = {
+        "id": f"rcp.merge.{pr}",
+        "kind": "merge",
+        "node": by,
+        "pr": pr,
+        "epic": epic,
+        "head": head,
+        "verdict": "landed",
+        "authorized_by": authorized_by,
+        "ts": _now(),
+    }
+    path = ROOT / ".ai-native" / "log" / "receipts.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a+b") as f:
+        f.seek(0, 2)
+        if f.tell() > 0:
+            f.seek(-1, 2)
+            if f.read(1) != b"\n":
+                f.write(b"\n")
+        f.write((json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n").encode())
+        f.flush()
+    return receipt
+
+
+def cmd_land(ns):
+    """The merge-node's hand: land a confirmed-arc PR on main. bdo no longer
+    merges — he confirms arcs and reads the digest; this lands what he
+    confirmed, refuses by default, and records every land. Run it as a node
+    that did not author the PR (the merge-node SKILL is explicit)."""
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number), "--json",
+         "state,baseRefName,headRefName,isDraft,mergeable,title,body,statusCheckRollup,author"]))
+    confirmation = _trunk_confirmation(ns.epic)
+    reason = land_refusal(info, confirmation, ns.by)
+    if reason:
+        _refuse(reason)
+    head = info.get("headRefName")
+    if ns.dry_run:
+        print(f"result: report — DRY RUN: would land PR #{ns.number} "
+              f"({head} -> main) on arc {ns.epic} confirmed by bdo "
+              f"({confirmation}); nothing merged")
+        return
+    _run(["gh", "pr", "merge", str(ns.number), "--squash", "--delete-branch"])
+    rc = _record_merge(ns.number, ns.epic, ns.by, confirmation, head)
+    print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
+          f"on bdo's confirmed arc {ns.epic}; receipt {rc['id']}. "
+          "bdo was not asked — he confirmed the arc, the node landed it.")
+
+
 def _story_args(parser):
     parser.add_argument("--title", required=True,
                         help="one line: what this PR did (never the branch name)")
@@ -470,6 +613,19 @@ def main(argv=None):
                            action="store_true",
                            help="delete the piece branch after integrating")
     integrate.set_defaults(func=cmd_integrate)
+
+    land = verbs.add_parser(
+        "land", help="the merge-node lands a confirmed-arc PR on main (bdo's "
+                     "2026-06-11 amendment; never run on a PR you authored)")
+    land.add_argument("number", type=int)
+    land.add_argument("--epic", required=True,
+                      help="the arc this PR serves; bdo's confirm-arc on the "
+                           "trunk is the authorization the node executes (D-4)")
+    land.add_argument("--by", required=True,
+                      help="the merge-node's identity, e.g. merge-node.claude.v0")
+    land.add_argument("--dry-run", dest="dry_run", action="store_true",
+                      help="run every guard and print the decision; merge nothing")
+    land.set_defaults(func=cmd_land)
 
     ns, extra = parser.parse_known_args(argv)
     if extra and getattr(ns, "verb", None) != "push":
