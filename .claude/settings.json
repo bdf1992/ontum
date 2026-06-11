@@ -96,6 +96,11 @@
             "type": "command",
             "command": "python .claude/skills/branch-ritual/git.py garden --hook",
             "timeout": 45
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/gesture_surface.py",
+            "timeout": 20
           }
         ]
       }
