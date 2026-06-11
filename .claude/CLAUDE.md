@@ -42,7 +42,10 @@ be, landed as stamped increments, never hand-tuned silently.
   export pen — the repo leaves as a sealed ≤10-file package, receipted
   on `exports/log.jsonl`), `reflect` (with `reflect.py`, the reflector
   pen — the owner's stamp queue mirrored onto registered external
-  surfaces, every applied act receipted on the log; done-line 0018).
+  surfaces, every applied act receipted on the log; done-line 0018),
+  `overnight-loop` (with `overnight.py`, the read-only brief pen — a
+  long autonomous run starts only from a named arc, a session branch,
+  explicit stop conditions, tests, and a report handoff; done-line 0031).
 
 Direction, on the record (bdo, 2026-06-10): least permissions from now
 on — wrappers and denials are how the hand is forced; the watcher's
