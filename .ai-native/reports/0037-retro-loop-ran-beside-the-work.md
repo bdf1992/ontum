@@ -218,12 +218,23 @@ no CLI is handed to him. Hours 1–2 *are* RC2's behavioral correction —
 the session runs real work through atoms, it does not talk about it.
 
 **Hour 0 — produce the enforcement patch + proof (not a discussion).**
-Write the two pure refusal functions and their fixture tests; show them
-green. Surface to bdo as the decision surface only — *approve / amend /
-reject the enforcement* — with the proof attached, never the work
-surface and never a "should we." (Building the live wiring is one line
-once the logic + test exist; activating it is bdo's stamp, since it
-changes the paved path every session uses.)
+The done condition is brutally small, on purpose — Hour 0 becomes
+harness cosplay the moment it widens:
+```
+Hour 0 done = three fixture tests exist and pass:
+  1. atomless PR              refuses
+  2. atom with a real receipt allows
+  3. mock-only receipt        refuses
+```
+No broader refactor. No pen cleanup. No serialization fix. No UX. No new
+report. Just the two pure refusal functions and those three tests.
+Surface to bdo as the decision surface only — *approve / amend / reject
+the enforcement* — with the proof attached, never the work surface and
+never a "should we." Activating the live wiring is bdo's stamp (it
+changes the paved path every session uses); **the invariant itself is
+not on the table — only the patch that enforces it is reviewable. A
+review may amend the enforcement shape, but may not return the system to
+an atom-optional PR path.**
 
 **Hour 1 — finish first-light through the pattern (RC2, RC3).** No
 second real node until the first has a passing receipt.
@@ -268,7 +279,9 @@ The loop must *witness* the work, not merely describe why it matters.
 
 - **Approve / amend / reject the enforcement** once Hour 0 hands you the
   patch + proof. Not "should we" — the smallest reversible refusal that
-  makes the bypass impossible, with evidence it works.
+  makes the bypass impossible, with evidence it works. **The invariant
+  is not up for decision; only the activation patch is.** A review may
+  reshape the enforcement, never restore an atom-optional PR path.
 - **One surfaced chore (not yours to fix):** done-line ids collide
   across worktrees — a real pen race, flagged, deliberately not in the
   2-hour window.

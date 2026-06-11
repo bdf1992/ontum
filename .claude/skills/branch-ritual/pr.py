@@ -444,6 +444,68 @@ def _trunk_confirmation(epic):
     return arc_confirmed_in(out, epic) if rc == 0 else None
 
 
+# ---------------------------------------------------- the atom invariant
+# Retro 0037: the substrate has always required every particle of work to be
+# an atom on the log — ambient control senses field-state as a fold over the
+# log (§15/D-5), so a work-particle that is not an atom emits nothing to fold
+# and the controller is blind to it. These pure refusals make that invariant
+# executable at the seam where it was breached:
+#     no atom id + no backing receipt  = no PR   (atom_backed_refusal)
+#     no real (non-mock) gate receipt  = no land (real_gate_refusal)
+# They are pure (text in, reason-or-None out) like arc_confirmed_in, and not
+# yet wired into the live verbs — activation is bdo's stamp, the invariant is
+# not. A receipt is mock evidence when its node carries the ".mock" marker the
+# PIPELINE stamps on every skeleton stage (reconcile.PIPELINE); the first such
+# mock replaced is what makes a stage real (node_real admission).
+
+def _receipts_for_atom(receipts_text, atom_id):
+    """Every receipt on the log naming this atom (by artifact_id). Pure,
+    torn-tail tolerant — a half-written line never happened (D-5)."""
+    out = []
+    for line in receipts_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rc = json.loads(line)
+        except ValueError:
+            continue
+        if rc.get("artifact_id") == atom_id:
+            out.append(rc)
+    return out
+
+
+def _is_mock_receipt(rc):
+    return ".mock" in (rc.get("node") or "")
+
+
+def atom_backed_refusal(atom_id, receipts_text):
+    """Why a PR may not open, or None. A PR must name the atom it serves and
+    that atom must already be on the log — work that never became an atom is
+    invisible to the loop. No atom id + no backing receipt = no PR."""
+    if not (atom_id or "").strip():
+        return ("no --atom: a PR names the atom it serves; work that is not an "
+                "atom on the log is invisible to the ambient loop (§15/D-5)")
+    if not _receipts_for_atom(receipts_text, atom_id):
+        return (f"atom '{atom_id}' has no receipt on the log — it never entered "
+                "the loop; create it and let a gate judge it before it is a PR")
+    return None
+
+
+def real_gate_refusal(atom_id, receipts_text):
+    """Why the merge-node may not land, or None. Landing requires a real
+    (non-mock) gate verdict for the atom: a mock returning a constant is a
+    story about a gate event, not one. No real gate receipt = no merge."""
+    receipts = _receipts_for_atom(receipts_text, atom_id)
+    if not receipts:
+        return (f"atom '{atom_id}' has no receipt on the log — it never entered "
+                "the loop; nothing to land")
+    if all(_is_mock_receipt(rc) for rc in receipts):
+        return (f"atom '{atom_id}' has only mock receipts — a gate is real only "
+                "when a real node judged it; a constant verdict does not land")
+    return None
+
+
 CHECK_OK = {"SUCCESS", "NEUTRAL", "SKIPPED"}
 
 
