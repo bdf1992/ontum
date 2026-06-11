@@ -58,10 +58,12 @@ session.
    ```
    The pen reads bdo's confirmation from the **trunk** (`main`), checks the PR
    is green, written, non-draft, non-conflicting, and based on main, then
-   `gh pr merge --squash --delete-branch`. It records a merge receipt on the
-   log citing the arc confirmation that authorized it. A refusal is a `report`
-   — it names what was missing; leave that PR for when its arc is confirmed or
-   its suite goes green.
+   lands with `gh pr merge --squash`. It does **not** pass
+   `--delete-branch`; branch cleanup belongs to GitHub's
+   `delete_branch_on_merge` setting and the SessionStart gardener. It records
+   a merge receipt on the log citing the arc confirmation that authorized it.
+   A refusal is a `report` — it names what was missing; leave that PR for when
+   its arc is confirmed or its suite goes green.
 
 3. **Stop when the confirmed arcs are landed.** What you could not land stays
    open as the unit it is. Do not escalate a refusal to bdo as a merge — it is

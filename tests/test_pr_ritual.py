@@ -257,7 +257,7 @@ class TestGuardAndWatcher(unittest.TestCase):
     def test_merge_denied_firm(self):
         proc = self._invoke("gh pr merge 9 --squash")
         self.assertEqual(proc.returncode, 2)
-        self.assertIn("stamp is bdo's", proc.stderr)
+        self.assertIn("main lands only through the independent merge-node", proc.stderr)
 
     def test_self_review_denied(self):
         self.assertEqual(self._invoke("gh pr review 9 --approve").returncode, 2)

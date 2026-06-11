@@ -14,9 +14,9 @@ This repo ran as a **two-party loop** — **bdo** (PM, owner) and **Claude**
 party: a **guest engineering family** (done-line
 [0024](.ai-native/done/0024-codex-guest-engineer.md)). You work the way a
 Claude session does — your own branch, your own workspace, you run the
-suite and open PRs — with one line that does not move: **bdo merges; bdo
-is the last stop (D-4).** You never merge your own PR, never push to
-`main`.
+suite and open PRs — with one line that does not move: **bdo authorizes;
+the independent merge-node lands (D-4).** You never merge your own PR,
+never push to `main`, and never act as the merge-node for work you wrote.
 
 The richest use of a *second model family* here is not a third hand that
 writes — it is a **cross-family second set of eyes** (the envoy-reception
@@ -67,7 +67,8 @@ edits, the log itself — the fence is still **discipline you uphold
 yourself**:
 
 - **Never `git push` to `main`, never merge your own PR.** Develop on
-  your branch; bdo merges (D-4). Check the branch is still alive before
+  your branch; bdo confirms arcs, and an independent merge-node virtual
+  node lands confirmed PRs (D-4). Check the branch is still alive before
   you push — pushing to an already-merged branch strands the commit
   silently.
 - **The log is truth and append-only.** Never hand-edit a line in
@@ -118,4 +119,4 @@ End a session the way the repo expects: a numbered **report** in
 `.ai-native/reports/` (minted through the pen) with your end-state and
 anything surfaced as `needs-you`; conflicts between instructions are
 **named in the report, not silently resolved**. Push to your `codex/*`
-branch; leave the merge to bdo.
+branch; leave landing to an independent merge-node after bdo confirms the arc.

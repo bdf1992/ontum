@@ -4,16 +4,14 @@ sensor, per arc.
 
 The digest (done-line 0032) gave bdo eyes on the whole field; this gives
 the *merge-node* its eyes on a single arc — the judgement "is this arc safe
-to land on main?" that, once bdo amends the `bdo merges` hard rule and
-admits the node real (`--by bdo`), becomes the land itself. It is the first
-sensor of a new kind of meaning (report 0004 §3): land-safety. Eyes before
-the hand.
+to land on main?" It is the first sensor of a new kind of meaning (report
+0004 §3): land-safety. Eyes before the hand.
 
 It decides; it never acts. It merges nothing and writes nothing — the
-actual epic→main land is a separate, hard-gated pen built only after bdo's
-two stamps, and verdicts still land only through the one pen (D-4). This
-module reuses the digest fold rather than re-deriving state: the merge-node
-and the owner watch the same log, one for a verdict, one for a glance.
+actual epic→main land is the separate, hard-gated PR pen the independent
+merge-node runs after bdo confirms the arc (D-4). This module reuses the
+digest fold rather than re-deriving state: the merge-node and the owner
+watch the same log, one for a verdict, one for a glance.
 
 The verdict per confirmed arc:
   ready_to_land  confirmed by bdo, every declared piece present and landed,
@@ -116,8 +114,8 @@ def main(argv=None):
     refused = [a for a in r["arcs"] if a["verdict"] == REFUSE]
     if ready or refused:
         print(f"result: report — {len(ready)} arc(s) ready to land, "
-              f"{len(refused)} refused; the land is yours until the merge-node "
-              "is real (D-4: amend `bdo merges` + admit-real --by bdo)")
+              f"{len(refused)} refused; bdo confirms arcs and the independent "
+              "merge-node lands confirmed PRs through pr.py land (D-4)")
     else:
         print("result: report — no arc ready to land yet "
               "(none confirmed-and-complete); read-only, nothing acted")

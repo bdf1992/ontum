@@ -42,10 +42,12 @@ up the discipline without re-deriving it.
   Appends are line-atomic with torn-tail tolerance.
 - **No one signs their own line (D-2).** A node never judges its own writer's
   work; every gate reads someone else's output.
-- **bdo merges (D-4).** Sessions develop on their assigned `claude/*` branch
-  and push there; merging to main is the owner's act, not the session's. The
-  full lifecycle is the
-  [branch-ritual skill](.claude/skills/branch-ritual/SKILL.md) — run it at
+- **bdo authorizes; the merge-node lands (D-4).** Sessions develop on their
+  assigned `claude/*` or `codex/*` branch and push there; landing on `main`
+  is the independent merge-node's act after bdo confirms the arc, never the
+  authoring session's. The full lifecycle is the
+  [branch-ritual skill](.claude/skills/branch-ritual/SKILL.md) and the
+  [merge-node skill](.claude/skills/merge-node/SKILL.md) — run the ritual at
   hand-off, and when the Branches page needs gardening.
 - **The primary checkout is the owner's viewport (bdo, 2026-06-10).** The
   main repo folder stays parked on `main`; sessions never run
@@ -53,14 +55,14 @@ up the discipline without re-deriving it.
   — one tree per branch, taken at session start:
 
   ```sh
-  git worktree add -b claude/<slug> ..\ontum-wt\<slug> main
+  git worktree add -b <family>/<slug> ..\ontum-wt\<slug> main
   ```
 
   Parallel sessions stop re-pointing the owner's explorer (and each
-  other's floors); after the stamp, the worktree is removed with the
-  branch (`git worktree remove ..\ontum-wt\<slug>`), and the viewport
-  catches up with `git pull` — the merge is the distribution event, the
-  pull is its return leg. *(This rule exists because it happened: on
+  other's floors); after the merge-node lands the confirmed PR, the worktree
+  is removed with the branch (`git worktree remove ..\ontum-wt\<slug>`), and
+  the viewport catches up with `git pull` — the merge is the distribution
+  event, the pull is its return leg. *(This rule exists because it happened: on
   2026-06-10 the shared checkout switched branches four times under the
   owner's explorer while merged work seemed to vanish, and local `main`
   proved 38 commits behind — it had never been pulled.)*

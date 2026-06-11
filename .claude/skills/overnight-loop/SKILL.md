@@ -117,6 +117,7 @@ After a passing brief:
 5. Mint a report through `python -m loop.pen new reports ...` naming the
    end-state and any `needs-you` items.
 
-This skill does not override repo law: bdo merges, sessions do not push
-to `main`, append-only logs stay append-only, generated files stay with
-their generators, and owner-only stamps remain owner-only.
+This skill does not override repo law: bdo confirms arcs, an independent
+merge-node lands confirmed PRs, sessions do not push to `main`, append-only
+logs stay append-only, generated files stay with their generators, and
+owner-only stamps remain owner-only.
