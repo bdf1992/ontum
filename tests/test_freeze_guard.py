@@ -3,9 +3,10 @@
 (overwrite) on an existing file in a `"frozen": true` records directory,
 naming the painful path, while passing creation, unfrozen directories,
 the config dotfile, files outside the repo, and garbage stdin; the
-supersede pen refuses a nonexistent target and a glib reason, leaves the
-original bytes untouched, records a `done_superseded` admission, and
-never self-authorizes a session's own change (only bdo's authorizes).
+supersede pen is bdo's alone — it refuses every session signer outright,
+writing nothing (no pending bar, no free "stop working" card), and only
+on bdo's own signature writes the additive new line, leaves the original
+bytes untouched, and records a `done_superseded` admission.
 
 The §10 bar lives here: a locally-fine edit to a done-line *refuses to
 fit*, and the guard notices."""
@@ -119,46 +120,48 @@ class SupersedeRitualTest(unittest.TestCase):
 
     def test_refuses_abandoning_a_bar_never_set(self):
         code = pen.supersede_done(str(self.done), "0099", "new-line",
-                                  "a new bar", HONEST_REASON, "claude")
+                                  "a new bar", HONEST_REASON, "bdo")
         self.assertEqual(code, 2)
         self.assertEqual(self.admissions(), [])  # nothing recorded
 
     def test_refuses_a_glib_reason(self):
         code = pen.supersede_done(str(self.done), "0001", "new-line",
-                                  "a new bar", "ran out of time", "claude")
+                                  "a new bar", "ran out of time", "bdo")
         self.assertEqual(code, 2)
         self.assertFalse((self.done / "0002-new-line.md").exists())
 
-    def test_a_session_supersede_is_loud_pending_and_never_self_authorized(self):
-        code = pen.supersede_done(str(self.done), "0001", "new-bar",
-                                  "the loop parks the atom and waits",
-                                  HONEST_REASON, "claude")
-        self.assertEqual(code, 2)  # needs-you: not a clean success for a session
-        # the original bytes are untouched — history, not erased
+    def test_a_session_cannot_supersede_at_all(self):
+        # not pending, not written — a session that could author even an
+        # unauthorized new bar would hold a free 'stop working' card
+        for signer in ("claude", "codex", "overnight-codex", ""):  # no session signer passes
+            code = pen.supersede_done(str(self.done), "0001", "new-bar",
+                                      "an easier bar for myself",
+                                      HONEST_REASON, signer)
+            self.assertEqual(code, 2)
+        # nothing was written: no new line, no admission, original untouched
+        self.assertFalse((self.done / "0002-new-bar.md").exists())
+        self.assertEqual(self.admissions(), [])
         self.assertEqual(
             (self.done / "0001-first.md").read_text(encoding="utf-8"), EXISTING_DONE)
-        # the new line exists, additive, carrying the reflection
-        new = self.done / "0002-new-bar.md"
+
+    def test_only_bdo_supersede_writes_and_it_is_his_own(self):
+        code = pen.supersede_done(str(self.done), "1", "owner-moved-bar",
+                                  "the new bar bdo set", HONEST_REASON, "bdo")
+        self.assertEqual(code, 0)  # the owner steers the bar (D-4)
+        # the new line is written, additive, carrying the reflection; the
+        # original is untouched history
+        new = self.done / "0002-owner-moved-bar.md"
         self.assertTrue(new.exists())
         text = new.read_text(encoding="utf-8")
         self.assertIn("SUPERSEDES done-line 0001", text)
         self.assertIn(HONEST_REASON, text)
-        self.assertIn("> **Done when:**", text)
         self.assertNotIn(b"\r", new.read_bytes())  # LF bytes: identity-safe
-        # the act is on the record, and NOT authorized
+        self.assertEqual(
+            (self.done / "0001-first.md").read_text(encoding="utf-8"), EXISTING_DONE)
+        # the act is on the record, authorized as bdo's own
         adm = self.admissions()
         self.assertEqual(len(adm), 1)
         self.assertEqual(adm[0]["type"], "done_superseded")
-        self.assertEqual(adm[0]["abandoned"], "0001")
-        self.assertFalse(adm[0]["authorized"])
-        self.assertIsNone(adm[0]["authorized_by"])
-
-    def test_bdo_supersede_authorizes_itself(self):
-        code = pen.supersede_done(str(self.done), "1", "owner-moved-bar",
-                                  "the new bar bdo set", HONEST_REASON, "bdo")
-        self.assertEqual(code, 0)  # the owner steers the bar (D-4)
-        adm = self.admissions()
-        self.assertEqual(len(adm), 1)
         self.assertTrue(adm[0]["authorized"])
         self.assertEqual(adm[0]["authorized_by"], "bdo")
 

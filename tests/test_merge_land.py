@@ -8,6 +8,7 @@ is locally fine in every way the PR can see, yet it must not land — the
 confirmation is the independent stamp (D-4), and its absence refuses to fit.
 """
 
+import argparse
 import importlib.util
 import unittest
 from pathlib import Path
@@ -102,6 +103,50 @@ class ArcConfirmedIn(unittest.TestCase):
     def test_confirmed_returns_id(self):
         dump = '{"type":"arc_confirmed","epic":"e","by":"bdo","enabled":true,"id":"adm.ok"}'
         self.assertEqual(pr.arc_confirmed_in(dump, "e"), "adm.ok")
+
+
+class MergeReceiptReachesTheLog(unittest.TestCase):
+    """The receipt is the land's only record (D-5). The bug it fixes: it was
+    written to a throwaway worktree and lost, so the log was blind to real
+    merges. _merge_receipt builds the record; _append_receipt_line is the
+    torn-tail-tolerant write the trunk push uses — it must hold even when a
+    prior line lacks its trailing newline."""
+
+    def test_receipt_carries_the_authorization(self):
+        r = pr._merge_receipt(45, "epic.owner-harness", "merge-node.claude.v0",
+                              "adm.728a87a9ca48", "claude/mock-shame")
+        self.assertEqual(r["id"], "rcp.merge.45")
+        self.assertEqual(r["kind"], "merge")
+        self.assertEqual(r["verdict"], "landed")
+        self.assertEqual(r["authorized_by"], "adm.728a87a9ca48")
+        self.assertEqual(r["pr"], 45)
+
+    def test_append_is_torn_tail_tolerant(self):
+        import json as _json
+        import tempfile
+        from pathlib import Path as _P
+        with tempfile.TemporaryDirectory() as d:
+            p = _P(d) / "receipts.jsonl"
+            p.write_bytes(b'{"id":"rcp.merge.1"}')  # a prior line with NO trailing newline
+            pr._append_receipt_line(p, {"id": "rcp.merge.2"})
+            ids = [_json.loads(l)["id"] for l in p.read_text().splitlines() if l.strip()]
+            self.assertEqual(ids, ["rcp.merge.1", "rcp.merge.2"])
+
+
+class ConfirmIsBdosStamp(unittest.TestCase):
+    """`confirm` pushes bdo's arc stamp to the trunk so the merge-node can
+    read it (the seam confirm-arc alone never crossed). It is the owner's
+    act: anyone but bdo is refused before any git runs (D-4)."""
+
+    def test_refuses_non_bdo_before_touching_git(self):
+        ns = argparse.Namespace(epic="epic.owner-harness", by="claude", off=False)
+        with self.assertRaises(SystemExit):
+            pr.cmd_confirm(ns)
+
+    def test_refuses_empty_by(self):
+        ns = argparse.Namespace(epic="epic.owner-harness", by="", off=False)
+        with self.assertRaises(SystemExit):
+            pr.cmd_confirm(ns)
 
 
 if __name__ == "__main__":

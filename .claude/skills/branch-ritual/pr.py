@@ -437,10 +437,12 @@ def arc_confirmed_in(admissions_text, epic):
 
 
 def _trunk_confirmation(epic):
-    """Read bdo's arc confirmation from the trunk (main), never the working
-    branch — the authorization lives where he stamps it, and a piece branch
-    may predate the confirmation."""
-    rc, out, _ = _capture(["git", "show", "main:.ai-native/log/admissions.jsonl"])
+    """Read bdo's arc confirmation from the trunk — the pushed `origin/main`,
+    never a local `main` ref that drifts stale when a viewport falls behind,
+    never the working branch (a piece branch may predate the confirmation).
+    Fetch first so the read is current; `confirm` below pushes the stamp here."""
+    _capture(["git", "fetch", "origin", "main"])
+    rc, out, _ = _capture(["git", "show", "origin/main:.ai-native/log/admissions.jsonl"])
     return arc_confirmed_in(out, epic) if rc == 0 else None
 
 
@@ -506,6 +508,40 @@ def real_gate_refusal(atom_id, receipts_text):
     return None
 
 
+def cmd_confirm(ns):
+    """bdo's arc stamp that actually reaches the merge-node. `loop.node
+    confirm-arc` only appends to the working tree; the merge-node reads the
+    pushed trunk. This is the missing seam: append the same admission and push
+    it to `origin/main` in one command, so one stamp authorizes the node — no
+    hand-git. The owner's act (D-4): refused unless `--by bdo`. Done on a fresh
+    worktree off origin/main, so a stale or dirty viewport never blocks it."""
+    import shutil
+    import tempfile
+    if (ns.by or "").strip().lower() != "bdo":
+        _refuse("arc confirmation is bdo's stamp — run with --by bdo (D-4)")
+    _run(["git", "fetch", "origin", "main"])
+    wt = pathlib.Path(tempfile.mkdtemp(prefix="ontum-confirm-"))
+    try:
+        _run(["git", "worktree", "add", "--detach", str(wt), "origin/main"])
+        sys.path.insert(0, str(ROOT))
+        from loop.node import confirm_arc  # the schema, not a second copy
+        adm = confirm_arc(wt / ".ai-native", ns.epic, "bdo", enabled=not ns.off)
+        rel = ".ai-native/log/admissions.jsonl"
+        _run(["git", "-C", str(wt), "add", rel])
+        word = "withdraw" if ns.off else "confirm"
+        _run(["git", "-C", str(wt), "commit", "-m", f"{word} arc {ns.epic} (bdo)"])
+        _run(["git", "-C", str(wt), "push", "origin", "HEAD:main"])
+        did = "withdrew" if ns.off else "confirmed"
+        print(f"result: done — bdo {did} arc {ns.epic} on the trunk ({adm['id']}). "
+              "The merge-node can land its PRs now: "
+              "python .claude/skills/branch-ritual/pr.py land <n> "
+              f"--epic {ns.epic} --by merge-node.claude.v0")
+    finally:
+        _capture(["git", "worktree", "remove", str(wt), "--force"])
+        if wt.exists():
+            shutil.rmtree(wt, ignore_errors=True)
+
+
 CHECK_OK = {"SUCCESS", "NEUTRAL", "SKIPPED"}
 
 
@@ -548,11 +584,12 @@ def land_refusal(info, confirmation, by):
     return None
 
 
-def _record_merge(pr, epic, by, authorized_by, head):
-    """The land is an act on the record (D-5): append a merge receipt to the
-    loop log, line-atomic with torn-tail tolerance. The merge-node leaves a
-    receipt like every node, citing the arc confirmation that authorized it."""
-    receipt = {
+def _merge_receipt(pr, epic, by, authorized_by, head):
+    """The merge receipt (D-5): the land as an act on the record, citing the
+    arc confirmation that authorized it. Built here; pushed to the trunk by
+    _push_receipt_to_trunk — never left in a worktree (the bug that left every
+    real merge unrecorded: a receipt in a throwaway worktree is no receipt)."""
+    return {
         "id": f"rcp.merge.{pr}",
         "kind": "merge",
         "node": by,
@@ -563,17 +600,50 @@ def _record_merge(pr, epic, by, authorized_by, head):
         "authorized_by": authorized_by,
         "ts": _now(),
     }
-    path = ROOT / ".ai-native" / "log" / "receipts.jsonl"
+
+
+def _append_receipt_line(path, receipt):
+    """Append one receipt as a line, torn-tail tolerant (mirrors the loop's
+    own append). Pure file I/O — the unit-testable core of the push below."""
     path.parent.mkdir(parents=True, exist_ok=True)
+    line = json.dumps(receipt, sort_keys=True, separators=(",", ":"))
     with open(path, "a+b") as f:
         f.seek(0, 2)
         if f.tell() > 0:
             f.seek(-1, 2)
             if f.read(1) != b"\n":
                 f.write(b"\n")
-        f.write((json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n").encode())
+        f.write((line + "\n").encode())
         f.flush()
-    return receipt
+
+
+def _push_receipt_to_trunk(receipt):
+    """The receipt belongs on the trunk, where the digest and the next
+    merge-node read it — not in this throwaway worktree. Append it to
+    origin/main's log and push, on a fresh worktree off origin/main so a
+    held or dirty `main` never blocks it (the same seam `confirm` paves for
+    bdo's stamp). Returns True on success; the caller turns False into a loud
+    needs-you — the merge stands, the record must be reconciled."""
+    import shutil
+    import tempfile
+    if _capture(["git", "fetch", "origin", "main"])[0] != 0:
+        return False
+    wt = pathlib.Path(tempfile.mkdtemp(prefix="ontum-receipt-"))
+    try:
+        if _capture(["git", "worktree", "add", "--detach", str(wt), "origin/main"])[0] != 0:
+            return False
+        _append_receipt_line(wt / ".ai-native" / "log" / "receipts.jsonl", receipt)
+        for args in (["git", "-C", str(wt), "add", ".ai-native/log/receipts.jsonl"],
+                     ["git", "-C", str(wt), "commit", "-m",
+                      f"merge receipt {receipt['id']} (PR #{receipt['pr']} -> main)"],
+                     ["git", "-C", str(wt), "push", "origin", "HEAD:main"]):
+            if _capture(args)[0] != 0:
+                return False
+        return True
+    finally:
+        _capture(["git", "worktree", "remove", str(wt), "--force"])
+        if wt.exists():
+            shutil.rmtree(wt, ignore_errors=True)
 
 
 def cmd_land(ns):
@@ -594,11 +664,22 @@ def cmd_land(ns):
               f"({head} -> main) on arc {ns.epic} confirmed by bdo "
               f"({confirmation}); nothing merged")
         return
-    _run(["gh", "pr", "merge", str(ns.number), "--squash", "--delete-branch"])
-    rc = _record_merge(ns.number, ns.epic, ns.by, confirmation, head)
-    print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
-          f"on bdo's confirmed arc {ns.epic}; receipt {rc['id']}. "
-          "bdo was not asked — he confirmed the arc, the node landed it.")
+    # Merge only — never --delete-branch. Across the fleet the head branch is
+    # checked out in a worktree, and `gh pr merge --delete-branch` fails on the
+    # LOCAL branch delete *after* the remote merge has already succeeded — which
+    # raised here before the receipt was written, leaving the loop blind to real
+    # merges. The SessionStart gardener (done-line 0037) prunes the merged
+    # worktree and branch; GitHub's delete_branch_on_merge clears the remote head.
+    _run(["gh", "pr", "merge", str(ns.number), "--squash"])
+    receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head)
+    if _push_receipt_to_trunk(receipt):
+        print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
+              f"on bdo's confirmed arc {ns.epic}; receipt {receipt['id']} on the trunk. "
+              "bdo was not asked — he confirmed the arc, the node landed it.")
+    else:
+        print(f"result: needs-you — PR #{ns.number} is MERGED to main, but its receipt "
+              f"{receipt['id']} did not reach the trunk (push failed). The merge stands; "
+              "the log is missing the record — reconcile it. Nothing was double-merged.")
 
 
 def _story_args(parser):
@@ -688,6 +769,17 @@ def main(argv=None):
     land.add_argument("--dry-run", dest="dry_run", action="store_true",
                       help="run every guard and print the decision; merge nothing")
     land.set_defaults(func=cmd_land)
+
+    confirm = verbs.add_parser(
+        "confirm", help="bdo's arc stamp, pushed to the trunk: confirm-arc that "
+                        "actually reaches origin/main so the merge-node reads it")
+    confirm.add_argument("--epic", required=True,
+                         help="the arc to confirm, e.g. epic.owner-harness")
+    confirm.add_argument("--by", required=True,
+                         help="bdo — the owner's stamp, refused otherwise (D-4)")
+    confirm.add_argument("--off", action="store_true",
+                         help="withdraw a prior confirmation (supersede, never erase)")
+    confirm.set_defaults(func=cmd_confirm)
 
     ns, extra = parser.parse_known_args(argv)
     if extra and getattr(ns, "verb", None) != "push":

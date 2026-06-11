@@ -217,6 +217,31 @@ def sync_refusal(branch, ahead):
     return None
 
 
+def garden_verdict(uncommitted, has_open_pr, has_merged_pr):
+    """What to do with one non-trunk worktree — pure, and the safety of the
+    whole auto-pruner lives here: it removes only what is provably done and
+    surfaces everything a human might still want.
+
+      keep     an open PR is in flight — an active workbench, left alone.
+      surface  uncommitted work (stranded — commit or discard), or committed
+               work with no PR at all (the mortal-session debris: PR it so the
+               merge-node lands it, or delete the branch). Never removed.
+      prune    a clean worktree whose branch carries a merged PR — the only
+               case safe to remove without a human.
+
+    A merged-but-dirty worktree (branch landed, yet uncommitted work sits in
+    the tree) is the §10 bite: 'the branch is done' and 'the work is unsaved'
+    are each locally fine and refuse to fit. Uncommitted wins — the work is
+    surfaced, never pruned away."""
+    if has_open_pr:
+        return ("keep", "an open PR is in flight")
+    if uncommitted:
+        return ("surface", f"{uncommitted} uncommitted change(s) — stranded; commit or discard")
+    if has_merged_pr:
+        return ("prune", "branch merged — removed")
+    return ("surface", "committed but no PR — stranded; PR it (the merge-node lands) or delete the branch")
+
+
 # ------------------------------------------------------------------- runtime
 
 def _refuse(message):
@@ -349,6 +374,126 @@ def cmd_sync(ns):
         bail(f"unexpected: {error}")
 
 
+def cmd_garden(ns):
+    """Remove worktrees whose branch has merged and whose tree is clean;
+    surface everything else (done-line 0037). Auto-pruning a shared tree is
+    only safe if it is conservative: prune the provably-done, never blind (gh
+    unreachable → nothing removed), never touch the viewport or this session's
+    own worktree. Hook mode is fail-open and exits 0 always, like sync."""
+    import json
+
+    lines = []
+
+    def finish(state):
+        head = lines[0] if lines else "nothing to garden"
+        print(f"result: {state} — garden: {head}")
+        for extra in lines[1:]:
+            print(f"  · {extra}")
+        sys.exit(0)
+
+    def git(args, cwd):
+        return subprocess.run(["git"] + args, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", cwd=cwd)
+
+    try:
+        listing = git(["worktree", "list", "--porcelain"], ROOT)
+        worktrees, path = [], None
+        for line in listing.stdout.splitlines():
+            if line.startswith("worktree "):
+                path = line.split(" ", 1)[1].strip()
+            elif line.startswith("branch "):
+                branch = line.split(" ", 1)[1].strip().replace("refs/heads/", "", 1)
+                worktrees.append((path, branch))
+                path = None
+            elif line.startswith("detached"):
+                worktrees.append((path, None))
+                path = None
+        if len(worktrees) <= 1:
+            if not ns.hook:
+                lines.append("no extra worktrees to garden")
+            finish("done")
+
+        viewport = pathlib.Path(worktrees[0][0]).resolve()
+        here = pathlib.Path.cwd().resolve()
+
+        gh = subprocess.run(
+            ["gh", "pr", "list", "--state", "all", "--limit", "300",
+             "--json", "headRefName,state"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", cwd=ROOT, timeout=ns.gh_timeout)
+        gh_ok = gh.returncode == 0
+        pr_states = {}
+        if gh_ok:
+            for pr in json.loads(gh.stdout or "[]"):
+                pr_states.setdefault(pr["headRefName"], set()).add(pr["state"])
+
+        pruned, chores, wt_branches = [], [], set()
+        for wpath, branch in worktrees:
+            rp = pathlib.Path(wpath).resolve()
+            if branch:
+                wt_branches.add(branch)
+            if rp == viewport or rp == here or branch in TRUNK:
+                continue  # never the viewport, this session's tree, or the trunk
+            slug = pathlib.Path(wpath).name
+            states = pr_states.get(branch, set())
+            has_open = "OPEN" in states
+            has_merged = "MERGED" in states and not has_open
+            unc = len([ln for ln in git(["status", "--porcelain"], wpath)
+                       .stdout.splitlines() if ln.strip()])
+            verdict, reason = garden_verdict(unc, has_open, has_merged)
+            if verdict == "prune":
+                if not gh_ok:
+                    chores.append(f"{slug}: looks merged but gh is unreachable — left in place")
+                    continue
+                rm = git(["worktree", "remove", wpath], ROOT)
+                if rm.returncode != 0:
+                    tail = (rm.stderr or rm.stdout).strip().splitlines()
+                    chores.append(f"{slug}: merged but remove refused — {tail[-1] if tail else 'no detail'}")
+                    continue
+                if branch:
+                    git(["branch", "-D", branch], ROOT)
+                pruned.append(slug)
+            elif verdict == "surface":
+                chores.append(f"{slug}: {reason}")
+            # keep: silent
+
+        # loose branches (no worktree): a lighter cleanup chore, same gh fold
+        loose_merged, loose_stranded = 0, []
+        if gh_ok:
+            for b in git(["branch", "--format=%(refname:short)"], ROOT).stdout.split():
+                if b in TRUNK or b in wt_branches:
+                    continue
+                s = pr_states.get(b, set())
+                if not s:
+                    loose_stranded.append(b)
+                elif "MERGED" in s and "OPEN" not in s:
+                    loose_merged += 1
+
+        if not (pruned or chores or loose_merged or loose_stranded):
+            if not ns.hook:
+                lines.append("nothing to garden — the tree is tidy")
+            finish("done")
+
+        head_bits = []
+        if pruned:
+            head_bits.append(f"pruned {len(pruned)} merged worktree(s): {', '.join(pruned)}")
+        if chores:
+            head_bits.append(f"{len(chores)} worktree chore(s)")
+        if loose_stranded:
+            head_bits.append(f"{len(loose_stranded)} stranded branch(es): {', '.join(loose_stranded)}")
+        if loose_merged:
+            head_bits.append(f"{loose_merged} merged branch(es) with no worktree (git branch -D)")
+        lines.append("; ".join(head_bits))
+        lines.extend(chores)
+        finish("report" if (chores or loose_stranded) else "done")
+    except subprocess.TimeoutExpired:
+        print(f"result: report — garden: gh exceeded {ns.gh_timeout}s — nothing pruned this run")
+        sys.exit(0)
+    except Exception as error:  # fail open: the pen's own bug never gates a session
+        print(f"result: report — garden: unexpected: {error}")
+        sys.exit(0)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="git.py", description=__doc__,
@@ -387,6 +532,18 @@ def main(argv=None):
                       default=20, metavar="SECONDS",
                       help="seconds to wait on the network before reporting")
     sync.set_defaults(func=cmd_sync)
+
+    garden = verbs.add_parser(
+        "garden", help="remove worktrees whose branch has merged (clean tree "
+                       "only); surface stranded work and chores — never prunes "
+                       "blind or destroys unsaved work")
+    garden.add_argument("--hook", action="store_true",
+                        help="hook mode: concise, exit 0 always — fail-open, "
+                             "never gates a session's start")
+    garden.add_argument("--gh-timeout", dest="gh_timeout", type=int,
+                        default=20, metavar="SECONDS",
+                        help="seconds to wait on gh before skipping the prune")
+    garden.set_defaults(func=cmd_garden)
 
     ns, extra = parser.parse_known_args(argv)
     ns.forward = extra
