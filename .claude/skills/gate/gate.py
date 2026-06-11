@@ -176,6 +176,35 @@ def issue_comment(address, ref, comment):
     gh(["issue", "comment", str(ref), "--repo", address, "--body", comment])
 
 
+def _verdict_objects(text):
+    """Every balanced-brace JSON object in the text that carries a string
+    `verdict` key, in order. A brace-matching scan (not a `.*?` regex), so a
+    `}` inside the reason can't truncate the object and a missing/markdown
+    `VERDICT` sentinel can't hide a well-formed verdict the mind did return —
+    the brittleness that left a correct `reject_no_value` unparsed on issue
+    #58. Decoding is the filter: only objects that actually parse survive."""
+    out = []
+    for i, ch in enumerate(text):
+        if ch != "{":
+            continue
+        depth = 0
+        for j in range(i, len(text)):
+            if text[j] == "{":
+                depth += 1
+            elif text[j] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        obj = json.loads(text[i:j + 1])
+                    except json.JSONDecodeError:
+                        pass
+                    else:
+                        if isinstance(obj, dict) and isinstance(obj.get("verdict"), str):
+                            out.append(obj)
+                    break
+    return out
+
+
 def launch_claude(prompt):
     """Launch the mortal process: real inference, captured. Returns
     (verdict, reason, raw) or raises on a failure to launch/parse."""
@@ -193,11 +222,17 @@ def launch_claude(prompt):
     if proc.returncode != 0 and not text.strip():
         raise RuntimeError(f"claude -p failed (exit {proc.returncode}): "
                            f"{proc.stderr.strip()[:400]}")
-    m = re.findall(r'VERDICT\s*(\{.*?\})', text, re.DOTALL)
-    if not m:
-        raise ValueError(f"the process returned no VERDICT line; tail: "
-                         f"{text.strip()[-400:]}")
-    v = json.loads(m[-1])
+    # Prefer a verdict object the mind tagged with the VERDICT sentinel; fall
+    # back to the last well-formed verdict object anywhere in the reasoning
+    # (the mind judged; the sentinel is a convention, not the verdict itself).
+    tagged = re.search(r'VERDICT\b[^\{]*(\{)', text, re.DOTALL)
+    objs = _verdict_objects(text[tagged.start(1):] if tagged else text)
+    if not objs:
+        objs = _verdict_objects(text)  # sentinel slice was empty/garbled
+    if not objs:
+        raise ValueError(f"the process returned no parseable verdict object; "
+                         f"tail: {text.strip()[-400:]}")
+    v = objs[-1]
     return v["verdict"], v.get("reason", ""), text
 
 
