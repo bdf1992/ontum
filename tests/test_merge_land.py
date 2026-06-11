@@ -105,6 +105,34 @@ class ArcConfirmedIn(unittest.TestCase):
         self.assertEqual(pr.arc_confirmed_in(dump, "e"), "adm.ok")
 
 
+class MergeReceiptReachesTheLog(unittest.TestCase):
+    """The receipt is the land's only record (D-5). The bug it fixes: it was
+    written to a throwaway worktree and lost, so the log was blind to real
+    merges. _merge_receipt builds the record; _append_receipt_line is the
+    torn-tail-tolerant write the trunk push uses — it must hold even when a
+    prior line lacks its trailing newline."""
+
+    def test_receipt_carries_the_authorization(self):
+        r = pr._merge_receipt(45, "epic.owner-harness", "merge-node.claude.v0",
+                              "adm.728a87a9ca48", "claude/mock-shame")
+        self.assertEqual(r["id"], "rcp.merge.45")
+        self.assertEqual(r["kind"], "merge")
+        self.assertEqual(r["verdict"], "landed")
+        self.assertEqual(r["authorized_by"], "adm.728a87a9ca48")
+        self.assertEqual(r["pr"], 45)
+
+    def test_append_is_torn_tail_tolerant(self):
+        import json as _json
+        import tempfile
+        from pathlib import Path as _P
+        with tempfile.TemporaryDirectory() as d:
+            p = _P(d) / "receipts.jsonl"
+            p.write_bytes(b'{"id":"rcp.merge.1"}')  # a prior line with NO trailing newline
+            pr._append_receipt_line(p, {"id": "rcp.merge.2"})
+            ids = [_json.loads(l)["id"] for l in p.read_text().splitlines() if l.strip()]
+            self.assertEqual(ids, ["rcp.merge.1", "rcp.merge.2"])
+
+
 class ConfirmIsBdosStamp(unittest.TestCase):
     """`confirm` pushes bdo's arc stamp to the trunk so the merge-node can
     read it (the seam confirm-arc alone never crossed). It is the owner's
