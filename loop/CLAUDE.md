@@ -21,6 +21,8 @@ python -m loop.orchestrate                 # the fast ambient loop (ticks)
 python -m loop.orchestrate --admit-setpoint '{"step_budget_per_tick":3,"max_inflight_atoms":8,"human_queue_cap":2}' --by bdo
 
 python -m loop.node inbox                  # the owner's open items
+python -m loop.node arcs                    # the arcs and which are confirmed
+python -m loop.node confirm-arc --epic <id> --by bdo   # one stamp for an arc
 python -m loop.node judge --atom <id> --node <node> --verdict <v> --reason "<r>"
 python -m loop.node admit-real --stage <mock-node> --node <real-node> --by <who>
 
@@ -130,6 +132,16 @@ so a prompt edit can't reopen a settled verdict (I-2).
 - **No one signs their own line.** A node never judges its own writer's
   output; the owner (bdo) is the last stop. Anything self-approving is
   a design bug.
+- **The owner is the last stop — at arc scale (done-line 0028).** bdo
+  may *confirm an arc* (`loop.node confirm-arc --epic <id> --by bdo`),
+  an admitted record that is his standing stamp for every piece under
+  that epic: the loop then satisfies the owner-stamp on his
+  confirmation (the receipt cites `authorized_by`) and carries the
+  arc's pieces, escalating to him only a gate's *refusal* or the arc's
+  completion. He steers arcs; the loop carries pieces. His stamp is not
+  removed — it is moved up a level, to the arc, where one confirmation
+  authorizes many lands. Confirmation is his alone (`--by bdo`) and
+  withdrawable (`--off`, superseding).
 - **Setpoints, realness, ticks are admitted records** in the log,
   signed with `--by` — never constants in code.
 - **History is never retro-invalidated.** Superseding admissions, never

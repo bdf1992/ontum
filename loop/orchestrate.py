@@ -26,10 +26,10 @@ import json
 import sys
 from pathlib import Path
 
-from loop.reconcile import (DEFAULT_ROOT, PIPELINE, SEED_EVENT, TERMINAL_EVENT,
-                            Fold, append_line, atom_state, canon, load_atoms,
-                            now_ts, pass_once, real_nodes, receipt_for_stage,
-                            short_hash)
+from loop.reconcile import (DEFAULT_ROOT, PIPELINE, SEED_EVENT, STAMP_NODE,
+                            TERMINAL_EVENT, Fold, append_line, arc_confirmation,
+                            atom_state, canon, epic_of, load_atoms, now_ts,
+                            pass_once, real_nodes, receipt_for_stage, short_hash)
 
 SETPOINT_DIAL = "orchestration.temperature"
 SETPOINT_KEYS = ("step_budget_per_tick", "max_inflight_atoms", "human_queue_cap")
@@ -75,14 +75,16 @@ def admit_setpoint(root, value, by, supersedes=None):
     return adm
 
 
-def next_action(fold, atom, ahash, real_map=None):
+def next_action(fold, atom, ahash, real_map=None, epics=None):
     """The one step pass_once would take for this atom — classified read-only,
     in pass_once's exact order (seed, then derive, then judge), so the
     controller can budget steps without acting. A pure fold.
 
     Returns ("seed"|"derive"|"judge"|"await"|"parked", target) or None when
     settled. "await" names a summoned real node the loop must not stand in
-    for (D-2, D-10).
+    for (D-2, D-10). With `epics` given, the owner's stamp on a confirmed arc
+    is the loop's to take, not his — it classifies as "judge", not "await"
+    (done-line 0028), so a confirmed arc's pieces never sit in his queue.
     """
     if real_map is None:
         real_map = real_nodes(fold)
@@ -98,6 +100,10 @@ def next_action(fold, atom, ahash, real_map=None):
             break
         if receipt_for_stage(fold, stage, ahash, real_map) is None:
             if stage["node"] in real_map:
+                if epics is not None and stage["node"] == STAMP_NODE:
+                    epic = epic_of(atom, epics)
+                    if epic is not None and arc_confirmation(fold, epic["id"]) is not None:
+                        return ("judge", real_map[stage["node"]])
                 return ("await", real_map[stage["node"]])
             return ("judge", stage["node"])
     if atom_state(fold, ahash) == atom["desired_state"] and fold.event(TERMINAL_EVENT, ahash):
