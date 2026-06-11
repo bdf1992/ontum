@@ -56,6 +56,14 @@ PEN = "python .claude/skills/reflect/reflect.py"
 # stamp queue, computed by drift().
 RULE_KINDS = ("owner-stamp-queue",)
 
+# The surface kinds table (done-line 0030): the tongues the reflector
+# pen actually speaks — its translator table is keyed to exactly this
+# tuple (pinned by test). A surface admitted with a kind off this table
+# is named by status() and skipped by the beat; registering one is
+# refused at the CLI. A new surface kind is a new translator — its own
+# stamped increment, never a silent gh-shaped guess.
+SURFACE_KINDS = ("github-issues",)
+
 
 def admit_surface(root, surface, address, by, kind="github-issues"):
     """A surface is an admitted record (I-8), never a code literal: id,
@@ -129,6 +137,8 @@ def auto_plan(root):
     for (kind, surface), adm in sorted(enabled_rules(fold).items()):
         if kind not in RULE_KINDS or surface not in surfaces:
             continue
+        if surfaces[surface].get("kind") not in SURFACE_KINDS:
+            continue  # no translator speaks it (done-line 0030); status() names it
         acts = drift(root, surface)
         if acts:
             plan.append({"kind": kind, "surface": surface, "acts": acts})
@@ -287,6 +297,9 @@ def status(root):
             note = " (unknown kind — the beat skips it)"
         elif surface not in surfaces:
             note = " (surface not registered — the beat skips it)"
+        elif surfaces[surface].get("kind") not in SURFACE_KINDS:
+            note = (" (surface kind has no translator — the beat skips it; "
+                    "done-line 0030)")
         elif adm.get("enabled"):
             auto_pairs.add(surface)
         print(f"rule: {kind} x {surface} = {state} "
@@ -321,7 +334,9 @@ def main(argv=None):
     reg = sub.add_parser("register", help="admit a surface (I-8: a signed record, latest wins)")
     reg.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     reg.add_argument("--surface", required=True, help="surface id, e.g. github-issues")
-    reg.add_argument("--kind", default="github-issues")
+    reg.add_argument("--kind", default="github-issues",
+                     help=f"surface kind; one the pen translates: "
+                          f"{', '.join(SURFACE_KINDS)}")
     reg.add_argument("--address", default=None,
                      help="where it lives, e.g. owner/repo (omit to deregister)")
     reg.add_argument("--by", required=True,
@@ -349,6 +364,13 @@ def main(argv=None):
               f"= {'on' if args.enabled else 'off'} (admitted by {args.by})")
         return 0
     if args.cmd == "register":
+        if args.address and args.kind not in SURFACE_KINDS:
+            print(f"result: needs-you — no translator speaks kind "
+                  f"{args.kind!r}; the surface kinds table in "
+                  f"loop/reflect.py holds: {', '.join(SURFACE_KINDS)} "
+                  f"(a new surface kind is a new translator in the "
+                  f"reflector pen — its own stamped increment)")
+            return 2
         adm = admit_surface(args.root, args.surface, args.address, args.by, kind=args.kind)
         print(f"result: report — {adm['id']}: surface {args.surface} "
               + (f"registered at {args.address}" if args.address else "deregistered")

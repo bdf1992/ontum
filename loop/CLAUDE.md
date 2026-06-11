@@ -117,10 +117,13 @@ so a prompt edit can't reopen a settled verdict (I-2).
   0020): surfaces and rules (kind × surface → enabled) are admitted
   records; the drift between the owner's queue and what a registered
   surface shows is a pure fold over the log; `auto_plan` is what the
-  Stop-hook beat applies — only what enabled rules name. Pub/sub,
-  level-triggered: the log is the topic, rules the subscriptions,
-  reflection records the acks, drift the unconsumed backlog. Outward
-  reach lives only in the reflector pen
+  Stop-hook beat applies — only what enabled rules name, and only
+  toward surface kinds the pen translates (`SURFACE_KINDS`, done-line
+  0030: an untranslatable kind is refused at register, skipped by the
+  beat, named by status — never guessed at with gh-shaped verbs).
+  Pub/sub, level-triggered: the log is the topic, rules the
+  subscriptions, reflection records the acks, drift the unconsumed
+  backlog. Outward reach lives only in the reflector pen
   (`.claude/skills/reflect/reflect.py`) — never here. The mirror is
   one-way: verdicts still land only through `loop.node judge` (D-4).
 - [web.py](web.py) — the owner inbox, a rendered fold; its verdict POST
