@@ -389,13 +389,13 @@ def completed_done_slugs(done_records: Iterable[Record]) -> set[str]:
     return slugs
 
 
-def story_for_arc(arc: str, done_records: Iterable[Record] = ()) -> Story:
+def story_for_arc(arc: str, done_records: Iterable[Record] = ()) -> Story | None:
     if arc == "epic.substrate":
         landed = completed_done_slugs(done_records)
         for story in SUBSTRATE_STORIES:
             if story.slug not in landed:
                 return story
-        return SUBSTRATE_STORIES[-1]
+        return None
     text = f"{arc.removeprefix('epic.')} arc pickup"
     title = text.replace("-", " ").title()
     return Story(
@@ -593,6 +593,40 @@ def build_checkpoint(
     return "\n".join(lines)
 
 
+def build_pickup_exhausted(
+    *,
+    root: pathlib.Path,
+    branch: str,
+    arc: str,
+    reason: str,
+    done_records: list[Record],
+    report_records: list[Record],
+    worktrees: list[Worktree],
+    allow_dirty: bool,
+    dirty_count: int,
+) -> str:
+    lines = [
+        "overnight-loop pickup",
+        f"repo: {root}",
+        f"branch: {branch}",
+        f"dirty start: {'allowed' if allow_dirty else 'no'} ({dirty_count} path(s))",
+        f"recent done read: {record_names(done_records)}",
+        f"recent reports read: {record_names(report_records)}",
+        f"sibling worktrees read: {sibling_branches(worktrees, branch)}",
+        "",
+        f"recommended arc: {arc}",
+        "queue state: exhausted",
+        f"selection basis: {reason}",
+        "",
+        "stop conditions:",
+        "- No safe queued substrate story remains inside the recommended arc.",
+        "- The next action would need bdo to widen the queue, choose another arc, or stamp owner-only work.",
+        "",
+        "result: done - overnight-loop pickup has no queued substrate story left",
+    ]
+    return "\n".join(lines)
+
+
 def cmd_brief(ns: argparse.Namespace) -> int:
     try:
         root = pathlib.Path(ns.repo_root).resolve() if ns.repo_root else repo_root()
@@ -708,6 +742,21 @@ def cmd_pickup(ns: argparse.Namespace) -> int:
         worktrees=worktrees,
     )
     story = story_for_arc(arc, done_records)
+    if story is None:
+        print(
+            build_pickup_exhausted(
+                root=root,
+                branch=branch,
+                arc=arc,
+                reason=basis,
+                done_records=done_records,
+                report_records=report_records,
+                worktrees=worktrees,
+                allow_dirty=ns.allow_dirty,
+                dirty_count=len(dirty),
+            )
+        )
+        return 0
     objective = ns.objective or story.objective
     tests = tuple(ns.test or DEFAULT_PICKUP_TESTS)
     print(

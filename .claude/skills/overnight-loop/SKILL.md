@@ -9,10 +9,16 @@ description: >-
   contract, recommends one next arc/story/task from live repo state, and
   checks whether the overnight window is still open before the session
   stops working. Pickup advances through the overnight substrate queue
-  instead of repeating stories whose done-lines already exist.
-version: 0.4.0
+  instead of repeating stories whose done-lines already exist, and reports
+  an explicit stop when that queue is exhausted.
+version: 0.5.0
 owner: bdo
 changelog:
+  - version: 0.5.0
+    note: >-
+      Done-line 0036 makes an exhausted substrate queue a real stop condition.
+      When every ordered overnight-loop story done-line is present, pickup
+      reports `queue state: exhausted` instead of repeating the final story.
   - version: 0.4.0
     note: >-
       Done-line 0034 makes pickup progressive for the overnight-loop
@@ -78,7 +84,10 @@ the first commands to run, stop conditions, and tests. It does not
 confirm arcs, stamp owner gates, edit logs, choose owner-only language
 pins, or widen authority beyond the selected arc. For the substrate
 overnight-loop path, it skips ordered stories whose done-lines already
-exist and recommends the first unlanded story instead.
+exist and recommends the first unlanded story instead. If every ordered
+story has landed, pickup returns `queue state: exhausted`; that is the
+"no safe next increment remains" stop condition unless bdo widens the
+queue or chooses another arc.
 
 After each bounded increment lands, do not treat the increment's done-line
 as the whole overnight run. Check the overnight clock:

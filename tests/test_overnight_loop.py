@@ -94,6 +94,20 @@ class TestOvernightBrief(unittest.TestCase):
         self._git(root, "add", ".ai-native")
         self._git(root, "commit", "-q", "-m", "landed overnight stories")
 
+    def _add_all_landed_substrate_stories(self, root):
+        self._add_substrate_with_landed_pickup_and_checkpoint(root)
+        done_dir = root / ".ai-native" / "done"
+        (done_dir / "0034-overnight-loop-pickup-progression.md").write_text(
+            "# Done-line 0034 - Overnight loop skips landed stories\n",
+            encoding="utf-8",
+        )
+        (done_dir / "0035-overnight-loop-handoff-refresh.md").write_text(
+            "# Done-line 0035 - Overnight loop refreshes the rolling handoff\n",
+            encoding="utf-8",
+        )
+        self._git(root, "add", ".ai-native/done")
+        self._git(root, "commit", "-q", "-m", "landed all overnight stories")
+
     def _brief(self, root, *extra):
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
@@ -227,6 +241,16 @@ class TestOvernightBrief(unittest.TestCase):
         self.assertIn("next story: overnight-loop pickup progression", out)
         self.assertIn("done --slug overnight-loop-pickup-progression", out)
         self.assertIn("teach pickup to skip already-landed overnight-loop stories", out)
+
+    def test_pickup_reports_exhausted_substrate_queue(self):
+        root = self._repo()
+        self._add_all_landed_substrate_stories(root)
+        rc, out = self._pickup(root, "--arc", "epic.substrate")
+        self.assertEqual(rc, 0)
+        self.assertIn("recommended arc: epic.substrate", out)
+        self.assertIn("queue state: exhausted", out)
+        self.assertNotIn("next story:", out)
+        self.assertIn("result: done - overnight-loop pickup has no queued substrate story left", out)
 
     def test_checkpoint_continues_before_eight(self):
         root = self._repo()
