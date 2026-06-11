@@ -84,3 +84,47 @@ Instrument real and tested; loop proven end-to-end; one provisional
 3. **bdo stamps the arc** — epic.pivot is PROPOSED; the rung order and
    the name are his to confirm (`loop.node confirm-arc --epic epic.pivot
    --by bdo`).
+
+## Addendum — the inversion (same session)
+
+bdo killed the "grade against a borrowed truth" framing. The S-frame is
+`PROPOSED, MODEL-GUESSED` — never a canon, never agreed. So we **inverted
+it** (his word): no external truth; the measurement is **convergence
+across independent generations**, and the convergent core *becomes* the
+candidate canon (corpus-to-system). His second cut: don't collapse to one
+number — the cube is **graded**, so measure per piece, per grade, with
+**metrics held in tension**; the gap between two metrics localizes the
+*why*. A run yields a **dataset**, not a data point.
+
+Built: **`pivot/measure.py`** — the battery over N generations (each
+validated as a lawful tiling first). WHY-detectors: `orientation_slack`
+(kind ⊖ exact), `convention_slack` (best-of-48-symmetries-aligned ⊖ raw),
+`vocab ⊖ placement`. WHERE-detectors: per-grade consensus,
+consensus-by-distance-from-pivot. `run.py --measure <dir> --dataset
+<jsonl>` flattens each run to `(seed, scope, grade, metric, value)` rows
+that accumulate. 7 tests plant known tensions (identical, same-cube-
+rotated, kind-preserving swap, disjoint vocab) and read them back.
+
+First real reading — **4 independent cold placements of the S-words**,
+vocabulary held fixed so placement convergence is isolated:
+
+| reading | value | what it says |
+|---|---|---|
+| placement kind | **0.769** | the *grade* of a word's cell replicates well |
+| placement exact | **0.380** | the *exact corner* does not |
+| orientation_slack | **0.389** | most disagreement is axis convention, not meaning |
+| pairwise raw → aligned | 0.123 → 0.247 | a cube symmetry doubles agreement — a third of the scatter is pure rotation |
+| per-grade: center | **0.750** | the **pivot is the most-agreed position** |
+| per-grade: corners | 0.312 | the 8 corners scatter most |
+
+The finding: independent cold reads converge on **kind and on the pivot**,
+not on exact position — and a measurable slice of the positional scatter
+is just rotation. The encoding carries *semantic grade* robustly and
+*absolute orientation* weakly — which quantifies the earlier "reveal the
+axis to make it well-posed" intuition, and vindicates the name: the
+**center is the convergence anchor**. (Caveat: N=4, same model family,
+center is one cell. Cross-family via envoy is still the real verdict.)
+
+This replaces needs-you #1's framing: the path forward is convergence
+over independent generations (vocabulary varying too, the harder test),
+not grading against any one guess.
