@@ -17,8 +17,8 @@ Verbs:
 
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report`: it tells the
-session what the story is missing; nothing here escalates to bdo
-except work arriving at the stamp.
+session what the story is missing; nothing here escalates to bdo. A final,
+non-draft PR becomes merge-node eligible after bdo confirms its arc.
 """
 
 from __future__ import annotations
@@ -82,9 +82,9 @@ def validate_story(story, branch):
 
 
 ROLLING_BANNER = (
-    "> 🟡 **Still being worked — please don't merge yet.** This is a draft the\n"
+    "> 🟡 **Still being worked — not landable yet.** This is a draft the\n"
     "> session is still adding to; when it's final it flips out of draft.\n"
-    "> Open and not a draft means it's ready for you."
+    "> Open and not a draft means it can be considered by the merge-node after arc confirmation."
 )
 
 
@@ -196,11 +196,11 @@ def cmd_create(ns):
         create_args.append("--draft")
     url = _run(create_args).strip()
     if ns.rolling:
-        print(f"result: done — rolling draft opened (NOT at the stamp): {url}")
+        print(f"result: done — rolling draft opened (not landable yet): {url}")
         print(f"keep appending; flip when final with: {PEN} ready <number> ...")
     else:
-        print(f"result: done — PR at the stamp: {url}")
-        print("do not merge it; tell bdo. (open + not a draft = please merge)")
+        print(f"result: done — PR opened, merge-node eligible after arc confirmation: {url}")
+        print("do not merge it yourself or route bdo to merge it; leave landing to the merge-node.")
 
 
 def push_refusal(branch, merged_numbers, open_numbers=()):
@@ -213,7 +213,7 @@ def push_refusal(branch, merged_numbers, open_numbers=()):
     if not branch:
         return "detached HEAD — a session pushes its claude/* branch"
     if branch in ("main", "master"):
-        return "never push the trunk — the stamp is bdo's (firm)"
+        return "never push the trunk — bdo confirms arcs and the merge-node lands confirmed PRs (firm)"
     if merged_numbers and not open_numbers:
         nums = ", ".join(f"#{n}" for n in merged_numbers)
         return (
@@ -232,7 +232,7 @@ def forward_refusal(tokens):
         if bare in ("-f", "--force"):
             return "plain --force does not exist here; use --force-with-lease"
         if bare in ("main", "master") or re.fullmatch(r"[^:]*:(main|master)", bare):
-            return "the trunk is not a push target — the stamp is bdo's (firm)"
+            return "the trunk is not a push target — bdo confirms arcs and the merge-node lands confirmed PRs (firm)"
     return None
 
 
@@ -289,24 +289,25 @@ def cmd_edit(ns):
         _refuse("the story does not hold:\n  - " + "\n  - ".join(problems))
     _run(["gh", "pr", "edit", str(ns.number),
           "--title", story["title"], "--body", compose_body(story)])
-    print(f"result: done — story rewritten on PR #{ns.number}; the stamp is bdo's")
+    print(f"result: done — story rewritten on PR #{ns.number}; landing remains merge-node work after arc confirmation")
 
 
 def cmd_ready(ns):
     """The merge signal (done-line 0017): re-validate the story, require a
-    green (or declared red) suite, flip the draft. The flip is the one
-    unambiguous 'bdo, it's yours now' — accidental merges die here."""
+    green (or declared red) suite, flip the draft. The flip makes the PR
+    eligible for merge-node consideration after arc confirmation; accidental
+    owner-merge pings die here."""
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number),
          "--json", "state,headRefName,isDraft"]))
     if info["state"] != "OPEN":
         _refuse(
             f"PR #{ns.number} is {info['state'].lower()} — only an open PR "
-            "can come to the stamp"
+            "can become merge-node eligible"
         )
     if not info["isDraft"]:
         _refuse(
-            f"PR #{ns.number} is already at the stamp (open, not a draft) — "
+            f"PR #{ns.number} is already merge-node eligible (open, not a draft) — "
             "nothing to flip"
         )
     story = _story_from(ns)
@@ -317,8 +318,8 @@ def cmd_ready(ns):
     _run(["gh", "pr", "edit", str(ns.number),
           "--title", story["title"], "--body", compose_body(story)])
     _run(["gh", "pr", "ready", str(ns.number)])
-    print(f"result: done — PR #{ns.number} is AT THE STAMP. Open and not a "
-          "draft means please merge (done-line 0017); bdo, it's yours.")
+    print(f"result: done — PR #{ns.number} is open and not a draft; "
+          "merge-node eligible after arc confirmation.")
 
 
 def cmd_unready(ns):
@@ -331,8 +332,8 @@ def cmd_unready(ns):
     if info["isDraft"]:
         _refuse(f"PR #{ns.number} is already a rolling draft")
     _run(["gh", "pr", "ready", str(ns.number), "--undo"])
-    print(f"result: done — PR #{ns.number} is a rolling draft again (NOT at "
-          f"the stamp); flip back when final with: {PEN} ready {ns.number} ...")
+    print(f"result: done — PR #{ns.number} is a rolling draft again (not "
+          f"landable yet); flip back when final with: {PEN} ready {ns.number} ...")
 
 
 def cmd_check(_ns):
@@ -360,22 +361,20 @@ def cmd_check(_ns):
 
 
 def integrate_refusal(base):
-    """Why a session may not integrate a PR, or None. The trunk is bdo's alone
-    (firm); a session integrates a piece into an epic/integration branch — the
-    human second set of eyes is bdo's one merge into main, where the finished
-    arc lands (bdo's directive, 2026-06-10: he merges main only at arc/epic
-    completion; the loop integrates pieces below)."""
+    """Why a session may not integrate a PR, or None. The trunk is governed by
+    bdo's arc confirmation and merge-node land (firm); a session integrates a
+    piece into an epic/integration branch, below the finished arc's main PR."""
     if base in ("main", "master"):
-        return ("the trunk is bdo's — the stamp is bdo's (firm). A session "
-                "integrates a piece into an epic branch, never main; the "
-                "finished arc PRs to main and waits for him")
+        return ("main is not an integration target — bdo confirms arcs and the "
+                "merge-node lands confirmed PRs (firm). A session integrates a "
+                "piece into an epic branch, never main")
     return None
 
 
 def cmd_integrate(ns):
     """Merge a piece-PR into its epic branch (done-line 0029). Main stays
-    bdo's; this lands a piece on a non-trunk integration branch so the owner
-    only merges a finished arc into main."""
+    governed by arc confirmation and merge-node land; this lands a piece on a
+    non-trunk integration branch."""
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number),
          "--json", "state,baseRefName,headRefName,mergeable"]))
@@ -392,8 +391,8 @@ def cmd_integrate(ns):
         args.append("--delete-branch")
     _run(args)
     print(f"result: done — integrated PR #{ns.number} "
-          f"({info['headRefName']} -> {info['baseRefName']}); main stays bdo's "
-          "(the finished arc is the PR he merges)")
+          f"({info['headRefName']} -> {info['baseRefName']}); main waits for "
+          "owner confirmation and merge-node land")
 
 
 # ----------------------------------------------------------- land (merge-node)
@@ -656,18 +655,18 @@ def main(argv=None):
     edit.set_defaults(func=cmd_edit)
 
     ready = verbs.add_parser(
-        "ready", help="flip a rolling draft to AT THE STAMP — the one "
-                      "merge signal (done-line 0017)")
+        "ready", help="flip a rolling draft to merge-node eligible after "
+                      "arc confirmation (done-line 0017)")
     ready.add_argument("number", type=int)
     _story_args(ready)
     ready.add_argument("--red-ok", dest="red_ok", default="", metavar="WHY",
-                       help="come to the stamp with a red suite anyway, "
+                       help="mark eligible with a red suite anyway, "
                             "declaring why in the story (§9.5)")
     ready.set_defaults(func=cmd_ready)
 
     unready = verbs.add_parser(
-        "unready", help="roll an at-the-stamp PR back to a draft (takes "
-                        "the merge button away; no story needed)")
+        "unready", help="roll a merge-node-eligible PR back to a draft "
+                        "(takes the merge button away; no story needed)")
     unready.add_argument("number", type=int)
     unready.set_defaults(func=cmd_unready)
 
@@ -688,7 +687,7 @@ def main(argv=None):
 
     integrate = verbs.add_parser(
         "integrate", help="merge a piece-PR into its epic branch (never main — "
-                          "the trunk is bdo's)")
+                          "the merge-node lands confirmed arcs)")
     integrate.add_argument("number", type=int)
     integrate.add_argument("--delete-branch", dest="delete_branch",
                            action="store_true",

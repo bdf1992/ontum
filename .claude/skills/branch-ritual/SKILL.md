@@ -186,7 +186,7 @@ section), don't work around it.
   (D-5). *(bdo's directive, 2026-06-10; amended 2026-06-11; version 0.8.0.)*
 - **Every PR to `main` carries its story — recovery PRs included.** A PR
   wearing the auto-title (the branch name) over an empty body is an
-  unwritten story: not at the stamp, however green the merge button.
+  unwritten story: not landable, however green the merge button.
   GitHub's "Compare & pull request" button produces exactly this — fill
   the form, or repair after the fact through the pen (`edit` verb).
   *(This rule exists because it happened: PR #1 and PR #8 both reached
@@ -278,7 +278,7 @@ Decode every branch against `main` using the `Behind | Ahead` columns:
 | reads | means | move |
 |---|---|---|
 | `0` ahead | nothing `main` doesn't already have | delete it |
-| `N` ahead, open PR | work in flight | normal — at the stamp when ready |
+| `N` ahead, open PR | work in flight | normal — landable after arc confirmation when ready |
 | `N` ahead, no PR | stranded work | open a PR for it, or write it off in a report, then delete |
 | `N` behind | `main` moved on — harmless by itself | nothing; matters only if the PR conflicts |
 
