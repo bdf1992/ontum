@@ -1,0 +1,27 @@
+{
+  "atom": {
+    "id": "atom.gates-enumerated.v1",
+    "story": {
+      "text": "As the loop's owner, I want the remaining fixed-verdict mock gates (handoff-gate, value-confirm) de-mocked under admitted, rung-checked backings — inference or deterministic per the question each gate actually asks — and 'the five gates' enumerated once on the record, so the ambient hook's mock temperature reads 0/5 and every gate carries at least one non-accept verdict in its history. A gate that has never refused is a mock with a bigger bill (report 0004); first-light proved the value gate can say no (rcp.3b62807d5f6a), and this atom carries that proof across the rest of the pipeline.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.experience-layer"],
+      "touches": ["loop/reconcile.py", ".ai-native/nodes/", ".claude/skills/gate/gate.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["atom.gates-enumerated.v0"],
+      "receipts": ["rcp.merge.65", "rcp.merge.67", "rcp.merge.70", "adm.61bf739cf853", "adm.888b7582e6f9"]
+    }
+  },
+  "_note": "v1 re-versions v0 so the now-real gates judge the work the mocks rubber-stamped (v0 reached value_confirmed entirely through fixed-verdict mocks for placement/handoff/value-confirm — a false confirm). The claim is unchanged because the work is unchanged: mock temperature 0/5 and every gate carrying a non-accept verdict in its history. As of this version that is NOT delivered — handoff-gate is still mock, and no gate yet carries a non-accept verdict on the live trunk log — so a real value-confirm must read this as `missed`, the honest report that intention and outcome diverge. That refusal is the point: it is value-confirm's first light and the proof the gate is a capable judge of delivery, not a turnstile."
+}
