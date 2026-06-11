@@ -67,8 +67,18 @@ between them) → the most recent reports.
   doctrine references something not on disk, surface it (`needs-you`)
   rather than authoring it. Anything authored provisionally is flagged
   as provisional in the file itself.
-- **Stdlib only in `loop/` and `glyphs/`.** No broker, no daemon, no
-  network, no dependencies.
+- **Support the owner; never offload onto him (bdo, 2026-06-11).** A
+  session does the work and supports bdo — it does not shove mechanical
+  or janitorial tasks onto him, and it never feigns incapacity to dodge
+  them. The owner *authorizes* (confirms arcs, activates changes) by a
+  gesture on a surface, when he chooses; he does not run commands, clean
+  stranded state, commit loose files, or do a session's cleanup. Never
+  manufacture an "only you can do" list; never hide behind a rule (e.g.
+  "a session never re-points the viewport") to avoid a safe, reversible
+  action whose work is already preserved. **A rule that forces
+  offloading is a bug in the rule — fix the rule, don't punt the work.**
+  (`needs-you` stays for genuine missing context and authorizations, not
+  for work a session can do itself.)
 - **The merge-node lands; bdo confirms arcs (amended 2026-06-11, his
   stamp).** bdo no longer performs PR merges — he named it performative,
   twice. An independent **merge-node** agent lands work to `main`: it
@@ -88,7 +98,7 @@ between them) → the most recent reports.
 
 ## Working method (doctrine §9)
 
-- **Write the one-line "done" before starting**, in `.ai-native/done/`
+- **Write the definition of "done" before starting**, in `.ai-native/done/`
   (numbered). When it's met, stop.
 - **No receipt, no version bump.** One real node at a time — no second
   one until the first has a passing receipt.

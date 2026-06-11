@@ -27,11 +27,17 @@ Done-line 0031 adds `sync`, the merge's return leg: the primary
 worktree is bdo's viewport on the trunk, and merges land on origin —
 nothing ever carried them back, so the viewport drifted stale (4
 commits the day it was asked; 38 the day the workbenches were cut).
-`sync` fetches and fast-forwards the viewport to origin/main, and
-refuses a viewport that is off the trunk or locally ahead — each is a
-surface to bdo, never an act. ff-only cannot conflict: it succeeds or
-it surfaces. In hook mode (`--hook`, wired to SessionStart) it is
-fail-open and exits 0 always — it never gates a session's start.
+`sync` fetches and fast-forwards the viewport to origin/main. A viewport
+stranded off the trunk is the *session's* to restore — `sync` checks the
+branch work out and returns the viewport to main whenever that work is
+safe (clean tree, all commits on origin), because supporting bdo is the
+job, not handing him the cleanup (2026-06-11: rules now expect support,
+not offload). It surfaces only to preserve work a restore would lose
+(uncommitted changes, unpushed commits, or local commits sitting on main)
+— and then it names the session's own fix (commit, push, branch), never
+asks bdo to do it. ff-only cannot conflict: it succeeds or it surfaces.
+In hook mode (`--hook`, wired to SessionStart) it is fail-open and exits
+0 always — it never gates a session's start.
 
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report` — it tells the
@@ -175,26 +181,38 @@ def commit_refusal(branch, message, forwarded):
     return None
 
 
-def sync_refusal(branch, ahead):
-    """Why the viewport may not be fast-forwarded, or None.
-
-    The viewport is bdo's reading surface: it only ever moves forward to
-    what he already merged on origin. `branch` is what the viewport has
-    checked out; `ahead` is how many local commits the trunk carries
-    that origin does not. Either state out of place is a surface to bdo,
-    never an act.
+def restore_blocked(clean, pushed):
+    """Why a viewport stranded off the trunk may NOT be auto-restored to
+    main, or None. Restoring discards the branch checkout, so it is safe
+    only when that work is already preserved — a clean tree and every commit
+    on origin. Otherwise the session preserves its own work first (commit,
+    push); it is never bdo's to hand-fix (rules expect support, 2026-06-11).
     """
-    if branch not in TRUNK:
+    if not clean:
         return (
-            f"the viewport is on '{branch or 'a detached HEAD'}', not the "
-            "trunk — a session never re-points bdo's reading surface; "
-            "surface this to bdo"
+            "the viewport has uncommitted changes — the session commits and "
+            "pushes them on their branch, then sync restores the viewport to "
+            "main; the session preserves its own work, it is never bdo's to fix"
         )
+    if not pushed:
+        return (
+            "the viewport's branch has commits not on origin — the session "
+            "pushes them, then sync restores the viewport to main; the session "
+            "preserves its own work, it is never bdo's to fix"
+        )
+    return None
+
+
+def sync_refusal(branch, ahead):
+    """Why a viewport already on the trunk may not be fast-forwarded, or None.
+    Off-trunk is no longer refused here — a stranded viewport is restored when
+    safe (see `restore_blocked`). The one hard stop is local commits sitting on
+    main: they belong on a branch and a PR, which is the session's to do."""
     if ahead:
         return (
             f"the trunk carries {ahead} local commit(s) origin does not have "
-            "— main is never committed locally (firm); surface this to bdo "
-            "instead of syncing over it"
+            "— main is never committed locally (firm); the session moves them "
+            "to a branch and PRs them, never asks bdo to sort it out"
         )
     return None
 
@@ -285,6 +303,28 @@ def cmd_sync(ns):
             detail = (fetched.stderr or fetched.stdout).strip().splitlines()
             bail("fetch failed (offline?): " + (detail[-1] if detail else "no detail"))
         branch = git(["branch", "--show-current"], viewport).stdout.strip()
+        if branch not in TRUNK:
+            # A stranded viewport is the session's to restore, not bdo's to be
+            # handed — but only when the branch work is safe (clean + pushed).
+            clean = not git(["status", "--porcelain"], viewport).stdout.strip()
+            upstream = git(["rev-parse", "--verify", "--quiet",
+                            f"origin/{branch}"], viewport) if branch else None
+            pushed = bool(branch) and upstream is not None and \
+                upstream.returncode == 0 and not git(
+                    ["rev-list", "--count", f"origin/{branch}..HEAD"],
+                    viewport).stdout.strip().lstrip("0")
+            blocked = restore_blocked(clean, pushed)
+            if blocked:
+                bail(f"the viewport is on '{branch or 'a detached HEAD'}' — "
+                     + blocked)
+            restored = git(["checkout", "main"], viewport)
+            if restored.returncode != 0:
+                detail = (restored.stderr or restored.stdout).strip().splitlines()
+                bail("could not restore the viewport to main: "
+                     + (detail[-1] if detail else "no detail"))
+            emit("done", f"restored the viewport from '{branch}' to main "
+                 "(its work is safe on origin); syncing")
+            branch = "main"
         ahead = int(git(["rev-list", "--count", "origin/main..main"],
                         viewport).stdout.strip() or 0)
         reason = sync_refusal(branch, ahead)
@@ -300,7 +340,8 @@ def cmd_sync(ns):
         if merged.returncode != 0:
             detail = (merged.stderr or merged.stdout).strip().splitlines()
             bail("fast-forward refused — " + (detail[-1] if detail else "no detail")
-                 + "; the viewport waits for a hand (surface this to bdo)")
+                 + "; the session sorts the divergence (branch + PR the stray "
+                 "commits), it is never bdo's to hand-fix")
         emit("done", f"the viewport fast-forwarded {behind} commit(s) to origin/main")
     except subprocess.TimeoutExpired:
         bail(f"fetch exceeded {ns.fetch_timeout}s (offline?) — the viewport stays where it is")
@@ -336,8 +377,9 @@ def main(argv=None):
 
     sync = verbs.add_parser(
         "sync", help="fast-forward the viewport (primary worktree) to "
-                     "origin/main — the merge's return leg; refuses an "
-                     "off-trunk or locally-ahead viewport")
+                     "origin/main — the merge's return leg; restores a "
+                     "stranded viewport to main when its work is safe, "
+                     "surfaces only to preserve unpushed work")
     sync.add_argument("--hook", action="store_true",
                       help="hook mode: at most one line, exit 0 always — "
                            "fail-open, never gates a session's start")
