@@ -53,3 +53,4 @@
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/placement-gate","id":"rcp.merge.62","kind":"merge","node":"merge-node.claude.v0","pr":62,"ts":"2026-06-11T21:30:02Z","verdict":"landed"}
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/report-0039","id":"rcp.merge.63","kind":"merge","node":"merge-node.claude.v0","pr":63,"ts":"2026-06-11T21:36:11Z","verdict":"landed"}
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/realness-intake","id":"rcp.merge.64","kind":"merge","node":"merge-node.claude.v0","pr":64,"ts":"2026-06-11T21:47:06Z","verdict":"landed"}
+{"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/placement-real","id":"rcp.merge.65","kind":"merge","node":"merge-node.claude.v0","pr":65,"ts":"2026-06-11T22:19:08Z","verdict":"landed"}
