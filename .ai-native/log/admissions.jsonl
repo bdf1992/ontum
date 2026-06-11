@@ -55,3 +55,7 @@
 {"budget_spent":1,"deferred":[],"id":"adm.tick.080e8fee6ec0","mode":"heat","pressure":{"awaiting":0,"human_backlog":0,"inflight":1,"parked":0,"queue_depth":1,"settled":6,"unborn":0},"scheduled":[{"atom":"atom.story-commons.v0","step":"judge:value-confirm.mock.v0"}],"setpoint_id":"adm.5ed9d003d60f","tick":6,"ts":"2026-06-10T21:11:54Z","type":"tick"}
 {"budget_spent":1,"deferred":[],"id":"adm.tick.2faba32822e8","mode":"heat","pressure":{"awaiting":0,"human_backlog":0,"inflight":1,"parked":0,"queue_depth":0,"settled":6,"unborn":0},"scheduled":[{"atom":"atom.story-commons.v0","step":"derive:atom.value_confirmed"}],"setpoint_id":"adm.5ed9d003d60f","tick":7,"ts":"2026-06-10T21:11:54Z","type":"tick"}
 {"by":"bdo","enabled":true,"epic":"epic.owner-harness","id":"adm.728a87a9ca48","supersedes":null,"ts":"2026-06-11T06:29:44Z","type":"arc_confirmed"}
+{"by":"bdo","enabled":true,"epic":"epic.substrate","id":"adm.476af874f9e4","supersedes":null,"ts":"2026-06-11T06:41:09Z","type":"arc_confirmed"}
+{"by":"bdo","enabled":true,"epic":"epic.experience-layer","id":"adm.6f34c7fe4654","supersedes":null,"ts":"2026-06-11T06:41:09Z","type":"arc_confirmed"}
+{"by":"bdo","enabled":true,"epic":"epic.ontabet-speaks","id":"adm.68ab74ab0f49","supersedes":null,"ts":"2026-06-11T06:41:09Z","type":"arc_confirmed"}
+{"by":"bdo","enabled":true,"epic":"epic.pivot","id":"adm.5b7bbcd85c2d","supersedes":null,"ts":"2026-06-11T06:41:09Z","type":"arc_confirmed"}
