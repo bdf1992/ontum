@@ -22,9 +22,9 @@ import sys
 from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, append_line,
-                            epic_of, glue_of, load_atoms, load_epics,
-                            make_receipt, node_prompt, now_ts, real_nodes,
-                            receipt_for_stage, short_hash)
+                            arc_confirmation, epic_of, glue_of, load_atoms,
+                            load_epics, make_receipt, node_prompt, now_ts,
+                            real_nodes, receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 from loop import trust
 
@@ -131,9 +131,12 @@ def inbox(root):
     atoms = load_atoms(root)
     real_map = real_nodes(fold)
     human = real_map.get(HUMAN_NODE)
+    epics = load_epics(root)
     mine, summons, parked = [], [], []
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash, real_map)
+        # epics passed so a confirmed arc's pieces are the loop's to stamp,
+        # not yours — they never land in your queue (done-line 0028)
+        action = next_action(fold, atom, ahash, real_map, epics)
         if action is None:
             continue
         kind, target = action
@@ -147,7 +150,6 @@ def inbox(root):
     if human is None:
         print("note: the owner stamp is still mocked — nothing waits on you "
               "until it is admitted real (node admit-real)")
-    epics = load_epics(root)
     # epic-first (done-line 0006): brief the arc, then the items inside it
     mine.sort(key=lambda item: (epic_of(item[0], epics) or {}).get("id", "~unfiled"))
     last_key = object()  # sentinel: distinct from None (the unfiled group)
@@ -196,6 +198,55 @@ def inbox(root):
     return 0
 
 
+def confirm_arc(root, epic, by, enabled=True, supersedes=None):
+    """Confirm (or withdraw) an arc — the owner's standing stamp for every
+    piece under an epic (done-line 0028): once confirmed, its pieces clear the
+    owner's stamp on this record and the loop carries them, escalating only a
+    refusal or completion. bdo-only — an arc is his to steer (D-4). Returns the
+    admission, or None on refusal (already printed)."""
+    if (by or "").strip().lower() != "bdo":
+        print("result: needs-you — an arc is the owner's to confirm — --by must "
+              "be bdo (he steers arcs; nothing confirms its own, D-4)")
+        return None
+    known = {e["id"] for e in load_epics(root)}
+    if epic not in known:
+        print(f"result: needs-you — unknown epic {epic!r}; known: "
+              + (", ".join(sorted(known)) or "none on disk"))
+        return None
+    adm = {
+        "id": "adm." + short_hash("arc_confirmed", epic, str(enabled), str(by), now_ts()),
+        "type": "arc_confirmed",
+        "epic": epic,
+        "enabled": bool(enabled),
+        "by": by,
+        "supersedes": supersedes,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm
+
+
+def arcs(root):
+    """The arcs and whether each is confirmed — the owner steers here, one
+    stamp per arc (done-line 0028). Read-only (I-3)."""
+    fold = Fold(root)
+    epics = load_epics(root)
+    if not epics:
+        print("result: report — no epics on disk")
+        return 0
+    for epic in epics:
+        conf = arc_confirmation(fold, epic["id"])
+        state = (f"CONFIRMED by {conf['by']} ({conf['id']})" if conf
+                 else "not confirmed — its pieces still reach your stamp")
+        print(f"\n{epic['id']} — {state}")
+        if epic.get("value"):
+            print(f"  {epic['value']}")
+    confirmed = sum(1 for e in epics if arc_confirmation(fold, e["id"]))
+    print(f"\nresult: report — {len(epics)} arc(s), {confirmed} confirmed. "
+          "Confirm one: python -m loop.node confirm-arc --epic <id> --by bdo")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -225,11 +276,33 @@ def main(argv=None):
     g.add_argument("--by", required=True, help="who grants it (D-4: bdo only)")
     g.add_argument("--supersedes", default=None, help="a prior rung id this replaces")
 
+    c = sub.add_parser("confirm-arc",
+                       help="confirm an arc — your standing stamp for its pieces (bdo only)")
+    c.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    c.add_argument("--epic", required=True, help="the epic id to confirm")
+    c.add_argument("--by", required=True, help="who confirms it (D-4: bdo)")
+    c.add_argument("--off", action="store_true",
+                   help="withdraw a confirmation (its pieces return to your stamp)")
+    c.add_argument("--supersedes", default=None, help="a prior confirmation id this replaces")
+
+    a = sub.add_parser("arcs", help="the arcs and which are confirmed (read-only)")
+    a.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+
     args = ap.parse_args(argv)
     if args.cmd == "judge":
         return judge(args.root, args.atom, args.node, args.verdict, args.reason)
     if args.cmd == "inbox":
         return inbox(args.root)
+    if args.cmd == "arcs":
+        return arcs(args.root)
+    if args.cmd == "confirm-arc":
+        adm = confirm_arc(args.root, args.epic, args.by, not args.off, args.supersedes)
+        if adm is None:
+            return 2
+        verb = "confirmed" if adm["enabled"] else "withdrew confirmation of"
+        print(f"result: report — {adm['id']}: {args.by} {verb} arc {args.epic} "
+              "— its pieces clear your stamp on this confirmation")
+        return 0
     if args.cmd == "admit-rung":
         adm = admit_rung(args.root, args.agent_class, args.capability,
                          args.by, args.supersedes)

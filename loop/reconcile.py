@@ -60,6 +60,9 @@ SEED_EVENT = "atom.created"
 SEED_NODE = "value-loop.story-author.mock.v0"
 TERMINAL_EVENT = "atom.value_confirmed"
 TERMINAL_SEAM = "confirm-to-owner"
+# The owner's stamp stage — bdo's gate. When the atom's arc is confirmed, the
+# loop satisfies this stamp under his standing confirmation (done-line 0028).
+STAMP_NODE = next(s["node"] for s in PIPELINE if s["seam"] == "value-to-owner-stamp")
 
 
 def canon(obj):
@@ -159,6 +162,22 @@ def real_nodes(fold):
             else:
                 real.pop(adm["stage_node"], None)
     return real
+
+
+def arc_confirmation(fold, epic_id):
+    """The active arc_confirmed admission for an epic, or None (done-line 0028).
+
+    bdo confirming an arc once is a standing pre-authorization: every piece
+    under that epic clears the owner's stamp on his confirmation, and he is
+    escalated only on a gate's refusal or the arc's completion — he steers
+    arcs, the loop carries pieces. Latest admission per epic wins; an
+    `enabled: false` one withdraws the confirmation (superseded, never
+    erased)."""
+    active = None
+    for adm in fold.admissions:
+        if adm.get("type") == "arc_confirmed" and adm.get("epic") == epic_id:
+            active = adm if adm.get("enabled", True) else None
+    return active
 
 
 def receipt_for_stage(fold, stage, artifact_hash, real_map=None):
@@ -378,8 +397,28 @@ def pass_once(root, pace=0.0, quiet=False, atom=None, artifact_hash=None):
                     continue  # already handled this version of the atom (I-2): skip
                 if stage["node"] in real_map:
                     # an admitted-real stage is judged by a summoned node,
-                    # never by this loop (D-2, D-10): park and name who
-                    awaited = real_map[stage["node"]]
+                    # never by this loop (D-2, D-10): park and name who —
+                    # UNLESS this is the owner's stamp and the atom's arc is
+                    # confirmed, where bdo's standing confirmation IS the stamp
+                    # (done-line 0028: he steers arcs, the loop carries pieces).
+                    confirmation, epic = None, None
+                    if stage["node"] == STAMP_NODE:
+                        epic = epic_of(atom, load_epics(root))
+                        if epic is not None:
+                            confirmation = arc_confirmation(fold, epic["id"])
+                    if confirmation is None:
+                        awaited = real_map[stage["node"]]
+                        next_seam = stage["seam"]
+                        break
+                    rc = make_receipt(
+                        ev, stage, atom["id"], artifact_hash,
+                        node=real_map[stage["node"]], verdict=stage["verdict"],
+                        reason=(f"arc {epic['id']} confirmed by {confirmation['by']} "
+                                f"({confirmation['id']}) — the owner's standing stamp"))
+                    rc["authorized_by"] = confirmation["id"]
+                    append_line(root / "log" / "receipts.jsonl", rc)
+                    step = (f"{real_map[stage['node']]} stamped {stage['event']} -> "
+                            f"{stage['verdict']} on bdo's confirmed arc {epic['id']}")
                     next_seam = stage["seam"]
                     break
                 append_line(root / "log" / "receipts.jsonl",
