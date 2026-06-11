@@ -174,3 +174,95 @@ Worked example — **S** `(+,−,0)`: center holds S; faces −z/+z hold its sea
 - **Observation:** Both letterings leave (0,0,0) letterless, for different reasons: the spindle ∅ is the mechanism void (absence enables rotation); the obscured wildcard ⊘ is the generative null (requests nothing, terminates the cascade). Two readings of one empty center — the system's load-bearing absence.
 - **Disposition:** No action; knolled here so the alignment stays visible.
 
+---
+
+## 6. Incidence laws — the two graded fans  [DERIVED]
+
+- **closure ↓** — |↓c| = 3^dim — each open axis closes 3 ways (boundary + self)
+- **star ↑** — |↑c| = 2^codim — each decided axis opens 2 ways (cascade + self)
+- **graded census** — Σ 3^dim = Σ 2^codim = 125 = 5³ over the 27 cells
+
+Re-verified over all 27 addresses on every run, with duality (d ∈ ↓c ⟺ c ∈ ↑d) checked pairwise. Each cell also carries its axis-code cost: 3 bits of skeleton + 1 per decision — a complete prefix code (Kraft sum exactly 1); spelling is bit-shedding, one bit per open-step. Any utterance ORDER over the fans (boundary-first/self-last) is PIN-5's call, not emitted here.
+
+Worked: **S** `(+,−,0)` — closure E·S·F, star W·⊘·S·V, 5 bits.
+
+---
+
+## 7. The basin lexicon  [SURVEYED]
+
+Source: `language/basin.md` — every word SURVEYED (lexifier-donated, never minted); letter-frame placements all OPEN pending PIN-2.
+
+| Frame | Pivot candidate | Filled | Density |
+|---|---|---|---|
+| **A** | Anchor | 27/27 | 1.0 |
+| **B** | Basis | 27/27 | 1.0 |
+| **C** | Core | 27/27 | 1.0 |
+| **D** | Dimension | 27/27 | 1.0 |
+| **E** | Emitter | 27/27 | 1.0 |
+| **F** | Frame | 27/27 | 1.0 |
+| **G** | Grammar | 27/27 | 1.0 |
+| **H** | Holon | 27/27 | 1.0 |
+| **J** | Join | 24/27 | 0.8889 |
+| **K** | Kernel | 21/27 | 0.7778 |
+| **L** | Lattice | 27/27 | 1.0 |
+| **M** | Membrane | 27/27 | 1.0 |
+| **N** | Nexus | 27/27 | 1.0 |
+| **P** | Pivot | 27/27 | 1.0 |
+| **Q** | Query | 24/27 | 0.8889 |
+| **R** | Relation | 27/27 | 1.0 |
+| **T** | Token | 27/27 | 1.0 |
+| **U** | Unit | 27/27 | 1.0 |
+| **V** | Valence | 27/27 | 1.0 |
+| **W** | Word | 27/27 | 1.0 |
+| **X** | OPEN | 5/27 | 0.1852 |
+| **Y** | Yield | 9/27 | 0.3333 |
+| **Z** | Zero | 14/27 | 0.5185 |
+| **⊘** | Basis | 27/27 | 1.0 |
+
+Census: claimed 588 filled / 60 OPEN, measured 583 / 65 — **divergence recorded as a finding**.
+
+Cross-frame collisions (candidate welds / demands for descent, never deduped): 27 words appear in more than one frame.
+
+- `basin.census-arithmetic` [DERIVED] — the basin's census row claims 588 filled / 60 OPEN for this pass; parsing the same document measures 583 / 65. The artifact is the record — reported, not edited.
+- `basin.sio-not-restated` [OPEN] — the basin's totals include bdo's S/I/O frames (81 words) which the artifact deliberately does not restate; S is recoverable from language/s-frame-placements.json, I and O are not on disk.
+
+The interstitial 27 (⊘'s own frame, v2): pivot candidate **Interstice** [OPEN]; Cant = edge(Centroid, Barycenter) — DERIVED; the other 11 edge pole-pairs OPEN.
+
+---
+
+## 8. Placements — the S-frame  [PROPOSED, every score MODEL-GUESSED]
+
+Source: `language/s-frame-placements.json` · law: sit/act/read in I/S/O -> (x,y,z) · census 8/12/6/1 · chip seed total 64.
+
+Loading is not stamping: the structural gate (27 cells covered, no address collisions, claimed kind = derived kind) passed; the semantic falsifier and every stamp stay with the owner.
+
+| Word | Cell | Kind | Local letter | Rationale |
+|---|---|---|---|---|
+| **Save** | `(−,+,−)` | corner | C | interior store reaching out to capture, result kept inside |
+| **Scale** | `(+,0,+)` | edge | P | relation to the ambient, measured at boundary, read outside |
+| **Scope** | `(−,0,−)` | edge | M | interior extent, delimited at the boundary, read inside |
+| **Seam** | `(0,0,0)` | center | ⊘ | boundary in all three — the predicted pivot |
+| **Seat** | `(−,+,0)` | edge | R | interior rest that supports outward, shown at the boundary |
+| **Selection** | `(0,−,−)` | edge | I | a boundary gate whose criterion and outcome are interior |
+| **Semantics** | `(+,0,−)` | edge | O | exterior reference, negotiated at the boundary, lands as interior meaning |
+| **Sensor** | `(+,+,−)` | corner | G | faces the exterior, acts on it by sampling, delivers inward |
+| **Sequence** | `(−,0,0)` | face | U | interior order whose steps cross and show at the boundary |
+| **Shadow** | `(+,−,+)` | corner | F | cast outside, interior-caused, read outside |
+| **Shape** | `(0,−,+)` | edge | J | boundary form, internally caused, externally read |
+| **Signal** | `(0,+,+)` | edge | L | boundary crossing, outward act, read outside |
+| **Sink** | `(0,+,−)` | edge | K | boundary that pulls the exterior inward |
+| **Site** | `(0,−,0)` | face | W | a bounded place holding interior dynamics, met at its edge |
+| **Source** | `(−,+,+)` | corner | D | interior origin, emits outward, known by its output |
+| **Space** | `(+,0,0)` | face | V | the ambient: exterior seat, met at every boundary |
+| **Span** | `(0,0,−)` | face | Y | boundary-to-boundary stretch, read as interior extent |
+| **Standard** | `(+,−,0)` | edge | S | external norm, binds interiors, applied at the boundary |
+| **State** | `(+,+,+)` | corner | H | the condition as the outside sees, probes, and reads it |
+| **Stream** | `(0,+,0)` | face | X | boundary flow, outward-driving, read in passage |
+| **Structure** | `(−,−,0)` | edge | Q | internal arrangement, internal hold, perceived at the boundary |
+| **Subject** | `(−,0,+)` | edge | N | an interior that acts at its boundary and is addressed from outside |
+| **Substrate** | `(+,−,−)` | corner | E | lies beyond/beneath the unit, carries interiors, read inward |
+| **Surface** | `(0,0,+)` | face | Z | boundary, acting as boundary, read from outside |
+| **Switch** | `(+,+,0)` | edge | T | exterior-facing actuator, state shown at the boundary |
+| **Syntax** | `(−,−,−)` | corner | A | internal form, internal rule, internally checkable |
+| **System** | `(−,−,+)` | corner | B | interior whole, interior dynamics, known from outside by behavior |
+

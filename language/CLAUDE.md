@@ -16,6 +16,16 @@ holds a **pin** (what the stratum is here), the **creole reading**,
 **non-example**, and **named holes** — the grip discipline at stratum
 scale.
 
+Two surveyed artifacts live here too (done-line 0027, home-come from
+the ontabet session via `docs/sources/files.zip`):
+[basin.md](basin.md) — the recursive-pilish lexicon, 24 frames of
+surveyed words, parsed live by `glyphs/knoll.py` (its census is
+measured every run; divergence is a finding, never an edit) — and
+[s-frame-placements.json](s-frame-placements.json) — 27 S-words on the
+cube, all PROPOSED/MODEL-GUESSED, loaded only through the structural
+gate. Editing a basin word is re-surveying; placements graduate only
+by bdo's stamp (PIN-2 territory).
+
 Rules of this directory:
 
 - **Pins cite the vault; the vault stays read-only.** A claim about

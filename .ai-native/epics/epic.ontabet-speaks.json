@@ -1,0 +1,18 @@
+{
+  "epic": {
+    "id": "epic.ontabet-speaks",
+    "owner": "bdo",
+    "status": "PROPOSED — transcribed from the ontabet session's landing map (docs/sources/files.zip, came home 2026-06-10); bdo amends or stamps the arc, and the seven pins inside it are his alone",
+    "arc": "Turn the glyph cube from a described geometry into a speakable, measurable language harness: the generator emits the incidence laws, the registry grows columns for placements and weights, surveyed vocabulary lands and gets placed by law, and structure-coefficient measurements decide — with numbers, not vibes — whether the cube is a cube before a single letter beyond S/I/O is populated at scale.",
+    "context": "An envoy package (creole-glyph-language) went out for foreign review; the ontabet session came home with 15 labeled proposals, a 669-word surveyed basin, a fully-placed S-frame (PROPOSED, every score MODEL-GUESSED), and a dependency-sequenced landing map of 7 pins, 7 builds, 5 measures. The pins (PIN-1 complementarity, PIN-2 placement law, PIN-3 I/S/O sign alphabet, PIN-4 glyph/lens/frame ledger entries, PIN-5 utterance canon, PIN-6 NON→NULL standard, PIN-7 descent law) are owner decisions — no build past a stamp.",
+    "value": "The creole stops being prose: every law is machine-verified on every run, every placement carries provenance and faces a falsifier, weights are measured donations instead of invented constants, and the SC measurement gates A–Z spend — the data-collection harness for the language itself.",
+    "horizon": "S, I, and O placed under a stamped placement law with the falsifier live; SC measured per frame by an uncontaminated instrument and sitting in the registry's sc column; the chip tables running as admitted records; the viewer speaking the composition grammar; and a measured verdict on cube-vs-random that decides whether the remaining 23 letters get placed at all.",
+    "pieces": [
+      {"atom": "wave-1.harness", "glue": "no pins required (landed as done-line 0027): knoll.py emits closure/star + the graded census, demotes falsifier-less mints, parses the basin live with measured density, and gates the S-frame placements in as PROPOSED"},
+      {"atom": "wave-1.viewer-port", "glue": "BUILD-3, its own done-line: the ontabet panel and composition inspector re-land through knoll.py's viewer template — the hand-edited viewer.html in files.zip is the spec, never the landing"},
+      {"atom": "wave-2.placement-pass", "glue": "after PIN-2: I and O placed by the stamped law, every placement through the falsifier, refusals knolled as findings; the Span/Semantics refusal resolved by the owner"},
+      {"atom": "wave-3.measures", "glue": "MEAS-1 leakage pre-test and MEAS-3 structure coefficient need an uncontaminated instrument (fresh session or envoy pass — this surface has read the placements and is contaminated as a scorer); MEAS-2 embedding coherence needs a model endpoint; results come home as signed records into the sc column and gate all A–Z spend"},
+      {"atom": "wave-4.utterances", "glue": "after PIN-5: syllabary v1, graded utterances, descent-continuation, pairing notation E[Y] if PIN-1 lands"}
+    ]
+  }
+}
