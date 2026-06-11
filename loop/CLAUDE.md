@@ -46,7 +46,7 @@ python -m loop.tags                        # the intent tag pool and its drift, 
 python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a proposed value
 
 python -m loop.pen new done --slug <slug> --title "<t>"     # the next done-line, from the directory's form
-python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by <who>
+python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by bdo   # bdo-only; refuses every session signer (no free "stop working" card)
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,

@@ -21,12 +21,15 @@ union-merges the logs (done-line 0007 records why).
   the line is met, stop. **Frozen** (done-line 0033): the directory's
   `.pen.json` declares `"frozen": true`, and `freeze_guard` denies any
   in-place edit or overwrite of a written line — the bar you set is not
-  a draft. Changing what done meant is additive and deliberately
-  painful: `python -m loop.pen supersede-done --abandoning <id>
-  --slug <new> --done "<new bar>" --reason "<honest reflection>" --by
-  <who>` writes a new line carrying the abandonment reflection, records
-  a loud `done_superseded` admission, and never self-authorizes a
-  session's own (no one signs their own line — it sits pending bdo).
+  a draft. And no session gets to change what done meant at all — not in
+  place, not by superseding, not pending a stamp (that would be a free
+  "stop working" card). A blocked session names the bad bar in its
+  report's `needs-you` and keeps working. Moving a done-line is bdo's
+  alone: `python -m loop.pen supersede-done --abandoning <id> --slug
+  <new> --done "<new bar>" --reason "<honest reflection>" --by bdo`
+  refuses every other signer and writes nothing; on bdo's signature it
+  writes a new line carrying the abandonment reflection and records a
+  loud `done_superseded` admission (the original stands as history).
 - `reports/` — numbered session reports; each session ends with one,
   including end-state and anything surfaced as `needs-you`. Conflicts
   between instructions get named here, not silently resolved.
