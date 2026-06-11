@@ -1,0 +1,27 @@
+{
+  "atom": {
+    "id": "atom.gates-enumerated.v2",
+    "story": {
+      "text": "As the loop's owner, I want the remaining fixed-verdict mock gates (handoff-gate, value-confirm) de-mocked under admitted, rung-checked backings — inference or deterministic per the question each gate actually asks — and 'the five gates' enumerated once on the record, so the ambient hook's mock temperature reads 0/5 and every gate carries at least one non-accept verdict in its history. A gate that has never refused is a mock with a bigger bill (report 0004); first-light proved the value gate can say no (rcp.3b62807d5f6a), and this atom carries that proof across the rest of the pipeline.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.experience-layer"],
+      "touches": ["loop/reconcile.py", ".ai-native/nodes/", ".claude/skills/gate/gate.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["atom.gates-enumerated.v0", "atom.gates-enumerated.v1"],
+      "receipts": ["rcp.merge.72", "adm.b04f3b55114f"]
+    }
+  },
+  "_note": "v2 re-versions the atom now that handoff-gate is real (adm.b04f3b55114f, on bdo's 'yes/make it real' stamp). It is the same work item, and it carries a real structural gap the mocks always hid: its incidence.hands_off_to is empty — it declares no downstream for the finished work. The mock handoff gate stamped ready_for_spec over that gap (v0); the real L2 gate must read it as send_back. That refusal is handoff's first light: the third real gate saying no on the live log, and the proof it judges structure rather than waving everything through. The recursion holds — the atom about 'every gate must refuse' is itself refused, now by handoff, for being hollow."
+}
