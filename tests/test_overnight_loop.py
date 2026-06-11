@@ -90,6 +90,12 @@ class TestOvernightBrief(unittest.TestCase):
             rc = overnight.main(["pickup", "--repo-root", str(root), *extra])
         return rc, stdout.getvalue()
 
+    def _checkpoint(self, root, *extra):
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            rc = overnight.main(["checkpoint", "--repo-root", str(root), *extra])
+        return rc, stdout.getvalue()
+
     def test_refuses_owner_viewport_branch(self):
         root = self._repo(branch="main")
         rc, out = self._brief(root)
@@ -181,6 +187,38 @@ class TestOvernightBrief(unittest.TestCase):
         root = self._repo()
         (root / "scratch.txt").write_text("inherited work\n", encoding="utf-8")
         rc, out = self._pickup(root)
+        self.assertEqual(rc, 1)
+        self.assertIn("dirty tree", out)
+        self.assertIn("--allow-dirty", out)
+
+    def test_checkpoint_continues_before_eight(self):
+        root = self._repo()
+        rc, out = self._checkpoint(root, "--now", "2026-06-11T00:06:25")
+        self.assertEqual(rc, 0)
+        self.assertIn("overnight-loop checkpoint", out)
+        self.assertIn("stop time: 08:00", out)
+        self.assertIn("decision: continue", out)
+        self.assertIn("overnight.py pickup", out)
+        self.assertIn("result: report - before 08:00; continue overnight loop", out)
+
+    def test_checkpoint_hands_off_at_eight(self):
+        root = self._repo()
+        rc, out = self._checkpoint(root, "--now", "2026-06-11T08:00:00")
+        self.assertEqual(rc, 0)
+        self.assertIn("decision: handoff", out)
+        self.assertIn("loop.pen new reports", out)
+        self.assertIn("result: done - 08:00 reached; hand off the overnight loop", out)
+
+    def test_checkpoint_refuses_owner_viewport_branch(self):
+        root = self._repo(branch="main")
+        rc, out = self._checkpoint(root, "--now", "2026-06-11T00:06:25")
+        self.assertEqual(rc, 1)
+        self.assertIn("owner viewport", out)
+
+    def test_checkpoint_refuses_dirty_tree_without_acknowledgement(self):
+        root = self._repo()
+        (root / "scratch.txt").write_text("inherited work\n", encoding="utf-8")
+        rc, out = self._checkpoint(root, "--now", "2026-06-11T00:06:25")
         self.assertEqual(rc, 1)
         self.assertIn("dirty tree", out)
         self.assertIn("--allow-dirty", out)

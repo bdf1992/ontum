@@ -13,6 +13,7 @@ start is missing and leaves the working tree untouched.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import pathlib
@@ -28,6 +29,7 @@ DEFAULT_PICKUP_TESTS = (
     "python -m unittest tests.test_overnight_loop -v",
     *DEFAULT_TESTS,
 )
+DEFAULT_STOP_TIME = "08:00"
 
 
 class Record(NamedTuple):
@@ -229,6 +231,52 @@ def pickup_refusal(
     if not epics:
         return "no known arcs under `.ai-native/epics`; pickup has nothing safe to choose"
     return None
+
+
+def checkpoint_refusal(
+    *,
+    branch: str,
+    dirty_lines: list[str],
+    allow_dirty: bool = False,
+) -> str | None:
+    if not branch:
+        return "detached HEAD; overnight-loop checkpoint needs a named session branch"
+    if branch in TRUNK:
+        return (
+            f"branch `{branch}` is the owner viewport; create a codex/* or "
+            "claude/* worktree branch first"
+        )
+    if not any(branch.startswith(prefix) for prefix in SESSION_PREFIXES):
+        prefixes = ", ".join(f"`{p}*`" for p in SESSION_PREFIXES)
+        return f"branch `{branch}` is not a session branch ({prefixes})"
+    if dirty_lines and not allow_dirty:
+        return (
+            "dirty tree; checkpoint runs between increments after committing or "
+            "explicitly inheriting the work with --allow-dirty"
+        )
+    return None
+
+
+def parse_clock(value: str) -> dt.time:
+    try:
+        parsed = dt.datetime.strptime(value, "%H:%M")
+    except ValueError as exc:
+        raise RepoError(f"invalid stop time `{value}`; use HH:MM") from exc
+    return parsed.time()
+
+
+def parse_now(value: str | None) -> dt.datetime:
+    if not value:
+        return dt.datetime.now().astimezone()
+    normalized = value.replace("Z", "+00:00")
+    try:
+        return dt.datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise RepoError(f"invalid --now `{value}`; use ISO-8601, e.g. 2026-06-11T00:06:00") from exc
+
+
+def should_continue(now: dt.datetime, stop_time: dt.time) -> bool:
+    return now.timetz().replace(tzinfo=None) < stop_time
 
 
 def summons_open(summons_text: str) -> bool:
@@ -436,6 +484,61 @@ def build_pickup(
     return "\n".join(lines)
 
 
+def build_checkpoint(
+    *,
+    root: pathlib.Path,
+    branch: str,
+    now: dt.datetime,
+    stop_time: dt.time,
+    continue_loop: bool,
+    allow_dirty: bool,
+    dirty_count: int,
+) -> str:
+    decision = "continue" if continue_loop else "handoff"
+    result = (
+        f"result: report - before {stop_time.strftime('%H:%M')}; continue overnight loop"
+        if continue_loop
+        else f"result: done - {stop_time.strftime('%H:%M')} reached; hand off the overnight loop"
+    )
+    next_commands = (
+        [
+            "python .claude/skills/overnight-loop/overnight.py pickup",
+            "run the recommended brief/done-line commands, then keep the next increment bounded",
+        ]
+        if continue_loop
+        else [
+            'python -m loop.pen new reports --slug <slug> --title "<title>"',
+            "python .claude/skills/branch-ritual/pr.py push",
+            "python .claude/skills/branch-ritual/pr.py ready <pr> --title ... --story ...",
+        ]
+    )
+    lines = [
+        "overnight-loop checkpoint",
+        f"repo: {root}",
+        f"branch: {branch}",
+        f"now: {now.isoformat(timespec='seconds')}",
+        f"stop time: {stop_time.strftime('%H:%M')}",
+        f"dirty start: {'allowed' if allow_dirty else 'no'} ({dirty_count} path(s))",
+        f"decision: {decision}",
+        "",
+        "next commands:",
+    ]
+    lines.extend(f"- {command}" for command in next_commands)
+    lines.extend(
+        [
+            "",
+            "stop conditions:",
+            "- It is at or after the overnight stop time.",
+            "- The next step needs bdo's stamp, an owner-only pin, or missing context.",
+            "- The branch is not a live session branch or the tree is unexpectedly dirty.",
+            "- The same test failure survives two concrete fix attempts.",
+            "",
+            result,
+        ]
+    )
+    return "\n".join(lines)
+
+
 def cmd_brief(ns: argparse.Namespace) -> int:
     try:
         root = pathlib.Path(ns.repo_root).resolve() if ns.repo_root else repo_root()
@@ -466,6 +569,45 @@ def cmd_brief(ns: argparse.Namespace) -> int:
             epic=epics[ns.arc],
             objective=ns.objective,
             tests=tests,
+            allow_dirty=ns.allow_dirty,
+            dirty_count=len(dirty),
+        )
+    )
+    return 0
+
+
+def cmd_checkpoint(ns: argparse.Namespace) -> int:
+    try:
+        root = pathlib.Path(ns.repo_root).resolve() if ns.repo_root else repo_root()
+        branch = current_branch(root)
+        dirty = status_short(root)
+    except RepoError as exc:
+        print(f"result: needs-you - {exc}")
+        return 2
+
+    reason = checkpoint_refusal(
+        branch=branch,
+        dirty_lines=dirty,
+        allow_dirty=ns.allow_dirty,
+    )
+    if reason:
+        print(f"result: report - refused: {reason}")
+        return 1
+
+    try:
+        now = parse_now(ns.now)
+        stop_time = parse_clock(ns.until)
+    except RepoError as exc:
+        print(f"result: needs-you - {exc}")
+        return 2
+
+    print(
+        build_checkpoint(
+            root=root,
+            branch=branch,
+            now=now,
+            stop_time=stop_time,
+            continue_loop=should_continue(now, stop_time),
             allow_dirty=ns.allow_dirty,
             dirty_count=len(dirty),
         )
@@ -556,6 +698,21 @@ def main(argv: list[str] | None = None) -> int:
         help="handoff test command; repeat for multiple commands (defaults to the full suite)",
     )
     brief.set_defaults(func=cmd_brief)
+
+    checkpoint = sub.add_parser(
+        "checkpoint",
+        help="decide whether the overnight loop continues or hands off",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    checkpoint.add_argument(
+        "--until",
+        default=DEFAULT_STOP_TIME,
+        help="local stop time in HH:MM form (defaults to 08:00)",
+    )
+    checkpoint.add_argument("--allow-dirty", action="store_true", help="acknowledge inherited dirty work")
+    checkpoint.add_argument("--repo-root", help=argparse.SUPPRESS)
+    checkpoint.add_argument("--now", help=argparse.SUPPRESS)
+    checkpoint.set_defaults(func=cmd_checkpoint)
 
     pickup = sub.add_parser(
         "pickup",

@@ -4,13 +4,20 @@ description: >-
   Prepare and run a long autonomous session against a named repo arc. Use
   when bdo asks for an "overnight loop", "keep working until you stop",
   a confident long-running Codex/Claude pass, or a repeatable autonomous
-  work loop. The deterministic preflight and pickup pen is overnight.py
-  beside this file; it refuses unsafe starts, emits the run contract,
-  and can recommend one next arc/story/task from live repo state before
-  the session begins work.
-version: 0.2.0
+  work loop. The deterministic preflight, pickup, and checkpoint pen is
+  overnight.py beside this file; it refuses unsafe starts, emits the run
+  contract, recommends one next arc/story/task from live repo state, and
+  checks whether the overnight window is still open before the session
+  stops working.
+version: 0.3.0
 owner: bdo
 changelog:
+  - version: 0.3.0
+    note: >-
+      Done-line 0033 adds `overnight.py checkpoint`, the between-increments
+      clock check. A clean session branch before the 08:00 stop time gets
+      told to keep looping through pickup; at or after the stop time it gets
+      handoff commands. Unsafe branch/tree states still refuse.
   - version: 0.2.0
     note: >-
       Done-line 0032 adds `overnight.py pickup`, a read-only arc pickup
@@ -63,6 +70,22 @@ worktrees. It emits one recommended arc, one next story, one next task,
 the first commands to run, stop conditions, and tests. It does not
 confirm arcs, stamp owner gates, edit logs, choose owner-only language
 pins, or widen authority beyond the selected arc.
+
+After each bounded increment lands, do not treat the increment's done-line
+as the whole overnight run. Check the overnight clock:
+
+```powershell
+python .claude/skills/overnight-loop/overnight.py checkpoint
+```
+
+Before the stop time, the checkpoint points back to `pickup` so the run
+continues. At or after the stop time, it points to report, push, and ready
+handoff. The default stop time is 08:00 local; override it only by naming
+the reason in the run contract:
+
+```powershell
+python .claude/skills/overnight-loop/overnight.py checkpoint --until 07:30
+```
 
 After a passing brief:
 
