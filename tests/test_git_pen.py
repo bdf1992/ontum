@@ -94,6 +94,31 @@ class TestCommitRefusal(unittest.TestCase):
         self.assertIsNone(gitpen.commit_refusal(self.BRANCH, ["feat: a real line"], []))
 
 
+class TestSyncRefusal(unittest.TestCase):
+    """Done-line 0031: the viewport only ever moves forward to origin/main.
+
+    The §10 case: a viewport that drifted off the trunk, or a trunk
+    carrying local commits, is locally fine git — sync must still refuse
+    to fit, because acting there would re-point or bury bdo's reading
+    surface instead of surfacing it to him."""
+
+    def test_off_trunk_viewport_refused(self):
+        self.assertIn("not the trunk", gitpen.sync_refusal("claude/stray", 0))
+
+    def test_detached_viewport_refused(self):
+        self.assertIn("detached HEAD", gitpen.sync_refusal("", 0))
+
+    def test_locally_ahead_trunk_refused(self):
+        # never committed locally (firm) — sync surfaces, never syncs over
+        reason = gitpen.sync_refusal("main", 2)
+        self.assertIn("2 local commit", reason)
+        self.assertIn("surface this to bdo", reason)
+
+    def test_clean_trunk_viewport_passes(self):
+        for trunk in ("main", "master"):
+            self.assertIsNone(gitpen.sync_refusal(trunk, 0), trunk)
+
+
 class TestGitGuard(unittest.TestCase):
     def setUp(self):
         fd, path = tempfile.mkstemp(suffix=".jsonl")

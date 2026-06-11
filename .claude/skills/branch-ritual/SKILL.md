@@ -5,9 +5,24 @@ description: >
   dissolve. Run it at session end to hand work off toward main, when the
   Branches page needs reading or cleaning, or when work is stranded on a
   merged branch.
-version: 0.8.0
+version: 0.9.0
 owner: bdo
 changelog:
+  - version: 0.9.0
+    note: >
+      The viewport syncs itself (done-line 0031, bdo's stamp in
+      conversation, 2026-06-10). His question — "why does this keep
+      happening?" — after local main sat 4 commits behind origin while
+      a tracked file haunted it as an untracked twin: the merge
+      distributes, but nothing ever took the return leg (0.6.2 named
+      the same staleness at 38 commits and fixed only the workbench
+      half). The git pen gains `sync`: locate the viewport (the primary
+      worktree), fetch, fast-forward the trunk to origin/main —
+      refusing a viewport that is off the trunk or locally ahead (each
+      a surface to bdo, never an act; ff-only cannot conflict, it
+      succeeds or it surfaces). SessionStart wires `git.py sync --hook`
+      (fail-open, exit 0 always): any session blinking in anywhere in
+      the fleet leaves the owner's reading surface current.
   - version: 0.8.0
     note: >
       Epic-integration topology (bdo's directive, 2026-06-10): "I only
