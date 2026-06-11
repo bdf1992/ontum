@@ -1,9 +1,10 @@
-"""Done-line 0031: the overnight-loop brief refuses unsafe starts.
+"""Done-lines 0031 and 0032: overnight-loop refuses unsafe starts.
 
 The section 10 fit test here is a locally tempting instruction: "work
 overnight" from whatever checkout happens to be open. The repo requires
 that to refuse when the checkout is bdo's viewport, dirty without
-acknowledgement, or pointed at an unknown arc.
+acknowledgement, pointed at an unknown arc, or asked to choose work from
+an unsafe branch.
 """
 
 import contextlib
@@ -83,6 +84,12 @@ class TestOvernightBrief(unittest.TestCase):
             )
         return rc, stdout.getvalue()
 
+    def _pickup(self, root, *extra):
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            rc = overnight.main(["pickup", "--repo-root", str(root), *extra])
+        return rc, stdout.getvalue()
+
     def test_refuses_owner_viewport_branch(self):
         root = self._repo(branch="main")
         rc, out = self._brief(root)
@@ -141,6 +148,42 @@ class TestOvernightBrief(unittest.TestCase):
         rc, out = self._brief(root, "--allow-dirty")
         self.assertEqual(rc, 0)
         self.assertIn("dirty start: allowed (1 path(s))", out)
+
+    def test_pickup_recommends_known_arc_without_summons(self):
+        root = self._repo()
+        rc, out = self._pickup(root)
+        self.assertEqual(rc, 0)
+        self.assertIn("overnight-loop pickup", out)
+        self.assertEqual(out.count("recommended arc:"), 1)
+        self.assertEqual(out.count("next story:"), 1)
+        self.assertIn("recommended arc: epic.test", out)
+        self.assertIn("next story: test arc pickup", out)
+        self.assertIn("open summons read: none", out)
+        self.assertIn("first commands:", out)
+        self.assertIn("stop conditions:", out)
+        self.assertIn("python -m unittest tests.test_overnight_loop -v", out)
+        self.assertIn("result: report - overnight-loop pickup recommends epic.test", out)
+
+    def test_pickup_refuses_unknown_requested_arc(self):
+        root = self._repo()
+        rc, out = self._pickup(root, "--arc", "epic.missing")
+        self.assertEqual(rc, 1)
+        self.assertIn("unknown arc `epic.missing`", out)
+        self.assertIn("epic.test", out)
+
+    def test_pickup_refuses_owner_viewport_branch(self):
+        root = self._repo(branch="main")
+        rc, out = self._pickup(root)
+        self.assertEqual(rc, 1)
+        self.assertIn("owner viewport", out)
+
+    def test_pickup_refuses_dirty_tree_without_acknowledgement(self):
+        root = self._repo()
+        (root / "scratch.txt").write_text("inherited work\n", encoding="utf-8")
+        rc, out = self._pickup(root)
+        self.assertEqual(rc, 1)
+        self.assertIn("dirty tree", out)
+        self.assertIn("--allow-dirty", out)
 
 
 if __name__ == "__main__":
