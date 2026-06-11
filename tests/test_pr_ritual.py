@@ -161,6 +161,19 @@ class TestBrandedPush(unittest.TestCase):
             self.assertIsNotNone(pen.forward_refusal(tokens), tokens)
 
 
+class TestIntegrate(unittest.TestCase):
+    """Version 0.8.0: a session integrates a piece into an epic branch, never
+    main — the trunk stays bdo's (done-line 0029)."""
+
+    def test_main_base_is_refused(self):
+        for base in ("main", "master"):
+            self.assertIn("bdo", pen.integrate_refusal(base))
+
+    def test_epic_branch_base_is_allowed(self):
+        self.assertIsNone(pen.integrate_refusal("claude/epic-experience-layer"))
+        self.assertIsNone(pen.integrate_refusal("epic/owner-harness"))
+
+
 class TestQuotedProse(unittest.TestCase):
     """Caught live: the shame hook read a here-string commit message as
     tool heads. Quoted content is prose, never commands."""

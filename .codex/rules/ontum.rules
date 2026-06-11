@@ -76,7 +76,7 @@ prefix_rule(
 prefix_rule(
     pattern = ["gh", "pr", "merge"],
     decision = "forbidden",
-    justification = "Denied, firm: never merge your own PR - the stamp is bdo's, the last stop (D-4).",
+    justification = "Raw `gh pr merge` is denied: merging into main is bdo's - the stamp is bdo's, the last stop (D-4). A piece-PR into an epic branch goes through the pen: python .claude/skills/branch-ritual/pr.py integrate <n> (it refuses a main base; done-line 0029).",
     match = [
         "gh pr merge 12 --squash",
     ],

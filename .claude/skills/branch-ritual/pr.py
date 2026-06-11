@@ -359,6 +359,43 @@ def cmd_check(_ns):
     )
 
 
+def integrate_refusal(base):
+    """Why a session may not integrate a PR, or None. The trunk is bdo's alone
+    (firm); a session integrates a piece into an epic/integration branch — the
+    human second set of eyes is bdo's one merge into main, where the finished
+    arc lands (bdo's directive, 2026-06-10: he merges main only at arc/epic
+    completion; the loop integrates pieces below)."""
+    if base in ("main", "master"):
+        return ("the trunk is bdo's — the stamp is bdo's (firm). A session "
+                "integrates a piece into an epic branch, never main; the "
+                "finished arc PRs to main and waits for him")
+    return None
+
+
+def cmd_integrate(ns):
+    """Merge a piece-PR into its epic branch (done-line 0029). Main stays
+    bdo's; this lands a piece on a non-trunk integration branch so the owner
+    only merges a finished arc into main."""
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number),
+         "--json", "state,baseRefName,headRefName,mergeable"]))
+    if info["state"] != "OPEN":
+        _refuse(f"PR #{ns.number} is {info['state'].lower()} — only an open PR integrates")
+    reason = integrate_refusal(info["baseRefName"])
+    if reason:
+        _refuse(reason)
+    if info.get("mergeable") == "CONFLICTING":
+        _refuse(f"PR #{ns.number} conflicts with {info['baseRefName']} — rebase the "
+                "piece onto its epic branch first, then integrate")
+    args = ["gh", "pr", "merge", str(ns.number), "--squash"]
+    if ns.delete_branch:
+        args.append("--delete-branch")
+    _run(args)
+    print(f"result: done — integrated PR #{ns.number} "
+          f"({info['headRefName']} -> {info['baseRefName']}); main stays bdo's "
+          "(the finished arc is the PR he merges)")
+
+
 def _story_args(parser):
     parser.add_argument("--title", required=True,
                         help="one line: what this PR did (never the branch name)")
@@ -424,6 +461,15 @@ def main(argv=None):
                       help="after rebasing your own branch; plain --force "
                            "does not exist here")
     push.set_defaults(func=cmd_push)
+
+    integrate = verbs.add_parser(
+        "integrate", help="merge a piece-PR into its epic branch (never main — "
+                          "the trunk is bdo's)")
+    integrate.add_argument("number", type=int)
+    integrate.add_argument("--delete-branch", dest="delete_branch",
+                           action="store_true",
+                           help="delete the piece branch after integrating")
+    integrate.set_defaults(func=cmd_integrate)
 
     ns, extra = parser.parse_known_args(argv)
     if extra and getattr(ns, "verb", None) != "push":

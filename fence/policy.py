@@ -98,8 +98,10 @@ RULES = (
         "argv": ("gh", "pr", "merge"),
         "decision": "forbidden",
         "justification": (
-            "Denied, firm: never merge your own PR - the stamp is bdo's, "
-            "the last stop (D-4)."
+            "Raw `gh pr merge` is denied: merging into main is bdo's - the "
+            "stamp is bdo's, the last stop (D-4). A piece-PR into an epic "
+            f"branch goes through the pen: {PR_PEN} integrate <n> (it "
+            "refuses a main base; done-line 0029)."
         ),
         "match": ("gh pr merge 12 --squash",),
         "not_match": ("gh pr checks 12",),
