@@ -98,6 +98,11 @@
             "type": "command",
             "command": "python -m loop.summon --hook",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/mock_shame.py",
+            "timeout": 10
           }
         ]
       }
