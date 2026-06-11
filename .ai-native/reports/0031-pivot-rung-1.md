@@ -84,3 +84,100 @@ Instrument real and tested; loop proven end-to-end; one provisional
 3. **bdo stamps the arc** — epic.pivot is PROPOSED; the rung order and
    the name are his to confirm (`loop.node confirm-arc --epic epic.pivot
    --by bdo`).
+
+## Addendum — the inversion (same session)
+
+bdo killed the "grade against a borrowed truth" framing. The S-frame is
+`PROPOSED, MODEL-GUESSED` — never a canon, never agreed. So we **inverted
+it** (his word): no external truth; the measurement is **convergence
+across independent generations**, and the convergent core *becomes* the
+candidate canon (corpus-to-system). His second cut: don't collapse to one
+number — the cube is **graded**, so measure per piece, per grade, with
+**metrics held in tension**; the gap between two metrics localizes the
+*why*. A run yields a **dataset**, not a data point.
+
+Built: **`pivot/measure.py`** — the battery over N generations (each
+validated as a lawful tiling first). WHY-detectors: `orientation_slack`
+(kind ⊖ exact), `convention_slack` (best-of-48-symmetries-aligned ⊖ raw),
+`vocab ⊖ placement`. WHERE-detectors: per-grade consensus,
+consensus-by-distance-from-pivot. `run.py --measure <dir> --dataset
+<jsonl>` flattens each run to `(seed, scope, grade, metric, value)` rows
+that accumulate. 7 tests plant known tensions (identical, same-cube-
+rotated, kind-preserving swap, disjoint vocab) and read them back.
+
+First real reading — **4 independent cold placements of the S-words**,
+vocabulary held fixed so placement convergence is isolated:
+
+| reading | value | what it says |
+|---|---|---|
+| placement kind | **0.769** | the *grade* of a word's cell replicates well |
+| placement exact | **0.380** | the *exact corner* does not |
+| orientation_slack | **0.389** | most disagreement is axis convention, not meaning |
+| pairwise raw → aligned | 0.123 → 0.247 | a cube symmetry doubles agreement — a third of the scatter is pure rotation |
+| per-grade: center | **0.750** | the **pivot is the most-agreed position** |
+| per-grade: corners | 0.312 | the 8 corners scatter most |
+
+The finding: independent cold reads converge on **kind and on the pivot**,
+not on exact position — and a measurable slice of the positional scatter
+is just rotation. The encoding carries *semantic grade* robustly and
+*absolute orientation* weakly — which quantifies the earlier "reveal the
+axis to make it well-posed" intuition, and vindicates the name: the
+**center is the convergence anchor**. (Caveat: N=4, same model family,
+center is one cell. Cross-family via envoy is still the real verdict.)
+
+This replaces needs-you #1's framing: the path forward is convergence
+over independent generations (vocabulary varying too, the harder test),
+not grading against any one guess.
+
+## Addendum 2 — generation-convergence, and a tension that flips sign
+
+The harder test, run: `pivot/seed.py` carries the seed as data — three
+*explicit* axes (location / agency / visibility, each with its −1/0/+1
+reading), one anchor ("the parts of a bounded system"), the 27 addresses
+— and `generation_prompt` expands it. **4 cold generators invented their
+own 27 terms** from the seed; the battery measured convergence with
+vocabulary now varying.
+
+| reading | recovery run (given vocab, fuzzy law) | generation run (explicit axes) |
+|---|---|---|
+| placement exact | 0.380 | **0.750** |
+| placement kind | 0.769 | 0.789 |
+| orientation_slack | 0.389 | **0.039** |
+| convention_slack | 0.123 | **0.000** |
+| vocab ⊖ placement | **+0.62** | **−0.39** |
+| vocabulary jaccard | 1.000 (fixed) | 0.364 (generated) |
+
+The finding: **stating the axes in the seed collapses the orientation
+ambiguity** — convention_slack 0.00 (no cube symmetry improves agreement;
+every generator is in the same frame) and exact placement jumps to 0.75.
+The vocab⊖placement tension **flips sign**: independent generators
+disagree on *which word* more than on *where it goes*. `reservoir` /
+`filter` / `sink` / `engine` land at the same coordinates across
+independent runs; the variance is lexical. **The geometry is more
+canonical than the vocabulary** — strong evidence the structure is real
+and recoverable, with the irreducible noise localized to naming, not
+position. (Still N=4, same family, one seed — cross-family via envoy is
+the verdict; minimal-seed search and definition-convergence are the next
+dials.)
+
+## Addendum 3 — the envoy: Pivot leaves to be played
+
+bdo: "work on the full envoy export — we need to land more concepts." The
+real verdict is cross-family, and the way Pivot reaches a foreign model is
+an envoy package. Sealed **`exports/pivot-play`** (6 files, ~17.5k tokens,
+receipt on `exports/log.jsonl`, `--by claude`), framed to **play**, not
+review: a foreign family generates cube-states from two seeds (`s.v1`
+axes-stated; `s.min` axes-withheld — the compression probe) and returns
+gradeable JSON; the home instrument grades convergence. It ships the
+**question, never an answer key** (there is no key — convergence is the
+measure). The tensions name six seams honestly, sharpest being: same-family
+convergence may be a shared prior, not shared structure — exactly what an
+outside family settles. Returns come home as more generations toward the
+candidate canon (corpus-to-system).
+
+> A `git merge origin/main` mid-session left conflict markers in the three
+> Pivot files; resolved to the branch's evolved versions (each a strict
+> evolution of #40's). Full suite **389 green** post-merge.
+
+**needs-you:** the package is sealed but unsent — reaching GPT/Gemini is
+outside the loop. Sending it (or approving a channel) is bdo's.
