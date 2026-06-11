@@ -115,14 +115,16 @@ MIN_REFLECTION = 40  # a glib excuse is not a reflection — the bar must hurt
 
 def supersede_done(kind_or_path, abandoning, slug, done_when, reason, by,
                    title=None, root=None):
-    """The painful path — the only way to change what "done" meant
-    (done-line 0033). A written done-line is frozen (freeze_guard); to
-    move the bar you do not edit it, you ABANDON it loudly and additively:
-    the original stands forever as history, a NEW line carries the new bar
-    *and* the reflection on why the old one failed, and the act is recorded
-    as a `done_superseded` admission that a session can never self-authorize
-    (no one signs their own line). bdo's own supersede authorizes itself —
-    he steers the bar (D-4). Stdlib + the one log append."""
+    """The only way to change what "done" meant (done-line 0033) — and it
+    is bdo's alone. A written done-line is frozen (freeze_guard); to move
+    the bar you do not edit it, you ABANDON it loudly and additively: the
+    original stands forever as history, a NEW line carries the new bar
+    *and* the reflection on why the old one failed, recorded as a
+    `done_superseded` admission. A session is refused outright here, before
+    anything is written — letting a session author even a *pending* new bar
+    would be a free "stop working" card (no one signs their own line, D-4).
+    A blocked session surfaces the bad bar in its report and keeps working;
+    bdo supersedes it himself if he agrees. Stdlib + the one log append."""
     from loop.reconcile import append_line, now_ts, short_hash
 
     dirpath = resolve_dir(kind_or_path)
@@ -135,9 +137,13 @@ def supersede_done(kind_or_path, abandoning, slug, done_when, reason, by,
         print(f"result: needs-you — {dirpath} is not a frozen records "
               "directory; supersede is the ritual for frozen contracts only")
         return 2
-    if not (by or "").strip():
-        print("result: needs-you — supersede must be signed (--by): moving a "
-              "bar is an act on the record, never anonymous")
+    if (by or "").strip().lower() != "bdo":
+        print("result: needs-you — moving a done-line is bdo's alone (D-4). A "
+              "session does not get to change what done meant — that would be a "
+              "free 'stop working' card, a new bar you wrote for yourself. If "
+              "the bar is genuinely wrong, name it in your report's needs-you "
+              "and KEEP WORKING; bdo supersedes it himself if he agrees. "
+              "Nothing is written here.")
         return 2
     old = find_done(dirpath, abandoning)
     if old is None:
@@ -186,7 +192,9 @@ def supersede_done(kind_or_path, abandoning, slug, done_when, reason, by,
         return 2
     target.write_bytes(text.encode("utf-8"))  # LF bytes: identity-safe
 
-    authorized = (by or "").strip().lower() == "bdo"
+    # only bdo reaches here (the gate above refuses every session), so a
+    # supersede on the record is always the owner's own act — there is no
+    # session-authored bar, pending or otherwise (D-4)
     adm = {
         "id": "adm." + short_hash("done_superseded", old_id, name, str(by), now_ts()),
         "type": "done_superseded",
@@ -195,25 +203,15 @@ def supersede_done(kind_or_path, abandoning, slug, done_when, reason, by,
         "new_line": target.as_posix(),
         "reason": reason,
         "by": by,
-        "authorized": authorized,
-        "authorized_by": "bdo" if authorized else None,
+        "authorized": True,
+        "authorized_by": "bdo",
         "ts": now_ts(),
     }
     append_line(dirpath.parent / "log" / "admissions.jsonl", adm)
-
-    if authorized:
-        print(f"result: report — done-line {old_id} superseded by "
-              f"{target.as_posix()} (id {iid:04d}), authorized by bdo. The "
-              f"original stands as history; the abandonment is on the record "
-              f"({adm['id']}).")
-        return 0
-    print(f"result: needs-you — LOUD: a session moved what 'done' meant. "
-          f"done-line {old_id} → {iid:04d} is written and recorded "
-          f"({adm['id']}), but NOT authorized — it sits pending bdo's stamp. "
-          f"No one signs their own line. The bar you set is still the bar "
-          f"until he rules. Complete tasks and mark them done; do not move "
-          f"the line.")
-    return 2
+    print(f"result: report — done-line {old_id} superseded by "
+          f"{target.as_posix()} (id {iid:04d}), by bdo. The original stands "
+          f"as history; the abandonment is on the record ({adm['id']}).")
+    return 0
 
 
 def main(argv=None):

@@ -25,10 +25,12 @@ be, landed as stamped increments, never hand-tuned silently.
     whose `.pen.json` declares `"frozen": true` cannot be edited or
     overwritten in place, absolutely, with no owner exception (Codex
     editing its own done-line to add an exhaustion clause is exactly
-    what this refuses). The only way to change what done meant is the
-    additive, owner-gated supersede ritual the refusal names
-    (`loop.pen supersede-done`); the original stands as history. Creation
-    is untouched — that is write_guard's land. Fails open, loudly.
+    what this refuses). No session gets to change what done meant at all
+    — not even by superseding, which is bdo's alone (`loop.pen
+    supersede-done --by bdo` refuses every session signer and writes
+    nothing); a session's only move is to surface a bad bar and keep
+    working. The original stands as history. Creation is untouched —
+    that is write_guard's land. Fails open, loudly.
   - `SessionStart` + `UserPromptSubmit` → `loop.summon --hook`: open
     summons, the owner-backlog count, and unreflected surface drift,
     injected ambiently.
