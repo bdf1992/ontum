@@ -37,6 +37,35 @@
   #hint { position: fixed; right: 18px; bottom: 14px; color: var(--dim); font-size: 11px;
     pointer-events: none; }
 
+  #crumbs { position: fixed; top: 40px; left: 18px; display: flex; gap: 4px;
+    align-items: center; font-size: 11px; color: var(--dim); }
+  #crumbs .crumb { background: rgba(215,220,230,.06); border: 1px solid rgba(215,220,230,.18);
+    color: var(--ink); border-radius: 999px; padding: 2px 10px; font: inherit;
+    font-size: 11px; cursor: pointer; }
+  #crumbs .crumb.here { background: rgba(89,194,255,.16); border-color: var(--der);
+    color: #fff; cursor: default; }
+  #crumbs .sep { color: var(--dim); }
+
+  @media (max-width: 700px) {
+    #bar { top: 64px; left: 18px; right: 18px; max-width: none; justify-content: flex-start; }
+    #title span { display: none; }
+    #crumbs { top: 96px; }
+    .panel { top: 110px; }
+  }
+
+  #pOntabet { width: 700px; }
+  table.grade { border-collapse: collapse; width: 100%; font-size: 11px; }
+  table.grade th { text-align: left; color: var(--dim); font-weight: normal;
+    padding: 4px 10px 4px 0; border-bottom: 1px solid rgba(215,220,230,.18); }
+  table.grade td { padding: 3px 10px 3px 0; border-top: 1px solid rgba(215,220,230,.07);
+    white-space: nowrap; }
+  .bitcode { color: var(--der); letter-spacing: .04em; }
+  .donor0 { color: var(--open); }
+  .meas { color: var(--pin); }
+  .syl { font-size: 11px; margin: 2px 0; white-space: nowrap; }
+  .syl .via { color: var(--dim); }
+  .sylhead { margin: 12px 0 4px; font-size: 12px; }
+
   .panel { position: fixed; top: 64px; right: 18px; width: 380px; max-width: calc(100vw - 36px);
     max-height: calc(100vh - 120px); overflow-y: auto; padding: 16px 18px;
     background: rgba(13,17,25,.92); border: 1px solid rgba(215,220,230,.16);
@@ -117,12 +146,10 @@
   <button class="btn" id="bLinks" title="relationship web: off → seams (incidence skeleton) → drift (displacement chords)">links off</button>
   <button class="btn" id="bXray" title="only the colored facelets — see through the cube">x-ray</button>
   <button class="btn" id="bExplode" title="lift the pieces apart on struts — the inside stays connected and visible">explode</button>
-  <button class="btn" id="bTrioSpot" title="spotlight S, I, O in the current frame">S·I·O</button>
-  <button class="btn" id="bCascade" title="the worked example: A's seams request the next sites">cascade ▸</button>
-  <button class="btn" id="bTrio">trio</button>
-  <button class="btn" id="bTerms">terms</button>
-  <button class="btn" id="bSeams">findings</button>
+  <button class="btn" id="bOntabet" title="the index — ontabet · syllabary · basin · terms · findings in one panel">index</button>
 </div>
+
+<div id="crumbs"></div>
 
 <div id="caption"></div>
 <div id="hint">drag to orbit · scroll to zoom · click a cell</div>
@@ -147,9 +174,7 @@
 </div>
 
 <div class="panel" id="pCell"><span class="x" data-close="pCell">✕</span><div id="pCellBody"></div></div>
-<div class="panel" id="pTrio"><span class="x" data-close="pTrio">✕</span><div id="pTrioBody"></div></div>
-<div class="panel" id="pTerms"><span class="x" data-close="pTerms">✕</span><div id="pTermsBody"></div></div>
-<div class="panel" id="pSeams"><span class="x" data-close="pSeams">✕</span><div id="pSeamsBody"></div></div>
+<div class="panel" id="pOntabet"><span class="x" data-close="pOntabet">✕</span><div id="pOntabetBody"></div></div>
 
 <canvas id="c"></canvas>
 
@@ -12860,8 +12885,6 @@ const view = { rx: 0.42, ry: -0.62, dist: 8.2, f: 1, vrx: 0, vry: 0 };
 const st = {
   lettering: "polysheaf",
   knollT: 0, knollOn: false,
-  spot: false,
-  cascade: null,          // {stages, stage, t0}
   hover: null, sel: null,
   lastTouch: performance.now(),
   flash: null,            // {text, until}
@@ -12872,6 +12895,68 @@ const st = {
   xray: false,            // only the colored facelets — see through
   explodeOn: false, explodeT: 0,  // lift the pieces apart on struts
 };
+
+// ------------------------------------------------------- descent / ascent
+// The one cube re-labels from a frame stack (the descent law: a frame's
+// center names what it cannot distinguish; descending mints the
+// distinctions). Every operation — turns, scramble, explode, x-ray —
+// stays live at every level, because frame words ride PIECES while
+// addresses stay cells: turning a descended frame displaces occupants
+// from their homes, the pairing-as-state reading as pure experience.
+// Nothing here decides a pin or writes a record; placements render with
+// the status they carry (PROPOSED / MODEL-GUESSED), and a frame whose
+// cell assignment is OPEN says so instead of inventing one.
+const frameStack = [];          // [] = the global frame
+const activeFrame = () => frameStack.length ? frameStack[frameStack.length - 1] : null;
+
+/*FRAME_MATH_START*/
+// Pure frame-vocabulary derivation — no DOM, no globals beyond the passed
+// registry. For a descended frame, what does each HOME cell carry?
+//   placed frame (S today): its word per cell, status as recorded
+//   letter frame: its term-frame slot per offset; the basin's pivot
+//                 candidate rides the center as a named hole [OPEN]
+//   ⊘: the interstitial frame — pools per kind; within-kind cell
+//       assignment is OPEN, so only the center carries a word
+// tests/test_viewer_cube.py extracts this block and checks it under node.
+function frameVocabOf(reg, letter) {
+  const k = c => c.join(",");
+  const out = { letter, byHome: {}, pools: null, title: "", status: "" };
+  const placed = reg.placements && reg.placements[letter];
+  const lex = reg.lexicon || {};
+  if (placed) {
+    out.title = letter + " — placed frame";
+    out.status = placed.status || "PROPOSED";
+    for (const [word, cell] of Object.entries(placed.cells))
+      out.byHome[k(cell.coord)] = { text: word, sub: cell.cell,
+                                    status: "PROPOSED", gloss: cell.rationale };
+  } else if (letter === "⊘") {
+    const inter = lex.interstitial || { kinds: {}, pivot_candidate: "Interstice" };
+    out.title = "⊘ — the interstitial frame";
+    out.status = "OPEN";
+    out.pools = inter.kinds;
+    out.byHome["0,0,0"] = { text: inter.pivot_candidate, sub: "pivot candidate",
+                            status: "OPEN", gloss: "the lens: all 26 are ways of being-between" };
+  } else {
+    const tf = (reg.term_frames && reg.term_frames.frames[letter]) || [];
+    out.title = letter + " — term frame (contract v0)";
+    out.status = "DERIVED";
+    for (const s of tf)
+      out.byHome[k(s.d)] = { text: s.label, sub: s.kind, status: "DERIVED", gloss: s.gloss };
+    const basin = lex.frames && lex.frames[letter];
+    if (basin && basin.pivot_candidate)
+      out.byHome["0,0,0"] = { text: basin.pivot_candidate, sub: "pivot candidate",
+                              status: "OPEN",
+                              gloss: "surveyed pivot candidate — a named hole until placed and stamped" };
+    out.basin = basin || null;
+  }
+  return out;
+}
+
+// how many pieces sit away from home — the displacement of the pairing
+function displacedOf(ps) {
+  return ps.filter(p => p.cell.join(",") !== p.home.join(",")).length;
+}
+/*FRAME_MATH_END*/
 
 // the cube's word: the move history over the 6-letter generator set
 let turn = null;          // {face, dir, axis, sign, t, dur}
@@ -12966,10 +13051,12 @@ function printFaceLetter(p, n, h, spin, letterInfo, col) {
   ctx.save();
   ctx.transform((pu.x - p0.x) / Q, (pu.y - p0.y) / Q,
                 (pv.x - p0.x) / Q, (pv.y - p0.y) / Q, p0.x, p0.y);
-  ctx.font = "700 42px ui-monospace, Menlo, monospace";
+  const t = String(letterInfo.text);
+  const tfs = t.length > 2 ? Math.max(9, Math.min(42, 104 / t.length)) : 42;
+  ctx.font = `700 ${tfs}px ui-monospace, Menlo, monospace`;
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillStyle = INK[col] || "rgba(12,14,18,.88)";
-  ctx.fillText(letterInfo.text, 0, 2);
+  ctx.fillText(t, 0, 2);
   ctx.restore();
 }
 
@@ -13183,32 +13270,24 @@ function unwind() {
 function updateCubeUI() {
   const s = stateStringOf(pieces);
   const el = document.getElementById("stateStr");
-  el.textContent = s;
-  el.classList.toggle("solved", s === SOLVED_STRING);
+  const fv = activeFrame();
+  if (fv) {
+    // descended: the state is the pairing — words on or off their addresses
+    const d = displacedOf(pieces);
+    el.textContent = d === 0
+      ? "canonical pairing — every word at its address [" + (fv.status || "") + "]"
+      : d + " of 27 displaced from their addresses — the pairing scrambled";
+    el.classList.toggle("solved", d === 0);
+  } else {
+    el.textContent = s;
+    el.classList.toggle("solved", s === SOLVED_STRING);
+  }
   const w = document.getElementById("moveWord");
   if (!history.length) w.textContent = "∅ — turn a face (or drag one)";
   else {
     const shown = history.length > 24 ? "… " + history.slice(-24).join(" ") : history.join(" ");
     w.textContent = shown + "   (" + history.length + ")";
   }
-}
-
-// ----------------------------------------------------------- cascade story
-// Built from the registry itself: seam_of / requests per cell.
-function cascadeStages() {
-  const cells = REGISTRY.letterings.polysheaf.cells;
-  const edges = cells.filter(c => c.cell === "edge").map(c => c.letter);
-  const faces = cells.filter(c => c.cell === "face").map(c => c.letter);
-  const I = polyByLetter["I"];
-  return [
-    { t: 2.6, cap: "Determine the Self — corner A = (−,−,−): codename of the fully decided cell.", lit: { A: 1 }, lines: [] },
-    { t: 3.2, cap: "A's seam-logic requests its three edges — open one axis → I (x), M (y), Q (z).", lit: { A: 1, I: .9, M: .9, Q: .9 }, lines: [["A", "I"], ["A", "M"], ["A", "Q"]] },
-    { t: 3.2, cap: "Promote seam I to a Self: edge I = seam(A, E).", lit: { I: 1, A: .6, E: .6 }, lines: [["I", "A"], ["I", "E"]] },
-    { t: 3.0, cap: "Installing the seam requests the next Site: edge I asks for endpoint E.", lit: { E: 1, I: .7, A: .4 }, lines: [["I", "E"]] },
-    { t: 3.2, cap: "Edges request faces — open a second axis.", lit: Object.fromEntries([...edges.map(e => [e, .55]), ...faces.map(f => [f, .9]), ["I", 1]]), lines: I.requests.map(f => ["I", f]) },
-    { t: 3.4, cap: "Faces request the center — and ⊘ requests nothing. The cascade terminates at the obscured wildcard.", lit: Object.fromEntries([...faces.map(f => [f, .5]), ["⊘", 1]]), lines: faces.map(f => [f, "⊘"]) },
-    { t: 4.0, cap: "The loop closes at the void: 26 letters around an empty center. The spindle is the system.", lit: { "⊘": 1 }, lines: [] },
-  ];
 }
 
 // ------------------------------------------------------------------- frame
@@ -13220,26 +13299,9 @@ function setCaption(t) {
 
 function targets() {
   // per-frame target lit/alpha for every piece, from the active mode
-  const lit = {}, ghost = (st.spot || st.cascade) ? 0.13 : 1;
-  let lines = [];
-  if (st.cascade) {
-    const stages = st.cascade.stages, i = st.cascade.stage;
-    const s = stages[i];
-    Object.assign(lit, s.lit); lines = s.lines;
-    setCaption("▸ " + s.cap);
-    if ((performance.now() - st.cascade.t0) / 1000 > s.t) {
-      if (i + 1 < stages.length) { st.cascade.stage++; st.cascade.t0 = performance.now(); }
-      else { st.cascade = null; document.getElementById("bCascade").classList.remove("on"); document.getElementById("bCascade").textContent = "cascade ▸"; setCaption(""); }
-    }
-  } else if (st.spot) {
-    lit.S = 1; lit.I = 1; lit.O = 1;
-    if (st.lettering === "polysheaf") {
-      for (const g of ["S", "I", "O"]) for (const e of polyByLetter[g].seam_of) { lit[e] = Math.max(lit[e] || 0, .45); lines.push([g, e]); }
-      setCaption("S·I·O as addresses — one seam per axis (I:x, O:y, S:z), all three shared by corner E: the seam-star of one Self. (trio status: OPEN)");
-    } else {
-      setCaption("S·I·O as occupants — S = corner UFR, I = edge UB, O = edge FR. All three carry state; scramble and they travel. (trio status: OPEN)");
-    }
-  } else if (st.flash && performance.now() < st.flash.until) {
+  const lit = {}, ghost = 1;
+  const lines = [];
+  if (st.flash && performance.now() < st.flash.until) {
     setCaption(st.flash.text);
   } else setCaption("");
   return { lit, ghost, lines };
@@ -13260,7 +13322,7 @@ function frame(now) {
   } else {
     view.rx += view.vrx; view.ry += view.vry;
     view.vrx *= 0.92; view.vry *= 0.92;
-    if (now - st.lastTouch > 4000 && !st.cascade) view.ry += dt * 0.12;
+    if (now - st.lastTouch > 4000) view.ry += dt * 0.12;
   }
   view.rx = Math.max(-1.45, Math.min(1.45, view.rx));
 
@@ -13282,7 +13344,7 @@ function frame(now) {
   }
 
   const tg = targets();
-  const cur = st.cascade ? "polysheaf" : st.lettering;
+  const cur = st.lettering;
   for (const p of pieces) {
     const letter = dispEntry(p, cur).letter;
     const wantLit = tg.lit[letter] || 0;
@@ -13341,7 +13403,7 @@ function frame(now) {
   // related cells (scrambling re-wires which pieces the web touches).
   // drift — each displaced piece tied to whoever squats its home cell:
   // the permutation's cycles drawn as chords; solved = no chords.
-  if (st.links && !st.spot && !st.cascade) {
+  if (st.links) {
     const cellAt = {};
     for (const p of pieces) cellAt[key(p.cell)] = p;
     if (st.links === 1) {
@@ -13358,14 +13420,19 @@ function frame(now) {
     }
   }
 
+  const fv = activeFrame();
   for (const p of order) {
     const entry = dispEntry(p, cur);
     const isVoid = p.kind === "center";
     const sel = st.sel === p || st.hover === p;
     const h = HB * (1 + 0.07 * p.lit + (sel ? 0.05 : 0));
     const pSpin = spin && p.cell[spin.axis] === spin.sign ? spin : null;
-    const letterInfo = st.labels && st.knollT <= 0.5 && !isVoid
-      ? { text: entry.letter, glued: cur !== "polysheaf" } : null;
+    // descended: the frame's word rides the PIECE (occupant identity), so
+    // turns displace words from their addresses — glued, like occupants
+    const fw = fv ? fv.byHome[key(p.home)] : null;
+    const labelText = fv ? (fw && fw.text ? fw.text : null) : entry.letter;
+    const letterInfo = st.labels && st.knollT <= 0.5 && !isVoid && labelText
+      ? { text: labelText, glued: fv ? true : cur !== "polysheaf" } : null;
     if (isVoid) drawVoid(p, h * 0.8, Math.max(p.lit, sel ? .8 : 0), Math.max(p.alpha, st.xray ? 0.85 : 0.5));
     else if (st.xray) drawFacelets(p, h, Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin, letterInfo);
     else drawCube(p, h, Math.max(p.lit, sel ? .7 : 0), p.alpha, pSpin, letterInfo);
@@ -13374,19 +13441,23 @@ function frame(now) {
     const q = proj(p.pos);
     const fs = Math.max(9, h * q.s * 0.8);
     if ((st.labels && st.knollT > 0.5) || isVoid) {
+      const billboard = fv ? (isVoid && fw ? fw.text : labelText || "·")
+                           : entry.letter;
+      const bfs = billboard.length > 2 ? Math.max(8, fs * 2.4 / billboard.length) : fs;
       ctx.globalAlpha = Math.min(1, p.alpha + p.lit);
-      ctx.font = `700 ${fs}px ui-monospace, Menlo, monospace`;
+      ctx.font = `700 ${bfs}px ui-monospace, Menlo, monospace`;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.lineJoin = "round";
-      ctx.strokeStyle = "rgba(7,9,13,.85)"; ctx.lineWidth = Math.max(1.5, fs * 0.18);
-      if (!isVoid) ctx.strokeText(entry.letter, q.x, q.y + 1);
+      ctx.strokeStyle = "rgba(7,9,13,.85)"; ctx.lineWidth = Math.max(1.5, bfs * 0.18);
+      if (!isVoid) ctx.strokeText(billboard, q.x, q.y + 1);
       ctx.fillStyle = isVoid ? "#d7dce6" : "#fff";
-      ctx.fillText(entry.letter, q.x, q.y + 1);
+      ctx.fillText(billboard, q.x, q.y + 1);
       ctx.globalAlpha = 1;
     }
     // sublabel: knolled mode always; lattice on hover/select/lit
     if (st.labels && (st.knollT > 0.6 || sel || p.lit > 0.5)) {
-      const sub = cur === "polysheaf" ? entry.coord_str : entry.cubie;
+      const sub = fv ? (fw ? fw.sub : "open")
+                     : cur === "polysheaf" ? entry.coord_str : entry.cubie;
       ctx.globalAlpha = Math.max(0.25, p.alpha) * (st.knollT > 0.6 ? 1 : 0.9);
       ctx.font = `400 ${Math.max(8, fs * 0.45)}px ui-monospace, Menlo, monospace`;
       ctx.fillStyle = "#8a93a6"; ctx.textAlign = "center";
@@ -13537,7 +13608,7 @@ function pick(mx, my) {
 const $ = id => document.getElementById(id);
 function hide(id) { $(id).classList.remove("show"); }
 function showOnly(id) {
-  for (const p of ["pCell", "pTrio", "pTerms", "pSeams"]) $(p).classList.toggle("show", p === id);
+  for (const p of ["pCell", "pOntabet"]) $(p).classList.toggle("show", p === id);
 }
 document.querySelectorAll(".x").forEach(x => x.onclick = () => hide(x.dataset.close));
 
@@ -13585,18 +13656,50 @@ $("bExplode").onclick = () => {
     st.flash = { text: "exploded: pieces lifted apart on their struts — the empty center visible; turns still work", until: performance.now() + 4500 };
   }
 };
-$("bTrioSpot").onclick = () => {
-  st.spot = !st.spot; st.cascade = null;
-  $("bTrioSpot").classList.toggle("on", st.spot);
-  $("bCascade").classList.remove("on");
-};
-$("bCascade").onclick = () => {
-  if (st.cascade) { st.cascade = null; $("bCascade").classList.remove("on"); $("bCascade").textContent = "cascade ▸"; setCaption(""); return; }
-  st.spot = false; $("bTrioSpot").classList.remove("on");
-  setLettering("polysheaf");
-  st.cascade = { stages: cascadeStages(), stage: 0, t0: performance.now() };
-  $("bCascade").classList.add("on"); $("bCascade").textContent = "cascade ◼";
-};
+// ------------------------------------------------------ descend / ascend UI
+function renderCrumbs() {
+  const parts = [`<button class="crumb ${frameStack.length ? "" : "here"}" data-depth="0"
+    title="the global frame — 26 letters around the void">global ⊘</button>`];
+  frameStack.forEach((f, i) => {
+    parts.push(`<span class="sep">▸</span>`);
+    parts.push(`<button class="crumb ${i === frameStack.length - 1 ? "here" : ""}"
+      data-depth="${i + 1}" title="${f.title}">${f.letter}</button>`);
+  });
+  $("crumbs").innerHTML = parts.join("");
+  document.querySelectorAll("#crumbs .crumb").forEach(b =>
+    b.onclick = () => { if (+b.dataset.depth < frameStack.length) ascend(+b.dataset.depth); });
+}
+
+function descend(letter) {
+  if (activeFrame()) {
+    // depth one, honestly: children of letter frames are not drafted —
+    // the descent law predicts them (S-child vs interstitial overlap is
+    // MEAS-5), but absence is information, not something to invent.
+    st.flash = { text: "descent below one level is OPEN — no child frame is drafted yet; " +
+                 "the descent law predicts S's child shares cells with the interstitial frame (MEAS-5)",
+                 until: performance.now() + 6000 };
+    return;
+  }
+  frameStack.push(frameVocabOf(REGISTRY, letter));
+  const fv = activeFrame();
+  hide("pCell"); st.sel = null;
+  // traversal-driven instantiation: the sub-frame begins solved — depth
+  // is a property of the walk, not the geometry
+  resetCube();
+  renderCrumbs();
+  st.flash = { text: "descended into " + fv.title + " [" + fv.status + "] — every operation still works; " +
+               "turns displace the frame's words from their addresses", until: performance.now() + 6000 };
+}
+
+function ascend(depth) {
+  frameStack.length = depth;
+  hide("pCell"); st.sel = null;
+  resetCube();
+  renderCrumbs();
+  st.flash = { text: frameStack.length ? "ascended to " + activeFrame().title
+               : "ascended to the global frame", until: performance.now() + 3000 };
+}
+renderCrumbs();
 
 // cube controls
 document.querySelectorAll(".mv").forEach(b => {
@@ -13899,14 +14002,27 @@ function showCell(p) {
   let ori = "";
   if (p.kind === "edge") ori = `<div>orientation</div><div>${edgeOrientOf(p) ? "1 — flipped" : "0 — good"}</div>`;
   if (p.kind === "corner") ori = `<div>twist</div><div>${cornerOrientOf(p)}</div>`;
+  // descended: the frame's word at this address, with the status it carries
+  const fv = activeFrame();
+  const fHome = fv ? fv.byHome[key(p.home)] : null;
+  const frameCard = !fv ? "" : `
+    <h3>${fv.title} ${badge(fv.status.split(",")[0].split(" ")[0] || "OPEN")}</h3>
+    ${fHome && fHome.text
+      ? `<p><b>${fHome.text}</b> <span class="src">(${fHome.sub})</span> rides this piece —
+         home address ${polyByKey[key(p.home)].letter} <code>${polyByKey[key(p.home)].coord_str}</code>${away ? ", currently displaced" : ""}.</p>
+         ${fHome.gloss ? `<p class="quote">${fHome.gloss}</p>` : ""}`
+      : `<p class="src">no word rides this piece — open capacity in this frame.</p>`}`;
   $("pCellBody").innerHTML = `
     <div id="miniWrap">
       <div id="cellGlyph" style="color:${isVoid ? "#d7dce6" : KINDCOLOR[p.kind]}">${occ.letter}<span class="at">@</span>${addr.letter}</div>
       <div>
         <p>${occ.cubie} · ${p.kind} · ${away ? "away from home" : "home"}</p>
         ${badge(occ.status)}
+        ${fv ? "" : `<p><button class="btn mini" id="bDescend"
+          title="re-label the whole cube from ${addr.letter}'s own frame — operations stay live">descend into ${addr.letter} ▾</button></p>`}
       </div>
     </div>
+    ${frameCard}
     <div id="miniTabs">
       <button class="btn mini ${miniMode === "terms" ? "on" : ""}" id="mTerms"
         title="the LOCAL/self view: this glyph's own 27 terms mapped on its cube (contract v0)">terms</button>
@@ -13927,6 +14043,18 @@ function showCell(p) {
       ${addr.antipode !== addr.letter ? `<span class="rolecap">antipode</span>${gchip(addr.antipode)}` : ""}
       <span class="rolecap">@</span><span class="gchip" style="border-color:${KINDCOLOR[p.kind]};color:${KINDCOLOR[p.kind]}" data-g="${addr.letter}">${occ.letter}</span>
     </div>
+    <h3>composition — the incidence laws ${badge("DERIVED")}</h3>
+    <div class="relrow">
+      <span class="rolecap">↓ ${addr.closure.length} = 3^${addr.dim}</span>${addr.closure.map(gchip).join("")}
+      <span class="rolecap">↑ ${addr.star.length} = 2^${addr.codim}</span>${addr.star.map(gchip).join("")}
+    </div>
+    <p class="src">closure ↓ (boundary + self) composes downward in base 3; star ↑
+      (cascade + self) opens upward in base 2 — emitted by knoll.py, re-verified every
+      run. Spoken in full, ${addr.letter} is its closure: <b>${addr.closure.join("·")}</b>
+      — ${addr.closure.length} word${addr.closure.length > 1 ? "s" : ""} (utterance order
+      is PIN-5, provisional). Axis code: ${addr.bits} bits — each open-step sheds one.
+      Placement falsifier: a word at this cell must read as composed of its ↓ glyphs,
+      or it is misplaced.</p>
     <h3>occupant — the piece</h3>
     <div class="kv">
       <div>glyph</div><div>${occ.letter} (${occ.cubie})</div>
@@ -13944,6 +14072,7 @@ function showCell(p) {
       <div>antipode</div><div>${addr.antipode}</div>
       <div>seam of</div><div>${addr.seam_of.join(", ") || "—"}</div>
       <div>requests</div><div>${addr.requests.join(", ") || "nothing — the loop closes here"}</div>
+      <div>frame capacity</div><div>${(ontCore[addr.letter] || {}).neighbors_in_frame ?? "—"} in frame / ${(ontCore[addr.letter] || {}).open_slots ?? "—"} open</div>
     </div>
     ${occ.note ? `<p class="quote">${occ.note}</p>` : ""}${addr.note ? `<p class="quote">${addr.note}</p>` : ""}
     <p class="src">occupant: ${occ.source}<br>address: ${addr.source}</p>`;
@@ -13955,23 +14084,140 @@ function showCell(p) {
   });
   $("mTerms").onclick = () => { if (miniMode !== "terms") { miniMode = "terms"; showCell(p); } };
   $("mHood").onclick = () => { if (miniMode !== "hood") { miniMode = "hood"; showCell(p); } };
+  const bd = $("bDescend");
+  if (bd) bd.onclick = () => descend(addr.letter);
   startLocalCube(p);
 }
 
-$("bTrio").onclick = () => {
-  const t = REGISTRY.trio;
-  $("pTrioBody").innerHTML =
-    `<h2>THE S·I·O TRIO ${badge(t.status)}</h2><p>${t.note}</p>` +
-    t.readings.map(r =>
-      `<h3>${r.frame} ${badge(r.status)}</h3>
-       <ul>${["S", "I", "O"].filter(g => r.reading[g]).map(g => `<li><b>${g}</b> — ${r.reading[g]}</li>`).join("")}</ul>
-       <p class="quote">${r.gloss}</p>`).join("");
-  showOnly("pTrio");
-};
+// ------------------------------------------------------- the index panel
+// Everything below is derived from REGISTRY at render time — no hand-typed
+// data; re-knolling regenerates every tab for free. Gradings wear their
+// status (the cant warning: a number must say where it came from):
+//   code/bits — the axis code [DERIVED]: open axis = 0 (one bit), decided
+//               axis = sign pair (− = 10, + = 11); bits = 3 + decided.
+//               Complete prefix code — Kraft sum exactly 1.
+//   chips     — structural seed for the usage tally [DERIVED as 2^open;
+//               that density = decidedness is ASSUMED, not measured].
+//   donors    — the lexifier density column [MEASURED, from the basin]
+//               where a basin frame exists; OPEN elsewhere.
+//   sc        — structure coefficient [OPEN until MEAS-3 comes home].
+const ONT_AXES = ["x", "y", "z"];
+const ontBit = v => v === 0 ? "0" : (v < 0 ? "10" : "11");
+const ontCells = REGISTRY.letterings.polysheaf.cells;
+const ontByCoord = Object.fromEntries(ontCells.map(c => [c.coord.join(","), c]));
+const ontCore = Object.fromEntries(REGISTRY.core27.terms.map(t => [t.glyph, t]));
+const ONT_PERMS = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+const LEX = REGISTRY.lexicon || { frames: {}, census: {}, collisions: {}, findings: [] };
 
-$("bTerms").onclick = () => {
+function ontSyllables() {
+  const out = [];
+  for (const c of ontCells.filter(c => c.cell === "corner")) {
+    for (const p of ONT_PERMS) {
+      const coord = c.coord.slice(), walk = [c.letter], axes = [];
+      for (const ax of p) {
+        coord[ax] = 0;
+        walk.push(ontByCoord[coord.join(",")].letter);
+        axes.push(ONT_AXES[ax]);
+      }
+      const first = c.coord.slice(); first[p[0]] = 0;
+      const edge = ontByCoord[first.join(",")];
+      out.push({ corner: c.letter, word: walk.join("·"), axes: axes.join(""),
+                 via: edge.letter, kin: edge.seam_of.find(l => l !== c.letter) });
+    }
+  }
+  return out;
+}
+
+function donorCell(letter) {
+  const fr = LEX.frames[letter];
+  if (!fr) return `<span class="donor0">OPEN</span>`;
+  return `<span class="meas">${fr.density.rate.toFixed(2)} · MEASURED</span>`;
+}
+
+function indexOntabetHTML() {
+  const kc = k => k === "center" ? "var(--ink)" : KINDCOLOR[k];
+  const rows = ontCells.map(c => {
+    const core = ontCore[c.letter] || {};
+    return `<tr>
+      <td><b style="color:${kc(c.cell)}">${c.letter}</b></td>
+      <td>${c.coord_str}</td>
+      <td style="color:${kc(c.cell)}">${c.cell}</td>
+      <td class="bitcode">${c.coord.map(ontBit).join("·")}</td>
+      <td>${c.bits}</td>
+      <td>${1 << c.dim}</td>
+      <td>${core.neighbors_in_frame ?? "—"}/${core.open_slots ?? "—"}</td>
+      <td>${donorCell(c.letter)}</td>
+      <td><span class="donor0">sc OPEN</span></td>
+      <td>${badge(c.status)}</td></tr>`;
+  }).join("");
+  const groups = {};
+  for (const s of ontSyllables()) (groups[s.corner] = groups[s.corner] || []).push(s);
+  const sylHtml = Object.entries(groups).map(([corner, ss]) =>
+    `<h3 class="sylhead"><b style="color:${KINDCOLOR.corner}">${corner}</b> — six openings</h3>` +
+    ss.map(s => `<p class="syl">${s.word} <span class="via">· ${s.axes} · exits through ${s.via},
+      the wall shared with ${s.kin}</span></p>`).join("")).join("");
+  return (
+    `<h2>THE ONTABET ${badge("DERIVED")}</h2>
+     <p class="src">27 glyphs graded; derived from the registry at render time —
+       re-knolling regenerates this panel. Bits are the axis code [DERIVED]; chips the
+       structural seed [density = decidedness is ASSUMED]; donors the lexifier fill-rate
+       [MEASURED from language/basin.md]; sc the structure coefficient [OPEN until MEAS-3].</p>
+     <table class="grade">
+       <tr><th>glyph</th><th>address</th><th>kind</th><th>code</th><th>bits</th>
+           <th>chips</th><th>frame</th><th>donor·density</th><th>sc</th><th>st</th></tr>${rows}</table>
+     <p class="src" style="margin-top:8px">code: open = 0 · minus = 10 · plus = 11, axes x·y·z.
+       Kraft sum = 1 exactly (8·2⁻⁶ + 12·2⁻⁵ + 6·2⁻⁴ + 2⁻³). chips total 64; every observed
+       use adds one chip; bit-cost = doublings from a glyph's chips to the table total.</p>
+     <h2 style="margin-top:16px">THE SYLLABARY — all 48 spellings ${badge("DERIVED")}</h2>
+     <p class="src">a spelling opens one axis per step, corner → edge → face → ⊘; the bit
+       staircase is always 6→5→4→3 (18 bits): each open-step sheds exactly one bit. The first
+       step names the neighbor you leave through — etymology as lineage. Composition beyond one
+       syllable (descent through a glyph's own frame) is ${badge("OPEN")} — PIN-5.</p>
+     ${sylHtml}`);
+}
+
+function indexBasinHTML() {
+  const cen = LEX.census || {};
+  const censusLine = cen.claimed
+    ? `census: claimed ${cen.claimed.filled}/${cen.claimed.open} OPEN, measured
+       ${cen.measured.filled}/${cen.measured.open}` +
+      (JSON.stringify(cen.claimed) !== JSON.stringify(cen.measured)
+        ? " — <b>divergence recorded as a finding, never edited</b>" : " — agree")
+    : "census unavailable";
+  const rows = Object.entries(LEX.frames).map(([letter, fr]) => `<tr>
+    <td><b>${letter}</b></td>
+    <td>${fr.pivot_candidate || "OPEN"} ${badge(fr.pivot_status)}</td>
+    <td>${fr.filled}/27</td>
+    <td class="meas">${fr.density.rate.toFixed(4)}</td>
+    <td>${fr.placements ? "placed" : `<span class="donor0">OPEN</span>`}</td>
+    <td>${fr.sc == null ? `<span class="donor0">OPEN</span>` : fr.sc}</td></tr>`).join("");
+  const collisions = Object.entries(LEX.collisions || {});
+  const inter = LEX.interstitial || {};
+  return (
+    `<h2>THE BASIN ${badge("MEASURED")}</h2>
+     <p class="src">surveyed lexicon (language/basin.md), parsed live by knoll.py —
+       every word lexifier-donated, never coined; letter placements all OPEN pending PIN-2.
+       ${censusLine}.</p>
+     <table class="grade">
+       <tr><th>frame</th><th>pivot candidate</th><th>filled</th><th>density</th>
+           <th>placements</th><th>sc</th></tr>${rows}</table>
+     <h3>S — the one placed frame ${badge("MINTED")}</h3>
+     <p class="src">27/27 via sit/act/read, every score MODEL-GUESSED, loaded through the
+       structural gate — loading is not stamping. Descend into S on the cube to see the
+       words ride the pieces.</p>
+     <h3>cross-frame collisions — ${collisions.length} candidate welds</h3>
+     <p class="src">per the descent law, a collision demands the finer frame, never a dedup:</p>
+     <p>${collisions.map(([w, fs]) => `<b>${w}</b> <span class="src">(${fs.join("·")})</span>`).join(" · ")}</p>
+     <h3>the interstitial frame (⊘'s own)</h3>
+     <p class="src">${(inter.kinds && Object.entries(inter.kinds).map(([k, v]) =>
+       `<b>${k}</b>: ${v.terms.join(" · ")}`).join("<br>") ) || "—"}<br>
+       ${inter.worked_edge || ""} — within-kind cell assignment OPEN.</p>
+     ${ (LEX.findings || []).map(f => `<p class="quote"><code>${f.id}</code> ${badge(f.status)} — ${f.observation}</p>`).join("") }`);
+}
+
+function indexTermsHTML() {
   const c27 = REGISTRY.core27;
-  $("pTermsBody").innerHTML =
+  return (
     `<h2>THE CORE 27 ${badge(c27.status)}</h2>
      <p>${c27.principle}</p>
      <p class="src">${c27.gradient}</p>
@@ -13980,24 +14226,40 @@ $("bTerms").onclick = () => {
        `<span class="chip27" style="border-color:${t.glyph === "⊘" ? "#d7dce6" : KINDCOLOR[t.global_role]};color:${t.glyph === "⊘" ? "#d7dce6" : KINDCOLOR[t.global_role]}"
          title="${t.global_role} ${t.coord_str} — ${t.neighbors_in_frame} in frame, ${t.open_slots} open">${t.glyph}</span>`).join("")}</div>
      <h2 style="margin-top:16px">TERMS — the semantic wing</h2>
-     <p class="src">grip ledger parsed live from ontum-evolution.md §8, plus the quoted primitives</p>
+     <p class="src">grip ledger parsed live from ontum-evolution.md §8, plus the quoted primitives${
+       REGISTRY.demotions && REGISTRY.demotions.length
+         ? `; demoted this knolling (MINTED without a non-example): ${REGISTRY.demotions.join(", ")}` : ""}</p>
      <table class="terms">` +
     REGISTRY.terms.map(t =>
       `<tr><td><b>${t.term}</b><br>${badge(t.status)}</td>
        <td>${t.referent}${t.non_example ? `<br><span class="src">non-example: ${t.non_example}</span>` : ""}
-       <br><span class="src">${t.source}</span></td></tr>`).join("") + "</table>";
-  showOnly("pTerms");
-};
+       <br><span class="src">${t.source}</span></td></tr>`).join("") + "</table>");
+}
 
-$("bSeams").onclick = () => {
-  $("pSeamsBody").innerHTML = `<h2>FINDINGS — seams that do not close</h2>
+function indexFindingsHTML() {
+  return (`<h2>FINDINGS — seams that do not close</h2>
     <p class="src">per the polysheaf doctrine: a failure to seam is data, not an error</p>` +
     REGISTRY.findings.map(f =>
       `<h3><code>${f.id}</code> ${badge(f.status)}</h3>
        <p class="src">${f.between.join(" ↔ ")}</p>
-       <p>${f.observation}</p><p class="quote">${f.resolution}</p>`).join("");
-  showOnly("pSeams");
-};
+       <p>${f.observation}</p><p class="quote">${f.resolution}</p>`).join(""));
+}
+
+// the index — one panel, four tabs
+let indexTab = "ontabet";
+function renderIndex() {
+  const tabs = `<div style="margin-bottom:10px">` + ["ontabet", "basin", "terms", "findings"].map(t =>
+    `<button class="btn mini ${indexTab === t ? "on" : ""}" data-itab="${t}">${t}</button>`).join(" ") + `</div>`;
+  const body = indexTab === "terms" ? indexTermsHTML()
+             : indexTab === "findings" ? indexFindingsHTML()
+             : indexTab === "basin" ? indexBasinHTML()
+             : indexOntabetHTML();
+  $("pOntabetBody").innerHTML = tabs + body;
+  document.querySelectorAll("[data-itab]").forEach(b =>
+    b.onclick = () => { indexTab = b.dataset.itab; renderIndex(); });
+  showOnly("pOntabet");
+}
+$("bOntabet").onclick = renderIndex;
 </script>
 </body>
 </html>
