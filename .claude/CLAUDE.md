@@ -22,6 +22,12 @@ be, landed as stamped increments, never hand-tuned silently.
   - `SessionStart` + `UserPromptSubmit` → `loop.summon --hook`: open
     summons, the owner-backlog count, and unreflected surface drift,
     injected ambiently.
+  - `SessionStart` → `skills/branch-ritual/git.py sync --hook`
+    (done-line 0031): the merge's return leg — fast-forwards the
+    viewport (the primary worktree, bdo's reading surface) to
+    origin/main, refusing an off-trunk or locally-ahead viewport
+    (surfaced, never acted on). A writing hook like the Stop beat,
+    stamped by bdo the same way; fail-open, exit 0 always.
   - `Stop` → `hooks/reflect_auto.py`: the auto beat (done-line 0020),
     the repo's first *writing* hook — contract change stamped by bdo.
     After each turn it runs the reflector pen's `auto` verb: only what

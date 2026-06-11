@@ -23,6 +23,16 @@ Everything else git add / git commit take is forwarded for parity — a
 branded tool that loses features invites the workaround it exists to
 prevent (the lesson pr.py push records, changelog 0.4.0).
 
+Done-line 0031 adds `sync`, the merge's return leg: the primary
+worktree is bdo's viewport on the trunk, and merges land on origin —
+nothing ever carried them back, so the viewport drifted stale (4
+commits the day it was asked; 38 the day the workbenches were cut).
+`sync` fetches and fast-forwards the viewport to origin/main, and
+refuses a viewport that is off the trunk or locally ahead — each is a
+surface to bdo, never an act. ff-only cannot conflict: it succeeds or
+it surfaces. In hook mode (`--hook`, wired to SessionStart) it is
+fail-open and exits 0 always — it never gates a session's start.
+
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report` — it tells the
 session what the act is missing; nothing here escalates to bdo.
@@ -116,6 +126,30 @@ def commit_refusal(branch, message, forwarded):
     return None
 
 
+def sync_refusal(branch, ahead):
+    """Why the viewport may not be fast-forwarded, or None.
+
+    The viewport is bdo's reading surface: it only ever moves forward to
+    what he already merged on origin. `branch` is what the viewport has
+    checked out; `ahead` is how many local commits the trunk carries
+    that origin does not. Either state out of place is a surface to bdo,
+    never an act.
+    """
+    if branch not in TRUNK:
+        return (
+            f"the viewport is on '{branch or 'a detached HEAD'}', not the "
+            "trunk — a session never re-points bdo's reading surface; "
+            "surface this to bdo"
+        )
+    if ahead:
+        return (
+            f"the trunk carries {ahead} local commit(s) origin does not have "
+            "— main is never committed locally (firm); surface this to bdo "
+            "instead of syncing over it"
+        )
+    return None
+
+
 # ------------------------------------------------------------------- runtime
 
 def _refuse(message):
@@ -160,6 +194,61 @@ def cmd_commit(ns):
           f"(hand-off still leaves the machine only through `{PEN.replace('git.py', 'pr.py')} push`)")
 
 
+def cmd_sync(ns):
+    """Fast-forward the viewport (the primary worktree) to origin/main —
+    the merge's return leg (done-line 0031). ff-only cannot conflict: it
+    succeeds or it surfaces. Hook mode never exits nonzero and never
+    gates a session's start; a refusal there is one ambient line."""
+    def emit(state, message):
+        print(f"result: {state} — viewport-sync: {message}")
+
+    def bail(message):
+        emit("report", message)
+        sys.exit(0 if ns.hook else 1)
+
+    def git(args, cwd, timeout=None):
+        return subprocess.run(
+            ["git"] + args, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", cwd=cwd, timeout=timeout)
+
+    try:
+        # The viewport is the primary worktree — `git worktree list`
+        # names it first from anywhere in the fleet.
+        listing = git(["worktree", "list", "--porcelain"], ROOT)
+        first = next((line for line in listing.stdout.splitlines()
+                      if line.startswith("worktree ")), None)
+        if listing.returncode != 0 or not first:
+            bail("could not locate the viewport (`git worktree list` gave nothing)")
+        viewport = first.split(" ", 1)[1].strip()
+        fetched = git(["fetch", "origin", "main"], viewport,
+                      timeout=ns.fetch_timeout)
+        if fetched.returncode != 0:
+            detail = (fetched.stderr or fetched.stdout).strip().splitlines()
+            bail("fetch failed (offline?): " + (detail[-1] if detail else "no detail"))
+        branch = git(["branch", "--show-current"], viewport).stdout.strip()
+        ahead = int(git(["rev-list", "--count", "origin/main..main"],
+                        viewport).stdout.strip() or 0)
+        reason = sync_refusal(branch, ahead)
+        if reason:
+            bail(reason)
+        behind = int(git(["rev-list", "--count", "main..origin/main"],
+                         viewport).stdout.strip() or 0)
+        if not behind:
+            if not ns.hook:  # ambient mode stays silent when there is nothing to say
+                emit("done", "the viewport is current")
+            return
+        merged = git(["merge", "--ff-only", "origin/main"], viewport)
+        if merged.returncode != 0:
+            detail = (merged.stderr or merged.stdout).strip().splitlines()
+            bail("fast-forward refused — " + (detail[-1] if detail else "no detail")
+                 + "; the viewport waits for a hand (surface this to bdo)")
+        emit("done", f"the viewport fast-forwarded {behind} commit(s) to origin/main")
+    except subprocess.TimeoutExpired:
+        bail(f"fetch exceeded {ns.fetch_timeout}s (offline?) — the viewport stays where it is")
+    except Exception as error:  # fail open: the pen's own bug never gates a session
+        bail(f"unexpected: {error}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="git.py", description=__doc__,
@@ -179,6 +268,18 @@ def main(argv=None):
                         help="the commit message (repeatable, like git); a real "
                              "step-shaped line saying what landed")
     commit.set_defaults(func=cmd_commit)
+
+    sync = verbs.add_parser(
+        "sync", help="fast-forward the viewport (primary worktree) to "
+                     "origin/main — the merge's return leg; refuses an "
+                     "off-trunk or locally-ahead viewport")
+    sync.add_argument("--hook", action="store_true",
+                      help="hook mode: at most one line, exit 0 always — "
+                           "fail-open, never gates a session's start")
+    sync.add_argument("--fetch-timeout", dest="fetch_timeout", type=int,
+                      default=20, metavar="SECONDS",
+                      help="seconds to wait on the network before reporting")
+    sync.set_defaults(func=cmd_sync)
 
     ns, extra = parser.parse_known_args(argv)
     ns.forward = extra
