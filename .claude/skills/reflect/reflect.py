@@ -4,10 +4,12 @@
 The pure half lives in loop/reflect.py — it computes what each registered
 surface should show (one issue per atom at the owner's stamp) and the
 drift against what was last reflected. This pen is the only writer to the
-outside: it applies exactly that drift through gh (the PR-pen pattern —
-network reach lives here, never in loop/) and records each applied act
-back onto the log with provenance, so re-running with no drift is a no-op
-and a half-applied run resumes instead of double-acting.
+outside: it applies exactly that drift through the surface kind's
+translator (done-line 0030 — github-issues today, gh-backed like the PR
+pen; network reach lives here, never in loop/) and records each applied
+act back onto the log with provenance, so re-running with no drift is a
+no-op and a half-applied run resumes instead of double-acting. A surface
+whose admitted kind no translator speaks is refused, never guessed at.
 
 Two verbs. `apply` is the deliberate hand: any registered surface, rule
 or no rule. `auto` is the beat's verb (done-line 0020): only what the
@@ -44,28 +46,54 @@ def _run(args):
     return proc.stdout.strip()
 
 
-def _apply_acts(root, surface, address, acts, by, run):
-    """One act at a time, recording after each success — the record is
-    what makes a crash-resume safe (the next run's drift no longer
-    contains what landed). Returns (applied, error_or_None)."""
+def _gh_open(address, act, run):
+    """github-issues: an open act is a created issue; the ref is its URL."""
+    ref = run(["gh", "issue", "create", "--repo", address,
+               "--title", act["title"], "--body", act["body"]])
+    return ref.splitlines()[-1].strip() if ref else ref
+
+
+def _gh_close(address, act, run):
+    ref = act["external_ref"]
+    close_args = ["gh", "issue", "close", str(ref),
+                  "--comment", act["comment"]]
+    if not str(ref).startswith("http"):
+        close_args += ["--repo", address]
+    run(close_args)
+    return ref
+
+
+# The translator table (done-line 0030): surface kind -> how each act
+# speaks there. Keyed to exactly loop.reflect.SURFACE_KINDS (pinned by
+# test) — a kind off this table is refused, never guessed at with
+# gh-shaped verbs. A new surface kind lands as a new entry here plus
+# its SURFACE_KINDS row, its own stamped increment.
+TRANSLATORS = {
+    "github-issues": {"open": _gh_open, "close": _gh_close},
+}
+
+
+def _apply_acts(root, surface, adm, acts, by, run):
+    """One act at a time, through the surface kind's translator,
+    recording after each success — the record is what makes a
+    crash-resume safe (the next run's drift no longer contains what
+    landed). Returns (applied, error_or_None)."""
+    translator = TRANSLATORS.get(adm.get("kind"))
+    if translator is None:
+        return 0, (f"surface {surface!r} is admitted with kind "
+                   f"{adm.get('kind')!r}, which no translator speaks "
+                   f"(known: {', '.join(sorted(TRANSLATORS))}); a new kind "
+                   "is a new translator in this pen — its own stamped "
+                   "increment, not a gh-shaped guess")
+    address = adm["address"]
     applied = 0
     for act in acts:
         try:
-            if act["act"] == "open":
-                ref = run(["gh", "issue", "create", "--repo", address,
-                           "--title", act["title"], "--body", act["body"]])
-                ref = ref.splitlines()[-1].strip() if ref else ref
-            else:
-                ref = act.get("external_ref")
-                if not ref:
-                    return applied, (f"the open record for {act['atom_id']} "
-                                     "carries no external_ref; close it by "
-                                     "hand and record the act")
-                close_args = ["gh", "issue", "close", str(ref),
-                              "--comment", act["comment"]]
-                if not str(ref).startswith("http"):
-                    close_args += ["--repo", address]
-                run(close_args)
+            if act["act"] != "open" and not act.get("external_ref"):
+                return applied, (f"the open record for {act['atom_id']} "
+                                 "carries no external_ref; close it by "
+                                 "hand and record the act")
+            ref = translator[act["act"]](address, act, run)
         except RuntimeError as err:
             return applied, str(err)
         record_reflection(root, surface, act["atom_id"], act["artifact_hash"],
@@ -82,11 +110,11 @@ def apply(root, surface, by, run=_run):
     except ValueError as err:
         print(f"result: needs-you — {err}")
         return 2
-    address = registered_surfaces(Fold(root))[surface]["address"]
+    adm = registered_surfaces(Fold(root))[surface]
     if not acts:
         print(f"result: done — no drift; {surface} mirrors the log")
         return 0
-    applied, err = _apply_acts(root, surface, address, acts, by, run)
+    applied, err = _apply_acts(root, surface, adm, acts, by, run)
     if err:
         print(f"applied {applied} of {len(acts)} act(s), then: {err}")
         print("result: needs-you — the applied acts are on the log; "
@@ -108,8 +136,8 @@ def auto(root, by, run=_run):
     surfaces = registered_surfaces(Fold(root))
     total = 0
     for entry in plan:
-        address = surfaces[entry["surface"]]["address"]
-        applied, err = _apply_acts(root, entry["surface"], address,
+        applied, err = _apply_acts(root, entry["surface"],
+                                   surfaces[entry["surface"]],
                                    entry["acts"], by, run)
         total += applied
         if err:

@@ -372,5 +372,78 @@ class HookBeatTest(unittest.TestCase):
         self.assertEqual(proc.stdout.strip(), "")
 
 
+class SurfaceKindTest(ReflectBase):
+    """Done-line 0030: a surface kind without a translator refuses to
+    fit — at the register CLI, in the beat's plan, in the pen's hand —
+    and the pen's translator table is pinned to the fold's kinds table
+    so the two cannot drift apart."""
+
+    def test_register_cli_refuses_a_kind_no_translator_speaks(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = reflect.main(["register", "--root", str(self.root),
+                                 "--surface", "team-slack", "--kind", "slack",
+                                 "--address", "ontum/general", "--by", "test-bdo"])
+        self.assertEqual(code, 2)
+        self.assertIn("no translator speaks", out.getvalue())
+        self.assertEqual(reflect.registered_surfaces(reconcile.Fold(self.root)), {})
+
+    def test_deregistering_an_odd_kind_stays_possible(self):
+        # history may hold any kind (admitted before the table existed);
+        # superseding it must not be refused
+        reflect.admit_surface(self.root, "team-slack", "ontum/general",
+                              by="test-bdo", kind="slack")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = reflect.main(["register", "--root", str(self.root),
+                                 "--surface", "team-slack", "--kind", "slack",
+                                 "--by", "test-bdo"])
+        self.assertEqual(code, 0)
+        self.assertEqual(reflect.registered_surfaces(reconcile.Fold(self.root)), {})
+
+    def test_beat_skips_an_untranslatable_kind(self):
+        # the §10 case: an enabled rule points at a surface the pen has
+        # no tongue for — the plan must stay empty, not guess gh at it
+        reflect.admit_surface(self.root, "team-slack", "ontum/general",
+                              by="test-bdo", kind="slack")
+        reflect.admit_rule(self.root, "owner-stamp-queue", "team-slack",
+                           True, by="test-bdo")
+        self.to_stamp()
+        self.assertEqual(reflect.auto_plan(self.root), [])
+
+    def test_status_names_the_untranslatable_kind(self):
+        reflect.admit_surface(self.root, "team-slack", "ontum/general",
+                              by="test-bdo", kind="slack")
+        reflect.admit_rule(self.root, "owner-stamp-queue", "team-slack",
+                           True, by="test-bdo")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            reflect.status(self.root)
+        self.assertIn("no translator", out.getvalue())
+
+    def test_pen_refuses_instead_of_speaking_gh_at_a_strange_kind(self):
+        reflect.admit_surface(self.root, "team-slack", "ontum/general",
+                              by="test-bdo", kind="slack")
+        self.to_stamp()
+        calls = []
+
+        def fake(args):
+            calls.append(args)
+            return "never"
+
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = reflect_pen.apply(self.root, "team-slack", by="test", run=fake)
+        self.assertEqual(code, 2)
+        self.assertEqual(calls, [])
+        self.assertIn("no translator speaks", out.getvalue())
+        fold = reconcile.Fold(self.root)
+        reflected = [e for e in fold.events
+                     if e.get("type") == reflect.REFLECTED_EVENT]
+        self.assertEqual(reflected, [])
+
+    def test_translator_table_is_pinned_to_the_kinds_table(self):
+        self.assertEqual(set(reflect_pen.TRANSLATORS), set(reflect.SURFACE_KINDS))
+
 if __name__ == "__main__":
     unittest.main()
