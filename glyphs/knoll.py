@@ -22,6 +22,7 @@ Provenance statuses, in the grip-ledger's own discipline:
 Stdlib only. Idempotent: re-running over unchanged docs is byte-identical.
 """
 
+import itertools
 import json
 import re
 import sys
@@ -35,6 +36,13 @@ POLYSHEAF_DOC = "docs/phase-2/autojective-polysheaf.md"
 CUBE_DOC = "docs/phase-2/cube-alphabet.md"
 LEDGER_DOC = "docs/phase-2/ontum-evolution.md"
 ONTOGRAM_DOC = "docs/phase-2/ontogrammatic-systems.md"
+
+# Surveyed sources outside the vault (done-line 0027): authored in-repo and
+# parsed live like the grip ledger. The vault stays read-only; these do not —
+# but they are artifacts of record: the generator measures them and reports
+# divergence as findings, it never edits them.
+BASIN_DOC = "language/basin.md"
+PLACEMENTS_DOC = "language/s-frame-placements.json"
 
 # Unicode minus, as the phase-2 docs write it.
 MINUS = "−"
@@ -196,8 +204,80 @@ def requests(c):
     return out
 
 
+# ---------------------------------------------------------------------------
+# Incidence laws (basin v1, done-line 0027) — the two graded fans every
+# address carries, dual to each other. Both are DERIVED and re-verified over
+# all 27 cells on every run; the verification failing is doc drift, not data.
+#   closure ↓  composition (boundary + self): each open axis closes 3 ways,
+#              |↓c| = 3^dim — an edge holds a 3-cell line, a face a 9-cell
+#              square, the body the whole cube.
+#   star    ↑  request (cascade + self): each decided axis opens 2 ways,
+#              |↑c| = 2^codim.
+# Σ 3^dim = Σ 2^codim = 125 = 5³ over the solid (each counts the same
+# incidence pairs from opposite ends). The fans are emitted as sorted sets;
+# any utterance ORDER over them (boundary-first/self-last) is PIN-5's call
+# and deliberately not baked here.
+# ---------------------------------------------------------------------------
+
+def closure_of(c):
+    """Cells agreeing with c on every decided axis; open axes range free."""
+    ranges = [(v,) if v != 0 else (-1, 0, 1) for v in c]
+    return sorted(itertools.product(*ranges))
+
+
+def star_of(c):
+    """Cells reached by opening any subset of c's decided axes."""
+    ranges = [(v, 0) if v != 0 else (0,) for v in c]
+    return sorted(set(itertools.product(*ranges)))
+
+
+def verify_incidence_laws():
+    """The two laws, recomputed and checked over the whole solid."""
+    sum_down = sum_up = 0
+    cells = ternary_cells()
+    for c in cells:
+        dim = sum(1 for v in c if v == 0)
+        down, up = closure_of(c), star_of(c)
+        if len(down) != 3 ** dim or len(up) != 2 ** (3 - dim):
+            raise SystemExit(
+                f"incidence law broken at {coord_str(c)}: "
+                f"|closure| = {len(down)} (law: 3^dim = {3 ** dim}), "
+                f"|star| = {len(up)} (law: 2^codim = {2 ** (3 - dim)})"
+            )
+        sum_down += len(down)
+        sum_up += len(up)
+    for c in cells:  # duality: d ∈ ↓c  ⟺  c ∈ ↑d
+        for d in closure_of(c):
+            if c not in star_of(d):
+                raise SystemExit(
+                    f"closure/star duality broken: {coord_str(d)} ∈ "
+                    f"↓{coord_str(c)} but {coord_str(c)} ∉ ↑{coord_str(d)}"
+                )
+    if sum_down != 125 or sum_up != 125:
+        raise SystemExit(
+            f"graded census broken: Σ3^dim = {sum_down}, Σ2^codim = {sum_up} "
+            "(law: both 125 = 5³)"
+        )
+    return {
+        "closure": "|↓c| = 3^dim — each open axis closes 3 ways (boundary + self)",
+        "star": "|↑c| = 2^codim — each decided axis opens 2 ways (cascade + self)",
+        "graded_census": "Σ 3^dim = Σ 2^codim = 125 = 5³ over the 27 cells",
+        "status": "DERIVED",
+        "source": f"{BASIN_DOC} (v1 amendment), re-verified computationally every run",
+    }
+
+
+def axis_code_bits(c):
+    """The axis prefix code (memo P8, came home with the basin): per axis,
+    open → 0 (1 bit), a sign → 1 + sign bit (2 bits). A glyph costs 3 bits
+    of skeleton + 1 per decision; the code is complete (Kraft sum exactly 1)
+    and spelling is bit-shedding — one bit per open-step."""
+    return 3 + sum(1 for v in c if v != 0)
+
+
 def polysheaf_cells(letters, pin_lines):
     pinned = {"A", "E", "H", "I", "M", "Q"}
+    name = lambda c: letters.get(c, CENTER_GLYPH)
     cells = []
     for c, letter in sorted(letters.items(), key=lambda kv: kv[1]):
         kind = cell_kind(c)
@@ -220,6 +300,9 @@ def polysheaf_cells(letters, pin_lines):
             "requests": [
                 letters.get(r, CENTER_GLYPH) for r in requests(c)
             ],
+            "closure": [name(d) for d in closure_of(c)],
+            "star": [name(d) for d in star_of(c)],
+            "bits": axis_code_bits(c),
             "status": "PINNED" if letter in pinned else "DERIVED",
         }
         if letter in pinned:
@@ -241,6 +324,9 @@ def polysheaf_cells(letters, pin_lines):
         "antipode": CENTER_GLYPH,  # its own antipode: the fixed point
         "seam_of": [letters[s] for s in seam_of(center)],
         "requests": [],
+        "closure": [name(d) for d in closure_of(center)],
+        "star": [name(d) for d in star_of(center)],
+        "bits": axis_code_bits(center),
         "status": "PINNED",
         "source": f"{POLYSHEAF_DOC}:111",
         "note": "the obscured wildcard — anchored by no pin, requests nothing; "
@@ -434,6 +520,296 @@ PRIMITIVES = [
         "source": f"{ONTOGRAM_DOC}:166",
     },
 ]
+
+
+# ---------------------------------------------------------------------------
+# The basin lexicon (done-line 0027) — language/basin.md parsed live, like
+# the grip ledger. Every word is SURVEYED (lexifier-donated, never coined);
+# every letter-frame placement is OPEN until a placement pass lands. The
+# basin's own census row is the artifact's CLAIM; the generator measures its
+# own count and a divergence becomes a recorded finding, never an edit.
+# ---------------------------------------------------------------------------
+
+BASIN_FRAME_RE = re.compile(r"^### (\S) — (.+)$")
+BASIN_ITEM_RE = re.compile(r"^(\d{2})\s+(.+)$")
+
+# Frame-local chip seeds (memo P10): proportional to the Layer-0 prior —
+# more decided = denser = costlier. Seed total over a placed frame:
+# 8·1 + 12·2 + 6·4 + 1·8 = 64.
+CHIP_SEED = {"corner": 1, "edge": 2, "face": 4, "center": 8}
+
+
+def parse_basin(text):
+    """Letter frames, the parent frame (the relabeled ⊘ section, per the
+    basin's own v2 correction), the interstitial 27, and the claimed census."""
+    frames = {}
+    current = None
+    for line in text.splitlines():
+        m = BASIN_FRAME_RE.match(line)
+        if m and len(m.group(1)) == 1 and (m.group(1).isupper()
+                                           or m.group(1) == CENTER_GLYPH):
+            head_pivot = None
+            pm = re.search(r"⊙\s+\**([A-Za-z][A-Za-z-]*)", m.group(2))
+            if pm and pm.group(1) != "OPEN":
+                head_pivot = pm.group(1)
+            current = {"letter": m.group(1), "head_pivot": head_pivot,
+                       "slots": []}
+            frames[m.group(1)] = current
+            continue
+        if current is not None and " · " in line and line[:2].isdigit():
+            for item in line.split("·"):
+                im = BASIN_ITEM_RE.match(item.strip())
+                if not im:
+                    raise SystemExit(
+                        f"basin drift: unparseable slot {item.strip()!r} in "
+                        f"frame {current['letter']} of {BASIN_DOC}"
+                    )
+                raw = im.group(2).strip()
+                flagged = "⊙" in raw
+                word = raw.replace("⊙", "").strip().strip("*").strip()
+                current["slots"].append({
+                    "n": int(im.group(1)),
+                    "word": None if word == "OPEN" else word,
+                    "pivot_flag": flagged,
+                })
+            current = None  # one slot line per frame
+    for letter, fr in frames.items():
+        if len(fr["slots"]) != 27 or [s["n"] for s in fr["slots"]] != list(range(1, 28)):
+            raise SystemExit(
+                f"basin drift: frame {letter} does not hold slots 01–27 in "
+                f"order ({len(fr['slots'])} parsed)"
+            )
+        flagged = [s["word"] for s in fr["slots"] if s["pivot_flag"]]
+        if len(flagged) > 1 or (fr["head_pivot"] and flagged
+                                and fr["head_pivot"] != flagged[0]):
+            raise SystemExit(
+                f"basin drift: frame {letter} pivot mismatch — heading says "
+                f"{fr['head_pivot']!r}, list flags {flagged!r}"
+            )
+        fr["pivot_candidate"] = flagged[0] if flagged else fr["head_pivot"]
+    # the interstitial 27 (v2): kind → terms table under its own heading
+    inter, in_section = {}, False
+    for line in text.splitlines():
+        if line.startswith("### The interstitial 27"):
+            in_section = True
+            continue
+        if in_section and line.startswith("### "):
+            break
+        if in_section and line.startswith("|"):
+            cols = [c.strip() for c in line.strip("|").split("|")]
+            if len(cols) < 3 or cols[0] == "kind" or set(cols[0]) <= {"-"}:
+                continue
+            kind = cols[0].replace("⊙", "").strip()
+            kind = kind.split()[-1].rstrip("s") if kind[0].isdigit() else "center"
+            terms = [t.strip().strip("*").strip() for t in cols[1].split("·")]
+            inter[kind] = {"terms": terms, "logic": cols[2]}
+    expect = {"corner": 8, "edge": 12, "face": 6, "center": 1}
+    got = {k: len(v["terms"]) for k, v in inter.items()}
+    if got != expect:
+        raise SystemExit(
+            f"basin drift: interstitial census {got} ≠ cube census {expect}"
+        )
+    # the claimed census row ("this pass") — the artifact's own arithmetic
+    cm = re.search(r"\| this pass \| [^|]+\| (\d+) \| (\d+) \|", text)
+    if cm is None:
+        raise SystemExit(f"basin drift: census row not found in {BASIN_DOC}")
+    claimed = {"filled": int(cm.group(1)), "open": int(cm.group(2))}
+    return frames, inter, claimed
+
+
+def build_lexicon():
+    text = read_doc(BASIN_DOC)
+    frames, interstitial, claimed = parse_basin(text)
+    out_frames, findings = {}, []
+    measured = {"filled": 0, "open": 0}
+    for letter in sorted(frames, key=lambda l: (l == CENTER_GLYPH, l)):
+        fr = frames[letter]
+        words = [s["word"] for s in fr["slots"]]
+        filled = sum(1 for w in words if w)
+        measured["filled"] += filled
+        measured["open"] += 27 - filled
+        out_frames[letter] = {
+            "role": "parent frame — the cube-above-letters (v2 correction: "
+                    "relabeled from ⊘'s own; ⊘'s own is the interstitial)"
+                    if letter == CENTER_GLYPH else "letter frame",
+            "pivot_candidate": fr["pivot_candidate"],
+            "pivot_status": "OPEN",  # candidates ride as named holes
+            "words": words,
+            "filled": filled,
+            "density": {  # BUILD-4: the first measured weight donor
+                "rate": round(filled / 27, 4),
+                "status": "MEASURED",
+                "source": f"{BASIN_DOC} — lexifier fill-rate under the "
+                          "pilish constraint",
+            },
+            # schema grown ahead of data (BUILD-2): columns exist, values
+            # honest — OPEN until a placement pass / measurement run lands
+            "placements": None,
+            "attestations": [],
+            "chips": None,
+            "escape": None,
+            "empties": {
+                "open_slots": [s["n"] for s in fr["slots"] if not s["word"]],
+                "typing": "OPEN — NON→NULL conversion standard is PIN-6, "
+                          "undecided",
+            },
+            "sc": None,
+        }
+    if (claimed["filled"], claimed["open"]) != (measured["filled"],
+                                                measured["open"]):
+        findings.append({
+            "id": "basin.census-arithmetic",
+            "kind": "artifact self-claim vs measurement",
+            "status": "DERIVED",
+            "observation": f"the basin's census row claims "
+                           f"{claimed['filled']} filled / {claimed['open']} "
+                           f"OPEN for this pass; parsing the same document "
+                           f"measures {measured['filled']} / "
+                           f"{measured['open']}. The artifact is the record "
+                           "— reported, not edited.",
+        })
+    # S, I, O are bdo's and not restated in the basin (absence is
+    # information): S's 27 words are recoverable from the placements
+    # artifact; I and O lists are not on disk anywhere.
+    findings.append({
+        "id": "basin.sio-not-restated",
+        "kind": "named absence",
+        "status": "OPEN",
+        "observation": "the basin's totals include bdo's S/I/O frames (81 "
+                       "words) which the artifact deliberately does not "
+                       "restate; S is recoverable from "
+                       f"{PLACEMENTS_DOC}, I and O are not on disk.",
+    })
+    # collisions: one word surveyed into several frames. Per the basin and
+    # the descent law these are candidate welds / demands for descent —
+    # knolled, never deduped.
+    seen = {}
+    for letter, fr in out_frames.items():
+        for w in fr["words"]:
+            if w:
+                seen.setdefault(w, []).append(letter)
+    for kind, entry in interstitial.items():
+        for w in entry["terms"]:
+            seen.setdefault(w, []).append("interstitial")
+    collisions = {w: fs for w, fs in sorted(seen.items()) if len(fs) > 1}
+    return {
+        "source": BASIN_DOC,
+        "discipline": "every word SURVEYED (lexifier-donated, never minted); "
+                      "letter-frame placements all OPEN pending PIN-2",
+        "frames": out_frames,
+        "interstitial": {
+            "role": "⊘'s own frame (v2): the distinctions inside the "
+                    "undifferentiated word 'center'",
+            "pivot_candidate": "Interstice",
+            "pivot_status": "OPEN",
+            "kinds": interstitial,
+            "worked_edge": "Cant = edge(Centroid, Barycenter) — DERIVED; "
+                           "the other 11 edge pole-pairs OPEN",
+        },
+        "census": {"claimed": claimed, "measured": measured},
+        "collisions": collisions,
+        "findings": findings,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Placements (done-line 0027) — the S-frame placement artifact loaded under
+# a structural gate. The gate is the §10 test at the records layer: two
+# locally-fine placements that claim one cell REFUSE to fit, loudly. The
+# semantic falsifier (a word must read as composed of its ↓ glyphs) is a
+# judging act, not a parse — it stays with the summoned node / the owner.
+# Every placement stays PROPOSED / MODEL-GUESSED; loading is not stamping.
+# ---------------------------------------------------------------------------
+
+def validate_placements(placements):
+    """Structural gate over a {word: {coord, cell, ...}} table. Refusals are
+    SystemExit receipts naming exactly what refused to fit."""
+    if len(placements) != 27:
+        raise SystemExit(
+            f"placement refused: {len(placements)} placements for a 27-cell "
+            "frame"
+        )
+    by_coord = {}
+    for word, p in placements.items():
+        c = tuple(p["coord"])
+        if c in by_coord:
+            raise SystemExit(
+                f"placement refused: {word!r} and {by_coord[c]!r} both claim "
+                f"cell {coord_str(c)} — address collision; per the descent "
+                "law a collision demands the finer frame, not a dedup"
+            )
+        by_coord[c] = word
+        if cell_kind(c) != p["cell"]:
+            raise SystemExit(
+                f"placement refused: {word!r} claims kind {p['cell']!r} but "
+                f"{coord_str(c)} is a {cell_kind(c)}"
+            )
+    if set(by_coord) != set(ternary_cells()):
+        raise SystemExit(
+            "placement refused: placements do not cover the 27-cell solid"
+        )
+    return by_coord
+
+
+def build_placements(letters):
+    data = json.loads(read_doc(PLACEMENTS_DOC))
+    placements = data["placements"]
+    validate_placements(placements)
+    census = {"corner": 0, "edge": 0, "face": 0, "center": 0}
+    cells = {}
+    for word, p in sorted(placements.items()):
+        c = tuple(p["coord"])
+        census[cell_kind(c)] += 1
+        cells[word] = {
+            "coord": list(c),
+            "coord_str": coord_str(c),
+            "cell": cell_kind(c),
+            "local_letter": letters.get(c, CENTER_GLYPH),
+            "rationale": p["rationale"],
+            "status": "PROPOSED — MODEL-GUESSED",
+        }
+    chips = {w: CHIP_SEED[cells[w]["cell"]] for w in sorted(cells)}
+    total = sum(chips.values())
+    if total != 64:
+        raise SystemExit(
+            f"placement refused: chip seed total {total} ≠ 64 over a placed "
+            "frame (seed 1/2/4/8 by kind)"
+        )
+    return {
+        "S": {
+            "source": PLACEMENTS_DOC,
+            "law": data["law"],
+            "status": data["status"],
+            "census": census,
+            "cells": cells,
+            "chips": {"seed": chips, "seed_total": total,
+                      "tally": None, "escape": None,
+                      "note": "seed DERIVED from placement kinds (memo P10); "
+                              "tally/escape await observed use — three "
+                              "columns, never fused (memo P11)"},
+            "attestations": [],
+            "sc": None,
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# The demotion rule (memo P14, done-line 0027) — the doctrine→machinery gap
+# closed: a MINTED occupant without a non-example renders as OPEN, whatever
+# the author wrote. A term without a falsifier is still a hole. Scope: term
+# occupants (grip ledger, primitives). Findings are seams, not occupants,
+# and are exempt; demotions are recorded visibly, never silent.
+# ---------------------------------------------------------------------------
+
+def demote_unfalsified(terms):
+    demoted = []
+    for t in terms:
+        if t["status"] == "MINTED" and not t.get("non_example"):
+            t["status"] = "OPEN"
+            t["demoted"] = ("was MINTED without a non-example — rendered "
+                            "OPEN (a term without a falsifier is a hole)")
+            demoted.append(t["term"])
+    return demoted
 
 
 # ---------------------------------------------------------------------------
@@ -747,9 +1123,11 @@ def build_registry():
     pin_lines = validate_pins(doc_texts)
     letters = derive_polysheaf_lettering()
     check_polysheaf_pins(letters)
+    incidence = verify_incidence_laws()
     poly_cells = polysheaf_cells(letters, pin_lines)
     cube_cells = cube_alphabet_cells(pin_lines)
     terms = parse_grip_ledger(doc_texts[LEDGER_DOC]) + PRIMITIVES
+    demotions = demote_unfalsified(terms)
     trio = build_trio(poly_cells, cube_cells)
     core27 = build_core27(poly_cells)
     return {
@@ -777,10 +1155,14 @@ def build_registry():
                 "cells": cube_cells,
             },
         },
+        "incidence_laws": incidence,
         "terms": terms,
+        "demotions": demotions,
         "trio": trio,
         "core27": core27,
         "term_frames": build_term_frames(poly_cells, cube_cells, core27, trio),
+        "lexicon": build_lexicon(),
+        "placements": build_placements(letters),
         "findings": FINDINGS,
     }
 
@@ -892,6 +1274,11 @@ def render_knolling_md(reg):
             t["term"], t["status"], t["referent"],
             t["non_example"] or "—", t["source"]))
     w("")
+    if reg["demotions"]:
+        w("Demoted this knolling (MINTED without a non-example renders "
+          "OPEN — a term without a falsifier is a hole): "
+          + ", ".join(f"**{t}**" for t in reg["demotions"]) + ".")
+        w("")
     w("---")
     w("")
     w("## 5. Findings — seams that do not close")
@@ -903,6 +1290,78 @@ def render_knolling_md(reg):
         w(f"- **Observation:** {f['observation']}")
         w(f"- **Disposition:** {f['resolution']}")
         w("")
+    w("---")
+    w("")
+    w("## 6. Incidence laws — the two graded fans  [DERIVED]")
+    w("")
+    inc = reg["incidence_laws"]
+    w(f"- **closure ↓** — {inc['closure']}")
+    w(f"- **star ↑** — {inc['star']}")
+    w(f"- **graded census** — {inc['graded_census']}")
+    w("")
+    w("Re-verified over all 27 addresses on every run, with duality "
+      "(d ∈ ↓c ⟺ c ∈ ↑d) checked pairwise. Each cell also carries its "
+      "axis-code cost: 3 bits of skeleton + 1 per decision — a complete "
+      "prefix code (Kraft sum exactly 1); spelling is bit-shedding, one "
+      "bit per open-step. Any utterance ORDER over the fans "
+      "(boundary-first/self-last) is PIN-5's call, not emitted here.")
+    w("")
+    w("Worked: **S** `(+,−,0)` — closure {}, star {}, {} bits.".format(
+        "·".join(poly_by["S"]["closure"]),
+        "·".join(poly_by["S"]["star"]), poly_by["S"]["bits"]))
+    w("")
+    w("---")
+    w("")
+    w("## 7. The basin lexicon  [SURVEYED]")
+    w("")
+    lex = reg["lexicon"]
+    cen = lex["census"]
+    w(f"Source: `{lex['source']}` — {lex['discipline']}.")
+    w("")
+    w("| Frame | Pivot candidate | Filled | Density |")
+    w("|---|---|---|---|")
+    for letter, fr in lex["frames"].items():
+        w("| **{}** | {} | {}/27 | {} |".format(
+            letter, fr["pivot_candidate"] or "OPEN",
+            fr["filled"], fr["density"]["rate"]))
+    w("")
+    w("Census: claimed {filled} filled / {open} OPEN".format(**cen["claimed"])
+      + ", measured {filled} / {open}".format(**cen["measured"])
+      + (" — **divergence recorded as a finding**"
+         if cen["claimed"] != cen["measured"] else " — agree") + ".")
+    w("")
+    w(f"Cross-frame collisions (candidate welds / demands for descent, "
+      f"never deduped): {len(lex['collisions'])} words appear in more "
+      "than one frame.")
+    w("")
+    for f in lex["findings"]:
+        w(f"- `{f['id']}` [{f['status']}] — {f['observation']}")
+    w("")
+    w("The interstitial 27 (⊘'s own frame, v2): pivot candidate "
+      f"**{lex['interstitial']['pivot_candidate']}** [OPEN]; "
+      f"{lex['interstitial']['worked_edge']}.")
+    w("")
+    w("---")
+    w("")
+    w("## 8. Placements — the S-frame  [PROPOSED, every score MODEL-GUESSED]")
+    w("")
+    s = reg["placements"]["S"]
+    w(f"Source: `{s['source']}` · law: {s['law']} · census "
+      + "/".join(str(s["census"][k]) for k in
+                 ("corner", "edge", "face", "center"))
+      + f" · chip seed total {s['chips']['seed_total']}.")
+    w("")
+    w("Loading is not stamping: the structural gate (27 cells covered, no "
+      "address collisions, claimed kind = derived kind) passed; the "
+      "semantic falsifier and every stamp stay with the owner.")
+    w("")
+    w("| Word | Cell | Kind | Local letter | Rationale |")
+    w("|---|---|---|---|---|")
+    for word, p in s["cells"].items():
+        w("| **{}** | `{}` | {} | {} | {} |".format(
+            word, p["coord_str"], p["cell"], p["local_letter"],
+            p["rationale"]))
+    w("")
     return "\n".join(out) + "\n"
 
 
@@ -947,9 +1406,17 @@ def main():
     if inject_viewer(reg):
         changed.append("viewer.html (data block)")
     n_cells = sum(len(l["cells"]) for l in reg["letterings"].values())
+    lex = reg["lexicon"]
     print(f"knolled: {n_cells} cells across 2 letterings, "
           f"{len(reg['terms'])} terms, {len(reg['findings'])} findings, "
           f"trio status {reg['trio']['status']}")
+    print(f"lexicon: {len(lex['frames'])} basin frames "
+          f"({lex['census']['measured']['filled']} filled / "
+          f"{lex['census']['measured']['open']} OPEN measured), "
+          f"{len(lex['collisions'])} collisions, "
+          f"{len(lex['findings'])} basin findings; "
+          f"placements: S gated in as PROPOSED; "
+          f"demotions: {len(reg['demotions'])}")
     print("changed: " + (", ".join(changed) if changed else
                          "nothing (byte-identical — idempotent re-run)"))
     return 0

@@ -197,6 +197,183 @@ class RegistryTest(unittest.TestCase):
                              sum(1 for v in cell["coord"] if v == 0))
 
 
+class IncidenceLawTest(unittest.TestCase):
+    """Basin v1's two graded fans, recomputed here independently of the
+    generator's own verification."""
+
+    def test_sizes_by_kind(self):
+        for c in knoll.ternary_cells():
+            dim = sum(1 for v in c if v == 0)
+            self.assertEqual(len(knoll.closure_of(c)), 3 ** dim, c)
+            self.assertEqual(len(knoll.star_of(c)), 2 ** (3 - dim), c)
+
+    def test_graded_census_is_125_both_ways(self):
+        cells = knoll.ternary_cells()
+        self.assertEqual(sum(len(knoll.closure_of(c)) for c in cells), 125)
+        self.assertEqual(sum(len(knoll.star_of(c)) for c in cells), 125)
+
+    def test_closure_star_duality(self):
+        for c in knoll.ternary_cells():
+            for d in knoll.closure_of(c):
+                self.assertIn(c, knoll.star_of(d))
+            for u in knoll.star_of(c):
+                self.assertIn(c, knoll.closure_of(u))
+
+    def test_worked_example_S(self):
+        # the basin's own worked utterance: S in full is E·F·S; S's star
+        # opens to W (x), V (y), and the void
+        letters = knoll.derive_polysheaf_lettering()
+        s = next(c for c, l in letters.items() if l == "S")
+        name = lambda c: letters.get(c, knoll.CENTER_GLYPH)
+        self.assertEqual({name(d) for d in knoll.closure_of(s)},
+                         {"E", "F", "S"})
+        self.assertEqual({name(d) for d in knoll.star_of(s)},
+                         {"S", "W", "V", "⊘"})
+
+    def test_axis_code_is_complete_prefix_code(self):
+        # memo P8: Kraft sum exactly 1; spelling sheds one bit per open-step
+        bits = [knoll.axis_code_bits(c) for c in knoll.ternary_cells()]
+        self.assertEqual(sum(2 ** -b for b in bits), 1.0)
+        for c in knoll.ternary_cells():
+            for r in knoll.requests(c):
+                self.assertEqual(knoll.axis_code_bits(r),
+                                 knoll.axis_code_bits(c) - 1)
+
+
+class LexiconTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.lex = knoll.build_lexicon()
+
+    def test_basin_frames_parsed(self):
+        # 23 letter frames (S, I, O are bdo's, not restated) + the parent ⊘
+        frames = self.lex["frames"]
+        self.assertEqual(len(frames), 24)
+        for absent in ("S", "I", "O"):
+            self.assertNotIn(absent, frames)
+        self.assertEqual(frames["A"]["pivot_candidate"], "Anchor")
+        self.assertEqual(frames["⊘"]["pivot_candidate"], "Basis")
+        self.assertIsNone(frames["X"]["pivot_candidate"])
+        # pivots ride as named holes, never pre-stamped
+        for fr in frames.values():
+            self.assertEqual(fr["pivot_status"], "OPEN")
+
+    def test_census_measured_against_claim(self):
+        # the artifact claims 588/60; the document itself holds 583/65 —
+        # the divergence is a recorded finding, never an edit
+        cen = self.lex["census"]
+        self.assertEqual(cen["claimed"], {"filled": 588, "open": 60})
+        self.assertEqual(cen["measured"], {"filled": 583, "open": 65})
+        ids = {f["id"] for f in self.lex["findings"]}
+        self.assertIn("basin.census-arithmetic", ids)
+        self.assertIn("basin.sio-not-restated", ids)
+
+    def test_density_is_measured_fill_rate(self):
+        x = self.lex["frames"]["X"]
+        self.assertEqual(x["filled"], 5)
+        self.assertEqual(x["density"]["rate"], round(5 / 27, 4))
+        self.assertEqual(x["density"]["status"], "MEASURED")
+        self.assertEqual(self.lex["frames"]["W"]["filled"], 27)
+
+    def test_collisions_knolled_not_deduped(self):
+        col = self.lex["collisions"]
+        self.assertEqual(col["Basis"], ["B", "⊘"])
+        self.assertEqual(col["Frame"], ["F", "⊘"])
+        self.assertIn("interstitial", col["Keystone"])
+
+    def test_schema_columns_exist_and_are_honestly_open(self):
+        # BUILD-2: the columns the measures will fill — present, unfilled
+        for fr in self.lex["frames"].values():
+            self.assertIsNone(fr["placements"])
+            self.assertEqual(fr["attestations"], [])
+            self.assertIsNone(fr["chips"])
+            self.assertIsNone(fr["sc"])
+            self.assertIn("PIN-6", fr["empties"]["typing"])
+
+    def test_interstitial_27(self):
+        kinds = self.lex["interstitial"]["kinds"]
+        self.assertEqual({k: len(v["terms"]) for k, v in kinds.items()},
+                         {"corner": 8, "edge": 12, "face": 6, "center": 1})
+        self.assertEqual(kinds["center"]["terms"], ["Interstice"])
+        self.assertIn("Cant", kinds["edge"]["terms"])
+
+
+class PlacementGateTest(unittest.TestCase):
+    """The §10 test at the placements layer: two locally-fine placements
+    refuse to fit, and the gate notices — loudly, with a receipt."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.placed = json.loads(
+            (REPO / "language" / "s-frame-placements.json")
+            .read_text(encoding="utf-8"))["placements"]
+
+    def test_real_artifact_passes(self):
+        by_coord = knoll.validate_placements(self.placed)
+        self.assertEqual(len(by_coord), 27)
+
+    def test_address_collision_refused(self):
+        # Span and Semantics each sit fine alone; both claiming Span's cell
+        # must refuse (this is the falsifier's one live refusal, frozen)
+        tampered = json.loads(json.dumps(self.placed))
+        tampered["Semantics"]["coord"] = tampered["Span"]["coord"]
+        tampered["Semantics"]["cell"] = tampered["Span"]["cell"]
+        with self.assertRaises(SystemExit) as ctx:
+            knoll.validate_placements(tampered)
+        self.assertIn("address collision", str(ctx.exception))
+        self.assertIn("Span", str(ctx.exception))
+
+    def test_kind_mismatch_refused(self):
+        tampered = json.loads(json.dumps(self.placed))
+        tampered["State"]["cell"] = "edge"  # (+,+,+) is a corner
+        with self.assertRaises(SystemExit) as ctx:
+            knoll.validate_placements(tampered)
+        self.assertIn("State", str(ctx.exception))
+
+    def test_short_frame_refused(self):
+        tampered = json.loads(json.dumps(self.placed))
+        del tampered["Shadow"]
+        with self.assertRaises(SystemExit):
+            knoll.validate_placements(tampered)
+
+    def test_loaded_as_proposed_with_seed_chips(self):
+        letters = knoll.derive_polysheaf_lettering()
+        s = knoll.build_placements(letters)["S"]
+        self.assertEqual(s["census"],
+                         {"corner": 8, "edge": 12, "face": 6, "center": 1})
+        self.assertEqual(s["chips"]["seed_total"], 64)
+        self.assertIsNone(s["chips"]["tally"])  # three columns, never fused
+        self.assertIsNone(s["sc"])
+        seam = s["cells"]["Seam"]
+        self.assertEqual(seam["coord"], [0, 0, 0])
+        self.assertEqual(seam["local_letter"], "⊘")
+        for p in s["cells"].values():
+            self.assertIn("MODEL-GUESSED", p["status"])
+
+
+class DemotionTest(unittest.TestCase):
+    def test_minted_without_non_example_renders_open(self):
+        terms = [
+            {"term": "grounded", "status": "MINTED", "non_example": "a real one"},
+            {"term": "hole-in-disguise", "status": "MINTED", "non_example": None},
+            {"term": "settled", "status": "SETTLED", "non_example": None},
+        ]
+        demoted = knoll.demote_unfalsified(terms)
+        self.assertEqual(demoted, ["hole-in-disguise"])
+        self.assertEqual(terms[0]["status"], "MINTED")
+        self.assertEqual(terms[1]["status"], "OPEN")
+        self.assertEqual(terms[2]["status"], "SETTLED")
+
+    def test_live_ledger_carries_no_unfalsified_minted_terms(self):
+        # the registry's demotions list is empty today; if a future ledger
+        # edit mints without a falsifier, the demotion shows up visibly
+        reg = knoll.build_registry()
+        self.assertEqual(reg["demotions"], [])
+        for t in reg["terms"]:
+            if t["status"] == "MINTED":
+                self.assertTrue(t.get("non_example"), t["term"])
+
+
 class OutputTest(unittest.TestCase):
     def run_knoll(self):
         return subprocess.run(
