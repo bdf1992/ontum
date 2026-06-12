@@ -16,12 +16,17 @@ backlog the harness generated", never "wait for direction".
 The pressure ranking is fixed in code (it is an ordering, not a dial —
 nothing here moves work or judges it, so there is no setpoint to admit):
 
-  1. mock-stage     a PIPELINE stage no node_real admission has replaced —
-                    fake work moving is the worst gap (done-line 0033)
-  2. parked-piece   an atom a gate refused, holding; amend or retire
-  3. surface-drift  acts not yet reflected to a registered surface
-  4. idle-organ     census wired·idle — a writer plumbed in, never fired
-  5. dormant-organ  census dormant — a prune candidate (the cut is bdo's)
+  1. mock-stage        a PIPELINE stage no node_real admission replaced —
+                       fake work moving is the worst gap (done-line 0033)
+  2. mock-actor        a .mock actor on the record the stage lifecycle
+                       does not own (done-line 0049: an effective mock is
+                       mocked, suffix or not)
+  3. unadmitted-actor  a record-writer no admission ever named — identity
+                       self-asserted (done-line 0049)
+  4. parked-piece      an atom a gate refused, holding; amend or retire
+  5. surface-drift     acts not yet reflected to a registered surface
+  6. idle-organ        census wired·idle — a writer plumbed in, never fired
+  7. dormant-organ     census dormant — a prune candidate (the cut is bdo's)
 
 The fold computes lazily in priority order: the cheap log folds answer
 before the census walks the tree, so the every-prompt hook pays the
@@ -40,27 +45,113 @@ from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, load_atoms,
 from loop.orchestrate import next_action
 from loop.reflect import drift, registered_surfaces
 
-KIND_ORDER = ("mock-stage", "parked-piece", "surface-drift",
-              "idle-organ", "dormant-organ")
+KIND_ORDER = ("mock-stage", "mock-actor", "unadmitted-actor",
+              "parked-piece", "surface-drift", "idle-organ", "dormant-organ")
+
+PIPELINE_MOCKS = frozenset(s["node"] for s in PIPELINE if ".mock" in s["node"])
+
+
+def effective_mocks(root):
+    """Anything effectively mock, with its basis (done-line 0049, bdo's
+    directive: what is effectively mocked gets *mocked* — no hiding behind
+    a missing `.mock` suffix). Three bases, one pure fold:
+
+    - pipeline-stage   a PIPELINE stage no node_real admission replaced
+                       (the original shame set, done-line 0033)
+    - mock-actor       a `.mock`-marked node standing as an actor on the
+                       record outside the PIPELINE lifecycle (the story-
+                       author seed was invisible to every surface)
+    - unadmitted-actor a node writing events/receipts that no node_real
+                       admission has ever named on either side — its
+                       identity is self-asserted (the merge-node landed
+                       22 PRs this way)
+
+    An admission clears both its sides: the stage/old id reads superseded,
+    the admitted id reads real. History stands either way (I-2)."""
+    if not (Path(root) / "log").is_dir():
+        return []  # no records, no loop: absence, not a field of mocks
+    fold = Fold(root)
+    cleared = set()
+    for adm in fold.admissions:
+        if adm.get("type") == "node_real":
+            cleared.add(adm.get("stage_node"))
+            cleared.add(adm.get("real_node"))
+    real = real_nodes(fold)
+    out = [{"basis": "pipeline-stage", "actor": s["node"], "records": 0}
+           for s in PIPELINE
+           if ".mock" in s["node"] and s["node"] not in real]
+    actors = {}
+    for ev in fold.events:
+        n = ev.get("from_node")
+        if n:
+            actors[n] = actors.get(n, 0) + 1
+    for rc in fold.receipts:
+        n = rc.get("node")
+        if n:
+            actors[n] = actors.get(n, 0) + 1
+    for n in sorted(actors):
+        if n in PIPELINE_MOCKS or n in cleared:
+            continue  # the stage lifecycle owns it / an admission named it
+        out.append({"basis": "mock-actor" if ".mock" in n
+                    else "unadmitted-actor", "actor": n,
+                    "records": actors[n]})
+    return out
+
+
+def _mock_gap(m):
+    basis, actor = m["basis"], m["actor"]
+    if basis == "pipeline-stage":
+        return {
+            "kind": "mock-stage", "subject": actor,
+            "why": "fixed verdict, no judgement — every advance it "
+                   "stamps is a mock moving fake work",
+            "move": "build and prove the judging backing, then bdo's "
+                    "realness gesture admits it: python -m loop.node "
+                    f"admit-real --stage {actor} --node <real-node> --by bdo",
+        }
+    if basis == "mock-actor":
+        return {
+            "kind": "mock-actor", "subject": actor,
+            "why": f"a .mock actor standing on the record outside the "
+                   f"pipeline lifecycle — {m['records']} record(s) carry "
+                   "its name and no surface screamed it",
+            "move": "name its real seat (today's truth, not an aspiration), "
+                    "then bdo's gesture admits it: python -m loop.node "
+                    f"admit-real --stage {actor} --node <real-node> --by bdo",
+        }
+    return {
+        "kind": "unadmitted-actor", "subject": actor,
+        "why": f"writes to the record with no node_real admission on "
+               f"either side — identity self-asserted across "
+               f"{m['records']} record(s)",
+        "move": "bdo's realness gesture admits the actor: python -m "
+                f"loop.node admit-real --stage {actor} "
+                "--node <admitted-id> --by bdo",
+    }
 
 
 def mock_stage_gaps(root):
     """The shame beat's fold (done-line 0033), as work: every PIPELINE
     stage still mock — no node_real admission has replaced it."""
-    real = real_nodes(Fold(root))
-    out = []
-    for stage in PIPELINE:
-        node = stage["node"]
-        if ".mock" in node and node not in real:
-            out.append({
-                "kind": "mock-stage", "subject": node,
-                "why": "fixed verdict, no judgement — every advance it "
-                       "stamps is a mock moving fake work",
-                "move": "build and prove the judging backing, then bdo's "
-                        "realness gesture admits it: python -m loop.node "
-                        f"admit-real --stage {node} --node <real-node> --by bdo",
-            })
-    return sorted(out, key=lambda g: g["subject"])
+    return sorted((_mock_gap(m) for m in effective_mocks(root)
+                   if m["basis"] == "pipeline-stage"),
+                  key=lambda g: g["subject"])
+
+
+def mock_actor_gaps(root):
+    """Effective mocks beyond the pipeline (done-line 0049): .mock actors
+    the stage lifecycle does not own."""
+    return sorted((_mock_gap(m) for m in effective_mocks(root)
+                   if m["basis"] == "mock-actor"),
+                  key=lambda g: g["subject"])
+
+
+def unadmitted_actor_gaps(root):
+    """Self-asserted identities on the record (done-line 0049): writers no
+    admission ever named."""
+    return sorted((_mock_gap(m) for m in effective_mocks(root)
+                   if m["basis"] == "unadmitted-actor"),
+                  key=lambda g: g["subject"])
 
 
 def parked_piece_gaps(root):
@@ -143,8 +234,8 @@ def gaps(root, first_kind_only=False):
         # no records, no loop: a missing root is an absence, not a field
         # of mock stages (the hook runs in repos that are not this one)
         return []
-    folds = (mock_stage_gaps, parked_piece_gaps, surface_drift_gaps,
-             organ_gaps)
+    folds = (mock_stage_gaps, mock_actor_gaps, unadmitted_actor_gaps,
+             parked_piece_gaps, surface_drift_gaps, organ_gaps)
     out = []
     for fold_fn in folds:
         out.extend(fold_fn(root))

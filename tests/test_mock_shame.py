@@ -134,10 +134,31 @@ class MockShame(unittest.TestCase):
             _, low, _ = run(root)
             self.assertIn("[mock-shame] turn 1", low)
             self.assertNotIn("[MOCK-SHAME]", low)
-            _, loud, st = run(root, seed_state={"turns": 14, "mock_set": ALL_MOCKS})
+            seeded = [f"{m} [pipeline-stage]" for m in ALL_MOCKS]
+            _, loud, st = run(root, seed_state={"turns": 14, "mock_set": seeded})
             self.assertEqual(st["turns"], 15)
             self.assertIn("[MOCK-SHAME]", loud)
             self.assertIn("15 TURNS", loud)
+
+    def test_screams_effective_mocks_beyond_the_pipeline(self):
+        # done-line 0049: an actor writing the record with no admission on
+        # either side is effectively mock and screams like one — and the
+        # admission that names it buys exactly its silence.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = make_repo(tmp)
+            (root / ".ai-native" / "log" / "receipts.jsonl").write_text(
+                '{"id":"rcp.merge.9","kind":"merge","node":"merge-node.test.v0",'
+                '"pr":9,"verdict":"landed"}\n', encoding="utf-8")
+            code, out, _ = run(root)
+            self.assertEqual(code, 0)
+            self.assertIn("merge-node.test.v0 [unadmitted-actor]", out)
+            with open(root / ".ai-native" / "log" / "admissions.jsonl",
+                      "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(node_real("merge-node.test.v0",
+                                              "merge-node.test.v1")) + "\n")
+            code, out, _ = run(root)
+            self.assertEqual(code, 0)
+            self.assertNotIn("merge-node.test.v0", out)
 
     def test_fails_open_on_a_torn_log(self):
         # a half-written admission line must be folded away, not crash the

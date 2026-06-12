@@ -43,49 +43,89 @@ BY = "merge-node.claude.v0"
 
 class LandRefusal(unittest.TestCase):
     def test_full_house_lands(self):
-        self.assertIsNone(pr.land_refusal(_ok_pr(), CONF, BY))
+        self.assertIsNone(pr.land_refusal(_ok_pr(), CONF, BY, True))
 
     def test_unconfirmed_arc_refuses_even_when_otherwise_perfect(self):
         # the §10 case: nothing the PR can see is wrong; the missing human
         # stamp is what refuses to fit.
-        reason = pr.land_refusal(_ok_pr(), None, BY)
+        reason = pr.land_refusal(_ok_pr(), None, BY, True)
         self.assertIsNotNone(reason)
         self.assertIn("confirm", reason.lower())
 
     def test_no_by_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(), CONF, ""))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(), CONF, "", True))
+
+    def test_unadmitted_by_refuses_even_when_otherwise_perfect(self):
+        # done-line 0049's §10 case: a perfect PR, a confirmed arc, and a
+        # lander whose name no admission ever wrote — a free-text identity
+        # is effectively mock and must not land. The default is refuse.
+        reason = pr.land_refusal(_ok_pr(), CONF, BY)
+        self.assertIsNotNone(reason)
+        self.assertIn("not an admitted node", reason)
+        self.assertIn("admit-real", reason)
 
     def test_draft_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(isDraft=True), CONF, BY))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(isDraft=True), CONF, BY, True))
 
     def test_not_open_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(state="MERGED"), CONF, BY))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(state="MERGED"), CONF, BY, True))
 
     def test_non_main_base_refuses(self):
         self.assertIsNotNone(
-            pr.land_refusal(_ok_pr(baseRefName="epic.owner-harness"), CONF, BY))
+            pr.land_refusal(_ok_pr(baseRefName="epic.owner-harness"), CONF, BY, True))
 
     def test_conflicting_refuses(self):
         self.assertIsNotNone(
-            pr.land_refusal(_ok_pr(mergeable="CONFLICTING"), CONF, BY))
+            pr.land_refusal(_ok_pr(mergeable="CONFLICTING"), CONF, BY, True))
 
     def test_failing_check_refuses(self):
         self.assertIsNotNone(pr.land_refusal(
-            _ok_pr(statusCheckRollup=[{"conclusion": "FAILURE"}]), CONF, BY))
+            _ok_pr(statusCheckRollup=[{"conclusion": "FAILURE"}]), CONF, BY, True))
 
     def test_pending_check_refuses(self):
         self.assertIsNotNone(pr.land_refusal(
-            _ok_pr(statusCheckRollup=[{"state": "PENDING"}]), CONF, BY))
+            _ok_pr(statusCheckRollup=[{"state": "PENDING"}]), CONF, BY, True))
 
     def test_no_checks_is_green(self):
-        self.assertIsNone(pr.land_refusal(_ok_pr(statusCheckRollup=[]), CONF, BY))
+        self.assertIsNone(pr.land_refusal(_ok_pr(statusCheckRollup=[]), CONF, BY, True))
 
     def test_auto_title_refuses(self):
         self.assertIsNotNone(
-            pr.land_refusal(_ok_pr(title="claude/merge-node"), CONF, BY))
+            pr.land_refusal(_ok_pr(title="claude/merge-node"), CONF, BY, True))
 
     def test_empty_body_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(body="  "), CONF, BY))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(body="  "), CONF, BY, True))
+
+
+class NodeAdmittedIn(unittest.TestCase):
+    """The lander's identity is the trunk's to answer (done-line 0049):
+    admitted by a node_real's real side, superseded by its stage side,
+    self-asserted when never named at all."""
+
+    def test_never_named_is_not_admitted(self):
+        self.assertFalse(pr.node_admitted_in("", "merge-node.claude.v1"))
+
+    def test_real_side_admits(self):
+        dump = ('{"type":"node_real","stage_node":"merge-node.claude.v0",'
+                '"real_node":"merge-node.claude.v1","by":"bdo","id":"adm.1"}')
+        self.assertTrue(pr.node_admitted_in(dump, "merge-node.claude.v1"))
+        # the superseded id does not land — and never-named ids never did
+        self.assertFalse(pr.node_admitted_in(dump, "merge-node.claude.v0"))
+        self.assertFalse(pr.node_admitted_in(dump, "merge-node.claude.v9"))
+
+    def test_later_supersession_revokes(self):
+        dump = "\n".join([
+            '{"type":"node_real","stage_node":"seat.v0","real_node":"seat.v1","by":"bdo","id":"adm.1"}',
+            '{"type":"node_real","stage_node":"seat.v1","real_node":"seat.v2","by":"bdo","id":"adm.2"}',
+        ])
+        self.assertFalse(pr.node_admitted_in(dump, "seat.v1"))
+        self.assertTrue(pr.node_admitted_in(dump, "seat.v2"))
+
+    def test_torn_line_is_folded_away(self):
+        dump = ('{"type":"node_real","stage_node":"a","real_node":"b","by":"bdo"\n'
+                '{"type":"node_real","stage_node":"x","real_node":"y","by":"bdo","id":"adm.2"}')
+        self.assertTrue(pr.node_admitted_in(dump, "y"))
+        self.assertFalse(pr.node_admitted_in(dump, "b"))
 
 
 class ArcConfirmedIn(unittest.TestCase):

@@ -61,10 +61,12 @@ def log_bytes(root):
 
 
 def admit_all_real(root):
-    """Admit every still-mock stage; a stage already real keeps its node —
-    re-admitting would supersede the judge whose receipts are on record."""
+    """Admit every still-mock seat — the stages and the story-author
+    (done-line 0049: the author seat de-mocks like any stage). A seat
+    already real keeps its node — re-admitting would supersede the judge
+    whose receipts are on record."""
     real = reconcile.real_nodes(reconcile.Fold(root))
-    for stage in ALL_MOCKS:
+    for stage in ALL_MOCKS + [reconcile.SEED_NODE]:
         if stage not in real:
             node.admit_real(root, stage, stage.replace(".mock", ".test-judge"),
                             by="test-bdo")
@@ -127,6 +129,55 @@ class GapFoldTest(unittest.TestCase):
         admit_all_real(self.root)
         self.assertEqual(gaps.gaps(self.root), [])
         self.assertIsNone(gaps.top_gap(self.root))
+
+    # -- effective mocks beyond the pipeline (done-line 0049) --------------
+
+    def test_seed_author_is_a_mock_actor_no_surface_could_see(self):
+        # seeding writes the story-author's name on the record; it is not a
+        # PIPELINE stage, so before 0049 nothing screamed it
+        orchestrate.admit_setpoint(self.root, SETPOINT, by="test-bdo")
+        orchestrate.orchestrate(self.root, quiet=True)
+        found = gaps.gaps(self.root)
+        actors = [g for g in found if g["kind"] == "mock-actor"]
+        self.assertEqual([g["subject"] for g in actors], [reconcile.SEED_NODE])
+        self.assertIn("no surface screamed it", actors[0]["why"])
+        kinds = [g["kind"] for g in found]
+        self.assertLess(kinds.index("mock-stage"), kinds.index("mock-actor"))
+
+    def test_unadmitted_actor_flagged_until_an_admission_names_it(self):
+        # a self-asserted identity writing receipts (the merge-node pattern)
+        reconcile.append_line(self.root / "log" / "receipts.jsonl", {
+            "id": "rcp.merge.1", "kind": "merge", "node": "merge-node.test.v0",
+            "pr": 1, "verdict": "landed", "ts": "2026-06-11T00:00:00Z"})
+        found = [g for g in gaps.gaps(self.root)
+                 if g["kind"] == "unadmitted-actor"]
+        self.assertEqual([g["subject"] for g in found], ["merge-node.test.v0"])
+        self.assertIn("self-asserted", found[0]["why"])
+        self.assertIn("admit-real", found[0]["move"])
+        # one admission clears both sides: the old id reads superseded, the
+        # admitted id may write from now on
+        node.admit_real(self.root, "merge-node.test.v0", "merge-node.test.v1",
+                        by="test-bdo")
+        reconcile.append_line(self.root / "log" / "receipts.jsonl", {
+            "id": "rcp.merge.2", "kind": "merge", "node": "merge-node.test.v1",
+            "pr": 2, "verdict": "landed", "ts": "2026-06-11T00:00:01Z"})
+        self.assertEqual([g for g in gaps.gaps(self.root)
+                          if g["kind"] == "unadmitted-actor"], [])
+
+    def test_admitted_author_signs_the_seed_event(self):
+        # the author seat de-mocks by the same admission as every stage:
+        # once named, reconcile stamps the admitted author on the seed
+        node.admit_real(self.root, reconcile.SEED_NODE,
+                        "story-author.session.v1", by="test-bdo")
+        orchestrate.admit_setpoint(self.root, SETPOINT, by="test-bdo")
+        orchestrate.orchestrate(self.root, quiet=True)
+        fold = reconcile.Fold(self.root)
+        seeds = [e for e in fold.events if e["type"] == reconcile.SEED_EVENT]
+        self.assertTrue(seeds)
+        self.assertEqual({e["from_node"] for e in seeds},
+                         {"story-author.session.v1"})
+        self.assertEqual([g for g in gaps.gaps(self.root)
+                          if g["kind"] == "mock-actor"], [])
 
     def test_organ_kinds_idle_before_dormant(self):
         # a real census fixture, no mocking: two organs in the temp repo —

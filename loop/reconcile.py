@@ -364,12 +364,15 @@ def pass_once(root, pace=0.0, quiet=False, atom=None, artifact_hash=None):
         time.sleep(pace)
 
     if not fold.event(SEED_EVENT, artifact_hash):
-        # missing: the atom's birth announcement
+        # missing: the atom's birth announcement. The author seat de-mocks
+        # like any stage (done-line 0049): a node_real admission naming
+        # SEED_NODE puts the admitted author on every seed from then on.
         stage0 = PIPELINE[0]
+        author = real_map.get(SEED_NODE, SEED_NODE)
         append_line(root / "log" / "events.jsonl", make_event(
-            SEED_EVENT, stage0["seam"], SEED_NODE, atom["id"], artifact_hash,
+            SEED_EVENT, stage0["seam"], author, atom["id"], artifact_hash,
             [stage0["node"]], stage0["terminal_expected"]))
-        step = f"announced {SEED_EVENT} (seed, from {SEED_NODE})"
+        step = f"announced {SEED_EVENT} (seed, from {author})"
         next_seam = stage0["seam"]
     else:
         # missing: an event a receipt already implies (repair before new work)

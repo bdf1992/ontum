@@ -436,14 +436,43 @@ def arc_confirmed_in(admissions_text, epic):
     return active
 
 
-def _trunk_confirmation(epic):
-    """Read bdo's arc confirmation from the trunk — the pushed `origin/main`,
-    never a local `main` ref that drifts stale when a viewport falls behind,
-    never the working branch (a piece branch may predate the confirmation).
-    Fetch first so the read is current; `confirm` below pushes the stamp here."""
+def node_admitted_in(admissions_text, node_id):
+    """Is this node id admitted-real in a log dump? Pure. A node_real
+    admission admits its `real_node` and supersedes its `stage_node` — so
+    an id later named as someone's stage side stops being admitted (the
+    one lifecycle every seat shares, done-line 0049). An id no admission
+    ever named is self-asserted: effectively mock, and not admitted."""
+    admitted = set()
+    for line in admissions_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            adm = json.loads(line)
+        except ValueError:
+            continue
+        if adm.get("type") == "node_real":
+            admitted.discard(adm.get("stage_node"))
+            if adm.get("real_node"):
+                admitted.add(adm["real_node"])
+    return node_id in admitted
+
+
+def _trunk_admissions():
+    """The trunk's admissions log — the pushed `origin/main`, never a local
+    `main` ref that drifts stale when a viewport falls behind, never the
+    working branch (a piece branch may predate the stamp). Fetch first so
+    the read is current. None when the trunk cannot be read."""
     _capture(["git", "fetch", "origin", "main"])
     rc, out, _ = _capture(["git", "show", "origin/main:.ai-native/log/admissions.jsonl"])
-    return arc_confirmed_in(out, epic) if rc == 0 else None
+    return out if rc == 0 else None
+
+
+def _trunk_confirmation(epic):
+    """Read bdo's arc confirmation from the trunk; `confirm` below pushes
+    the stamp here."""
+    out = _trunk_admissions()
+    return arc_confirmed_in(out, epic) if out is not None else None
 
 
 # ---------------------------------------------------- the atom invariant
@@ -555,13 +584,22 @@ def checks_green(rollup):
     return True
 
 
-def land_refusal(info, confirmation, by):
+def land_refusal(info, confirmation, by, by_admitted=False):
     """Why the merge-node may not land this PR on main, or None. Default is
     refuse: it lands only a confirmed-arc, green, written, non-draft,
-    non-conflicting PR based on main, and only as a named node (no one signs
-    their own line; bdo's arc confirmation is the independent approval, D-4)."""
+    non-conflicting PR based on main, and only as an *admitted* node — a
+    free-text identity is effectively mock and does not land (done-line
+    0049; "the merge-node does not move until bdo admits it real" was
+    prose, this makes it executable). by_admitted is the trunk's answer
+    (node_admitted_in over origin/main's admissions)."""
     if not (by or "").strip():
         return "the merge-node lands as a named node (--by) — no one signs their own line"
+    if not by_admitted:
+        return (f"--by {by!r} is not an admitted node on the trunk — a "
+                "self-asserted identity is effectively mock and does not "
+                "land; bdo's realness gesture admits the seat: python -m "
+                f"loop.node admit-real --stage <superseded-id> --node {by} "
+                "--by bdo (done-line 0049)")
     if info.get("state") != "OPEN":
         return f"PR is {str(info.get('state')).lower()} — only an open PR lands"
     if info.get("baseRefName") not in ("main", "master"):
@@ -654,8 +692,10 @@ def cmd_land(ns):
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json",
          "state,baseRefName,headRefName,isDraft,mergeable,title,body,statusCheckRollup,author"]))
-    confirmation = _trunk_confirmation(ns.epic)
-    reason = land_refusal(info, confirmation, ns.by)
+    trunk = _trunk_admissions()
+    confirmation = arc_confirmed_in(trunk, ns.epic) if trunk is not None else None
+    by_admitted = node_admitted_in(trunk, ns.by) if trunk is not None else False
+    reason = land_refusal(info, confirmation, ns.by, by_admitted)
     if reason:
         _refuse(reason)
     head = info.get("headRefName")

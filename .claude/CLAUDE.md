@@ -34,11 +34,14 @@ be, landed as stamped increments, never hand-tuned silently.
   - `SessionStart` + `UserPromptSubmit` → `loop.summon --hook`: open
     summons, the owner-backlog count, and unreflected surface drift,
     injected ambiently.
-  - `UserPromptSubmit` → `hooks/mock_shame.py` (done-line 0033): the
-    shame beat — every turn it screams the still-mock pipeline stages
-    (a fold over `node_real` admissions, never a code literal) into
-    context and grows louder the longer they sit, resetting to silence
-    only when a stage is admitted real. The tally is gitignored nag
+  - `UserPromptSubmit` → `hooks/mock_shame.py` (done-line 0033; widened
+    by 0049): the shame beat — every turn it screams every *effective*
+    mock (the `loop.gaps.effective_mocks` fold, never a code literal):
+    still-mock pipeline stages, `.mock` actors on the record outside the
+    stage lifecycle, and record-writers no `node_real` admission ever
+    named (self-asserted identity — the merge-node's 22 unadmitted
+    landings are how this was caught). It grows louder the longer the
+    set sits, resetting to silence only when an admission names a seat. The tally is gitignored nag
     state (`.ai-native/mock-shame.json`); the still-mock set it points
     at is the truth. bdo's correction made mechanical: a mock that moves
     fake work cannot hide behind a clean ledger. Read-only on the log,
