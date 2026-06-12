@@ -35,6 +35,7 @@ ADMISSIONS = ROOT / ".ai-native" / "log" / "admissions.jsonl"
 SUBSCRIBERS = [
     ("realness", ".claude/skills/realness-intake/realness.py", "realness-intake"),
     ("arc", ".claude/skills/arc-intake/intake.py", "arc-intake"),
+    ("rung", ".claude/skills/rung-intake/rung.py", "rung-intake"),
 ]
 
 
@@ -93,6 +94,9 @@ def _one_line(label, item):
         comment = comment[:157] + "…"
     if label == "realness":
         what = f"make {item.get('stage')} real ({item.get('node')})"
+    elif label == "rung":
+        what = (f"grant {item.get('agent_class')} the "
+                f"'{item.get('capability')}' rung")
     else:
         what = f"confirm {item.get('epic')}"
     return f"  · {label} #{item.get('number')}: {what} — bdo: {comment}"

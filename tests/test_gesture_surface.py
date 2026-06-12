@@ -46,6 +46,20 @@ class FormatSurface(unittest.TestCase):
         self.assertIn("arc-intake", text)
         self.assertNotIn("realness-intake", text)
 
+    def test_rung_gesture_names_its_skill_and_the_grant(self):
+        # done-line 0051: the third subscriber — a closed rung-confirm issue
+        # wakes the session with the exact (class, rung) bdo acted on.
+        found = {"rung": [{"number": 90, "agent_class": "branded-subagent",
+                           "capability": "judge", "comment": "grant it"}]}
+        text = gs.format_surface(found)
+        self.assertIn("#90", text)
+        self.assertIn("branded-subagent", text)
+        self.assertIn("'judge' rung", text)
+        self.assertIn("grant it", text)
+        self.assertIn("rung-intake", text)
+        self.assertNotIn("realness-intake", text)
+        self.assertNotIn("arc-intake", text)
+
     def test_both_surfaced_together(self):
         found = {"realness": [{"number": 1, "stage": "s", "node": "n", "comment": "a"}],
                  "arc": [{"number": 2, "epic": "e", "comment": "b"}]}
