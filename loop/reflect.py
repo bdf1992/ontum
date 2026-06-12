@@ -46,15 +46,18 @@ from loop.reconcile import (DEFAULT_ROOT, Fold, append_line, epic_of, glue_of,
                             load_atoms, load_epics, now_ts, real_nodes,
                             receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
+from loop.digest import digest as compute_digest
 
 REFLECTED_EVENT = "surface.reflected"
 PEN = "python .claude/skills/reflect/reflect.py"
 
 # The kinds table — the extension point (done-line 0020). A kind is a
 # named drift fold; a new kind joins as an entry here (plus rules to
-# enable it), never as a new system. One kind exists today: the owner's
-# stamp queue, computed by drift().
-RULE_KINDS = ("owner-stamp-queue",)
+# enable it), never as a new system. Two kinds today: the owner's stamp
+# queue (drift, one issue per atom), and the post-merge divergence surface
+# (divergence_drift, one AGGREGATE issue per divergence group, done-line
+# 0037). DRIFT_BY_KIND (below, after both folds) maps each to its fold.
+RULE_KINDS = ("owner-stamp-queue", "merge-divergences")
 
 # The surface kinds table (done-line 0030): the tongues the reflector
 # pen actually speaks — its translator table is keyed to exactly this
@@ -139,7 +142,7 @@ def auto_plan(root):
             continue
         if surfaces[surface].get("kind") not in SURFACE_KINDS:
             continue  # no translator speaks it (done-line 0030); status() names it
-        acts = drift(root, surface)
+        acts = DRIFT_BY_KIND[kind](root, surface)  # dispatch by kind, not assume one
         if acts:
             plan.append({"kind": kind, "surface": surface, "acts": acts})
     return plan
@@ -279,6 +282,99 @@ def drift(root, surface):
     return acts
 
 
+def _divergence_groups(divergences):
+    """Fold the digest's divergences into aggregate groups — one issue per
+    group, not one per data point (bdo's shape, 2026-06-11: aggregate
+    surfacing, never a per-PR echo). Refusals group by the confirmed arc they
+    sit under; cap-breaches group as one. Each group's id is stable over its
+    key, so an open is idempotent and a close fires only when the group
+    reconciles (its data points all clear). Returns {group_id: group}."""
+    refusals, caps = {}, []
+    for d in divergences:
+        if d.get("kind") == "refusal-under-confirmed-arc":
+            refusals.setdefault(d.get("epic"), []).append(d)
+        elif d.get("kind") == "queue-over-cap":
+            caps.append(d)
+
+    groups = {}
+    for epic, items in sorted(refusals.items()):
+        gid = "div." + short_hash("refusal-under-confirmed-arc", str(epic))
+        lines = [f"## refusals under confirmed arc `{epic}`",
+                 f"You confirmed this arc, yet {len(items)} of its piece(s) "
+                 "earned a gate's refusal — confirm-arc means the loop carries "
+                 "the pieces, so a refusal here is the pattern that needs you:",
+                 ""]
+        lines += [f"- **{d.get('atom')}** — {d.get('node')} → "
+                  f"`{d.get('verdict')}`: {d.get('reason') or 'no reason given'}"
+                  for d in items]
+        lines += ["", "*Reconcile by amending the refused piece(s) or "
+                  "withdrawing the arc (`confirm-arc --off`). Live detail: "
+                  "`python -m loop.digest`. This issue is a mirror — it closes "
+                  "itself when the pattern reconciles (no refusal left under "
+                  "this arc).*"]
+        groups[gid] = {"label": f"refusals:{epic}",
+                       "title": f"[divergence] {len(items)} refusal(s) under "
+                                f"confirmed arc {epic}",
+                       "body": "\n".join(lines)}
+    if caps:
+        gid = "div." + short_hash("queue-over-cap")
+        lines = [f"## the human queue breached its cap ({len(caps)} tick(s))",
+                 "The cool valve is meant to hold the owner's queue at or under "
+                 "its admitted cap; these ticks ran over it:", ""]
+        lines += [f"- tick {d.get('tick')}: backlog {d.get('backlog')} > "
+                  f"cap {d.get('cap')} (setpoint {d.get('setpoint_id')})"
+                  for d in caps]
+        lines += ["", "*Reconcile by raising the cap or shedding inflow "
+                  "(`loop.orchestrate --admit-setpoint`). Live detail: "
+                  "`python -m loop.digest`. Closes when no tick in the span "
+                  "breaches its cap.*"]
+        groups[gid] = {"label": "queue-over-cap",
+                       "title": f"[divergence] human queue breached its cap "
+                                f"({len(caps)} tick(s))",
+                       "body": "\n".join(lines)}
+    return groups
+
+
+def divergence_drift(root, surface):
+    """The merge-divergences kind (done-line 0037): aggregate divergence
+    groups, mirrored as issues. Same drift shape as drift() — open the groups
+    not yet opened, close the opened groups that have reconciled — keyed by
+    group id in the artifact_hash slot, so the gh translator and the
+    reflection records work unchanged. Pure; only the pen applies."""
+    fold = Fold(root)
+    surfaces = registered_surfaces(fold)
+    if surface not in surfaces:
+        known = ", ".join(sorted(surfaces)) or "none registered"
+        raise ValueError(f"surface {surface!r} is not admitted ({known}); "
+                         f"register it: python -m loop.reflect register "
+                         f"--surface {surface} --address <owner/repo> --by <who>")
+    seen = reflections(fold, surface)
+    groups = _divergence_groups(compute_digest(root).get("divergences", []))
+    acts = []
+    for gid, g in groups.items():
+        if (gid, "open") not in seen:
+            acts.append({"act": "open", "atom_id": g["label"],
+                         "artifact_hash": gid, "title": g["title"],
+                         "body": g["body"]})
+    for (ahash, act), ev in sorted(seen.items(), key=lambda kv: kv[1]["id"]):
+        if act != "open" or ahash in groups or (ahash, "close") in seen:
+            continue
+        acts.append({"act": "close", "atom_id": ev.get("artifact_id"),
+                     "artifact_hash": ahash,
+                     "external_ref": ev.get("external_ref"),
+                     "comment": "reconciled — this divergence pattern no longer "
+                                "appears in the digest; closed by the mirror"})
+    return acts
+
+
+# A kind is a named drift fold (RULE_KINDS); this maps each to its fold, so
+# the beat (auto_plan) and status dispatch by kind instead of assuming one.
+DRIFT_BY_KIND = {
+    "owner-stamp-queue": drift,
+    "merge-divergences": divergence_drift,
+}
+
+
 def status(root):
     """Read-only (I-3): every registered surface and its drift."""
     fold = Fold(root)
@@ -289,7 +385,7 @@ def status(root):
               "--surface <id> --address <owner/repo> --by <who>)")
         return 0
     matrix = rules(fold)
-    auto_pairs = set()
+    auto_pairs = set()  # (kind, surface) with an enabled, applicable rule
     for (kind, surface), adm in sorted(matrix.items()):
         state = "on" if adm.get("enabled") else "off"
         note = ""
@@ -301,20 +397,27 @@ def status(root):
             note = (" (surface kind has no translator — the beat skips it; "
                     "done-line 0030)")
         elif adm.get("enabled"):
-            auto_pairs.add(surface)
+            auto_pairs.add((kind, surface))
         print(f"rule: {kind} x {surface} = {state} "
               f"(admitted by {adm['by']}, {adm['id']}){note}")
     total = 0
     for sid, adm in sorted(surfaces.items()):
-        acts = drift(root, sid)
-        total += len(acts)
-        beat = "auto (rule on)" if sid in auto_pairs else "manual only (no enabled rule)"
         print(f"surface: {sid} ({adm['kind']}) -> {adm['address']} "
-              f"(admitted by {adm['by']}, {adm['id']}; {beat})")
-        for a in acts:
-            ref = f" [{a.get('external_ref')}]" if a.get("external_ref") else ""
-            print(f"  {a['act']}: {a['atom_id']}{ref}")
-        if not acts:
+              f"(admitted by {adm['by']}, {adm['id']})")
+        any_acts = False
+        for kind in RULE_KINDS:
+            # owner-stamp-queue shows always (back-compat); other kinds only
+            # where a rule enables them — a surface mirrors many kinds at once
+            if kind != "owner-stamp-queue" and (kind, sid) not in auto_pairs:
+                continue
+            acts = DRIFT_BY_KIND[kind](root, sid)
+            total += len(acts)
+            beat = "auto" if (kind, sid) in auto_pairs else "manual only (no enabled rule)"
+            for a in acts:
+                any_acts = True
+                ref = f" [{a.get('external_ref')}]" if a.get("external_ref") else ""
+                print(f"  [{kind}, {beat}] {a['act']}: {a['atom_id']}{ref}")
+        if not any_acts:
             print("  no drift — the surface mirrors the log")
     if total:
         print(f"result: report — {total} act(s) of drift; the beat clears what "

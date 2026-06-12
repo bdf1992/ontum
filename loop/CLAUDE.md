@@ -138,7 +138,16 @@ so a prompt edit can't reopen a settled verdict (I-2).
   beat, named by status — never guessed at with gh-shaped verbs).
   Pub/sub, level-triggered: the log is the topic, rules the
   subscriptions, reflection records the acks, drift the unconsumed
-  backlog. Outward reach lives only in the reflector pen
+  backlog. Two kinds today (`DRIFT_BY_KIND`): **owner-stamp-queue**
+  (`drift`, one issue per atom at the stamp) and **merge-divergences**
+  (`divergence_drift`, done-line 0037) — the post-merge surface bdo asked
+  for: the digest's *divergences* folded into **aggregate** issues, one
+  per group (refusals under a confirmed arc, by epic; cap-breaches as
+  one), each carrying its data points, closing when the group reconciles
+  — explicitly *not* a one-issue-per-PR echo. A new kind is an entry in
+  `RULE_KINDS` + `DRIFT_BY_KIND`; the gh translator and reflection records
+  are shared, so it rides the same beat once a rule enables it. Outward
+  reach lives only in the reflector pen
   (`.claude/skills/reflect/reflect.py`) — never here. The mirror is
   one-way: verdicts still land only through `loop.node judge` (D-4).
 - [web.py](web.py) — the owner inbox, a rendered fold; its verdict POST
