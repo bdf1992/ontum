@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.field-topology.v1",
+    "story": {
+      "text": "As a managing session and as bdo, I want the first real Field on the trunk - and it is there now, measurable: loop/field.py (landed by rcp.merge.101 on bdo's arc confirmation adm.6e3ccedc1f0b) is a pure read-only fold that, given one arc, produces the decomposition ladder arc -> epic -> story -> task -> environment -> node -> occupant, each rung carrying state, evidence as record ids, and one next_safe_move that routes through an existing pen or honestly names bdo. The disciplines are in code and pinned by tests/test_field.py (suite 572 green): task and environment surface as named gaps rather than invented rungs (a §10 test fails a fabricated clean ladder three ways), and occupancy carries authority - an occupant no node_real admission ever named renders UN-AUTHORISED, a superseded stage side as an authorised alias. This v1 answers v0's missed (rcp.3e08d1446381): value-confirm caught the claim/delivery gap - ready_for_spec was reached, the spec was never built - and the move it named is done: the fold was built against done-line 0050, landed, and this version re-announces citing the delivery evidence instead of the intention.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.the-field"
+      ],
+      "touches": [
+        "loop/field.py",
+        "tests/test_field.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.handoff-to-confirm"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "atom.field-topology.v0",
+        ".ai-native/done/0050-field-topology-the-first-field.md",
+        "loop/field.py",
+        "tests/test_field.py"
+      ],
+      "receipts": [
+        "rcp.3e08d1446381",
+        "rcp.merge.101"
+      ]
+    }
+  },
+  "_note": "v1 re-versions after value-confirm's missed on v0 (rcp.3e08d1446381) - the second real missed on the log, and the first whose named move was completed the same day: build loop/field.py against done-line 0050, land it (rcp.merge.101), re-announce. v0's refusal stands as history (I-2); this version's claims cite the receipts that make them true, the gates-enumerated.v3 pattern."
+}
