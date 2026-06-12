@@ -1,0 +1,27 @@
+{
+  "atom": {
+    "id": "atom.field-topology.v0",
+    "story": {
+      "text": "As a managing session and as bdo, I want a deterministic read-only fold that, given one arc, maps its work-topology — arc -> epic -> story -> task -> environment -> node -> occupant, each rung carrying state, evidence (record ids), and a next safe move — so the system knows where work is, what level it is at, what it is a child of, who occupies which node and by whose authority, and what is safe to do without taking bdo's authority. This is the first real Field: the map the portal will later render. Where a lower rung is not first-class on disk yet, the fold surfaces it as a named gap rather than inventing it; an occupant with no realness admission renders as un-authorised.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.the-field"],
+      "touches": ["loop/field.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.handoff-to-confirm"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".ai-native/done/0050-field-topology-the-first-field.md", ".ai-native/epics/epic.the-field.json", "loop/gaps.py"],
+      "receipts": []
+    }
+  },
+  "_note": "The first piece of epic.the-field (reframed from monitor to work-topology by the 2026-06-11 outside go/no-go review). Its done-line is 0050. It serves a confirmed-only arc: until bdo confirms epic.the-field, this atom parks at owner-stamp by design (the arc's pieces flow on his standing confirmation, done-line 0028). loop/gaps.py is the proof-of-shape the build generalises; this atom touches a new loop/field.py and hands off to the confirm seam. Authored as the capacity for bdo's overnight loop to take action on — the contract (0050) is the bar; this atom is the pipeline item."
+}
