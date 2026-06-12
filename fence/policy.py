@@ -64,7 +64,9 @@ RULES = (
             "Raw `git push` is denied here (done-line 0014): nothing leaves "
             f"the machine unchecked. The branded push is {PR_PEN} push - it "
             "checks the branch is still alive and the suite is green (or "
-            "declared red) first. Pushing main is bdo's alone (D-4)."
+            "declared red) first. Pushing main is never a session act: bdo "
+            "confirms arcs and the independent merge-node lands confirmed "
+            "PRs (D-4)."
         ),
         "match": ("git push", "git push origin main",
                   "git push -u origin claude/x"),
@@ -98,10 +100,11 @@ RULES = (
         "argv": ("gh", "pr", "merge"),
         "decision": "forbidden",
         "justification": (
-            "Raw `gh pr merge` is denied: merging into main is bdo's - the "
-            "stamp is bdo's, the last stop (D-4). A piece-PR into an epic "
-            f"branch goes through the pen: {PR_PEN} integrate <n> (it "
-            "refuses a main base; done-line 0029)."
+            "Raw `gh pr merge` is denied: main lands only through the "
+            "independent merge-node, via the pen, after bdo confirms the arc "
+            f"(D-4). A piece-PR into an epic branch goes through the pen: "
+            f"{PR_PEN} integrate <n> (it refuses a main base; done-line "
+            "0029)."
         ),
         "match": ("gh pr merge 12 --squash",),
         "not_match": ("gh pr checks 12",),

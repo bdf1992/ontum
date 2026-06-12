@@ -112,19 +112,19 @@ class TestBodyForm(unittest.TestCase):
 
 class TestMergeSignal(unittest.TestCase):
     """Done-line 0017: a rolling draft says so in its own body, in plain
-    words; the flip out of draft is the one merge signal."""
+    words; the flip out of draft is the merge-node eligibility signal."""
 
-    def test_rolling_body_says_dont_merge_yet(self):
+    def test_rolling_body_says_not_landable_yet(self):
         body = pen.compose_body(_story(), rolling=True)
-        self.assertIn("please don't merge yet", body)
+        self.assertIn("not landable yet", body)
         self.assertTrue(body.startswith(pen.ROLLING_BANNER))
 
     def test_final_body_carries_no_banner(self):
-        self.assertNotIn("please don't merge yet", pen.compose_body(_story()))
+        self.assertNotIn("not landable yet", pen.compose_body(_story()))
 
     def test_banner_states_the_reading_rule(self):
-        # the rule the owner reads, in plain words: not-a-draft = ready for you
-        self.assertIn("ready for you", pen.ROLLING_BANNER)
+        # the rule the merge-node reads: not-a-draft is eligible after the arc is confirmed
+        self.assertIn("merge-node after arc confirmation", pen.ROLLING_BANNER)
 
 
 class TestBrandedPush(unittest.TestCase):
@@ -257,7 +257,7 @@ class TestGuardAndWatcher(unittest.TestCase):
     def test_merge_denied_firm(self):
         proc = self._invoke("gh pr merge 9 --squash")
         self.assertEqual(proc.returncode, 2)
-        self.assertIn("stamp is bdo's", proc.stderr)
+        self.assertIn("main lands only through the independent merge-node", proc.stderr)
 
     def test_self_review_denied(self):
         self.assertEqual(self._invoke("gh pr review 9 --approve").returncode, 2)

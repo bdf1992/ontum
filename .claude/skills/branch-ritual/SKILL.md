@@ -99,7 +99,8 @@ changelog:
       (create --rolling), the pen's ready verb is the one flip to the
       stamp (story re-validated, suite green or declared red),
       unready rolls it back, and raw gh pr ready joins the deny-list.
-      Open non-draft PR = please merge; draft = not yet.
+      At the time, open non-draft meant ready and draft meant not yet;
+      that signal is now read by the merge-node after arc confirmation.
   - version: 0.4.0
     note: >
       The watcher's first nomination, stamped by bdo in conversation:
@@ -177,17 +178,19 @@ section), don't work around it.
   self-cleans — `delete_branch_on_merge` is on, so a merged head branch
   is deleted at the moment of merge and a stray post-merge push fails on
   a missing ref instead of stranding silently.
-- **Never merge into `main`; never push to `main`.** The trunk is bdo's —
-  his one merge of a finished arc is the human second set of eyes (§4).
-  *(Firm.)* Below main, a session **may** integrate a piece-PR into an **epic
-  branch** through the pen (`pr.py integrate <n>`, which refuses a main base):
-  pieces flow `piece → epic branch` (the loop integrates), and only the
-  finished arc flows `epic branch → main` (bdo merges). The epic branch is
-  staging, not truth — truth is still only what bdo merges to the trunk (D-5).
-  *(bdo's directive, 2026-06-10; version 0.8.0.)*
+- **Never merge into `main`; never push to `main`.** The trunk is governed by
+  bdo's arc confirmation and the independent merge-node's land; an authoring
+  session performs neither act on its own work. *(Firm.)* Below main, a session
+  **may** integrate a piece-PR into an **epic branch** through the pen
+  (`pr.py integrate <n>`, which refuses a main base): pieces flow
+  `piece → epic branch` (the loop integrates), and only the finished arc flows
+  `epic branch → main` through `pr.py land` run by a different merge-node
+  session after bdo confirms the arc. The epic branch is staging, not truth —
+  truth is what lands on trunk with an owner confirmation and merge receipt
+  (D-5). *(bdo's directive, 2026-06-10; amended 2026-06-11; version 0.8.0.)*
 - **Every PR to `main` carries its story — recovery PRs included.** A PR
   wearing the auto-title (the branch name) over an empty body is an
-  unwritten story: not at the stamp, however green the merge button.
+  unwritten story: not landable, however green the merge button.
   GitHub's "Compare & pull request" button produces exactly this — fill
   the form, or repair after the fact through the pen (`edit` verb).
   *(This rule exists because it happened: PR #1 and PR #8 both reached
@@ -209,13 +212,14 @@ section), don't work around it.
   add/commit take is forwarded for parity. Raw `git add`/`git commit` are
   hook-denied; read-only git (`status`/`log`/`diff`) stays raw, exactly
   as `gh pr list` does. *(done-line 0020.)*
-- **Open non-draft PR = please merge; draft = not yet.** A PR the
+- **Open non-draft PR = landable after arc confirmation; draft = not yet.** A PR the
   session is still appending to is a **rolling draft** (`pr.py create
   --rolling`) — the platform disables the merge button, so an early
   stamp is impossible rather than unlikely. The flip (`pr.py ready <n>`,
-  story re-validated, suite green or declared red) is the one merge
-  signal; `unready` takes a PR back off the stamp when more work
-  arrives. The owner never guesses readiness from prose. *(This rule
+  story re-validated, suite green or declared red) is the signal that a PR can
+  be considered by the merge-node once its arc is confirmed; `unready` takes a
+  PR back off that lane when more work arrives. The owner never guesses
+  readiness from prose. *(This rule
   exists because it happened: PR #9 was stamped mid-build at 01:51
   while the session was still appending — done-line 0017.)*
 
@@ -278,7 +282,7 @@ Decode every branch against `main` using the `Behind | Ahead` columns:
 | reads | means | move |
 |---|---|---|
 | `0` ahead | nothing `main` doesn't already have | delete it |
-| `N` ahead, open PR | work in flight | normal — at the stamp when ready |
+| `N` ahead, open PR | work in flight | normal — landable after arc confirmation when ready |
 | `N` ahead, no PR | stranded work | open a PR for it, or write it off in a report, then delete |
 | `N` behind | `main` moved on — harmless by itself | nothing; matters only if the PR conflicts |
 
@@ -287,7 +291,7 @@ Recovery moves:
 | situation | move |
 |---|---|
 | commit stranded on a merged branch | pen `create --recover` from that branch — the story says what stranded, how, what it carries; stamp; delete (the PR #4 pattern) |
-| PR conflicts with `main` | rebase the session branch onto `main`, then pen `push --force-with-lease` (*your own branch* only, never `main`, plain `--force` doesn't exist); the stamp still belongs to bdo |
+| PR conflicts with `main` | rebase the session branch onto `main`, then pen `push --force-with-lease` (*your own branch* only, never `main`, plain `--force` doesn't exist); arc confirmation and merge-node land still govern `main` |
 | a branch nobody remembers | `0` ahead → delete; otherwise read its diff, then PR it or write it off in a report — don't leave it to rot |
 
 The page is clean when it reads: `main`, plus whatever is in flight right
@@ -306,9 +310,9 @@ Two folds belong to gardening as well:
 
 This is a skill we get better at. If running it fights the work, change this
 file in the same PR as the work it fought — bump the version, add a changelog
-line saying what got sharper, and bdo's merge is the stamp on the new form.
-Don't fork a second copy anywhere (I-4): this file is the only form of the
-ritual.
+line saying what got sharper, and bdo's arc confirmation plus a different
+merge-node session's land is the stamp on the new form. Don't fork a second
+copy anywhere (I-4): this file is the only form of the ritual.
 
 ## The tripwire, applied here (§12)
 

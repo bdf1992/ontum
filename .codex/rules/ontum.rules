@@ -36,7 +36,7 @@ prefix_rule(
 prefix_rule(
     pattern = ["git", "push"],
     decision = "forbidden",
-    justification = "Raw `git push` is denied here (done-line 0014): nothing leaves the machine unchecked. The branded push is python .claude/skills/branch-ritual/pr.py push - it checks the branch is still alive and the suite is green (or declared red) first. Pushing main is bdo's alone (D-4).",
+    justification = "Raw `git push` is denied here (done-line 0014): nothing leaves the machine unchecked. The branded push is python .claude/skills/branch-ritual/pr.py push - it checks the branch is still alive and the suite is green (or declared red) first. Pushing main is never a session act: bdo confirms arcs and the independent merge-node lands confirmed PRs (D-4).",
     match = [
         "git push",
         "git push origin main",
@@ -76,7 +76,7 @@ prefix_rule(
 prefix_rule(
     pattern = ["gh", "pr", "merge"],
     decision = "forbidden",
-    justification = "Raw `gh pr merge` is denied: merging into main is bdo's - the stamp is bdo's, the last stop (D-4). A piece-PR into an epic branch goes through the pen: python .claude/skills/branch-ritual/pr.py integrate <n> (it refuses a main base; done-line 0029).",
+    justification = "Raw `gh pr merge` is denied: main lands only through the independent merge-node, via the pen, after bdo confirms the arc (D-4). A piece-PR into an epic branch goes through the pen: python .claude/skills/branch-ritual/pr.py integrate <n> (it refuses a main base; done-line 0029).",
     match = [
         "gh pr merge 12 --squash",
     ],
