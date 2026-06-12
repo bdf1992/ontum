@@ -211,5 +211,53 @@ class TestRenderAndCli(_Temp):
         self.assertIn("divergences", payload)
 
 
+class TestEndLineVerdict(_Temp):
+    """Done-line 0055: the end line may never claim cleaner than the dataset.
+
+    The §10 pair report 0038 named: a refusal on an UNCONFIRMED arc's piece
+    feeds no divergence — 'no divergence' and 'refusal in span' are each
+    locally fine and refuse to fit at the verdict line — yet the old sum
+    closed it 'done — clean span: nothing refused'. The control: a genuinely
+    refusal-free, nothing-open span must still end done (the fix must not
+    cry wolf)."""
+
+    def test_refusal_without_divergence_still_ends_report(self):
+        _append_receipt(self.root, "collision", "2026-06-05T10:00:00Z")
+        d = digest.digest(self.root)
+        self.assertEqual(len(d["divergences"]), 0,
+                         "unconfirmed arc: the refusal must NOT be a divergence")
+        self.assertEqual(d["refusals"], 1)
+        self.assertGreater(digest.open_count(d), 0,
+                           "a refusal span may not close clean (report 0038)")
+
+    def test_cli_says_report_on_a_refusal_span(self):
+        import io
+        from contextlib import redirect_stdout
+        _append_receipt(self.root, "collision", "2026-06-05T10:00:00Z")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            digest.main(["--root", str(self.root)])
+        self.assertIn("result: report", buf.getvalue())
+        self.assertNotIn("clean span", buf.getvalue())
+
+    def test_loose_parked_atom_counts_as_open(self):
+        # pure over the dataset: a parked loose atom is exactly as open as a
+        # parked arc piece — the old sum read only d["arcs"].
+        d = {"divergences": [], "refusals": 0,
+             "arcs": [{"awaiting": 0, "parked": 0}],
+             "loose": [{"awaiting": False, "parked": True}]}
+        self.assertEqual(digest.open_count(d), 1)
+
+    def test_clean_span_still_ends_done(self):
+        import io
+        from contextlib import redirect_stdout
+        d = digest.digest(self.root)
+        self.assertEqual(digest.open_count(d), 0)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            digest.main(["--root", str(self.root)])
+        self.assertIn("result: done — clean span", buf.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()
