@@ -91,3 +91,4 @@
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/digest-refusal-status","id":"rcp.merge.92","kind":"merge","node":"merge-node.claude.v1","pr":92,"ts":"2026-06-12T13:35:00Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/divergence-surface","id":"rcp.merge.51","kind":"merge","node":"merge-node.claude.v1","pr":51,"ts":"2026-06-12T13:35:19Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"codex/inventory-audit-loop","id":"rcp.merge.61","kind":"merge","node":"merge-node.claude.v1","pr":61,"ts":"2026-06-12T13:35:34Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/report-0045","id":"rcp.merge.94","kind":"merge","node":"merge-node.claude.v1","pr":94,"ts":"2026-06-12T18:01:14Z","verdict":"landed"}
