@@ -41,7 +41,7 @@ import sys
 from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, load_atoms,
-                            load_epics, real_nodes)
+                            load_epics, real_nodes, superseded_atom_ids)
 from loop.orchestrate import next_action
 from loop.reflect import drift, registered_surfaces
 
@@ -160,8 +160,15 @@ def parked_piece_gaps(root):
     fold = Fold(root)
     real_map = real_nodes(fold)
     epics = load_epics(root)
+    atoms = load_atoms(root)
+    # a version a higher sibling replaces is history, not live work: the
+    # amend already happened (done-line 0056). Its parked receipt stands on
+    # the log; it just no longer surfaces as the next session's work.
+    superseded = superseded_atom_ids({a["id"] for a, _ in atoms})
     out = []
-    for atom, ahash in load_atoms(root):
+    for atom, ahash in atoms:
+        if atom["id"] in superseded:
+            continue
         action = next_action(fold, atom, ahash, real_map, epics)
         if not action or action[0] != "parked":
             continue
