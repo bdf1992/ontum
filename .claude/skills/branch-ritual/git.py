@@ -19,6 +19,15 @@ The spine bdo admitted (three refusals the pen owns, not passthrough):
   never the trunk a session commits on its claude/* branch; main is
                  bdo's stamp (firm — the same line pr.py holds for push).
 
+A fourth refusal joined the spine later (done-line 0053):
+
+  record-id      a NEW .ai-native/done|reports file whose 4-digit id
+                 already names a different file on any ref (local heads,
+                 origin/*) is refused at commit — the id fold is
+                 fleet-wide, not local (the 0020 incident); the same file
+                 propagated unchanged stays allowed, and the check fails
+                 open when refs cannot be listed.
+
 Everything else git add / git commit take is forwarded for parity — a
 branded tool that loses features invites the workaround it exists to
 prevent (the lesson pr.py push records, changelog 0.4.0).
@@ -48,6 +57,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -181,6 +191,50 @@ def commit_refusal(branch, message, forwarded):
     return None
 
 
+# Numbered records whose id must be fleet-unique: a new done-line or report
+# minted against a stale local fold collides with one already on a sibling
+# branch — the four 0020 done-lines are the incident, tonight's 0050 the
+# near-miss (done-line 0053). The fence stands here, at the commit seam,
+# because loop/pen.py stays pure (no git, the placement-gate discipline).
+RECORD_RE = re.compile(r"^\.ai-native/(done|reports)/(\d{4})-(.+\.md)$")
+
+
+def record_id_collision(staged_new, ref_listing):
+    """Why these newly-staged record files may not commit, or None.
+
+    `staged_new` is the paths staged as additions (not in HEAD);
+    `ref_listing` is {ref: [record paths on that ref]}. The law: a new
+    done/reports file whose 4-digit id already names a *different* file in
+    the same directory on any ref refuses to commit — the id fold is
+    fleet-wide, not local. The same full path on a ref is propagation, not
+    collision (carrying a sibling branch's record unchanged stays allowed),
+    and only newly-staged files are judged, so history's existing duplicate
+    ids are never retro-flagged (history is never retro-invalidated)."""
+    for path in staged_new or []:
+        mine = RECORD_RE.match(path)
+        if not mine:
+            continue
+        directory, record_id, filename = mine.groups()
+        for ref, paths in (ref_listing or {}).items():
+            for other in paths:
+                theirs = RECORD_RE.match(other)
+                if not theirs:
+                    continue
+                if (theirs.group(1) == directory
+                        and theirs.group(2) == record_id
+                        and other != path):
+                    return (
+                        f"record id {record_id} is already taken in "
+                        f".ai-native/{directory}/ on {ref} by "
+                        f"{pathlib.PurePosixPath(other).name} — "
+                        f"{filename} would mint a colliding id (the 0020 "
+                        "incident). Re-mint after the local fold sees that "
+                        "record (fetch and carry it, or pick the next id): "
+                        "python -m loop.pen next " + directory
+                    )
+    return None
+
+
 def restore_blocked(clean, pushed):
     """Why a viewport stranded off the trunk may NOT be auto-restored to
     main, or None. Restoring discards the branch checkout, so it is safe
@@ -275,11 +329,46 @@ def cmd_add(ns):
     print(f"result: done — staged {len(names)} path(s): {', '.join(names) or '(none new)'}{tag}")
 
 
+def _ref_record_listing(staged_new):
+    """{ref: [record paths]} across local heads and origin/* — gathered only
+    when a record file is actually staged (zero cost otherwise), and None on
+    any sensor failure (fail open: a broken fold never blocks a commit)."""
+    if not any(RECORD_RE.match(p) for p in staged_new):
+        return {}
+    try:
+        refs = subprocess.run(
+            ["git", "for-each-ref", "refs/heads", "refs/remotes/origin",
+             "--format=%(refname:short)"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", cwd=ROOT, timeout=15)
+        if refs.returncode != 0:
+            return None
+        listing = {}
+        for ref in refs.stdout.split():
+            tree = subprocess.run(
+                ["git", "ls-tree", "-r", "--name-only", ref,
+                 "--", ".ai-native/done", ".ai-native/reports"],
+                capture_output=True, text=True, encoding="utf-8",
+                errors="replace", cwd=ROOT, timeout=15)
+            if tree.returncode == 0:
+                listing[ref] = tree.stdout.split()
+        return listing
+    except Exception:  # noqa: BLE001 — the fence protects, it never gates itself
+        return None
+
+
 def cmd_commit(ns):
     branch = _run(["git", "branch", "--show-current"]).strip()
     reason = commit_refusal(branch, ns.message, ns.forward)
     if reason:
         _refuse(reason)
+    staged_new = _run(["git", "diff", "--cached", "--name-only",
+                       "--diff-filter=A"]).split()
+    listing = _ref_record_listing(staged_new)
+    if listing is not None:
+        reason = record_id_collision(staged_new, listing)
+        if reason:
+            _refuse(reason)
     tags, intent = _intent_precheck(ns, "commit")
     args = ["git", "commit"]
     for message in ns.message:

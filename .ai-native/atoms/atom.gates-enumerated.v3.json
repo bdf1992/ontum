@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.gates-enumerated.v3",
+    "story": {
+      "text": "As the loop's owner, I want 'the five gates' enumerated once on the record with every gate real and every gate carrying at least one non-accept verdict in its history, so that no fixed-verdict mock moves fake work and a gate that has never refused is named for what it is - a mock with a bigger bill (report 0004). This atom is the third version of the same work item, and the work is now measurable on the trunk it claims: the five stages are admitted real end to end, the ambient hook's stage temperature reads 0/5, and each gate's refusal is a receipt - value rejected hollow agent-serving work (rcp.3b62807d5f6a), placement refused a declared collision (rcp.1d7e08065c81), handoff sent back this atom's own v2 for declaring no downstream (rcp.2b1680fc9075), value-confirm caught v1 claiming this very bar before it held (rcp.be98d54d0cf2), and the owner's stamp amended rather than waved through (rcp.558ad49545cd). The recursion that refused v1 and v2 is the proof working: the atom about 'every gate must refuse' was itself refused twice, and this version carries the repairs those refusals demanded - the claims cite the receipts that make them true, and the finished work declares its downstream.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.experience-layer"
+      ],
+      "touches": [
+        "loop/reconcile.py",
+        ".ai-native/nodes/",
+        ".claude/skills/gate/gate.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "atom.gates-enumerated.v0",
+        "atom.gates-enumerated.v1",
+        "atom.gates-enumerated.v2"
+      ],
+      "receipts": [
+        "rcp.merge.72",
+        "adm.b04f3b55114f",
+        "rcp.2b1680fc9075",
+        "rcp.be98d54d0cf2"
+      ]
+    }
+  },
+  "_note": "v3 re-versions after handoff's send_back of v2 (rcp.2b1680fc9075) - the structural gap v2 carried by design (empty hands_off_to, handoff's first light) is closed: the finished work hands off to seam.value-to-owner-stamp. v1's value-confirm miss (rcp.be98d54d0cf2) is answered the only honest way: the 0/5 stage temperature and the refusal-per-gate it claimed early are now on the trunk (done-line 0047), cited by receipt rather than asserted. Authored by the session (the story-author seat, realness gesture #83 pending) during the overnight run of 2026-06-12; the prior versions and their refusals stand as history. Note for the next judge: gate launches are ladder-gated as of done-line 0054, so this atom parks at the value gate until bdo grants summoned-session its judge rung (#91) - parking is the design, not a defect."
+}
