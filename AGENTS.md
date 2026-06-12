@@ -28,19 +28,26 @@ of a build, that is the higher-value lane.
 ## Read before you touch anything
 
 You do **not** auto-compose this repo's `@`-imported environments the way
-a Claude session does — so read them yourself:
+a Claude session does — Codex merges nested `AGENTS.md` files, it has no
+`@`-import directive, so the composition Claude gets for free is yours to
+do by hand. Read them yourself:
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) — the working agreements and hard
   rules. This is the contract; respect it exactly.
 - [ai-native-loop-substrate.md](ai-native-loop-substrate.md) — "the
   doctrine." It is a working contract, not a rulebook: if it is wrong or
   in the way, **say so and change it** — don't quietly work around it.
-- The **`CLAUDE.md` in any directory you work in** — the module-level
-  contracts ([loop/](loop/CLAUDE.md), [.ai-native/](.ai-native/CLAUDE.md),
-  [glyphs/](glyphs/CLAUDE.md), [language/](language/CLAUDE.md),
-  [exports/](exports/CLAUDE.md), [.claude/](.claude/CLAUDE.md)). They are
-  sharpened where they live; read the one for the code you touch. They
-  say `Claude`; read `you`.
+- The contracts a Claude session loads **always**, wherever it works —
+  the governance that travels. Read these up front:
+  [loop/](loop/CLAUDE.md), [glyphs/](glyphs/CLAUDE.md),
+  [language/](language/CLAUDE.md), [.ai-native/](.ai-native/CLAUDE.md),
+  [exports/](exports/CLAUDE.md), [.claude/](.claude/CLAUDE.md), and
+  [fence/](fence/CLAUDE.md) — this last is the registry your own
+  `.codex/` fence is rendered from.
+- The **`CLAUDE.md` in any other directory you work in** — the rest are
+  sharpened where they live and loaded only when you're inside them
+  (e.g. [tests/](tests/CLAUDE.md), [pivot/](pivot/CLAUDE.md)); read the
+  one for the code you touch. They all say `Claude`; read `you`.
 
 ## The fence is yours to hold
 
