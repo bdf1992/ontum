@@ -187,7 +187,12 @@ so a prompt edit can't reopen a settled verdict (I-2).
 - [gaps.py](gaps.py) — the gap fold (done-line 0048): the loop's own
   gaps become the next session's work. One pure read-only fold over
   records already on disk, in one fixed pressure order — **mock-stage**
-  (the shame beat's still-mock set), **parked-piece** (an atom a gate
+  (the shame beat's still-mock set), **mock-actor** and
+  **unadmitted-actor** (done-line 0049: `effective_mocks()` — anything
+  effectively mock is mocked, suffix or not: a `.mock` actor on the
+  record the stage lifecycle does not own, and a record-writer no
+  `node_real` admission ever named on either side; one admission clears
+  both its sides), **parked-piece** (an atom a gate
   refused, holding), **surface-drift** (acts a registered surface does
   not show), then **idle-organ**/**dormant-organ** (the census verdicts)
   — each gap carrying kind, subject, why, and the one concrete next move

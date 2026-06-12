@@ -51,19 +51,22 @@ class TestTheTeeth(unittest.TestCase):
     """§10: mechanical readiness is not authorization."""
 
     def test_perfect_pr_without_arc_confirmation_refuses(self):
-        reason = pr.land_refusal(_ready_pr(), confirmation=None, by="merge-node.v0")
+        reason = pr.land_refusal(_ready_pr(), confirmation=None,
+                                 by="merge-node.v0", by_admitted=True)
         self.assertIsNotNone(reason)
         self.assertIn("confirmed", reason)
 
     def test_same_pr_with_confirmation_would_land(self):
         # the control: the only thing that changed is bdo's confirmation
         self.assertIsNone(
-            pr.land_refusal(_ready_pr(), confirmation="adm.arc.1", by="merge-node.v0"))
+            pr.land_refusal(_ready_pr(), confirmation="adm.arc.1",
+                            by="merge-node.v0", by_admitted=True))
 
 
 class TestGuards(unittest.TestCase):
-    def _refused(self, info, conf="adm.arc.1", by="merge-node.v0"):
-        return pr.land_refusal(info, conf, by)
+    def _refused(self, info, conf="adm.arc.1", by="merge-node.v0",
+                 by_admitted=True):
+        return pr.land_refusal(info, conf, by, by_admitted)
 
     def test_unnamed_node_refuses(self):  # no one signs their own line
         self.assertIsNotNone(self._refused(_ready_pr(), by=""))

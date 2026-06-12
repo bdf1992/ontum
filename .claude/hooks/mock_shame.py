@@ -44,14 +44,18 @@ def project_root():
 
 
 def still_mock(ai_native):
-    """The mock stages the log has NOT yet made real — a fold, never a code
-    literal. A PIPELINE node is mock if its id carries `.mock`; it stops
-    being mock the instant a node_real admission names a replacement."""
+    """Everything effectively mock the log has NOT yet made real — a fold,
+    never a code literal. Done-line 0033 screamed the still-mock PIPELINE
+    stages; done-line 0049 widens the same scream to every effective mock
+    (bdo's directive: what is effectively mocked gets *mocked*, suffix or
+    not): a `.mock` actor on the record the stage lifecycle does not own,
+    and a record-writer no node_real admission ever named (identity
+    self-asserted). It stops being mock the instant an admission names it
+    on either side."""
     sys.path.insert(0, str(ROOT))
-    from loop.reconcile import PIPELINE, Fold, real_nodes
-    real = real_nodes(Fold(ai_native))
-    mocks = [s["node"] for s in PIPELINE if ".mock" in s["node"]]
-    return sorted(n for n in mocks if n not in real)
+    from loop.gaps import effective_mocks
+    return sorted(f"{m['actor']} [{m['basis']}]"
+                  for m in effective_mocks(ai_native))
 
 
 def tally(state_path, current):
@@ -102,8 +106,8 @@ def banner(turns):
 
 def scream(turns, mocks):
     print(banner(turns))
-    print(f"[mock-shame] {len(mocks)} stage(s) STILL MOCK (fixed verdict, no "
-          f"judgement): {', '.join(mocks)}")
+    print(f"[mock-shame] {len(mocks)} effective mock(s) STILL MOCK (fixed "
+          f"verdict, no judgement, or self-asserted identity): {', '.join(mocks)}")
     print("[mock-shame] make one real — do not build around it: "
           "python -m loop.node admit-real --stage <mock-node> --node <real-node> --by <who>")
 
