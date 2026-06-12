@@ -99,3 +99,6 @@
 {"by":"bdo (chat stamp, 2026-06-12: fix the root cause and ship)","id":"adm.852e04202b05","real_node":"merge-node.claude.v1","stage_node":"merge-node.claude.v0","supersedes":null,"ts":"2026-06-12T07:19:25Z","type":"node_real"}
 {"by":"bdo (chat stamp, 2026-06-12: fix the root cause and ship)","id":"adm.73bb4b7c12c0","real_node":"value-loop.story-author.v0","stage_node":"value-loop.story-author.mock.v0","supersedes":null,"ts":"2026-06-12T07:19:25Z","type":"node_real"}
 {"by":"bdo","enabled":true,"epic":"epic.the-field","id":"adm.6e3ccedc1f0b","supersedes":null,"ts":"2026-06-12T19:18:15Z","type":"arc_confirmed"}
+{"agent_class":"branded-subagent","by":"bdo","capability":"judge","id":"adm.405cc3e22c4f","supersedes":null,"ts":"2026-06-12T19:19:31Z","type":"trust_rung"}
+{"agent_class":"summoned-session","by":"bdo","capability":"judge","id":"adm.6ce59640e214","supersedes":null,"ts":"2026-06-12T19:19:31Z","type":"trust_rung"}
+{"by":"bdo","enabled":true,"id":"adm.7e5e5747a2f7","kind":"merge-divergences","surface":"github-issues","ts":"2026-06-12T19:19:31Z","type":"reflection_rule"}
