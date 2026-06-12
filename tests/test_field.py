@@ -199,6 +199,59 @@ class OccupancyCarriesAuthority(unittest.TestCase):
         self.assertEqual(alias["evidence"][0], "adm.alias")
 
 
+class SupersededVersionIsHistoryNotParked(unittest.TestCase):
+    """Done-line 0056: a parked v0 with a higher sibling on disk is the
+    amend already landed — the field still shows it (topology includes the
+    past) but never calls it a live parked piece."""
+
+    def _two_version_root(self):
+        import hashlib
+        ai = pathlib.Path(tempfile.mkdtemp(prefix="field-super-"))
+        _write(ai / "epics" / "epic.test.json", {"epic": {
+            "id": "epic.test", "owner": "bdo", "arc": "t", "value": "t",
+            "horizon": "t", "pieces": [],
+        }})
+        def atom(vid):
+            return {"atom": {
+                "id": vid,
+                "story": {"text": "t", "value_confidence": "high",
+                          "owner_stamp": "pending"},
+                "incidence": {"serves": ["epic.test"], "touches": ["x.py"],
+                              "must_not_collide_with": [], "hands_off_to": ["s"]},
+                "desired_state": "value_confirmed", "verdicts": {}, "lineage": {},
+            }}
+        p0 = ai / "atoms" / "atom.t.v0.json"
+        _write(p0, atom("atom.t.v0"))
+        _write(ai / "atoms" / "atom.t.v1.json", atom("atom.t.v1"))
+        h0 = "sha256:" + hashlib.sha256(p0.read_bytes()).hexdigest()
+        _lines(ai / "log" / "admissions.jsonl", [
+            {"id": "adm.seat", "type": "node_real",
+             "stage_node": "value-gate.mock.v0",
+             "real_node": "value-gate.test.v1", "by": "bdo", "ts": "t"},
+        ])
+        _lines(ai / "log" / "events.jsonl", [
+            {"id": "ev.seed", "type": "atom.created", "atom_id": "atom.t.v0",
+             "artifact_hash": h0, "from_node": "value-gate.test.v1", "ts": "t"}])
+        # a held-by refusal: without the fix this reads "parked"
+        _lines(ai / "log" / "receipts.jsonl", [
+            {"id": "rcp.miss", "node": "value-gate.test.v1",
+             "artifact_hash": h0, "verdict": "reject_no_value", "reason": "t",
+             "next_suggested_event": None, "ts": "t"}])
+        return ai
+
+    def test_lower_version_reads_superseded_and_never_parked(self):
+        ai = self._two_version_root()
+        self.addCleanup(shutil.rmtree, ai, ignore_errors=True)
+        story = next(r for r in field(ai, "epic.test")["rungs"]
+                     if r["rung"] == "story")
+        v0 = next(i for i in story["items"] if i["subject"] == "atom.t.v0")
+        self.assertTrue(v0["state"].startswith("superseded"))
+        self.assertIn("newer version", v0["next_safe_move"])
+        # the teeth: no story item reads as a live parked piece
+        self.assertFalse(any(i["state"].startswith("parked")
+                             for i in story["items"]))
+
+
 class LiveArcShape(unittest.TestCase):
     """Against the real repo: shape invariants only — no value pins that an
     owner act would falsify (the spawn-rail lesson)."""

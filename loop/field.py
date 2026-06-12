@@ -35,7 +35,8 @@ import sys
 from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, arc_confirmation,
-                            atom_state, load_atoms, load_epics, real_nodes)
+                            atom_state, load_atoms, load_epics, real_nodes,
+                            superseded_atom_ids)
 from loop.orchestrate import next_action
 
 RUNGS = ("arc", "epic", "story", "task", "environment", "node", "occupant")
@@ -108,13 +109,21 @@ def _epic_rung(epic, present_atoms):
 
 
 def _story_rung(fold, real_map, epics, arc_atoms):
+    # a version a higher sibling replaces is history (done-line 0056): the
+    # field still shows it (topology includes the past) but never calls it a
+    # live parked piece — the amend already landed as the newer version.
+    superseded = superseded_atom_ids({a["id"] for a, _ in arc_atoms})
     items = []
     for atom, ahash in arc_atoms:
         receipts = [rc["id"] for rc in fold.receipts
                     if rc.get("artifact_hash") == ahash]
         action = next_action(fold, atom, ahash, real_map, epics)
         state = atom_state(fold, ahash)
-        if action is None:
+        if atom["id"] in superseded:
+            kind = "superseded"
+            move = ("none — a newer version of this atom carries the work; "
+                    "this one's receipts stand as history (done-line 0056)")
+        elif action is None:
             kind, move = "settled", "none — settled at " + state
         elif action[0] in ("seed", "derive", "judge"):
             kind = f"in-flight ({action[0]})"

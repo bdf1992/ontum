@@ -16,6 +16,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -200,6 +201,37 @@ def load_atoms(root):
         atom = json.loads(raw)["atom"]
         out.append((atom, "sha256:" + hashlib.sha256(raw).hexdigest()))
     return out
+
+
+_VERSION = re.compile(r"^(?P<stem>.+)\.v(?P<n>\d+)$")
+
+
+def atom_version(atom_id):
+    """Split an atom id into ``(stem, version)``. Ids carry a ``.v<N>``
+    suffix by convention (`atom.field-topology.v0`); an id that does not
+    match is its own stem at version -1 — it can never be read as
+    superseded, only as superseding (done-line 0056)."""
+    m = _VERSION.match(atom_id)
+    if not m:
+        return atom_id, -1
+    return m.group("stem"), int(m.group("n"))
+
+
+def superseded_atom_ids(atom_ids):
+    """The ids a higher version of the same stem replaces (done-line 0056).
+    Editing an atom mints a new version that restarts the pipeline from
+    scratch — creating the new version *is* the amend, so the lower one is
+    no longer live work (its receipts "stay valid history but no longer
+    apply", see the identity-is-content-hash architecture note). This reads
+    only the version suffix already on disk; it retires nothing and writes
+    nothing — history is untouched, only what counts as *live* changes."""
+    latest = {}
+    for aid in atom_ids:
+        stem, ver = atom_version(aid)
+        if stem not in latest or ver > latest[stem][1]:
+            latest[stem] = (aid, ver)
+    live = {aid for aid, _ in latest.values()}
+    return {aid for aid in atom_ids if aid not in live}
 
 
 def load_atom(root):

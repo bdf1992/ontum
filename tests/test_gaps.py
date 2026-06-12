@@ -122,6 +122,42 @@ class GapFoldTest(unittest.TestCase):
         self.assertIn("reject_no_value", top["why"])
         self.assertIn("amend the atom", top["move"])
 
+    def test_section10_superseded_version_is_not_a_live_parked_piece(self):
+        # the divergence done-line 0056 names: a parked v0 and a higher
+        # sibling v1 on disk. v0's refusal is locally a real parked piece —
+        # but the amend already happened (v1 IS the new version), so v0 must
+        # refuse to lead and vanish from the live backlog, while its receipt
+        # stays on the log as history.
+        self.park_the_atom()
+        admit_all_real(self.root)
+        # baseline: with no successor, the highest version DOES surface
+        top = gaps.top_gap(self.root)
+        self.assertEqual(top["kind"], "parked-piece")
+        self.assertEqual(top["subject"], "atom.gaps-00.v0")
+
+        # mint v1 of the same stem; v0 is now superseded history
+        v1 = make_atom(0)
+        v1["atom"]["id"] = "atom.gaps-00.v1"
+        (self.root / "atoms" / "atom.gaps-00.v1.json").write_text(
+            json.dumps(v1, indent=2), encoding="utf-8")
+        parked = [g for g in gaps.gaps(self.root) if g["kind"] == "parked-piece"]
+        self.assertEqual(parked, [])  # neither v0 (history) nor v1 (not parked)
+        # the refusal still stands on the log — history is untouched
+        fold = reconcile.Fold(self.root)
+        self.assertTrue(any(rc.get("verdict") == "reject_no_value"
+                            for rc in fold.receipts))
+
+    def test_superseded_atom_ids_reads_only_the_version_suffix(self):
+        # the rule is one pure function: highest v<N> per stem is live, the
+        # rest are superseded; an id without a .vN suffix is its own stem and
+        # can never be superseded (done-line 0056)
+        ids = {"atom.a.v0", "atom.a.v1", "atom.a.v3",
+               "atom.b.v0", "atom.solo", "atom.solo.extra"}
+        self.assertEqual(reconcile.superseded_atom_ids(ids),
+                         {"atom.a.v0", "atom.a.v1"})
+        self.assertEqual(reconcile.atom_version("atom.a.v3"), ("atom.a", 3))
+        self.assertEqual(reconcile.atom_version("atom.solo"), ("atom.solo", -1))
+
     def test_clean_field_has_no_gaps(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
         self.tmp = tempfile.mkdtemp()
