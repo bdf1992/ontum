@@ -34,6 +34,14 @@ check. Each act was judged, executed, and echoed back where it landed:
   the run ledger and the trust rail, not in this report.
 - Owner records carried to the trunk in one commit (96df662), chat
   stamp quoted in the message.
+- **The rung grants broke two tests — repaired here.** `test_spawn_rail`
+  had pinned "the ladder is empty" against the live records, so bdo's
+  grants made the suite red (the §10 lesson pointing back at a test:
+  state-dependent pins un-test themselves when the owner acts). The
+  rung-deny is now hermetic (a temp root with an empty ladder), the
+  hook's deny path rides what still cannot pass (a promptless node),
+  and a new test pins the stronger truth: a branded spawn of a granted,
+  prompt-pinned node passes with its hash recorded. Suite 560 green.
 
 ## needs-you
 

@@ -50,11 +50,19 @@ class TestParsing(unittest.TestCase):
 
 
 class TestRefusalAgainstRepo(unittest.TestCase):
-    """Against the real records: the ladder is empty, so a real node-spawn is
-    refused for want of a rung, and a node with no prompt cannot be pinned."""
+    """The refusal half, hermetic: a pinnable node on an empty ladder is
+    refused for want of a rung (a temp root, so bdo's live grants — #89/#91,
+    2026-06-12 — can't silently un-test the deny), and against the real
+    records a node with no prompt cannot be pinned."""
 
     def test_real_node_without_rung_is_refused(self):
-        reason = spawn.node_spawn_refusal("value-gate.claude.v1")
+        ai = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, ai, ignore_errors=True)
+        (ai / "nodes").mkdir()
+        (ai / "log").mkdir()
+        (ai / "nodes" / "demo.node.v1.md").write_text("# demo node prompt", encoding="utf-8")
+        (ai / "log" / "admissions.jsonl").write_text("", encoding="utf-8")
+        reason = spawn.node_spawn_refusal("demo.node.v1", root=ai)
         self.assertIsNotNone(reason)
         self.assertIn("rung", reason)
 
@@ -103,13 +111,28 @@ class TestHook(unittest.TestCase):
         self.assertEqual(proc.returncode, 0)
         self.assertEqual(self._entries()[0]["status"], "spawn-unbranded")
 
-    def test_branded_node_spawn_denied_without_a_rung(self):
+    def test_branded_spawn_of_unpinnable_node_denied(self):
+        # The hook reads the live records, where bdo granted the judge rungs
+        # (#89/#91) — so the rung-deny is pinned hermetically above, and the
+        # hook's deny path is exercised by what still cannot pass: a node
+        # with no versioned prompt to pin.
+        proc = self._invoke({"tool_name": "Agent", "session_id": "s1",
+                             "tool_input": {"prompt": "ontum-node: no.such.node.v9\njudge it"}})
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("no versioned prompt", proc.stderr)
+        self.assertEqual(self._entries()[0]["status"], "spawn-denied")
+        self.assertEqual(self._entries()[0]["node"], "no.such.node.v9")
+
+    def test_branded_spawn_of_granted_node_permits_and_pins(self):
+        # The stronger truth after bdo's grants: a branded spawn of a real,
+        # prompt-pinned node passes, and the rail records the prompt hash.
         proc = self._invoke({"tool_name": "Agent", "session_id": "s1",
                              "tool_input": {"prompt": "ontum-node: value-gate.claude.v1\njudge it"}})
-        self.assertEqual(proc.returncode, 2)
-        self.assertIn("rung", proc.stderr)
-        self.assertEqual(self._entries()[0]["status"], "spawn-denied")
-        self.assertEqual(self._entries()[0]["node"], "value-gate.claude.v1")
+        self.assertEqual(proc.returncode, 0)
+        entry = self._entries()[0]
+        self.assertEqual(entry["status"], "spawn")
+        self.assertEqual(entry["node"], "value-gate.claude.v1")
+        self.assertTrue(entry["prompt_hash"])
 
     def test_headless_claude_is_a_spawn(self):
         proc = self._invoke({"tool_name": "Bash", "session_id": "s1",
