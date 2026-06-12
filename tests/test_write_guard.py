@@ -109,7 +109,14 @@ class RecordsPenTest(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self.rec = Path(self.tmp) / "rec"
         self.rec.mkdir()
-        shutil.copy(DONE_CFG, self.rec / ".pen.json")
+        # the real done config is frozen; this class exercises the generic
+        # fold + scaffold (the fill-later path), which is the UNFROZEN
+        # contract — a frozen dir refuses scaffold-without-body outright
+        # (done-line 0057, tested in test_pen.py). Strip the flag so the
+        # fixture matches what these cases mean to verify.
+        cfg = json.loads(DONE_CFG.read_text(encoding="utf-8"))
+        cfg.pop("frozen", None)
+        (self.rec / ".pen.json").write_text(json.dumps(cfg), encoding="utf-8")
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)

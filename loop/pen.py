@@ -73,6 +73,22 @@ def new(kind_or_path, slug, title, body=None):
               "directory disagree, look before writing")
         return 2
     if body is None:
+        # a frozen records dir is write-once: freeze_guard denies the Edit
+        # that would fill a scaffolded stub, so scaffold-then-fill is a dead
+        # path here. Refuse it at the source — bring the whole thing via
+        # --body, in one move (done-line 0057). Non-frozen dirs scaffold as
+        # before; the fix lives entirely here, not in the guard.
+        if cfg.get("frozen"):
+            sections = cfg.get("required_sections", [])
+            need = (f" (required section(s): {', '.join(sections)})"
+                    if sections else "")
+            print(f"result: needs-you — {dirpath.as_posix()} is a frozen, "
+                  "write-once records directory: a scaffolded fill-later stub "
+                  "would be frozen the instant it is written, and the Edit to "
+                  "fill it in is denied by freeze_guard. Bring the complete "
+                  f"content in one move with --body{need}; the form is "
+                  f"{(dirpath / '.pen.json').as_posix()}. Nothing was written.")
+            return 2
         text = "\n".join(cfg["scaffold"]).format(
             id=f"{iid:04d}", slug=slug, title=title or slug.replace("-", " "))
         note = "; fill the placeholders before committing"
