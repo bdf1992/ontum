@@ -37,6 +37,14 @@ It does five things, in order:
 
 ## Before launching
 
+The launch asks the **trust ladder** first (done-line 0054): a mortal
+`claude -p` blinks in as the `summoned-session` class, and the pen refuses
+to birth it while that class holds no `judge` rung — the pen half of
+"pens and the spawn rail enforce the rung at act time"
+(atom.trust-ladder.v0). The refusal names the fix: bdo grants the rung by
+gesture (the rung-intake skill); `python -m loop.trust ladder` shows what
+each class holds.
+
 The atom must be **announced and parked** at the gate (the seam must be
 open), and the gate's stage must be **admitted-real**:
 

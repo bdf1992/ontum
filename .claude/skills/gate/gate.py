@@ -48,6 +48,35 @@ ATOMS = ROOT / ".ai-native" / "atoms"
 NODES = ROOT / ".ai-native" / "nodes"
 EPICS = ROOT / ".ai-native" / "epics"
 
+# The class a mortal `claude -p` blinks in as (D-10), and what judging needs.
+# The spawn rail gates session-level spawns at the hook layer, but this pen
+# births its mind from inside Python where no hook sees it — so the pen asks
+# the ladder itself (atom.trust-ladder.v0: "pens and the spawn rail enforce
+# the rung at act time"; done-line 0054).
+GATE_CLASS = "summoned-session"
+GATE_CAP = "judge"
+
+
+def launch_refusal(root=None):
+    """Why no mortal mind may be born for this launch, or None. A pure ask
+    of the trust ladder (loop/trust.py) over a records root. Fail-open the
+    way the spawn rail documents it: a ladder that cannot be read never
+    blocks work — degraded enforcement, not silent extra authority."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from loop import trust
+    except Exception:
+        return None  # degraded: cannot enforce, so do not block (the rail's choice)
+    ai_root = Path(root) if root else ROOT / ".ai-native"
+    if trust.permits(GATE_CLASS, GATE_CAP, ai_root):
+        return None
+    return (f"{GATE_CLASS} holds no '{GATE_CAP}' rung — the ladder denies what "
+            "no admission grants (D-4: nothing grants itself a rung). bdo "
+            "grants it by gesture: open the rung-confirm issue "
+            f"(python .claude/skills/rung-intake/rung.py open --class {GATE_CLASS} "
+            f"--capability {GATE_CAP} --repo <owner/repo>) and his "
+            "close-with-comment, read by the rung-intake skill, admits it")
+
 
 def now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
@@ -256,6 +285,11 @@ def record_run(node_id, atom_id, by, moved):
 
 
 def cmd_launch(ns):
+    reason = launch_refusal()
+    if reason:
+        print(f"result: report — refused to launch: {reason}")
+        return 2
+
     address = surface_address()
     if not address:
         print("result: needs-you — no github-issues surface is registered; the "
