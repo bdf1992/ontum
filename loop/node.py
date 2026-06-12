@@ -313,8 +313,21 @@ def main(argv=None):
         return 0
     stages = {s["node"] for s in PIPELINE}
     if args.stage not in stages:
-        print(f"result: needs-you — unknown stage {args.stage}; stages: {', '.join(sorted(stages))}")
-        return 2
+        # An actor that writes to the record is admittable too, not only a
+        # PIPELINE stage. Done-line 0049 flags self-asserted actors (the
+        # merge-node lander, the seed announcer) as effective mocks, and the
+        # gaps fold's suggested move points *here* — so this seam must accept
+        # naming an actor's real seat, or that move is a dead end pointing at a
+        # pen that refuses it. A node never seen on the record is still a typo.
+        fold = Fold(args.root)
+        actors = {ev.get("from_node") for ev in fold.events}
+        actors |= {rc.get("node") for rc in fold.receipts}
+        actors.discard(None)
+        if args.stage not in actors:
+            print(f"result: needs-you — {args.stage} is neither a PIPELINE "
+                  f"stage nor an actor on the record; stages: "
+                  f"{', '.join(sorted(stages))}")
+            return 2
     adm = admit_real(args.root, args.stage, args.node, args.by)
     print(f"result: report — {adm['id']}: {args.stage} is now judged by "
           + (args.node if args.node else "its mock again") + f" (admitted by {args.by})")
