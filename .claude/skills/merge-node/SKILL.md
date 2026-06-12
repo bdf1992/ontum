@@ -7,8 +7,14 @@ description: >
   asked to "land the confirmed work", "merge what's ready", or to run the
   merge-node. bdo's amendment, 2026-06-11: he confirms arcs and reads the
   digest; agents do the merging.
-version: 0.1.0
+version: 0.1.1
 ---
+
+<!-- changelog 0.1.1 (done-line 0052): the land examples say the v1 seat
+     (merge-node.claude.v1) — the id issue #82 admits and the land pen's
+     unadmitted-signer refusal names; v0 is the superseded stage side. The
+     seat's contract is now versioned source: .ai-native/nodes/merge-node.claude.v1.md -->
+
 
 # The Merge-Node
 
@@ -52,10 +58,15 @@ session.
    main whose arc bdo has confirmed, dry-run first, then land:
    ```sh
    python .claude/skills/branch-ritual/pr.py land <n> --epic <epic-id> \
-       --by merge-node.claude.v0 --dry-run
+       --by merge-node.claude.v1 --dry-run
    python .claude/skills/branch-ritual/pr.py land <n> --epic <epic-id> \
-       --by merge-node.claude.v0
+       --by merge-node.claude.v1
    ```
+   The seat's contract is its versioned prompt,
+   `.ai-native/nodes/merge-node.claude.v1.md` (§7) — read it before landing;
+   the land pen refuses a `--by` the trunk's admissions never named
+   (done-line 0049), so until bdo's realness gesture admits the seat, every
+   land is a refusal and that freeze is the architecture working.
    The pen reads bdo's confirmation from the **trunk** (`main`), checks the PR
    is green, written, non-draft, non-conflicting, and based on main, then
    `gh pr merge --squash --delete-branch`. It records a merge receipt on the

@@ -9,8 +9,12 @@ description: >
   with how it read him, never landing on a guess. Use when there are closed
   arc-confirm issues to read, when the summon/digest reports them, or when
   asked to "read bdo's confirmations" or "process the arc inbox".
-version: 0.1.0
+version: 0.1.1
 ---
+
+<!-- changelog 0.1.1 (done-line 0052): the land example says the v1 seat
+     (merge-node.claude.v1) — the id issue #82 admits and the land pen's
+     unadmitted-signer refusal names; v0 is the superseded stage side. -->
 
 # arc-intake — bdo's GitHub confirmations, read and acted on
 
@@ -53,7 +57,7 @@ correct, never silent.
      ```sh
      python .claude/skills/branch-ritual/pr.py confirm --epic <epic> --by bdo
      # then, per open PR under this arc:
-     python .claude/skills/branch-ritual/pr.py land <n> --epic <epic> --by merge-node.claude.v0
+     python .claude/skills/branch-ritual/pr.py land <n> --epic <epic> --by merge-node.claude.v1
      ```
      Then reply and close out:
      ```sh
