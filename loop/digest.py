@@ -208,6 +208,22 @@ def _divergences(fold, arcs, ticks, since, until):
     return out
 
 
+def open_count(d):
+    """Everything the span leaves open for bdo — the end line's one input.
+
+    The contradiction report 0038 named (done-line 0055): the verdict used to
+    sum divergences and *arc* pieces only, so a refusal on an unconfirmed
+    arc's piece (which feeds no divergence) or a parked *loose* atom left the
+    digest closing `done — clean span: nothing refused` under a span that
+    plainly printed refusals. The end line may never claim cleaner than the
+    dataset above it: any refusal receipt in span counts, and a loose atom's
+    awaiting/parked standing counts exactly as an arc piece's does."""
+    return (len(d["divergences"])
+            + sum(a["awaiting"] + a["parked"] for a in d["arcs"])
+            + sum(1 for p in d["loose"] if p.get("awaiting") or p.get("parked"))
+            + d["refusals"])
+
+
 def _span_label(span):
     since, until = span.get("since"), span.get("until")
     if not since and not until:
@@ -296,11 +312,10 @@ def main(argv=None):
     else:
         print(render(d))
         print()
-    # a divergence, or anything still open, is a report bdo should read;
-    # a clean, settled span is done. Read-only either way (D-6).
-    open_items = (len(d["divergences"])
-                  + sum(a["awaiting"] + a["parked"] for a in d["arcs"]))
-    if open_items:
+    # a divergence, a refusal in span, or anything still open — arc piece or
+    # loose atom — is a report bdo should read; only a span that saw none of
+    # it is done. Read-only either way (D-6).
+    if open_count(d):
         print(f"result: report — {len(d['divergences'])} divergence(s), "
               f"{d['refusals']} refusal(s) in span; the surface is yours to read (D-4)")
     else:
