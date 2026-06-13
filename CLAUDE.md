@@ -17,6 +17,7 @@ their directories — local folder and global directories compose (bdo's
 @.ai-native/CLAUDE.md
 @exports/CLAUDE.md
 @causality/CLAUDE.md
+@outcomes/CLAUDE.md
 
 ## What this repo is
 
