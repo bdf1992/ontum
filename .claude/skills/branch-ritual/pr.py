@@ -27,6 +27,7 @@ import argparse
 import json
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 
@@ -245,12 +246,23 @@ def cmd_push(ns):
     merged = []
     open_prs = []
     if branch and branch not in ("main", "master"):
-        merged = [p["number"] for p in json.loads(_run(
-            ["gh", "pr", "list", "--head", branch, "--state", "merged",
-             "--json", "number"]))]
-        open_prs = [p["number"] for p in json.loads(_run(
-            ["gh", "pr", "list", "--head", branch, "--state", "open",
-             "--json", "number"]))]
+        if shutil.which("gh"):
+            merged = [p["number"] for p in json.loads(_run(
+                ["gh", "pr", "list", "--head", branch, "--state", "merged",
+                 "--json", "number"]))]
+            open_prs = [p["number"] for p in json.loads(_run(
+                ["gh", "pr", "list", "--head", branch, "--state", "open",
+                 "--json", "number"]))]
+        else:
+            # No gh CLI (the web execution environment talks to GitHub via
+            # MCP, not the CLI). The gh calls only feed the dead-branch /
+            # recovery-PR pre-check; with no gh there is no merged-PR
+            # evidence, so it degrades to "treat as a live branch" — the
+            # same as a brand-new one. The real gates below (never the
+            # trunk, green-or-declared-red suite) do not need gh.
+            print("note: gh CLI unavailable — skipping the dead-branch "
+                  "recovery pre-check; trunk-refusal and suite gates still "
+                  "apply")
     reason = push_refusal(branch, merged, open_prs)
     if reason:
         _refuse(reason)
