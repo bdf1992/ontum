@@ -67,9 +67,16 @@ def mind_refusal(mind_id, family, backing, by):
     return None
 
 
-def register(root, mind_id, family, backing, by, supersedes=None):
+def register(root, mind_id, family, backing, by, supersedes=None, model=None):
     """Admit a mind — the surface-registry sibling. Returns the admission, or
-    None on refusal (already printed)."""
+    None on refusal (already printed).
+
+    `model` is the served-model name at the backing (e.g. `qwen3:14b` at the
+    one Ollama endpoint): the backing names *where* a mind lives, the model
+    names *which* served weights answer there. Two minds may share an endpoint
+    yet name distinct served models — two distinct backings the way 0062
+    blesses "a second served model"; the gateway folds both the backing
+    reference and the model at call time."""
     reason = mind_refusal(mind_id, family, backing, by)
     if reason:
         print(f"result: needs-you — {reason}")
@@ -80,6 +87,7 @@ def register(root, mind_id, family, backing, by, supersedes=None):
         "mind": mind_id,
         "family": family,
         "backing": backing,
+        "model": model,
         "by": by,
         "supersedes": supersedes,
         "ts": now_ts(),
@@ -116,8 +124,9 @@ def list_lines(root):
     minds = registered_minds(Fold(root))
     if not minds:
         return ["no minds registered — the registry is empty"]
-    return [f"  {mid} [{adm.get('family')}] -> {adm.get('backing')} "
-            f"(by {adm.get('by')})" for mid, adm in sorted(minds.items())]
+    return [f"  {mid} [{adm.get('family')}] -> {adm.get('backing')}"
+            + (f" ({adm.get('model')})" if adm.get('model') else "")
+            + f" (by {adm.get('by')})" for mid, adm in sorted(minds.items())]
 
 
 def cmd_list(ns):
@@ -130,7 +139,8 @@ def cmd_list(ns):
 
 
 def cmd_register(ns):
-    adm = register(ns.root, ns.mind, ns.family, ns.backing, ns.by, ns.supersedes)
+    adm = register(ns.root, ns.mind, ns.family, ns.backing, ns.by, ns.supersedes,
+                   getattr(ns, "model", None))
     if adm is None:
         return 2
     print(f"result: report — {adm['id']}: registered {ns.mind} "
@@ -150,6 +160,9 @@ def main(argv=None):
     rg.add_argument("--family", default=DEFAULT_FAMILY, help="local | external (default local)")
     rg.add_argument("--backing", required=True,
                     help="a reference: env:NAME / profile:NAME / https://… / odysseus://…")
+    rg.add_argument("--model", default=None,
+                    help="the served-model name at the backing, e.g. qwen3:14b "
+                         "(the which-weights axis; the backing is the where)")
     rg.add_argument("--by", required=True, help="who registers it (D-4: bdo)")
     rg.add_argument("--supersedes", default=None, help="a prior mind admission id this replaces")
     rg.add_argument("--root", type=Path, default=DEFAULT_ROOT)
