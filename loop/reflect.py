@@ -47,17 +47,22 @@ from loop.reconcile import (DEFAULT_ROOT, Fold, append_line, epic_of, glue_of,
                             receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 from loop.digest import digest as compute_digest
+from loop.owner_asks import owner_ask_groups
 
 REFLECTED_EVENT = "surface.reflected"
+OWNER_ASK_BASELINE = "owner_ask_baseline"
 PEN = "python .claude/skills/reflect/reflect.py"
 
 # The kinds table — the extension point (done-line 0020). A kind is a
 # named drift fold; a new kind joins as an entry here (plus rules to
-# enable it), never as a new system. Two kinds today: the owner's stamp
-# queue (drift, one issue per atom), and the post-merge divergence surface
+# enable it), never as a new system. Three kinds today: the owner's stamp
+# queue (drift, one issue per atom), the post-merge divergence surface
 # (divergence_drift, one AGGREGATE issue per divergence group, done-line
-# 0037). DRIFT_BY_KIND (below, after both folds) maps each to its fold.
-RULE_KINDS = ("owner-stamp-queue", "merge-divergences")
+# 0037), and the owner-ask backlog (owner_ask_drift, one aggregate issue
+# per report whose needs-you items reached no surface, done-line 0058 — so
+# an ad-hoc "awaiting bdo" cannot strand in a report he never opens).
+# DRIFT_BY_KIND (below, after the folds) maps each to its fold.
+RULE_KINDS = ("owner-stamp-queue", "merge-divergences", "owner-ask-backlog")
 
 # The surface kinds table (done-line 0030): the tongues the reflector
 # pen actually speaks — its translator table is keyed to exactly this
@@ -114,6 +119,48 @@ def admit_rule(root, kind, surface, enabled, by):
     }
     append_line(root / "log" / "admissions.jsonl", adm)
     return adm
+
+
+def admit_owner_ask_baseline(root, by):
+    """Establish the owner-ask baseline (done-line 0058 named it deferred;
+    this is its follow-up increment): record the id of every owner-ask group
+    present *right now*, so the guard starts quiet and only ever surfaces or
+    screams asks parked AFTER this point — the report-0047-class failure going
+    forward, not the standing history already on disk.
+
+    This is operator/session housekeeping — "the guard begins watching here" —
+    NOT a bdo gesture and NOT acting as bdo (D-4 intact): it asserts nothing
+    about whether the historical asks were answered, only that they predate the
+    guard, so they read as already-acked (silent, never mirrored). It is signed
+    `--by` whoever runs it, like every admitted record. History is never
+    retro-invalidated: a baseline only ever ADDS to the silent set — a later
+    baseline quiets more, it never reopens a record or un-silences an ask."""
+    ids = sorted(g["id"] for g in owner_ask_groups(root))
+    adm = {
+        # content-derived (the ids it covers): two baselines over different
+        # sets get different records; two over the identical set in the same
+        # tick fold to one (I-2), which is the correct no-op.
+        "id": "adm." + short_hash(OWNER_ASK_BASELINE, str(by), now_ts(), *ids),
+        "type": OWNER_ASK_BASELINE,
+        "ask_ids": ids,
+        "by": by,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm
+
+
+def baselined_ask_ids(fold):
+    """Every owner-ask group id a baseline admission has marked as predating
+    the guard — the union across all baselines (monotonic: a baseline only
+    quiets more, never reopens). These read as already-acked: the drift never
+    mirrors them and the floor never screams them, exactly like a surfaced
+    ask, but without asserting any verdict on them (D-4)."""
+    ids = set()
+    for adm in fold.admissions:
+        if adm.get("type") == OWNER_ASK_BASELINE:
+            ids.update(adm.get("ask_ids", []))
+    return ids
 
 
 def rules(fold):
@@ -367,11 +414,68 @@ def divergence_drift(root, surface):
     return acts
 
 
+def owner_ask_drift(root, surface):
+    """The owner-ask-backlog kind (done-line 0058): a needs-you item written
+    only into a session report reaches bdo's inbox, instead of stranding in a
+    working-tree file he never opens (the hole report 0047's five invisible
+    taps exposed). One aggregate issue per report with parked asks — the
+    divergence grain (one per group, not one per item, bdo 2026-06-11) — keyed
+    by the group id in the artifact_hash slot so the gh translator and the
+    reflection records work unchanged. Open-only: a free-text ask carries no
+    log-backed 'answered' signal, so bdo dismisses it by his own gesture and
+    the mirror never reopens what it surfaced once. Pure; only the pen
+    applies. Raises on an unregistered surface, like the other folds."""
+    fold = Fold(root)
+    surfaces = registered_surfaces(fold)
+    if surface not in surfaces:
+        known = ", ".join(sorted(surfaces)) or "none registered"
+        raise ValueError(f"surface {surface!r} is not admitted ({known}); "
+                         f"register it: python -m loop.reflect register "
+                         f"--surface {surface} --address <owner/repo> --by <who>")
+    seen = reflections(fold, surface)
+    baselined = baselined_ask_ids(fold)  # asks that predate the guard — silent
+    acts = []
+    for g in owner_ask_groups(root):
+        if g["id"] in baselined:
+            continue
+        if (g["id"], "open") not in seen:
+            acts.append({"act": "open", "atom_id": g["report_id"],
+                         "artifact_hash": g["id"], "title": g["title"],
+                         "body": g["body"]})
+    return acts
+
+
+def surfaced_open_ids(fold):
+    """Every artifact (atom/group/ask) that an 'open' reflection record has
+    already named — on any surface. The ack-set the shame floor reads to know
+    what has reached bdo and what is still stranded."""
+    return {ev.get("artifact_hash") for ev in fold.events
+            if ev.get("type") == REFLECTED_EVENT and ev.get("act") == "open"}
+
+
+def unsurfaced_owner_ask_groups(root):
+    """Owner-ask groups no surface has been told — the durable hole the shame
+    beat screams. An ask is silent when an 'open' reflection record carries its
+    group id (on any surface) OR a baseline admission marked it as predating the
+    guard; until then it is parked invisibly and the floor keeps screaming it.
+    The baseline is what keeps first activation from flooding bdo with the whole
+    standing backlog: only asks parked AFTER the baseline surface. Read-only
+    (I-3). A reportless tree short-circuits before the log fold — absence is [],
+    never a raise."""
+    groups = owner_ask_groups(root)
+    if not groups:
+        return []
+    fold = Fold(root)
+    silent = surfaced_open_ids(fold) | baselined_ask_ids(fold)
+    return [g for g in groups if g["id"] not in silent]
+
+
 # A kind is a named drift fold (RULE_KINDS); this maps each to its fold, so
 # the beat (auto_plan) and status dispatch by kind instead of assuming one.
 DRIFT_BY_KIND = {
     "owner-stamp-queue": drift,
     "merge-divergences": divergence_drift,
+    "owner-ask-backlog": owner_ask_drift,
 }
 
 
@@ -455,7 +559,24 @@ def main(argv=None):
     ru.add_argument("--by", required=True,
                     help="who admits it (the dial is signed, never self-set)")
 
+    bl = sub.add_parser("baseline-owner-asks",
+                        help="establish the owner-ask baseline: every ask on "
+                             "disk now predates the guard and stays silent; "
+                             "only asks parked after this surface (run once)")
+    bl.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    bl.add_argument("--by", required=True,
+                    help="who establishes it (session/operator housekeeping, "
+                         "not bdo's stamp — it acks no verdict, D-4)")
+
     args = ap.parse_args(argv)
+    if args.cmd == "baseline-owner-asks":
+        adm = admit_owner_ask_baseline(args.root, args.by)
+        print(f"result: report — {adm['id']}: owner-ask baseline established "
+              f"over {len(adm['ask_ids'])} existing group(s) by {args.by}; the "
+              f"guard now watches from here — only asks parked after this point "
+              f"surface or scream (the standing history stays silent, no "
+              f"verdict asserted on it)")
+        return 0
     if args.cmd == "rule":
         if args.kind not in RULE_KINDS:
             print(f"result: needs-you — unknown kind {args.kind!r}; the kinds "

@@ -128,6 +128,11 @@
             "type": "command",
             "command": "python .claude/hooks/mock_shame.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/owner_ask_shame.py",
+            "timeout": 10
           }
         ]
       }

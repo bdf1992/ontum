@@ -13,6 +13,10 @@
 # the still-mock set is a fold over the log; this only counts the pressure
 .ai-native/mock-shame.json
 
+# nag tally, not truth: turns the same unsurfaced owner-ask set has sat
+# (done-line 0058) — the unsurfaced set is a fold over reports + the log
+.ai-native/owner-ask-shame.json
+
 # envoy packages are rebuildable artifacts (done-line 0015); the
 # environment doc and the disclosure ledger are the committed trace
 exports/*
