@@ -372,6 +372,86 @@ def cmd_check(_ns):
     )
 
 
+def _range_atom_facts(base, head):
+    """The atom-invariant facts for a base...head range: which atom ids it adds
+    under .ai-native/atoms/, and which artifact_ids its added receipt lines name.
+    This is the reach with git; the verdict over these facts is loop.pr_audit's
+    pure fold (done-lines 0066, 0068). Shared by the open-PR sweep (origin refs)
+    and the single-PR CI gate (the PR's own base/head SHAs)."""
+    sys.path.insert(0, str(ROOT))
+    from loop import pr_audit
+    names = _run(["git", "diff", "--name-only", f"{base}...{head}"]).splitlines()
+    atom_ids = sorted({a for a in (pr_audit.atom_id_of(n) for n in names) if a})
+    diff = _run(["git", "diff", f"{base}...{head}", "--",
+                 ".ai-native/log/receipts.jsonl"])
+    receipt_ids = set()
+    for line in diff.splitlines():
+        if not line.startswith("+") or line.startswith("+++"):
+            continue
+        try:
+            rc = json.loads(line[1:])
+        except json.JSONDecodeError:
+            continue  # a torn or context line is not a receipt
+        if rc.get("artifact_id"):
+            receipt_ids.add(rc["artifact_id"])
+    return atom_ids, sorted(receipt_ids)
+
+
+def cmd_audit(ns):
+    """The off-log-PR audit (done-lines 0066, 0068): a PR held to the atom
+    invariant from the branch side, so a PR opened by any path — this pen or
+    the GitHub UI — is caught when it carries no atom on the log. bdo named the
+    hole; #107 is the proof. The reach (gh + git) is here; the verdict is
+    loop.pr_audit's pure fold. Read-only: it names orphans, the disposition
+    stays bdo's (D-4).
+
+    Two modes from one logic: no --range sweeps every open PR (the gh reach, a
+    field report); --range BASE HEAD checks one PR's own range and *exits
+    non-zero on an orphan* — the server-side CI gate's single-PR call, so the
+    workflow and the pen can never disagree about what 'on the log' means."""
+    sys.path.insert(0, str(ROOT))
+    from loop import pr_audit
+    rng = getattr(ns, "range", None)
+    if rng:
+        base, head = rng
+        atom_ids, receipt_ids = _range_atom_facts(base, head)
+        result = pr_audit.audit([{
+            "number": getattr(ns, "pr", None) or "(this PR)", "headRefName": head,
+            "added_atom_ids": atom_ids, "receipt_artifact_ids": receipt_ids,
+        }])
+        pr_audit.render(result)
+        if result["orphans"]:
+            _refuse("this PR adds no atom on the log — open it through the PR "
+                    "pen so it becomes a unit the loop can see and land "
+                    "(§15/D-5); a PR is not a place to put work the machinery "
+                    "never gated")
+        print("result: done — this PR is atom-backed")
+        return
+    _run(["git", "fetch", "origin"])
+    prs = json.loads(_run(
+        ["gh", "pr", "list", "--state", "open",
+         "--json", "number,headRefName,author"]))
+    facts = []
+    for pr in prs:
+        atom_ids, receipt_ids = _range_atom_facts("origin/main",
+                                                  f"origin/{pr['headRefName']}")
+        facts.append({
+            "number": pr["number"],
+            "headRefName": pr["headRefName"],
+            "author": (pr.get("author") or {}).get("login", ""),
+            "added_atom_ids": atom_ids,
+            "receipt_artifact_ids": receipt_ids,
+        })
+    result = pr_audit.audit(facts)
+    if getattr(ns, "as_json", False):
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return
+    pr_audit.render(result)
+    n = len(result["orphans"])
+    print(f"\nresult: {'needs-you' if n else 'done'} — "
+          f"{n} off-log PR(s), {len(result['clean'])} atom-backed")
+
+
 def integrate_refusal(base):
     """Why a session may not integrate a PR, or None. The trunk is governed by
     bdo's arc confirmation and merge-node land (firm); a session integrates a
@@ -786,6 +866,20 @@ def main(argv=None):
 
     check = verbs.add_parser("check", help="audit open PRs for unwritten stories")
     check.set_defaults(func=cmd_check)
+
+    audit = verbs.add_parser(
+        "audit", help="audit open PRs for the atom invariant: name every PR "
+                      "that reached GitHub without an atom on the log "
+                      "(off-log orphans; done-line 0066)")
+    audit.add_argument("--range", nargs=2, metavar=("BASE", "HEAD"),
+                       help="check one PR's own base...head range and exit "
+                            "non-zero on an orphan — the server-side CI gate's "
+                            "single-PR call (done-line 0068)")
+    audit.add_argument("--pr", help="the PR number, for the --range message")
+    audit.add_argument("--json", dest="as_json", action="store_true",
+                       help="emit the verdict dataset for a consumer (a reader's "
+                            "port, symmetric to --range's enforcer port)")
+    audit.set_defaults(func=cmd_audit)
 
     push = verbs.add_parser(
         "push", help="the branded git push (feature parity: extra args "
