@@ -10,9 +10,16 @@ A spawn brands itself by naming the node it fills: `ontum-node:<id>` in the
 Agent prompt/description, or in the headless `claude` command. When branded,
 the rail pins the node's versioned prompt (`prompt_hash`, §7), checks the
 spawning class holds the rung the act needs on the trust ladder (D-4), and
-records the spawn as provenance — or refuses it (exit 2). An unbranded spawn
-is a plain helper, not a node: it passes, watched, and the post hook shames it
-once so a node-spawn that forgot its brand surfaces.
+records the spawn as provenance — or refuses it (exit 2).
+
+An unbranded spawn is read for what it *does*. If it performs a node-only act
+— landing a PR (`pr.py land`), judging at a gate (`loop.node judge`,
+`gate.py launch`), or claiming a node identity (`--by …claude.v1`) — it is a
+node-fill that forgot its brand, and it is **denied at the door** (exit 2,
+2026-06-13): a node can no longer be filled anonymously. Otherwise it is a
+plain helper and passes, watched, with the post hook shaming a forgotten brand
+once. The prevention is surgical because a node-fill *must* claim a node
+identity to reach those pens, and a plain helper never does.
 
 The brand lives here under .claude/ (the Agent tool is harness, not stdlib);
 loop/ only supplies the read (trust, node_prompt) and never imports this — and
@@ -38,6 +45,28 @@ WATCH_LOG = pathlib.Path(
 SPAWN_CLASS = "branded-subagent"   # the class a session spawns into
 SPAWN_CAP = "judge"                # what a node-spawn does (a gate judges)
 NODE_BRAND = re.compile(r"ontum-node:\s*([a-z0-9][a-z0-9._-]*)", re.I)
+
+# A spawn that performs a node-only act — landing a PR as the merge-node,
+# judging at a gate — must reach a pen that demands a node identity, and so it
+# *claims* one (`--by merge-node.claude.v1`, `--node value-gate.claude.v1`) or
+# names the node-only verb (`pr.py land`, `loop.node judge`, `gate.py launch`).
+# A plain helper or research spawn never does. So an *unbranded* spawn carrying
+# one of these is a node-fill that forgot its brand — and a forgotten brand is
+# exactly the accident the post-hook only shamed: a node filled anonymously, no
+# prompt pinned, no rung checked (the merge-node's 22 unadmitted landings). This
+# turns that shame into a denial at the door (2026-06-13, bdo: "create a hook
+# which prevents the accident").
+NODE_ACT = re.compile(
+    r"""
+      pr\.py\s+land                                                  # the merge-node lands
+    | \bland\b\s+--epic\b                                            # the land verb by its flags
+    | loop[./]node\s+judge                                           # a gate's verdict
+    | gate\.py\s+launch                                              # a gate launch
+    | --by\s+[a-z0-9][\w.-]*\.(?:claude|det|session|bdo)\.v\d        # acting AS a named node
+    | --node\s+[a-z0-9][\w.-]*\.(?:claude|det|session|bdo)\.v\d      # judging AT a named node
+    """,
+    re.I | re.X,
+)
 
 # Strip quoted content so a prompt that merely *mentions* `claude` or a brand
 # in quotes is not misread as the acting command (command_guard's lesson).
@@ -79,6 +108,38 @@ def brand_of(tool_input):
                     for k in ("description", "prompt", "command"))
     m = NODE_BRAND.search(text)
     return m.group(1) if m else None
+
+
+def node_act_of(tool_input):
+    """The node-only act a spawn invokes (the matched signature), or None.
+    Reads the same surface as `brand_of` — the Agent description+prompt or the
+    Bash command — because a node-fill declares its act there."""
+    text = " ".join(str(tool_input.get(k) or "")
+                    for k in ("description", "prompt", "command"))
+    m = NODE_ACT.search(text)
+    return m.group(0).strip() if m else None
+
+
+def unbranded_nodeact_refusal(tool_input):
+    """Why an *unbranded* spawn that fills a node may not proceed, or None. Pure
+    over the tool input (the placement/trust test pattern), so the suite hits it
+    directly. The prevention the post-hook's shame could not give: a node-fill
+    that forgot its brand is denied at the door, not waved through and tutted at
+    after the node was already filled anonymously."""
+    if brand_of(tool_input) is not None:
+        return None  # branded — node_spawn_refusal governs it (rung + prompt)
+    act = node_act_of(tool_input)
+    if not act:
+        return None  # a plain helper / research spawn — passes, watched (as before)
+    return (f"this spawn performs a node-only act (`{act}`) but is not branded. A "
+            "spawn that lands or judges fills a loop node, and a node-fill must "
+            "declare itself so the rail pins the node's versioned prompt (§7) and "
+            "checks its rung on the trust ladder (D-4) — not after the fact, but "
+            "before it acts. Brand it `ontum-node:<id>` in the Agent "
+            "description/prompt (e.g. `ontum-node:merge-node.claude.v1` to land, "
+            "`ontum-node:value-gate.claude.v1` to judge). If this is a plain "
+            "helper that only references those pens, reword to drop the node-act "
+            "signature.")
 
 
 def is_headless_claude(command):
@@ -164,6 +225,13 @@ def hook():
     session = payload.get("session_id") or ""
     node = brand_of(tool_input)
     if node is None:
+        reason = unbranded_nodeact_refusal(tool_input)
+        if reason:
+            act = node_act_of(tool_input)
+            record({"status": "spawn-denied-unbranded", "kind": kind,
+                    "act": act, "session": session})
+            print(f"denied: unbranded node-fill spawn — {reason}", file=sys.stderr)
+            return 2
         record({"status": "spawn-unbranded", "kind": kind, "session": session})
         return 0
     reason = node_spawn_refusal(node)
