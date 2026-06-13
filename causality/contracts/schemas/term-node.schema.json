@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ontum:causality/term-node",
+  "title": "TermNode",
+  "description": "A term as projected by causality/term_economy.py. A VIEW over the repo bytes its evidence resolves against — never a source of truth. authored fields come from the seed; class/senses/counts are folded from resolved evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "term", "class", "must_not_mean", "senses", "evidence_count", "resolved_count", "record_kind"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^term:[a-z0-9][a-z0-9-]*$"},
+    "term": {"type": "string", "minLength": 1},
+    "class": {
+      "type": "string",
+      "enum": ["minted-runtime", "minted-doctrine", "minted-workflow", "projected", "proposed", "poetic", "overloaded", "orphaned", "ghost"],
+      "description": "DERIVED from resolved evidence by classify(); never authored directly."
+    },
+    "local_meaning": {"type": "string", "description": "authored (seed): what the term means in its home stratum."},
+    "global_meaning": {"type": "string", "description": "authored (seed): what it means across ontum."},
+    "must_not_mean": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "description": "authored (seed): at least one guard. A term with no must-not-mean has no boundary."
+    },
+    "senses": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "DERIVED: distinct meaning-clusters found across the term's resolved evidence. >=2 with an incompatible flag drives the overloaded class."
+    },
+    "evidence_count": {"type": "integer", "minimum": 0},
+    "resolved_count": {"type": "integer", "minimum": 0, "description": "DERIVED: how many citations resolved against committed bytes."},
+    "record_kind": {"const": "projected"}
+  },
+  "$comment": "Invalid: a class outside the enum; resolved_count > evidence_count; a class you cannot reproduce from the term's EvidenceEdges."
+}
