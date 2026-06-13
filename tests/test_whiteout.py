@@ -26,10 +26,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
-from loop import pen
+from loop import pen, reconcile
 from loop.reconcile import append_line, Fold, TERMINAL_EVENT
 
 DONE_CFG = REPO / ".ai-native" / "done" / ".pen.json"
+SKELETON_ATOM = REPO / ".ai-native" / "atoms" / "atom.loop-skeleton.v0.json"
 
 
 def make_root(tmp):
@@ -37,6 +38,19 @@ def make_root(tmp):
     line by line, the way the loop writes them (D-5: assert over the files)."""
     root = Path(tmp) / ".ai-native"
     (root / "log").mkdir(parents=True)
+    return root
+
+
+def make_field_root(tmp):
+    """A throwaway root carrying the real loop-skeleton atom, so the verifier's
+    repro can be driven through `reconcile.pass_once` rather than hand-faked:
+    the loop itself derives the value-gate receipt and the value.accepted event
+    it implies (D-5 — exercise the real fold, not a guessed log shape)."""
+    base = Path(tmp) / "field"
+    base.mkdir(parents=True, exist_ok=True)
+    root = make_root(base)
+    (root / "atoms").mkdir(parents=True)
+    shutil.copy(SKELETON_ATOM, root / "atoms" / SKELETON_ATOM.name)
     return root
 
 
@@ -146,6 +160,86 @@ class WhiteoutTest(unittest.TestCase):
         self.assertEqual([a for a in read_jsonl(self.adms)
                           if a.get("type") == "whiteout"], [])
 
+    # --- the stage-progression tooth: a receipt whose verdict already advanced
+    #     the atom one stage is consumed, even though NOTHING cites the receipt
+    #     id and the atom is not terminal yet. Driven through real pass_once,
+    #     exactly as the adversarial verifier drove it.
+    def test_receipt_whose_verdict_advanced_the_atom_refuses(self):
+        field = make_field_root(self.tmp)
+        # drive the real loop until the value-gate verdict has propagated into
+        # the value.accepted event — but stop well short of terminal
+        for _ in range(6):
+            reconcile.pass_once(field, quiet=True)
+            fold = Fold(field)
+            advanced = any(e.get("type") == "value.accepted" for e in fold.events)
+            terminal = any(e.get("type") == TERMINAL_EVENT for e in fold.events)
+            if advanced and not terminal:
+                break
+        self.assertTrue(advanced, "loop never derived value.accepted")
+        self.assertFalse(terminal, "drove too far — atom already terminal")
+
+        # the value-gate receipt: it derived value.accepted (next_suggested_event)
+        rc = next(r for r in fold.receipts
+                  if r.get("next_suggested_event") == "value.accepted")
+        rid = rc["id"]
+
+        # the verifier's three observations, asserted directly:
+        self.assertEqual(pen.consumers(fold, rc), [])          # nothing cites it
+        self.assertFalse(pen.is_terminal(fold, rc))            # not terminal yet
+        self.assertEqual(pen.stage_progressed(fold, rc),       # but it progressed
+                         "value.accepted")
+
+        log = field / "log"
+        before = (log / "admissions.jsonl").read_bytes() \
+            if (log / "admissions.jsonl").exists() else b""
+        code, msg = run("whiteout", "--root", str(field),
+                        "--target", rid,
+                        "--correction", "FLIP the verdict to reject",
+                        "--reason", "I want to rewrite a verdict that already moved",
+                        "--by", "test-session")
+        self.assertEqual(code, 2, msg)                         # REFUSES (was a bug)
+        self.assertIn("consumed", msg)
+        self.assertIn("advanced", msg)                         # names the progression
+        self.assertIn("value.accepted", msg)
+        self.assertIn("retro", msg)                            # names the escalation
+        self.assertIn("supersede", msg)
+        # nothing written: no whiteout admission landed
+        after = (log / "admissions.jsonl").read_bytes() \
+            if (log / "admissions.jsonl").exists() else b""
+        self.assertEqual(after, before)
+        self.assertEqual([a for a in read_jsonl(log / "admissions.jsonl")
+                          if a.get("type") == "whiteout"], [])
+
+    # --- the over-refusal guard: a freshly written, un-acted-on advancing
+    #     record CAN still be whited out. The receipt shares its atom's hash
+    #     with the seed event, but its verdict has NOT yet propagated (the
+    #     value.accepted event it would derive is not on the log), so the
+    #     stage-aware test must read it as un-consumed — hash-equality alone
+    #     would over-refuse it.
+    def test_fresh_advancing_record_still_whiteoutable(self):
+        seed = {"id": "evt.seed", "type": "atom.created",
+                "artifact_hash": "sha256:fresh"}
+        rc = {"id": "rcp.fresh", "event_id": "evt.seed", "node": "value-gate",
+              "artifact_hash": "sha256:fresh", "verdict": "accept",
+              "next_suggested_event": "value.accepted"}
+        append_line(self.events, seed)
+        append_line(self.receipts, rc)
+
+        fold = Fold(self.root)
+        # the guard's premise: the verdict has NOT propagated yet
+        self.assertIsNone(pen.stage_progressed(fold, rc))
+        self.assertEqual(pen.consumers(fold, rc), [])
+
+        code, msg = run("whiteout", "--root", str(self.root),
+                        "--target", "rcp.fresh",
+                        "--correction", "the verdict should read amend",
+                        "--reason", "caught the slip before anything consumed it",
+                        "--by", "test-session")
+        self.assertEqual(code, 0, msg)
+        whiteouts = [a for a in read_jsonl(self.adms) if a.get("type") == "whiteout"]
+        self.assertEqual(len(whiteouts), 1)
+        self.assertEqual(whiteouts[0]["target"], "rcp.fresh")
+
     # --- a pointer at nothing is refused (the discharge discipline) ---------
     def test_target_not_on_log_refuses(self):
         code, msg = run("whiteout", "--root", str(self.root),
@@ -177,6 +271,36 @@ class WhiteoutTest(unittest.TestCase):
         self.assertIn("the bar is met", bar.read_text(encoding="utf-8"))
         self.assertEqual([a for a in read_jsonl(self.adms)
                           if a.get("type") == "whiteout"], [])
+
+    # --- the id-regex must not false-positive on real record ids ------------
+    # `rcp.merge.0033` ends in four digits but is NOT a done-line spelling;
+    # the frozen-done check must let it through to the ordinary log path, not
+    # misroute it to supersede (the regex tightening, done-line 0064).
+    def test_record_id_with_trailing_digits_not_seen_as_done_line(self):
+        done = self.root / "done"
+        done.mkdir()
+        shutil.copy(DONE_CFG, done / ".pen.json")  # frozen: true
+        (done / "0033-some-contract.md").write_text(
+            "# Done-line 0033 — a contract\n\n> **Done when:** met.\n",
+            encoding="utf-8")
+        # the frozen check refuses the bare done-line id...
+        self.assertIsNotNone(pen._frozen_done_line(self.root, "0033"))
+        # ...but a record id that merely contains 0033 is NOT a done-line
+        self.assertIsNone(pen._frozen_done_line(self.root, "rcp.merge.0033"))
+
+        # and an unconsumed record so named whites out normally (not supersede)
+        rec = {"id": "rcp.merge.0033", "node": "merge-node",
+               "artifact_hash": "sha256:m", "verdict": "land"}
+        append_line(self.receipts, rec)
+        code, msg = run("whiteout", "--root", str(self.root),
+                        "--target", "rcp.merge.0033",
+                        "--correction", "the verdict should read send_back",
+                        "--reason", "the merge landing was mis-stamped",
+                        "--by", "test-session")
+        self.assertEqual(code, 0, msg)
+        self.assertNotIn("frozen done-line", msg)
+        self.assertEqual(len([a for a in read_jsonl(self.adms)
+                              if a.get("type") == "whiteout"]), 1)
 
     # --- the show path reads the chain without writing ----------------------
     def test_show_renders_chain_and_writes_nothing(self):

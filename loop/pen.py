@@ -315,6 +315,52 @@ def is_terminal(fold, target):
     return fold.event(TERMINAL_EVENT, thash) is not None
 
 
+def _pipeline_event_chain():
+    """The pipeline's events in forward order, derived from the stage table —
+    SEED -> … -> TERMINAL — never hardcoded. Each stage subscribes to one event
+    and its verdict derives the next; stage[i].next_event == stage[i+1].event,
+    so the chain is the first stage's event followed by every next_event."""
+    from loop.reconcile import PIPELINE
+    return [PIPELINE[0]["event"]] + [s["next_event"] for s in PIPELINE]
+
+
+def stage_progressed(fold, target):
+    """The pipeline event proving the atom advanced PAST this record's stage,
+    or None. This is the stage-aware consumption signal the id-citation test
+    (`consumers`) and the terminal test (`is_terminal`) both miss: a receipt's
+    verdict advances its atom by deriving its *next_event*, but that derived
+    event (reconcile.make_event) carries the receipt's ``artifact_hash`` and
+    ``from_node`` — NOT the receipt's id — so nothing ever cites the receipt,
+    and the atom is often not terminal yet. The honest signal is therefore
+    *stage progression for this hash*: the event this record's verdict would
+    derive (or any later pipeline event) already on the log for the same
+    ``artifact_hash``. Crucially it is NOT hash-equality (every record of one
+    atom shares the hash, which would over-refuse a record before it has been
+    acted on) — it asks specifically whether the value has moved past this
+    record's stage. A freshly written, un-acted-on record reads as not-yet-
+    progressed (whiteout-able); the instant its verdict propagates into the
+    next event, it reads as consumed."""
+    thash = target.get("artifact_hash")
+    if not thash:
+        return None
+    chain = _pipeline_event_chain()
+    # where this record's stage sits in the chain:
+    #  - a receipt that advanced names the event it derived (next_suggested_event);
+    #  - an event record IS a point in the chain (it is consumed once a LATER
+    #    chain event exists — its own presence is not consumption of itself).
+    derived = target.get("next_suggested_event")
+    if derived is not None and derived in chain:
+        start = chain.index(derived)
+    elif target.get("type") in chain:
+        start = chain.index(target.get("type")) + 1
+    else:
+        return None  # not a pipeline record / a non-advancing (parked) receipt
+    for later in chain[start:]:
+        if fold.event(later, thash) is not None:
+            return later
+    return None
+
+
 def _frozen_done_line(root, target):
     """If ``target`` names a frozen done-line (by path, or by 4-digit id under
     .ai-native/done), return its path. Softening a contract is bdo's
@@ -328,7 +374,11 @@ def _frozen_done_line(root, target):
     p = Path(t)
     if p.is_file():
         candidates.append(p)
-    m = re.fullmatch(r"\D*?(\d{4})", t)  # a bare id form like 0033 / done:0033
+    # a bare done-line id spelling only: 0033, done:0033, done/0033, done-0033.
+    # Anchored (fullmatch) and gated on a `done` marker so a real record id that
+    # merely *contains* four digits — `rcp.merge.0033`, `adm.…1234` — is not
+    # mistaken for a done-line and wrongly routed to supersede (done-line 0064).
+    m = re.fullmatch(r"(?:done[\W_]*)?(\d{4})", t, re.IGNORECASE)
     done_dir = Path(root) / "done"
     if m and done_dir.is_dir():
         for f in done_dir.iterdir():
@@ -356,10 +406,14 @@ def whiteout(root, target, correction, reason, by):
         record, the discharge discipline of 0063 — a pointer at nothing);
       - the target is a contract admission (``done_superseded``) — also
         supersede territory;
-      - the target has been CONSUMED downstream (a later record cites it, or
-        its atom is terminal/landed): a whiteout would lie about a past that
-        already propagated, and the refusal names the escalation (a retro, or
-        bdo's hand).
+      - the target has been CONSUMED downstream — a later record cites it, OR
+        its verdict already advanced the atom past this record's stage (its
+        derived next_event, or any later pipeline event, is on the log for this
+        artifact_hash), OR its atom is terminal/landed: a whiteout would lie
+        about a past that already propagated, and the refusal names the
+        escalation (a retro, or bdo's hand). The stage-aware middle case is the
+        common one — a derived event does not carry the receipt's id, so id
+        citation alone misses a verdict that has already propagated.
 
     On success it appends one ``whiteout`` admission carrying the cited target,
     a snapshot of what it covers (so a cold reader sees the chain without a
@@ -409,11 +463,14 @@ def whiteout(root, target, correction, reason, by):
         return 2
 
     cited = consumers(fold, rec)
+    advanced = stage_progressed(fold, rec)
     terminal = is_terminal(fold, rec)
-    if cited or terminal:
+    if cited or advanced or terminal:
         why = []
         if cited:
             why.append("cited by " + ", ".join(sorted(cited)))
+        if advanced:
+            why.append(f"its verdict already advanced the atom to {advanced}")
         if terminal:
             why.append("its atom reached the terminal/landed state")
         print(f"result: needs-you — record {target!r} has been consumed "
