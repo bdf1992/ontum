@@ -29,13 +29,15 @@ Landed as PR #128 through the PR pen.
 
 ## needs-you
 
-- **bdo: name/confirm the arc for PR #128** (lean: `epic.owner-harness`) — it
-  is merge-node-eligible the moment its arc is confirmed; the merge-node lands
-  it, not me, not you. Confirming the arc also lets the carried done-line 0062
-  finally land, retiring the stranded `claude/pen-fleet-safe-id` branch.
+Nothing for bdo. This is harness work under **`epic.owner-harness`, which is
+already confirmed** (adm.728a87a9ca48) — his standing stamp already authorizes
+it, so there is no arc to confirm and no gesture to ask for. PR #128 awaits the
+**merge-node** (an independent session — I authored it, so I cannot land my own
+line), which lands it on the standing confirmation and retires the stranded
+`claude/pen-fleet-safe-id` branch by carrying its done-line 0062.
 
 ## End-state
 
-`report` — carbon-copy write authority built, tested (607 green), and opened as
-PR #128 off a rescue of the stranded 0062 branch; awaiting bdo's arc
-confirmation for the merge-node to land.
+`report` — carbon-copy write authority built, tested (607 green), opened as PR
+#128 off a rescue of the stranded 0062 branch, under the already-confirmed
+epic.owner-harness; awaiting the merge-node (not bdo) to land.
