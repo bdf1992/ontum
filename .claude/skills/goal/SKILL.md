@@ -153,3 +153,25 @@ done-line).
   goal and stops.
 - **Running the workhorse session** — executing the goal is separate work
   against the frozen done-line.
+
+## References (cite, don't copy — single source of truth)
+
+The ritual derives over these; it never duplicates them. Read the live
+file, not a paraphrase.
+
+- **The doctrine** — `ai-native-loop-substrate.md`: §9 (working method —
+  the definition of done is written *before* the work; out of room means
+  ship the smaller thing), §10 (the refusal test — two locally-fine atoms
+  that refuse to fit, and the gate that notices), §12 (the tripwire —
+  polishing instead of building is the signal to go build), D-4 (the owner
+  is the last stop).
+- **The done-line discipline** — `.ai-native/done/` and its `.pen.json`;
+  done-line 0033 freezes a written line (the bar is a contract, not a
+  draft). The records pen is `loop/pen.py` (`python -m loop.pen new done`).
+- **The arcs** — `.ai-native/epics/epic.*.json`: each carries `arc`,
+  `horizon`, and `pieces` (atom + glue). A goal ladders to one epic's
+  horizon or it is `needs-you`. Why ticket-scale is refused:
+  `epic.owner-harness` (the owner steers arcs, not tickets).
+- **The field folds** — `loop/gaps.py` (the pressure-ordered backlog, the
+  top one is the work), `loop/digest.py` (what landed / refused / awaits,
+  arc-first, with divergences).
