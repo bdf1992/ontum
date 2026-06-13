@@ -83,6 +83,17 @@ class NewOnFrozenDirTest(unittest.TestCase):
         # it really is the fill-later stub, with the placeholder intact
         self.assertIn("<the one line", written.read_text(encoding="utf-8"))
 
+    def test_pen_output_is_a_zero_divergence_carbon_copy(self):
+        # the loop closes (done-line 0070): whatever the pen writes must pass
+        # the same definition the write guard enforces. The pen self-checks it,
+        # so a non-copy never reaches disk; here we confirm the written bytes.
+        self.assertEqual(pen.new(str(self.done), "the-copy", "the copy",
+                                 body=GOOD_BODY), 0)
+        made = self.done / "0001-the-copy.md"
+        cfg = json.loads((self.done / ".pen.json").read_text(encoding="utf-8"))
+        content = made.read_text(encoding="utf-8")
+        self.assertEqual(pen.carbon_divergences(cfg, made.name, content, 1), [])
+
 
 class FleetSafeAllocation(unittest.TestCase):
     """The fleet-safe-id done-line: the pen claims a fleet-safe id, not a
@@ -137,6 +148,42 @@ class FleetSafeAllocation(unittest.TestCase):
             self.assertEqual(pen.next_id(d), 8)       # local fold: 0007 + 1
         finally:
             pen._PLACEMENT = orig
+
+
+class CarbonDivergencesTest(unittest.TestCase):
+    """The one shared definition of 'a faithful pen carbon copy' (done-line
+    0070), imported by the write guard so the pen and the guard never disagree.
+    Each divergence is named — the refusal is a fail notification a cold reader
+    can act on."""
+
+    def setUp(self):
+        self.cfg = json.loads(DONE_CFG.read_text(encoding="utf-8"))
+
+    def good(self):
+        return "# Done-line 0002 — next\n\n> **Done when:** the fold says so.\n"
+
+    def test_a_faithful_copy_has_no_divergences(self):
+        self.assertEqual(
+            pen.carbon_divergences(self.cfg, "0002-next.md", self.good(), 2), [])
+
+    def test_each_drift_is_caught_and_named(self):
+        name, good = "0002-next.md", self.good()
+        # wrong id vs the expected fleet-safe next
+        self.assertTrue(any("fleet-safe next id" in p for p in
+            pen.carbon_divergences(self.cfg, name, good, 5)))
+        # CRLF bytes the pen never emits
+        self.assertTrue(any("LF only" in p for p in
+            pen.carbon_divergences(self.cfg, name, good.replace("\n", "\r\n"), 2)))
+        # no trailing newline
+        self.assertTrue(any("end with a newline" in p for p in
+            pen.carbon_divergences(self.cfg, name, good.rstrip("\n"), 2)))
+        # heading id drifts from the filename id (0099 in a 0002 file)
+        drift = "# Done-line 0099 — next\n\n> **Done when:** x\n"
+        self.assertTrue(any("pen's heading" in p for p in
+            pen.carbon_divergences(self.cfg, name, drift, 2)))
+        # malformed name
+        self.assertTrue(any("does not fit the form" in p for p in
+            pen.carbon_divergences(self.cfg, "0002_bad.md", good, 2)))
 
 
 if __name__ == "__main__":

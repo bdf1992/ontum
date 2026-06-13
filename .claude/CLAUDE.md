@@ -15,10 +15,18 @@ be, landed as stamped increments, never hand-tuned silently.
     `.ai-native/log/tool-use.jsonl` (`--report` says which wrapper is
     worth building next; read-only git stays raw-and-watched).
   - `PreToolUse` Write → `hooks/write_guard.py`: a new file lands only
-    under a governing `CLAUDE.md` (root governs root level only), and
-    records directories with a `.pen.json` enforce form — next id,
-    pattern, required sections (the records pen `loop/pen.py` is the
-    paved path).
+    under a governing `CLAUDE.md` (root governs root level only), and a
+    records directory with a `.pen.json` is the records pen's land —
+    a raw `Write` there is allowed only as a faithful **carbon copy** of
+    what `loop/pen.py` would have produced (done-line 0070, bdo's
+    write-through model, 2026-06-11): fleet-safe id, the pen's heading,
+    required sections, LF/UTF-8 newline-terminated bytes. The single
+    definition is `loop.pen.carbon_divergences`, imported by the guard so
+    the pen and the guard never disagree (I-4); a divergent write is
+    refused with the divergences named — the refusal *is* the fail
+    notification — never silently let through. The pen self-checks its
+    own output against the same definition, so it can only ever emit a
+    carbon copy.
   - `PreToolUse` Write|Edit|MultiEdit|NotebookEdit →
     `hooks/freeze_guard.py` (done-line 0033): a written done-line is a
     contract, not a draft — an *existing* file in a records directory

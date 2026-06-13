@@ -8,10 +8,15 @@ CLAUDE.md governs only the root level, so every subtree earns its own
 environment. docs/ has none on purpose — its read-only hard rule
 becomes mechanical for sessions.
 
-Rule 2 — records form: a directory carrying `.pen.json` (the control
-config) additionally requires the filename pattern, the exact next id,
-and the required sections. The refusal names the paved path: the
-records pen, loop/pen.py.
+Rule 2 — records carbon copy (done-line 0070): a directory carrying
+`.pen.json` (the control config) is the records pen's land. A raw Write
+here is allowed only as a faithful CARBON COPY of what the pen would
+have produced for that filename — fleet-safe id, the pen's heading, the
+required sections, LF/UTF-8 newline-terminated bytes. The single
+definition of a carbon copy is `loop.pen.carbon_divergences`, imported
+here so the pen and the guard never disagree (I-4); a divergent write is
+refused with the divergences named — the refusal IS the fail
+notification — and the paved path (the pen, loop/pen.py) offered.
 
 Gates sessions, not the owner. Passes untouched: edits to existing
 files, dotfiles, new CLAUDE.md files (founding a governed directory),
@@ -33,6 +38,19 @@ try:  # the cross-ref fold lives beside this hook (done-line 0023); fail open
     import placement as _placement
 except Exception:
     _placement = None
+
+# The one definition of "a faithful pen carbon copy" lives in the records pen
+# (loop/pen.py, done-line 0070); the guard imports it so the pen and the guard
+# never disagree about what a valid record is (I-4). It comes from the guard's
+# OWN repo (parents[2]) — not ONTUM_REPO_ROOT, which names the repo being
+# written to and in tests is a temp dir with no loop/ package.
+_GUARD_REPO = pathlib.Path(__file__).resolve().parents[2]
+if str(_GUARD_REPO) not in sys.path:
+    sys.path.insert(0, str(_GUARD_REPO))
+try:
+    from loop import pen as _pen
+except Exception:
+    _pen = None
 
 ROOT = pathlib.Path(os.environ.get("ONTUM_REPO_ROOT")
                     or pathlib.Path(__file__).resolve().parents[2])
@@ -99,31 +117,36 @@ def hook():
             return 0  # dotfiles (configs) stay out of the form's way
         d = target.parent
 
-        # the most specific rule first: a records directory's declared form
+        # the most specific rule first: a records directory's declared form.
+        # A raw Write here is allowed only as a faithful CARBON COPY of what
+        # the pen would have produced (done-line 0070, bdo's write-through
+        # model): the pen stays the authority, but a write whose bytes ARE the
+        # pen's output is the pen's output, typed by another hand. Anything
+        # that diverges is refused, and the refusal IS the fail notification.
         cfg_path = d / ".pen.json"
         if cfg_path.exists():
             cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
             pen = cfg.get("pen", "python -m loop.pen new <dir> --slug <slug>")
-            pattern = cfg.get("pattern")
-            if pattern and not re.match(pattern, name):
-                return deny("write-form-pattern", rel,
-                            f"denied: {name} does not fit this directory's form "
-                            f"({pattern}). The paved path: {pen}")
-            m = NUMBERED.match(name)
-            if m:
-                expected = next_id(d)
-                if int(m.group(1)) != expected:
-                    return deny("write-form-id", rel,
-                                f"denied: the next id here is {expected:04d}, not "
-                                f"{m.group(1)} — ids come from the fold, not the "
-                                f"eyeball (two 0011s taught us). The paved path: {pen}")
-            missing = [s for s in cfg.get("required_sections", []) if s not in content]
-            if missing:
-                return deny("write-form-sections", rel,
-                            "denied: required section(s) missing: "
-                            f"{', '.join(missing)}. The form is .pen.json; "
-                            f"the pen scaffolds it: {pen}")
-            return 0  # the control config IS governance: the place declared its form
+            if _pen is None:
+                # the shared definition is unreachable: fail open, but loudly —
+                # an invisible failure here is an unguarded records dir that
+                # still looks guarded. Never silently allow without saying so.
+                record({"status": "fail-open", "rule": "carbon-copy-unreachable",
+                         "path": rel})
+                print("write_guard: loop.pen unreachable — records carbon-copy "
+                      "check skipped (failing open); the repo may be broken.",
+                      file=sys.stderr)
+                return 0
+            expected = next_id(d) if NUMBERED.match(name) else None
+            problems = _pen.carbon_divergences(cfg, name, content, expected)
+            if problems:
+                return deny("write-not-carbon-copy", rel,
+                            "denied: a raw Write into a pen-governed records "
+                            "directory is allowed only as a faithful carbon copy "
+                            "of what the pen would write — this is not:\n  - "
+                            + "\n  - ".join(problems)
+                            + f"\nThe pen writes it correctly in one move: {pen}")
+            return 0  # a faithful carbon copy: structurally the pen's own output
 
         if name == "CLAUDE.md":
             return 0  # founding a governed directory is always allowed
