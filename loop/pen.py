@@ -15,8 +15,15 @@ Stdlib only. Ends with a clear result on stdout (D-6): report | needs-you.
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
+
+# The fleet-safe id authority is the placement reach-tool under .claude/
+# (done-line 0023): it folds record ids over ALL git refs. Git-reach lives
+# there, never in pure-stdlib loop/ (placement's own rule), so the pen
+# delegates to it by subprocess and never imports git of its own.
+_PLACEMENT = Path(__file__).resolve().parents[1] / ".claude" / "hooks" / "placement.py"
 
 # the supersede ritual records its act on the log; the loop's one append
 # (done-line 0033). Imported lazily inside the verb so the creation paths
@@ -42,12 +49,111 @@ def load_config(dirpath):
     return json.loads(cfg.read_text(encoding="utf-8"))
 
 
+def _fleet_next_id(dirpath):
+    """The fleet-safe next id from the placement reach-tool, or None on any
+    failure. Placement folds record ids over every git ref, so the id is
+    clear across the whole shared-tree fleet, not just this checkout. The
+    pen only delegates: git-reach stays in .claude/placement, and a broken
+    sensor returns None so the caller falls back — it never blocks a mint."""
+    if not _PLACEMENT.exists():
+        return None
+    d = Path(dirpath).resolve()
+    try:
+        out = subprocess.run(
+            [sys.executable, str(_PLACEMENT), "next", str(d), "--quiet"],
+            cwd=str(d) if d.is_dir() else None,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=15)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    m = re.search(r"\b(\d{4})\b", out.stdout)
+    return int(m.group(1)) if m else None
+
+
 def next_id(dirpath):
-    """The fold: the next id is one past the highest on disk — never
-    re-used, never guessed (two 0011s taught us)."""
+    """The next id, fleet-safe: one past the highest record id on ANY git
+    ref (via the placement reach-tool), falling back to the local
+    directory fold when git or placement is unreachable. Local-only
+    allocation races a parallel fleet — two sessions minting the same id,
+    the colliding 0011s and the 0057/0058/0059 cross-branch renumber saga
+    this allocator closes; the commit fence caught those reactively, this
+    claims a clear id up front. The write guard already folds the fleet
+    this way; now the pen and the guard agree on the next id."""
+    fleet = _fleet_next_id(dirpath)
+    if fleet is not None:
+        return fleet
     ids = [int(m.group(1)) for p in dirpath.iterdir()
            for m in [NUMBERED.match(p.name)] if m]
     return max(ids) + 1 if ids else 1
+
+
+def _heading_re(cfg, iid, slug):
+    """The pen's heading line (scaffold[0]) as a regex with the id pinned,
+    the slug pinned, and the title left free — the structural signature the
+    pen stamps on every record. Literal text is escaped; {title} becomes a
+    wildcard because the caller owns it (the pen defaults it to the de-kebabed
+    slug, but accepts any). A scaffold with no {title} is fully pinned."""
+    parts = []
+    for chunk in re.split(r"(\{id\}|\{slug\}|\{title\})", cfg["scaffold"][0]):
+        if chunk == "{id}":
+            parts.append(re.escape(f"{iid:04d}"))
+        elif chunk == "{slug}":
+            parts.append(re.escape(slug))
+        elif chunk == "{title}":
+            parts.append(r".+")
+        else:
+            parts.append(re.escape(chunk))
+    return re.compile("^" + "".join(parts) + "$")
+
+
+def carbon_divergences(cfg, name, content, expected_id):
+    """The single definition of a faithful pen carbon copy (bdo's write-
+    through model, 2026-06-13). A raw Write into a `.pen.json` directory is
+    legitimate only if its bytes are what THIS pen would have produced for
+    `name`: same fleet-safe id, the pen's heading, the required sections, and
+    the LF/UTF-8, newline-terminated bytes `.ai-native` byte-identity depends
+    on. Returns a list of human divergences; an empty list means the content
+    IS the pen's own output, typed by another hand. The write guard imports
+    this so the pen and the guard share ONE definition, never two (I-4) — and
+    `new()` self-checks against it, so the pen can never emit a non-copy.
+
+    `expected_id` is supplied by the caller (the guard folds the fleet via
+    placement; `new()` passes the id it just claimed) — this stays pure and
+    git-free, mirroring the reflect split."""
+    problems = []
+    pattern = cfg.get("pattern")
+    if pattern and not re.match(pattern, name):
+        problems.append(f"the name {name!r} does not fit the form {pattern}")
+    m = NUMBERED.match(name)
+    iid = int(m.group(1)) if m else None
+    if iid is not None and expected_id is not None and iid != expected_id:
+        problems.append(
+            f"the id is {iid:04d} but the fleet-safe next id is "
+            f"{expected_id:04d} — the pen claims the id from the fold, it is "
+            "not yours to pick")
+    if m and cfg.get("scaffold"):
+        slug = name[m.end():].rsplit(".", 1)[0]
+        first = next((ln for ln in content.splitlines() if ln.strip()), "")
+        pinned = iid if iid is not None else 0
+        if not _heading_re(cfg, pinned, slug).match(first):
+            want = cfg["scaffold"][0].format(
+                id=f"{pinned:04d}", slug=slug, title="<title>")
+            problems.append(
+                f"the first line is not the pen's heading (expected {want!r})")
+    missing = [s for s in cfg.get("required_sections", []) if s not in content]
+    if missing:
+        problems.append("missing required section(s): " + ", ".join(missing))
+    if "\r" in content:
+        problems.append(
+            r"the bytes carry CR (\r) — the pen writes LF only; CRLF breaks "
+            "the byte-identity .ai-native depends on")
+    if content and not content.endswith("\n"):
+        problems.append(
+            "the file does not end with a newline — the pen always "
+            "terminates with LF")
+    return problems
 
 
 def new(kind_or_path, slug, title, body=None):
@@ -105,8 +211,17 @@ def new(kind_or_path, slug, title, body=None):
                   f"{(dirpath / '.pen.json').as_posix()}")
             return 2
         note = ""
+    text = text.replace("\r\n", "\n").replace("\r", "\n")  # the pen emits LF only
     if not text.endswith("\n"):
         text += "\n"
+    # the pen is the authority for "what a carbon copy is" — so it proves its
+    # own output is one (zero divergences). A failure here is a pen bug, never
+    # a caller's: surface it rather than write bytes the guard would refuse.
+    drift = carbon_divergences(cfg, name, text, iid)
+    if drift:
+        print("result: needs-you — the pen built a record that fails its own "
+              "carbon-copy form (a pen bug): " + "; ".join(drift))
+        return 2
     target.write_bytes(text.encode("utf-8"))  # LF bytes: identity-safe
     print(f"result: report — created {target.as_posix()} (id {iid:04d}){note}")
     return 0
