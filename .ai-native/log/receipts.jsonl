@@ -109,3 +109,4 @@
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/report-0048","id":"rcp.merge.102","kind":"merge","node":"merge-node.claude.v1","pr":102,"ts":"2026-06-12T20:20:48Z","verdict":"landed"}
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/gateway-infra-piece","id":"rcp.merge.103","kind":"merge","node":"merge-node.claude.v1","pr":103,"ts":"2026-06-12T21:05:01Z","verdict":"landed"}
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/virtual-fleet","id":"rcp.merge.104","kind":"merge","node":"merge-node.claude.v1","pr":104,"ts":"2026-06-12T21:09:31Z","verdict":"landed"}
+{"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/causality-surface-arc-lands","id":"rcp.merge.109","kind":"merge","node":"merge-node.claude.v1","pr":109,"ts":"2026-06-13T01:52:43Z","verdict":"landed"}
