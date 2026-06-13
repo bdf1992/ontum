@@ -51,6 +51,7 @@ from loop.owner_asks import owner_ask_groups
 
 REFLECTED_EVENT = "surface.reflected"
 OWNER_ASK_BASELINE = "owner_ask_baseline"
+OWNER_ASK_DISCHARGED = "owner_ask_discharged"
 PEN = "python .claude/skills/reflect/reflect.py"
 
 # The kinds table — the extension point (done-line 0020). A kind is a
@@ -160,6 +161,78 @@ def baselined_ask_ids(fold):
     for adm in fold.admissions:
         if adm.get("type") == OWNER_ASK_BASELINE:
             ids.update(adm.get("ask_ids", []))
+    return ids
+
+
+def record_on_log(fold, record_id):
+    """True if record_id names a real record on the log — any of the three
+    streams (event, receipt, admission). The discharge cite is checked against
+    this (done-line 0065): a pointer at nothing is refused, never silently
+    honoured — the cite is the evidence, so it must exist to count."""
+    rid = (record_id or "").strip()
+    if not rid:
+        return False
+    for stream in (fold.events, fold.receipts, fold.admissions):
+        if any(rec.get("id") == rid for rec in stream):
+            return True
+    return False
+
+
+def discharge_owner_ask(root, ask_id, cites, reason, by):
+    """Close a *resolved* owner-ask by citing the log record(s) that closed it
+    (done-line 0065) — the third state the floor lacked (stranded / surfaced /
+    discharged). NOT a free stop-card: refused unless every --cite names a real
+    record on the log and --ask names a live owner-ask group, so a session can
+    only silence what the record proves is closed; a genuine decision-for-bdo
+    nobody made has nothing to cite and cannot be discharged. The grain is the
+    per-report group the beat screams; a report parking several asks may take
+    several cites. The record is a LOUD admission (never the gitignored nag-
+    state), so a bogus discharge is auditable via `reflect status`. Returns
+    (admission, None) or (None, reason-refused). Stdlib + the one append."""
+    cites = [c.strip() for c in (cites or []) if (c or "").strip()]
+    if not cites:
+        return None, "a discharge must cite at least one closing record (--cite)"
+    reason = (reason or "").strip()
+    if not reason:
+        return None, "a discharge carries a one-line reason — why the ask is closed"
+    if not (by or "").strip():
+        return None, "a discharge is signed (--by) like every record"
+    live = {g["id"] for g in owner_ask_groups(root)}
+    if ask_id not in live:
+        return None, (f"{ask_id!r} is not a live owner-ask group; the floor "
+                      "screams a group only while its report parks asks, so "
+                      "there is nothing to discharge (an unknown or already-"
+                      "gone ask is refused, not silently honoured)")
+    fold = Fold(root)
+    missing = [c for c in cites if not record_on_log(fold, c)]
+    if missing:
+        return None, ("these cited records are not on the log: "
+                      + ", ".join(missing) + " — a discharge points at the "
+                      "record that closed the ask, never at nothing; without "
+                      "evidence the floor keeps screaming")
+    adm = {
+        # content-derived over (ask, cites, signer): two discharges of the same
+        # ask citing the same records in one tick fold to one (I-2).
+        "id": "adm." + short_hash(OWNER_ASK_DISCHARGED, ask_id, by, now_ts(), *cites),
+        "type": OWNER_ASK_DISCHARGED,
+        "ask_id": ask_id,
+        "cites": cites,
+        "reason": reason,
+        "by": by,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm, None
+
+
+def discharged_ask_ids(fold):
+    """Every owner-ask group id a discharge admission has closed (done-line
+    0065) — read like baselined_ask_ids and folded into the silent set.
+    Additive and monotonic: a discharge only ever quiets, never reopens (an ask
+    re-parked under a *new* report is a new group id, surfacing afresh)."""
+    ids = {adm.get("ask_id") for adm in fold.admissions
+           if adm.get("type") == OWNER_ASK_DISCHARGED}
+    ids.discard(None)
     return ids
 
 
@@ -434,9 +507,10 @@ def owner_ask_drift(root, surface):
                          f"--surface {surface} --address <owner/repo> --by <who>")
     seen = reflections(fold, surface)
     baselined = baselined_ask_ids(fold)  # asks that predate the guard — silent
+    discharged = discharged_ask_ids(fold)  # asks closed by a cited record (0065)
     acts = []
     for g in owner_ask_groups(root):
-        if g["id"] in baselined:
+        if g["id"] in baselined or g["id"] in discharged:
             continue
         if (g["id"], "open") not in seen:
             acts.append({"act": "open", "atom_id": g["report_id"],
@@ -456,8 +530,10 @@ def surfaced_open_ids(fold):
 def unsurfaced_owner_ask_groups(root):
     """Owner-ask groups no surface has been told — the durable hole the shame
     beat screams. An ask is silent when an 'open' reflection record carries its
-    group id (on any surface) OR a baseline admission marked it as predating the
-    guard; until then it is parked invisibly and the floor keeps screaming it.
+    group id (on any surface), a baseline admission marked it as predating the
+    guard, OR a discharge admission closed it by citing the record(s) that
+    resolved it (done-line 0065); until then it is parked invisibly and the
+    floor keeps screaming it.
     The baseline is what keeps first activation from flooding bdo with the whole
     standing backlog: only asks parked AFTER the baseline surface. Read-only
     (I-3). A reportless tree short-circuits before the log fold — absence is [],
@@ -466,7 +542,8 @@ def unsurfaced_owner_ask_groups(root):
     if not groups:
         return []
     fold = Fold(root)
-    silent = surfaced_open_ids(fold) | baselined_ask_ids(fold)
+    silent = (surfaced_open_ids(fold) | baselined_ask_ids(fold)
+              | discharged_ask_ids(fold))
     return [g for g in groups if g["id"] not in silent]
 
 
@@ -480,8 +557,15 @@ DRIFT_BY_KIND = {
 
 
 def status(root):
-    """Read-only (I-3): every registered surface and its drift."""
+    """Read-only (I-3): every registered surface and its drift, and the
+    owner-ask discharges on the log (done-line 0065 — a discharge is loud and
+    auditable here, never a silent self-clear)."""
     fold = Fold(root)
+    for d in fold.admissions:
+        if d.get("type") == OWNER_ASK_DISCHARGED:
+            print(f"discharged-ask: {d.get('ask_id')} <- cite "
+                  f"{', '.join(d.get('cites', []))} (by {d.get('by')}: "
+                  f"{d.get('reason')}, {d.get('id')})")
     surfaces = registered_surfaces(fold)
     if not surfaces:
         print("result: done — no surfaces registered; the inbox reaches only "
@@ -568,7 +652,33 @@ def main(argv=None):
                     help="who establishes it (session/operator housekeeping, "
                          "not bdo's stamp — it acks no verdict, D-4)")
 
+    dc = sub.add_parser("discharge-ask",
+                        help="close a resolved owner-ask by citing the log "
+                             "record(s) that closed it (done-line 0065); "
+                             "refused unless every cite is real and the ask is live")
+    dc.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    dc.add_argument("--ask", required=True,
+                    help="the ask-group id the floor screams (ask.<hash>)")
+    dc.add_argument("--cite", action="append", required=True, dest="cites",
+                    metavar="RECORD_ID",
+                    help="a record id (adm./rcp./event id) that closed the ask "
+                         "— repeatable; every one must be on the log")
+    dc.add_argument("--reason", required=True,
+                    help="one line: why the ask is closed")
+    dc.add_argument("--by", required=True, help="who discharges it (signed, like every record)")
+
     args = ap.parse_args(argv)
+    if args.cmd == "discharge-ask":
+        adm, err = discharge_owner_ask(args.root, args.ask, args.cites,
+                                       args.reason, args.by)
+        if err:
+            print(f"result: needs-you — {err}")
+            return 2
+        print(f"result: report — {adm['id']}: owner-ask {args.ask} discharged "
+              f"by {args.by}, citing {', '.join(adm['cites'])}. The floor falls "
+              f"silent for it; the discharge stands on the log, auditable "
+              f"(python -m loop.reflect status).")
+        return 0
     if args.cmd == "baseline-owner-asks":
         adm = admit_owner_ask_baseline(args.root, args.by)
         print(f"result: report — {adm['id']}: owner-ask baseline established "

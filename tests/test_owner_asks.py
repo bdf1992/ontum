@@ -381,5 +381,89 @@ class ShameHookTest(unittest.TestCase):
             self.assertEqual(out.strip(), "")
 
 
+class DischargeTest(unittest.TestCase):
+    """The third state the floor lacked (done-line 0065): a *resolved* ask is
+    closed by CITING the log record that closed it, never by a session's
+    say-so. The §10 pair: a well-formed discharge and a log missing its cited
+    id are each locally fine and *refuse to fit* — the verb is the gate that
+    notices, and without evidence the floor keeps screaming."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.root = make_root(self.tmp, {"0100-stranded": STRANDED,
+                                         "0101-clean": CLEAN})
+        # a real closing record on the log to point a cite at
+        reconcile.append_line(
+            self.root / "log" / "admissions.jsonl",
+            {"id": "adm.realclose01", "type": "done_superseded", "by": "bdo",
+             "ts": "2026-06-13T00:00:00Z"})
+        self.gid = owner_asks.owner_ask_groups(self.root)[0]["id"]
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_a_real_cite_discharges_and_silences(self):
+        adm, err = reflect.discharge_owner_ask(
+            self.root, self.gid, ["adm.realclose01"],
+            reason="the supersede closed it", by="a-session")
+        self.assertIsNone(err)
+        self.assertEqual(adm["type"], "owner_ask_discharged")
+        self.assertEqual(adm["ask_id"], self.gid)
+        self.assertEqual(adm["cites"], ["adm.realclose01"])
+        # the floor falls silent for the whole group (both its asks)
+        self.assertEqual(reflect.unsurfaced_owner_ask_groups(self.root), [])
+
+    def test_an_absent_cite_is_refused_and_keeps_screaming(self):
+        adm, err = reflect.discharge_owner_ask(
+            self.root, self.gid, ["adm.doesnotexist"],
+            reason="claiming closure with no evidence", by="a-session")
+        self.assertIsNone(adm)
+        self.assertIn("not on the log", err)
+        # nothing written; the group still screams — no evidence, no silence
+        self.assertEqual([g["report_id"] for g in
+                          reflect.unsurfaced_owner_ask_groups(self.root)],
+                         ["0100-stranded"])
+
+    def test_a_partial_real_cite_set_is_refused_whole(self):
+        adm, err = reflect.discharge_owner_ask(
+            self.root, self.gid, ["adm.realclose01", "adm.fake"],
+            reason="mixed evidence", by="a-session")
+        self.assertIsNone(adm)
+        self.assertIn("adm.fake", err)
+        self.assertEqual(len(reflect.unsurfaced_owner_ask_groups(self.root)), 1)
+
+    def test_an_unknown_ask_is_refused(self):
+        adm, err = reflect.discharge_owner_ask(
+            self.root, "ask.nosuchgroup", ["adm.realclose01"],
+            reason="discharging a ghost", by="a-session")
+        self.assertIsNone(adm)
+        self.assertIn("not a live owner-ask group", err)
+
+    def test_an_empty_cite_is_refused(self):
+        adm, err = reflect.discharge_owner_ask(
+            self.root, self.gid, [], reason="no evidence offered", by="a-session")
+        self.assertIsNone(adm)
+        self.assertIn("at least one", err)
+
+    def test_discharge_is_monotonic_a_new_report_surfaces_afresh(self):
+        # history is not retro-invalidated: discharging 0100 cannot cover a
+        # later report's asks — a new report is a new group id
+        reflect.discharge_owner_ask(self.root, self.gid, ["adm.realclose01"],
+                                    reason="closed", by="a-session")
+        (self.root / "reports" / "0103-after.md").write_text(
+            NEW_AFTER_BASELINE, encoding="utf-8")
+        groups = reflect.unsurfaced_owner_ask_groups(self.root)
+        self.assertEqual([g["report_id"] for g in groups], ["0103-after"])
+
+    def test_a_discharged_group_is_no_longer_offered_to_the_mirror(self):
+        reflect.admit_surface(self.root, "github-issues", "owner/repo", by="b")
+        self.assertEqual([a["act"] for a in
+                          reflect.owner_ask_drift(self.root, "github-issues")],
+                         ["open"])
+        reflect.discharge_owner_ask(self.root, self.gid, ["adm.realclose01"],
+                                    reason="closed", by="a-session")
+        self.assertEqual(reflect.owner_ask_drift(self.root, "github-issues"), [])
+
+
 if __name__ == "__main__":
     unittest.main()
