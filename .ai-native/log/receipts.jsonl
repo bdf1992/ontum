@@ -110,3 +110,4 @@
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/gateway-infra-piece","id":"rcp.merge.103","kind":"merge","node":"merge-node.claude.v1","pr":103,"ts":"2026-06-12T21:05:01Z","verdict":"landed"}
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/virtual-fleet","id":"rcp.merge.104","kind":"merge","node":"merge-node.claude.v1","pr":104,"ts":"2026-06-12T21:09:31Z","verdict":"landed"}
 {"authorized_by":"adm.6f34c7fe4654","epic":"epic.experience-layer","head":"claude/causality-surface-arc-lands","id":"rcp.merge.109","kind":"merge","node":"merge-node.claude.v1","pr":109,"ts":"2026-06-13T01:52:43Z","verdict":"landed"}
+{"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/done-pen-frozen-needs-body","id":"rcp.merge.108","kind":"merge","node":"merge-node.claude.v1","pr":108,"ts":"2026-06-13T01:52:58Z","verdict":"landed"}
