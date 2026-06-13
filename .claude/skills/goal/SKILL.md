@@ -1,177 +1,274 @@
 ---
 name: goal
 description: >-
-  Define and create one ontum goal worth an hour+ of focused attention,
-  derived over the live field and a conversation with bdo. Use when bdo
-  runs /goal, asks to "set a goal", "define the next goal", "give me
-  something to work on", or wants a bounded, well-formed unit of work
-  before a workhorse session. A multi-step ritual, not a one-shot: it
-  orients over the field (existing read-only folds — loop.gaps, the
-  epics, loop.digest; it adds no code of its own), surfaces candidates
-  tied to real epics, pressure-tests the pick against a goal
-  best-practices checklist mapped onto ontum's own gates, sharpens the
-  definition of done in dialogue, and — only on confirmation — writes the
-  goal as the next numbered done-line through the records pen
-  (loop.pen new done). It thinks, then it writes. There is no second
-  write path; it never invents a missing epic and never stamps for bdo.
-version: 0.1.0
+  Define the next pressure-bearing unit of work in Ontum without collapsing
+  durable outcomes into single-session done-lines. Use when bdo runs /goal,
+  asks to set the next goal, define what Claude should cook on, or convert
+  live pressure into executable work. This ritual first distinguishes outcome
+  pressure from session work, then derives candidates from the live field,
+  owner intent, and any outcome-pressure probes. It may create either:
+  (1) an outcome proposal / probe-set when the desired reality is multi-session,
+  or (2) a frozen done-line when the work is truly session-scoped. It never
+  treats a done-line as completion of an outcome, never invents a missing epic,
+  never stamps for bdo, and never writes without explicit confirmation.
+version: 0.2.0
 owner: bdo
 changelog:
-  - version: 0.1.0
+  - version: 0.2.0
     note: >-
-      First form (done-line 0059). A no-code, multi-step /goal ritual:
-      derive over field + dialogue, hold every candidate to the goal
-      best-practices x ontum checklist, culminate by minting the goal as
-      a frozen done-line through loop.pen. Survey/dashboard mode and
-      auto-starting the workhorse session are named out of scope.
+      Corrects the Goal->Session collapse. A goal may be an outcome-pressure
+      object spanning sessions, while a done-line is a single-session stop
+      condition. Desired reality must be evidence-bearing through probes.
+      The ritual now chooses the correct artifact instead of always minting
+      a done-line.
 ---
 
-# /goal — defining the next goal worth an hour
+# /goal — carrying outcome pressure into executable work
 
-A goal here is not a task and not a wish. It is **one bounded unit of
-work worth an hour or more of focused attention**, named *before* the
-work, with a clear signal that says *stop* when it is met. In ontum that
-artifact already exists: it is a **done-line** (`.ai-native/done/`,
-§9.4) — written before code, and **frozen the instant it is written**
-(done-line 0033). You cannot edit it later, and only bdo can move it. So
-this ritual earns its length: it is the careful front door to writing a
-done-line you will have to live with.
+A goal here is **not automatically a done-line**.
 
-`/goal` derives the goal over **two sources at once**:
+A done-line is single-session: frozen, bounded, and shaped by "when met, stop."
 
-1. **The field** — the live state of the repo, read through folds that
-   already exist. This skill writes no code and adds no Python; it
-   *reads* `loop.gaps`, `.ai-native/epics/`, and `loop.digest`.
-2. **The conversation with bdo** — what he actually wants to move next.
-   A goal pulled only from the field is mechanical; a goal pulled only
-   from talk floats free of what is real. The good one is the
-   intersection.
+A goal may be larger: a durable desired reality that spans many sessions. In
+that case, the goal is not completed by writing audits, contracts, or plans.
+Those may be instruments, probes, or session progress toward the goal.
 
-It **thinks, then it writes.** Steps 0–3 are thinking. Step 4 is the
-write. Do not skip to the write.
+This ritual exists to prevent that collapse.
 
-## The checklist every candidate must pass
+`/goal` asks first:
 
-Good goal-setting and ontum doctrine agree; this ritual enforces both as
-one gate. Hold every candidate against all five — and surface, out loud,
-any it fails. A candidate that fails is *refused*, not softened.
+> Are we defining an outcome, or are we defining the next session-sized move
+> that reduces pressure toward an outcome?
 
-| Best practice | The ontum-native gate |
-|---|---|
-| **Specific / outcome-stated** | Names a *changed state of the system* tied to one existing epic piece — not a list of tasks, not "work on X". |
-| **Measurable / falsifiable** | A receipt could prove it (*no receipt, no version bump*). It carries a required **non-example** and the **§10 refusal test**: could two locally-fine atoms refuse to fit, and would a gate notice? If everything would pass on the first try, the bar isn't doing its job. |
-| **Right-sized** | An **hour+** unit — *thicker than a ticket* (the scale `epic.owner-harness` explicitly rejects) and *thinner than a whole epic*. Out of room means shrink the scope and ship the smaller thing (§9). |
-| **Relevant / connected to a why** | It ladders up to an existing epic's `horizon`. If **no epic fits**, surface it as `needs-you` — do **not** author a new epic. Absence is information. |
-| **Time-bound** | "When met, **stop**" is the envelope. The hour+ of attention is the budget, not an open tab. |
+## Core distinction
 
-## The program
+| Thing | Meaning | Artifact |
+| --- | --- | --- |
+| **Outcome** | A desired reality that persists across sessions | Probe-set / proposal / epic horizon pressure |
+| **Probe** | Evidence-bearing predicate that can resolve met / partial / unmet | Outcome-pressure input |
+| **Session work** | One bounded unit of focused execution | Done-line |
+| **Task** | A thinner implementation step | Atom / story / task, not this ritual's output |
 
-### Step 0 — Derive over the field (read-only)
+A done-line may serve a goal.
+A done-line is not the goal unless the goal is truly session-sized.
 
-Run the existing folds and read the arcs. Add no code.
+## Step 0 — Read pressure before naming work
+
+Read the existing field and any outcome-pressure artifacts.
 
 ```sh
-python -m loop.gaps          # the pressure-ordered backlog — the top one is the work
-ls .ai-native/epics/         # the nine arcs; read the relevant epic.*.json (arc, horizon, pieces)
-python -m loop.digest        # what landed / refused / awaits, arc-first — the recent weather
+python -m loop.gaps
+python -m loop.digest
+ls .ai-native/epics/
 ```
 
-Lay out, briefly: where pressure sits, which epic is climbing, and the
-top open rungs. This is the field half of the derivation — orient before
-proposing.
-
-### Step 1 — Surface candidates
-
-From the field plus bdo's opening intent, put **2–3 candidate goals** on
-the table. Each must be tied to a **real epic piece** — name the epic and
-the piece. Do not invent candidates the field doesn't support; if bdo's
-intent points somewhere no epic covers, say so plainly. Let him pick or
-redirect.
-
-### Step 2 — Pressure-test the pick
-
-Run the chosen candidate through the checklist above, out loud, one row
-at a time. Name every gate it fails. Specifically interrogate:
-
-- **Size:** is this genuinely an hour+, or is it ticket-thin (refuse) or
-  a whole epic in disguise (split or narrow)?
-- **Home:** which epic's horizon does it ladder to? If none fits, this is
-  a `needs-you` — surface it, don't manufacture a home.
-- **Teeth (§10):** how could this goal's atoms *refuse to fit*, and would
-  a gate notice the misfit? If you can't name a way it could fail, the
-  bar is too soft — sharpen it until you can.
-
-A candidate that can't clear the checklist does not get written. Say why,
-and return to Step 1.
-
-### Step 3 — Draft the definition of done
-
-In dialogue, write the **"when this is true, stop"** line in bdo's terms
-first, plus the required **non-example** (what would look done but isn't).
-Iterate until it is sharp — this is the step the freeze makes matter,
-because the next step makes it permanent. Read the draft back and get his
-explicit confirmation.
-
-### Step 4 — Commit the goal (the write)
-
-On confirmation only, mint the goal as the next numbered done-line
-through the **existing records pen** — never a hand-written file, never a
-second write path:
+If available, also read:
 
 ```sh
-python -m loop.pen new done --slug <kebab-slug> --title "<the goal, one line>"
-# or, one-move with the full body (Done-when + non-example + out-of-scope):
-python -m loop.pen new done --slug <kebab-slug> --title "<...>" --body -
+python -m loop.pressure
 ```
 
-The pen scaffolds the heading and enforces the form (`> **Done when:**`).
-Fill the bar you sharpened in Step 3. The written line **is** the created
-goal: a frozen contract the workhorse session then executes against.
+If no outcome-pressure fold exists yet, infer carefully from committed
+evidence, open reports, audits, PRs, and bdo's current intent. Mark that
+inference as provisional.
 
-Then stop. `/goal` ends at a defined, written goal — it does not start
-the hour+ of work itself (that is a separate session against this
-done-line).
+Summarize:
 
-## Hard refusals (the ritual will not)
+- current work-pressure,
+- current outcome-pressure,
+- owner-pressure,
+- what is janitorial pressure versus outcome pressure,
+- what is blocked by missing evidence.
 
-- **Edit or soften a frozen done-line.** Once written, a goal is a
-  contract. If a landed goal's bar is wrong, name it in the report's
-  `needs-you` and keep working — moving it is bdo's alone (`loop.pen
-  supersede-done --by bdo`).
-- **Invent a missing epic or a missing why.** No epic fits → `needs-you`,
-  not authorship. Absence is information (hard rule).
-- **Stamp for bdo or open a second write path.** Goals land only through
-  `loop.pen`; verdicts and confirmations are bdo's gestures, never this
-  ritual's.
-- **Write a goal that hasn't cleared the checklist**, or skip the
-  thinking to get to the write.
+## Step 1 — Classify bdo's intent
 
-## Not this ritual's job (named, for later)
+Before proposing work, classify the request:
 
-- **A survey / dashboard of all nine epics' progress** — the full-ladder
-  progression map is a distinct read-only view; this ritual defines *one*
-  goal and stops.
-- **Running the workhorse session** — executing the goal is separate work
-  against the frozen done-line.
+1. **Outcome definition** — bdo is naming a desired reality that spans sessions.
+2. **Probe definition** — bdo is making desired reality measurable.
+3. **Session execution** — bdo wants the next focused unit of work.
+4. **Clarification / audit** — bdo wants to understand current reality before building.
 
-## References (cite, don't copy — single source of truth)
+Say which one it is.
 
-The ritual derives over these; it never duplicates them. Read the live
-file, not a paraphrase.
+If it is multi-session, do **not** force it into a done-line.
 
-- **The doctrine** — `ai-native-loop-substrate.md`: §9 (working method —
-  the definition of done is written *before* the work; out of room means
-  ship the smaller thing), §10 (the refusal test — two locally-fine atoms
-  that refuse to fit, and the gate that notices), §12 (the tripwire —
-  polishing instead of building is the signal to go build), D-4 (the owner
-  is the last stop).
-- **The done-line discipline** — `.ai-native/done/` and its `.pen.json`;
-  done-line 0033 freezes a written line (the bar is a contract, not a
-  draft). The records pen is `loop/pen.py` (`python -m loop.pen new done`).
-- **The arcs** — `.ai-native/epics/epic.*.json`: each carries `arc`,
-  `horizon`, and `pieces` (atom + glue). A goal ladders to one epic's
-  horizon or it is `needs-you`. Why ticket-scale is refused:
-  `epic.owner-harness` (the owner steers arcs, not tickets).
-- **The field folds** — `loop/gaps.py` (the pressure-ordered backlog, the
-  top one is the work), `loop/digest.py` (what landed / refused / awaits,
-  arc-first, with divergences).
+## Step 2 — If outcome-sized, define evidence-bearing probes
+
+For outcome-sized goals, draft a probe-set instead of a done-line.
+
+Each probe must include:
+
+- desired condition,
+- evidence source,
+- check method,
+- met / partial / unmet resolution,
+- non-example,
+- owner-blessing status.
+
+Refuse any probe that cannot be checked.
+
+Aspirational prose is allowed as horizon, but it is not allowed as a probe.
+
+Example:
+
+```text
+Outcome:
+Causality is the operational knowledge surface for Ontum.
+
+Probe:
+A graph persists across reload.
+
+Check:
+Create graph -> save -> reload -> graph survives with node config and edges.
+
+Evidence:
+browser test, saved graph file, test receipt.
+
+Non-example:
+A demo template reloads successfully but user-authored graph state is lost.
+```
+
+## Step 3 — If session-sized, draft a done-line
+
+Only create a done-line when the chosen work is actually a bounded unit of
+execution.
+
+A valid done-line must:
+
+- reduce a named pressure,
+- ladder to an existing epic or outcome,
+- name the evidence it will produce,
+- include a non-example,
+- stop when met.
+
+It must not pretend to complete the whole outcome.
+
+Bad:
+
+```text
+Done when Causality is an operational knowledge surface.
+```
+
+Good:
+
+```text
+Done when Causality has a saved-graph schema and a failing/passing
+persistence test proving a user-created node survives reload.
+```
+
+## Step 4 — Surface candidates
+
+Offer 2–3 candidates, clearly labeled by type:
+
+```text
+Outcome candidate
+Probe candidate
+Session done-line candidate
+```
+
+Each candidate must name:
+
+- pressure source,
+- epic / outcome home,
+- evidence produced,
+- why now,
+- what it does not complete.
+
+Let bdo choose or redirect.
+
+## Step 5 — Pressure-test the chosen candidate
+
+Run the chosen candidate through:
+
+- Is this outcome-sized or session-sized?
+- What evidence proves it?
+- What would falsely look done?
+- What pressure does it reduce?
+- What remains after it completes?
+- Does it require owner blessing?
+- Does it belong to an existing epic/outcome?
+- If it fails, how will the system notice?
+
+If these cannot be answered, do not write. Return to candidate shaping.
+
+## Step 6 — Write only the correct artifact
+
+### If outcome/probe-sized
+
+Write a proposal or probe-set. Do not mint a frozen done-line unless the
+session also has a bounded implementation move.
+
+Possible locations:
+
+```text
+outcomes/
+pressure/
+proposals/
+.ai-native/reports/
+```
+
+Use the repo's existing conventions if a canonical location exists.
+
+### If session-sized
+
+Mint the done-line through the records pen only:
+
+```sh
+python -m loop.pen new done --slug <kebab-slug> --title "<single-session stop condition>" --body -
+```
+
+The body must include:
+
+```text
+> **Done when:**
+> **Non-example:**
+> **Pressure reduced:**
+> **Does not complete:**
+> **Evidence expected:**
+```
+
+Then stop. `/goal` does not execute the workhorse session.
+
+## Hard refusals
+
+- Do not collapse a multi-session outcome into a done-line.
+- Do not call a goal done because a document, audit, or plan exists.
+- Do not write probes that cannot be checked.
+- Do not invent a missing epic.
+- Do not stamp for bdo.
+- Do not create a second write path around the records pen.
+- Do not treat janitorial work-pressure as outcome-pressure unless it directly
+  blocks the desired reality.
+- Do not say "done" when the artifact is unlanded, unmerged, or only local.
+
+## Output format before writing
+
+Before any write, present:
+
+```text
+Classification:
+Outcome / Probe / Session done-line / Audit
+
+Pressure:
+What pressure this responds to.
+
+Chosen artifact:
+What will be written and where.
+
+Done does not mean:
+What this will not complete.
+
+Confirmation needed:
+Yes / no, and from whom.
+```
+
+## References
+
+- `ai-native-loop-substrate.md`
+- `.ai-native/epics/`
+- `.ai-native/done/`
+- `loop/gaps.py`
+- `loop/digest.py`
+- `loop/pen.py`
+- outcome-pressure proposal, if present
