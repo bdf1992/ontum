@@ -62,7 +62,8 @@ admit the real node (bdo's call, `--by bdo`).
 ## Hard rules this pen keeps
 
 - Outward reach (gh) and process launch (claude) live **here, in the pen**,
-  never in `loop/` (stdlib-only). The pen *reads* the log; it *writes* the
+  never in `loop/` (no network, no subprocess — local-first holds even
+  though the dependency ban lifted). The pen *reads* the log; it *writes* the
   verdict only through `loop.node judge` and the run only through
   `loop.runs record` — the seams stay the seams.
 - A node never judges an event it announced (D-2) — `loop.node judge`

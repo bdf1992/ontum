@@ -41,7 +41,8 @@ Rules of this directory:
   (subprocess, exit 2), requires the committed `.codex/` bytes to equal
   a fresh render, and checks every example against its own rule's
   prefix semantics.
-- **Stdlib only.** The registry is data; the renderer is a pen — small,
-  deterministic, no dependencies.
+- **Stdlib-first.** The registry is data; the renderer is a pen — small
+  and deterministic, so it needs no dependency (the repo's blanket
+  no-dependency ban was lifted 2026-06-12, but this pen earns none).
 - A new family arrives by adding a renderer (`render_<family>.py`),
   never by re-authoring the rules.

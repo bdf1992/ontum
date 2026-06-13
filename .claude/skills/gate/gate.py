@@ -24,7 +24,8 @@ until the gate has earned the right to run unwatched. The issue is not a
 report after the fact — it is the birth certificate, written first.
 
 Outward reach (gh) and process launch (claude) live here, in the pen,
-never in loop/ (the stdlib-only hard rule). The pen *reads* the log to
+never in loop/ (no network, no subprocess — local-first, even though the
+dependency ban lifted). The pen *reads* the log to
 compose; it *writes* the verdict only through loop.node judge and the run
 only through loop.runs record — the seams stay the seams.
 
