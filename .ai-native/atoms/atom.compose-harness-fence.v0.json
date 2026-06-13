@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.compose-harness-fence.v0",
+    "story": {
+      "text": "As a session working deep in a module, I need the harness config (.claude/) and the family-neutral fence (fence/) to travel with me in always-on context — because governance that binds wherever I work belongs on the composition surface, not in folders I only meet if I happen to open them; a session can forget the paved path while standing on it.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Compose the harness + fence into the always-on surface",
+      "value": "An audit of the repo's eleven CLAUDE.md files against bdo's @/@@ directive (done-line 0010) found the composition surface had fallen behind: the root @-imported only five, leaving the two contracts that bind every session — .claude/ (pens, guards, freeze, merge-node) and fence/ (the registry every command-denial derives from) — to nested loading. The change wires @.claude/CLAUDE.md and @fence/CLAUDE.md into the root, and names the inclusion test in prose so the surface stops drifting: a module joins the @-surface when its environment binds a session wherever it works.",
+      "why_now": "The repo grew eleven CLAUDE.md files while the root surface stayed at five; a deep-loop session never carried the binding rules in always-on context. The audit also found Codex's parallel AGENTS.md list had drifted (named .claude/ but not fence/).",
+      "if_accepted": "Governance that binds everywhere rides every session for both families: Claude composes @.claude + @fence; Codex's manual-read list is brought to the same always-on set (its .codex/ fence is rendered from fence/). tests/ and pivot/ stay nested deliberately — their knowledge only matters inside them.",
+      "if_rejected": "The composition surface keeps drifting from the rules it should carry, and a session can stand on the paved path while forgetting it exists.",
+      "cost_of_wrong_call": "Low: docs-only; no code path changes. Reverting is editing two @-import lines back out.",
+      "mechanism": "CLAUDE.md @.claude/CLAUDE.md + @fence/CLAUDE.md into the root surface; AGENTS.md brought to the same always-on set with the nested-only modules separated, so both families read the same map. Honors the existing directive rather than redirecting it.",
+      "reading": [
+        "CLAUDE.md",
+        "AGENTS.md",
+        ".ai-native/done/0010-at-imports.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["CLAUDE.md", "AGENTS.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["CLAUDE.md", "AGENTS.md"]
+    }
+  },
+  "_note": "Birth record for composing the harness + fence into the always-on surface, authored to adopt PR #107 into the loop (bdo, 2026-06-13). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
