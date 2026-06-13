@@ -78,6 +78,19 @@ NO_SECTION = """# Report 0102 — a note with no handoff
 `done`.
 """
 
+# A report authored AFTER a baseline — its ask is new parking, the
+# report-0047-class failure going forward, and must still surface and scream.
+NEW_AFTER_BASELINE = """# Report 0103 — a session that parked work after the baseline
+
+## needs-you
+
+1. **Admit the worker node real** — or keep it mock another cycle?
+
+## End-state
+
+`report` — one tap parked.
+"""
+
 
 def make_root(tmp, reports):
     """A temp .ai-native with a log (empty jsonl) and the given reports
@@ -230,6 +243,59 @@ class DriftTest(unittest.TestCase):
         self.assertEqual(code, 0)
 
 
+class BaselineTest(unittest.TestCase):
+    """The §10 pair on the baseline (the recency scope done-line 0058 named
+    deferred): a baseline covering the standing backlog makes first activation
+    SILENT — no historical flood — while an ask parked AFTER the baseline is a
+    new refusal that still surfaces and screams. The two records (the report on
+    disk, the baseline on the log) fit when the ask predates the guard and
+    refuse to fit when it does not."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        # the standing backlog: a stranded report already on disk at baseline
+        self.root = make_root(self.tmp, {"0100-stranded": STRANDED,
+                                         "0101-clean": CLEAN})
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_baseline_records_every_present_group_signed(self):
+        adm = reflect.admit_owner_ask_baseline(self.root, by="a-session")
+        self.assertEqual(adm["type"], "owner_ask_baseline")
+        self.assertEqual(adm["by"], "a-session")
+        gid = owner_asks.owner_ask_groups(self.root)[0]["id"]
+        self.assertEqual(adm["ask_ids"], [gid])
+
+    def test_first_activation_is_silent_under_a_baseline(self):
+        # (a) with a baseline over the existing asks, nothing floods bdo
+        reflect.admit_owner_ask_baseline(self.root, by="a-session")
+        self.assertEqual(reflect.unsurfaced_owner_ask_groups(self.root), [])
+        reflect.admit_surface(self.root, "github-issues", "owner/repo", by="b")
+        self.assertEqual(reflect.owner_ask_drift(self.root, "github-issues"), [])
+
+    def test_a_new_ask_after_the_baseline_still_surfaces(self):
+        # (b) an ask parked after the baseline is NOT covered — it fires
+        reflect.admit_owner_ask_baseline(self.root, by="a-session")
+        (self.root / "reports" / "0103-after.md").write_text(
+            NEW_AFTER_BASELINE, encoding="utf-8")
+        groups = reflect.unsurfaced_owner_ask_groups(self.root)
+        self.assertEqual([g["report_id"] for g in groups], ["0103-after"])
+        reflect.admit_surface(self.root, "github-issues", "owner/repo", by="b")
+        acts = reflect.owner_ask_drift(self.root, "github-issues")
+        self.assertEqual([a["act"] for a in acts], ["open"])
+        self.assertIn("0103-after", acts[0]["title"])
+        self.assertIn("worker node", acts[0]["body"])
+
+    def test_baseline_is_monotonic_history_not_retro_invalidated(self):
+        # a second baseline only quiets more; it never un-silences the first
+        reflect.admit_owner_ask_baseline(self.root, by="a-session")
+        (self.root / "reports" / "0103-after.md").write_text(
+            NEW_AFTER_BASELINE, encoding="utf-8")
+        reflect.admit_owner_ask_baseline(self.root, by="a-session")
+        self.assertEqual(reflect.unsurfaced_owner_ask_groups(self.root), [])
+
+
 class ShameHookTest(unittest.TestCase):
     """The floor, driven as it runs live: subprocess, stdin in, prose out,
     exit 0 always."""
@@ -291,6 +357,22 @@ class ShameHookTest(unittest.TestCase):
         self.assertEqual(st["turns"], 15)
         self.assertIn("[OWNER-ASK-SHAME]", loud)
         self.assertIn("15 TURNS", loud)
+
+    def test_baseline_silences_the_floor_but_a_new_ask_still_screams(self):
+        # (a) a baseline over the standing backlog: the floor is silent
+        reflect.admit_owner_ask_baseline(self.repo / ".ai-native", by="a-session")
+        code, out, state = self.run_hook(self.repo)
+        self.assertEqual(code, 0)
+        self.assertEqual(out.strip(), "")
+        self.assertEqual(state.get("turns"), 0)
+        # (b) a report parked AFTER the baseline: the floor screams it
+        (self.repo / ".ai-native" / "reports" / "0103-after.md").write_text(
+            NEW_AFTER_BASELINE, encoding="utf-8")
+        code, out, state = self.run_hook(self.repo)
+        self.assertEqual(code, 0)
+        self.assertIn("owner-ask-shame", out)
+        self.assertIn("0103-after", out)
+        self.assertEqual(state["turns"], 1)
 
     def test_fails_open_on_a_reportless_repo_and_garbage_stdin(self):
         with tempfile.TemporaryDirectory() as bare:
