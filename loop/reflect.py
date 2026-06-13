@@ -47,17 +47,21 @@ from loop.reconcile import (DEFAULT_ROOT, Fold, append_line, epic_of, glue_of,
                             receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 from loop.digest import digest as compute_digest
+from loop.owner_asks import owner_ask_groups
 
 REFLECTED_EVENT = "surface.reflected"
 PEN = "python .claude/skills/reflect/reflect.py"
 
 # The kinds table — the extension point (done-line 0020). A kind is a
 # named drift fold; a new kind joins as an entry here (plus rules to
-# enable it), never as a new system. Two kinds today: the owner's stamp
-# queue (drift, one issue per atom), and the post-merge divergence surface
+# enable it), never as a new system. Three kinds today: the owner's stamp
+# queue (drift, one issue per atom), the post-merge divergence surface
 # (divergence_drift, one AGGREGATE issue per divergence group, done-line
-# 0037). DRIFT_BY_KIND (below, after both folds) maps each to its fold.
-RULE_KINDS = ("owner-stamp-queue", "merge-divergences")
+# 0037), and the owner-ask backlog (owner_ask_drift, one aggregate issue
+# per report whose needs-you items reached no surface, done-line 0058 — so
+# an ad-hoc "awaiting bdo" cannot strand in a report he never opens).
+# DRIFT_BY_KIND (below, after the folds) maps each to its fold.
+RULE_KINDS = ("owner-stamp-queue", "merge-divergences", "owner-ask-backlog")
 
 # The surface kinds table (done-line 0030): the tongues the reflector
 # pen actually speaks — its translator table is keyed to exactly this
@@ -367,11 +371,61 @@ def divergence_drift(root, surface):
     return acts
 
 
+def owner_ask_drift(root, surface):
+    """The owner-ask-backlog kind (done-line 0058): a needs-you item written
+    only into a session report reaches bdo's inbox, instead of stranding in a
+    working-tree file he never opens (the hole report 0047's five invisible
+    taps exposed). One aggregate issue per report with parked asks — the
+    divergence grain (one per group, not one per item, bdo 2026-06-11) — keyed
+    by the group id in the artifact_hash slot so the gh translator and the
+    reflection records work unchanged. Open-only: a free-text ask carries no
+    log-backed 'answered' signal, so bdo dismisses it by his own gesture and
+    the mirror never reopens what it surfaced once. Pure; only the pen
+    applies. Raises on an unregistered surface, like the other folds."""
+    fold = Fold(root)
+    surfaces = registered_surfaces(fold)
+    if surface not in surfaces:
+        known = ", ".join(sorted(surfaces)) or "none registered"
+        raise ValueError(f"surface {surface!r} is not admitted ({known}); "
+                         f"register it: python -m loop.reflect register "
+                         f"--surface {surface} --address <owner/repo> --by <who>")
+    seen = reflections(fold, surface)
+    acts = []
+    for g in owner_ask_groups(root):
+        if (g["id"], "open") not in seen:
+            acts.append({"act": "open", "atom_id": g["report_id"],
+                         "artifact_hash": g["id"], "title": g["title"],
+                         "body": g["body"]})
+    return acts
+
+
+def surfaced_open_ids(fold):
+    """Every artifact (atom/group/ask) that an 'open' reflection record has
+    already named — on any surface. The ack-set the shame floor reads to know
+    what has reached bdo and what is still stranded."""
+    return {ev.get("artifact_hash") for ev in fold.events
+            if ev.get("type") == REFLECTED_EVENT and ev.get("act") == "open"}
+
+
+def unsurfaced_owner_ask_groups(root):
+    """Owner-ask groups no surface has been told — the durable hole the shame
+    beat screams. Surfaced means an 'open' reflection record carries the
+    group id (on any surface); until then the ask is parked invisibly and the
+    floor keeps screaming it. Read-only (I-3). A reportless tree short-circuits
+    before the log fold — absence is [], never a raise."""
+    groups = owner_ask_groups(root)
+    if not groups:
+        return []
+    surfaced = surfaced_open_ids(Fold(root))
+    return [g for g in groups if g["id"] not in surfaced]
+
+
 # A kind is a named drift fold (RULE_KINDS); this maps each to its fold, so
 # the beat (auto_plan) and status dispatch by kind instead of assuming one.
 DRIFT_BY_KIND = {
     "owner-stamp-queue": drift,
     "merge-divergences": divergence_drift,
+    "owner-ask-backlog": owner_ask_drift,
 }
 
 
