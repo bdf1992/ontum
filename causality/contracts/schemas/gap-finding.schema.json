@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ontum:causality/gap-finding",
+  "title": "GapFinding",
+  "description": "A place the vocabulary refuses to fit, folded by the audit. Like loop/gaps.py: each finding names a kind, a subject, why, and one concrete next move that is an existing pen's verb or a human call. The fold writes nothing and decides nothing (D-4).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "term", "why", "move"],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["unresolved-evidence", "ghost-term", "overloaded-term", "orphaned-term", "class-drift"],
+      "description": "unresolved-evidence: a citation points at nothing. ghost-term: claims a backing, none resolves. overloaded-term: >=2 incompatible senses. orphaned-term: a lone definition, no economy. class-drift: declared class != evidence-derived class."
+    },
+    "term": {"type": "string", "minLength": 1},
+    "why": {"type": "string", "minLength": 1, "description": "the divergence between a claim and the bytes, in one cold-reader line."},
+    "move": {"type": "string", "minLength": 1, "description": "the one concrete next step — an existing pen's verb or 'needs bdo'. Never a guess at a gh-shaped action."}
+  }
+}
