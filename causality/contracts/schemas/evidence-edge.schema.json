@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ontum:causality/evidence-edge",
+  "title": "EvidenceEdge",
+  "description": "A wire from a TermNode to a place its meaning is backed. The citation (ref + stratum + sense) is imported/authored; resolved + file_exists are folded by checking the cited substring against committed repo bytes. The bytes win: a hand-set resolved is ignored.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "from", "to", "stratum", "resolved", "file_exists", "ref", "record_kind"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^edge:[a-z0-9-]+:[0-9]+$"},
+    "from": {"type": "string", "pattern": "^term:[a-z0-9][a-z0-9-]*$"},
+    "to": {"type": "string", "pattern": "^evidence:", "description": "a SiteNode address (the cited file/record)."},
+    "stratum": {
+      "type": "string",
+      "enum": ["doctrine", "code", "log", "workflow", "poetic", "causality"],
+      "description": "which source-of-truth surface this citation lives in. doctrine/code/log/workflow/causality are CLAIMED strata: an unresolved claim is the ghost signal."
+    },
+    "sense": {
+      "type": ["string", "null"],
+      "description": "authored: the meaning-cluster this evidence supports. Distinct senses on one term, with an incompatible flag, mean overload."
+    },
+    "claim": {"type": "string", "description": "authored: one line on what this evidence shows a cold reader."},
+    "resolved": {"type": "boolean", "description": "DERIVED: the cited substring is present in the cited file's committed bytes."},
+    "file_exists": {"type": "boolean", "description": "DERIVED: the cited file is readable at all."},
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file"],
+      "properties": {
+        "file": {"type": "string", "description": "repo-relative path, or a log file under .ai-native/log/."},
+        "contains": {"type": "string", "description": "the stable substring that IS the citation's identity (line numbers drift; this does not)."},
+        "line": {"type": "integer", "minimum": 1, "description": "optional display hint only; resolution does not use it."}
+      }
+    },
+    "record_kind": {"const": "projected"}
+  },
+  "$comment": "Invalid: from not a term:* id; ref without a file; stratum outside the enum. Note 'contains' is required for any citation that should ever resolve (its absence guarantees resolved:false)."
+}

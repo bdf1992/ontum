@@ -1,0 +1,82 @@
+{
+  "seed": "ontum-terms.v0",
+  "note": "DECLARED INPUT, not truth. A human or the causality-data-integrator authors this; term_economy.py resolves each citation against committed repo bytes and classifies. Editing this file changes a claim, never a fact. The repo (doctrine, loop/*.py, the log, glyphs/, language/) is truth.",
+  "terms": [
+    {
+      "term": "atom",
+      "local_meaning": "In the loop substrate: a unit of work whose pipeline identity is the sha256 of its file bytes in .ai-native/atoms/; it moves through the pipeline as pulses cross seams.",
+      "global_meaning": "In ontum at large: the fundamental, named, bounded, provenance-carrying unit — the substrate's atom is the metabolism's version of the fabric's unit of meaning.",
+      "must_not_mean": [
+        "a row in a database (it is file bytes; editing the file is a NEW version that restarts the pipeline)",
+        "the physics atom or a generic 'small thing' — it carries a story, incidence, verdicts, and lineage"
+      ],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "doctrine", "file": "ai-native-loop-substrate.md", "line": 259, "contains": "**Atom** (the story is the value part", "claim": "the doctrine defines the atom's shape: story, concern_surface, incidence, verdicts, lineage"},
+        {"stratum": "code", "file": "loop/reconcile.py", "line": 196, "contains": "def load_atoms(root)", "claim": "code loads atoms from .ai-native/atoms/ and folds them through the pipeline"},
+        {"stratum": "log", "file": ".ai-native/log/events.jsonl", "contains": "atom.created", "claim": "atom.created is a real event kind on the append-only log"}
+      ]
+    },
+    {
+      "term": "receipt",
+      "local_meaning": "The durable record a node appends when it judges an atom version: (node, artifact_hash) is the idempotence key, so a re-run never double-acts (I-2).",
+      "global_meaning": "Provenance made append-only: every verdict in ontum is attributable, replayable, and never erased — history is never retro-invalidated.",
+      "must_not_mean": [
+        "a UI toast or a log line you can delete (it is appended, never consumed; superseding, never erasure)",
+        "a payment receipt"
+      ],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "doctrine", "file": "ai-native-loop-substrate.md", "line": 547, "contains": "Receipt shape", "claim": "the doctrine specifies the receipt's fields (event_id, node, artifact_hash, verdict, ...)"},
+        {"stratum": "code", "file": "loop/reconcile.py", "line": 294, "contains": "def make_receipt", "claim": "code constructs receipts with the content-hashed idempotence key"},
+        {"stratum": "log", "file": ".ai-native/log/receipts.jsonl", "contains": "\"id\":\"rcp.", "claim": "rcp.* records are real on the receipts log"}
+      ]
+    },
+    {
+      "term": "seam",
+      "local_meaning": "In the loop: a named, subscribable event surface between pipeline stages (author-to-value, value-to-placement, ...) where atoms announce state changes and nodes append verdicts.",
+      "global_meaning": "The boundary where two things are joined and the join itself is first-class — a failure to fit is data, not an error.",
+      "must_not_mean": [
+        "a boolean joined/not-joined flag",
+        "ONLY the loop event-surface OR ONLY the phase-2 Site-primitive — the word names both, and they are not the same object"
+      ],
+      "claimed_class": "overloaded",
+      "evidence": [
+        {"stratum": "doctrine", "file": "ai-native-loop-substrate.md", "line": 458, "contains": "A seam is a durable, subscribable event surface", "sense": "loop-event-surface", "claim": "the doctrine defines seam as the loop's event surface"},
+        {"stratum": "code", "file": "loop/reconcile.py", "line": 34, "contains": "\"seam\": \"author-to-value\"", "sense": "loop-event-surface", "claim": "the PIPELINE names seams between stages"},
+        {"stratum": "log", "file": ".ai-native/log/events.jsonl", "contains": "\"seam\":\"author-to-value\"", "sense": "loop-event-surface", "claim": "events on the log carry a seam field"},
+        {"stratum": "doctrine", "file": "glyphs/knolling.md", "line": 147, "contains": "**Seam** | SETTLED | A primitive that is a join", "sense": "phase2-site-primitive", "incompatible": true, "claim": "in the phase-2 vocabulary Seam is a geometric Site primitive (a transition-cocycle), SETTLED — a DIFFERENT object from the loop's event surface"}
+      ]
+    },
+    {
+      "term": "node",
+      "local_meaning": "A summoned, mortal judging position in the pipeline: it blinks in at a place, reads the local environment, does one bounded thing, writes one receipt through the one pen, and dissolves (D-10). Mock until a node_real admission names a real one.",
+      "global_meaning": "The system's standing offer — work is answered by summoning, not staffed by long-lived processes; a node is where a kind of meaning gets its first sensor.",
+      "must_not_mean": [
+        "a long-lived server/daemon you babysit (it is summoned, not staffed)",
+        "a graph vertex in the abstract — a node here carries a prompt, a hash, a rung, and authority"
+      ],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "doctrine", "file": "ai-native-loop-substrate.md", "line": 101, "contains": "D-10. Nodes are summoned, not staffed", "claim": "the doctrine's D-10 defines the node as a summoned standing offer"},
+        {"stratum": "code", "file": "loop/node.py", "line": 68, "contains": "def judge(root, atom_id, node, verdict, reason)", "claim": "the one pen by which a summoned node writes its verdict"},
+        {"stratum": "log", "file": ".ai-native/log/admissions.jsonl", "contains": "\"type\":\"node_real\"", "claim": "node_real admissions are how a mock node becomes real, read from the log at runtime"}
+      ]
+    },
+    {
+      "term": "arc",
+      "local_meaning": "Two things share this word: (1) the arc_confirmed admission — bdo's standing stamp that authorizes every piece under an epic; (2) the prose 'arc' field in an epic JSON file — a narrative of intent that no code enforces.",
+      "global_meaning": "The level the owner steers at — not tickets, not pieces, but the confirmed direction one stamp authorizes many lands of.",
+      "must_not_mean": [
+        "a per-ticket approval (it is the level ABOVE pieces; one confirmation authorizes many)",
+        "ONLY the enforced admission OR ONLY the prose field — the enforced sense and the documentary sense share one word"
+      ],
+      "claimed_class": "overloaded",
+      "evidence": [
+        {"stratum": "code", "file": "loop/reconcile.py", "line": 168, "contains": "def arc_confirmation", "sense": "arc-as-confirmed-admission", "claim": "code reads the active arc_confirmed admission for an epic"},
+        {"stratum": "log", "file": ".ai-native/log/admissions.jsonl", "contains": "\"type\":\"arc_confirmed\"", "sense": "arc-as-confirmed-admission", "claim": "arc_confirmed is a real, load-bearing admission kind on the log"},
+        {"stratum": "workflow", "file": ".ai-native/epics/epic.causality-surface.json", "contains": "\"arc\":", "sense": "arc-as-prose-narrative", "incompatible": true, "claim": "every epic JSON carries a prose 'arc' field — documentary intent, with no enforcement path on the log"}
+      ]
+    }
+  ]
+}

@@ -8,6 +8,11 @@
 .ai-native/** -text
 *.jsonl -text
 
+# The term-economy projection is a byte-deterministic fold artifact
+# (done-line 0060): re-running term_economy.py must reproduce it exactly,
+# so its bytes are pinned like the log's — never eol-rewritten.
+causality/examples/*.json -text
+
 # Append-only logs: parallel branches only ever append; union-merge
 # keeps both tails instead of conflicting.
 .ai-native/log/*.jsonl merge=union
