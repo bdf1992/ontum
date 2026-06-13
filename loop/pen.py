@@ -15,8 +15,15 @@ Stdlib only. Ends with a clear result on stdout (D-6): report | needs-you.
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
+
+# The fleet-safe id authority is the placement reach-tool under .claude/
+# (done-line 0023): it folds record ids over ALL git refs. Git-reach lives
+# there, never in pure-stdlib loop/ (placement's own rule), so the pen
+# delegates to it by subprocess and never imports git of its own.
+_PLACEMENT = Path(__file__).resolve().parents[1] / ".claude" / "hooks" / "placement.py"
 
 # the supersede ritual records its act on the log; the loop's one append
 # (done-line 0033). Imported lazily inside the verb so the creation paths
@@ -42,9 +49,41 @@ def load_config(dirpath):
     return json.loads(cfg.read_text(encoding="utf-8"))
 
 
+def _fleet_next_id(dirpath):
+    """The fleet-safe next id from the placement reach-tool, or None on any
+    failure. Placement folds record ids over every git ref, so the id is
+    clear across the whole shared-tree fleet, not just this checkout. The
+    pen only delegates: git-reach stays in .claude/placement, and a broken
+    sensor returns None so the caller falls back — it never blocks a mint."""
+    if not _PLACEMENT.exists():
+        return None
+    d = Path(dirpath).resolve()
+    try:
+        out = subprocess.run(
+            [sys.executable, str(_PLACEMENT), "next", str(d), "--quiet"],
+            cwd=str(d) if d.is_dir() else None,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=15)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    m = re.search(r"\b(\d{4})\b", out.stdout)
+    return int(m.group(1)) if m else None
+
+
 def next_id(dirpath):
-    """The fold: the next id is one past the highest on disk — never
-    re-used, never guessed (two 0011s taught us)."""
+    """The next id, fleet-safe: one past the highest record id on ANY git
+    ref (via the placement reach-tool), falling back to the local
+    directory fold when git or placement is unreachable. Local-only
+    allocation races a parallel fleet — two sessions minting the same id,
+    the colliding 0011s and the 0057/0058/0059 cross-branch renumber saga
+    this allocator closes; the commit fence caught those reactively, this
+    claims a clear id up front. The write guard already folds the fleet
+    this way; now the pen and the guard agree on the next id."""
+    fleet = _fleet_next_id(dirpath)
+    if fleet is not None:
+        return fleet
     ids = [int(m.group(1)) for p in dirpath.iterdir()
            for m in [NUMBERED.match(p.name)] if m]
     return max(ids) + 1 if ids else 1

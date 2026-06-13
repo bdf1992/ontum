@@ -122,7 +122,11 @@ def cmd_check(ns):
 
 
 def cmd_next(ns):
-    print(f"result: report — fleet-safe next id in {ns.dir} is {next_id(ns.dir):04d}")
+    nid = next_id(ns.dir)
+    if getattr(ns, "quiet", False):
+        print(f"{nid:04d}")  # machine output: the records pen parses this
+    else:
+        print(f"result: report — fleet-safe next id in {ns.dir} is {nid:04d}")
     return 0
 
 
@@ -134,6 +138,8 @@ def main(argv=None):
     c.set_defaults(func=cmd_check)
     n = sub.add_parser("next", help="the fleet-safe next id (folds all refs, not just local)")
     n.add_argument("dir")
+    n.add_argument("--quiet", action="store_true",
+                   help="print only the zero-padded id (for tooling, e.g. the records pen)")
     n.set_defaults(func=cmd_next)
     ns = ap.parse_args(argv)
     return ns.func(ns)
