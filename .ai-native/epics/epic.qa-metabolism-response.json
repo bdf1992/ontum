@@ -1,0 +1,37 @@
+{
+  "epic": {
+    "id": "epic.qa-metabolism-response",
+    "owner": "bdo",
+    "status": "proposed",
+    "arc": "The foreign review of exports/qa-metabolism/ comes home as work. Each finding is a proposed atom under this one arc; bdo's confirm-arc queues them all, his decline retires them \u2014 either way the review stops stranding as context.",
+    "context": "Returned through the inbound envoy seam (done-line 0057) against seal 8538e3ef1cd0\u2026 on exports/log.jsonl. The reviewer saw a sealed snapshot, so every finding is PROPOSED and unverified: the value gate judges each story and a session verifies its claim against the live repo before any is acted on.",
+    "value": "A foreign review becomes value-gated, queued work instead of read-only context \u2014 the return leg the one-way envoy lacked.",
+    "horizon": "Every finding judged by the value gate and either carried under bdo's confirmed arc or refused; none hand-carried into a doc.",
+    "pieces": [
+      {
+        "atom": "atom.qa-metabolism-resp-vanity-count.v0",
+        "glue": "The refuse-token count (370) featured in the sealed package is a vanity metric: it counts a proxy, not the property, the way coverage% does. Assertion density without per-assertion messages is Assertion Roulette. Retire the count; keep asserted, message-bearing negative-path coverage instead."
+      },
+      {
+        "atom": "atom.qa-metabolism-resp-mutation-honesty.v0",
+        "glue": "The anti-constant grep kills one mutant in one file; that is not a mutation score. Either run a real mutation lane and report an actual score, or keep the grep as a labelled smoke-check and stop calling it oracle-gap coverage. No third framing."
+      },
+      {
+        "atom": "atom.qa-metabolism-resp-dual-key-the-handles.v0",
+        "glue": "Pin every QA handle to its standard-practice name (log-is-truth to event-sourcing/CQRS, atom=sha256 to content-addressed storage, section-10 to negative-path testing) so the repo inherits solved failure-modes instead of rediscovering them in retros."
+      },
+      {
+        "atom": "atom.qa-metabolism-resp-non-bypassable-delta.v0",
+        "glue": "The non-overridable enforcement (atomless PR refuses, mock-only receipt refuses, enforced in the merge fold not a settings toggle) exceeds industry baseline, where quality gates ship with admin override. Name it in standard terms and protect it."
+      },
+      {
+        "atom": "atom.qa-metabolism-resp-stub-never-real-delta.v0",
+        "glue": "Mock-vs-real as an auditable runtime admission that screams every turn until resolved (mock-shame) is above the baseline naming-convention hygiene for test doubles. Protect it."
+      },
+      {
+        "atom": "atom.qa-metabolism-resp-test-organ-skill.v0",
+        "glue": "Build a repeatable test-QA pipeline as a skill: a definition-of-done for tests, a type-dispatched review rubric, a non-bypassable gate, and a self-surfacing backlog, composing standard components (linter, LLM-review, mutation lane, metrics report). Its value is the composition and enforcement, not invented parts."
+      }
+    ]
+  }
+}

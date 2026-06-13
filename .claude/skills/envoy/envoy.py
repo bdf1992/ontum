@@ -19,6 +19,8 @@ Verbs:
     seal     gate, stamp the manifest, append the receipt to log.jsonl
     render   mermaid blocks to SVG beside the package, if a renderer exists
     list     packages on disk against the disclosure ledger
+    respond  the return leg (0059): a foreign review lands as value-gated
+             atoms under one proposed arc — work, not stranded context
 
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report`: it names what the
@@ -1088,6 +1090,207 @@ def cmd_list(ns):
     return 0
 
 
+# ------------------------------------------------------- respond (inbound)
+#
+# The envoy was one-way: new -> plan -> build -> check -> seal -> list all push
+# outward, and the ledger recorded only what left. So a foreign reviewer's
+# response had nowhere to land as *work* — it stranded in read-only
+# docs/sources/ (context, not material) or as report prose the queue never
+# saw. That is retro 0037 one layer up. `respond` is the return leg
+# (done-line 0059): a review lands as value-gated atoms on the log, grouped
+# under one *proposed* arc so a single confirm-arc gesture queues the whole
+# review (bdo confirms arcs, not pieces). No new fold machinery — the atoms
+# enter the existing auto-announce -> real value-gate -> gaps pipeline.
+
+
+def find_seal(root, package):
+    """The latest seal receipt for a package on the disclosure ledger, or
+    None. The proof it was ever sent: you cannot receive a response to a
+    package that was never sealed (the §10 teeth of the inbound seam)."""
+    found = None
+    for entry in read_jsonl(root / "exports" / LOG_NAME):
+        if entry.get("package") == package and entry.get("package_hash"):
+            found = entry  # the latest seal wins
+    return found
+
+
+def parse_finding(spec):
+    """'slug=story' -> (slug, story). The slug is a kebab-case address; the
+    story is what the value gate will judge. Returns None on a malformed
+    finding so the caller can refuse with the form."""
+    slug, sep, story = spec.partition("=")
+    slug, story = slug.strip(), story.strip()
+    if not sep or not SLUG.match(slug) or not story:
+        return None
+    return slug, story
+
+
+def response_atom_bytes(package, seal, slug, story, epic_id):
+    """A foreign finding as a value-gated atom: a PROPOSED story (a foreign
+    claim, not yet judged) carrying its provenance back to the package and
+    the seal it answers. Returns (atom_id, the file's bytes) — identity is
+    the sha256 of exactly these bytes."""
+    aid = f"atom.{package}-resp-{slug}.v0"
+    atom = {
+        "atom": {
+            "id": aid,
+            "story": {
+                "text": story,
+                "value_confidence": "proposed",
+                "owner_stamp": "pending",
+            },
+            "concern_surface": "review",
+            "incidence": {
+                "serves": [epic_id],
+                "touches": [],
+                "must_not_collide_with": [],
+                "hands_off_to": [],
+            },
+            "desired_state": "value_confirmed",
+            "verdicts": {"value_gate": "pending"},
+            "lineage": {
+                "prompt_versions": [],
+                "source_artifacts": [
+                    f"exports/{package}/",
+                    f"seal:{seal.get('package_hash', '')[:12]}",
+                ],
+                "receipts": [],
+            },
+        },
+        "_note": (
+            f"A foreign review's finding, returned to package '{package}' "
+            "and landed as proposed work through the inbound envoy seam "
+            "(done-line 0059). The value gate judges the story; bdo's "
+            f"confirm-arc on '{epic_id}' queues the whole review at once. "
+            "Never mutated — the fold over .ai-native/log/ is the live "
+            "state (D-5)."),
+    }
+    return aid, (json.dumps(atom, indent=2) + "\n").encode("utf-8")
+
+
+def response_epic_bytes(package, seal, pieces):
+    """One PROPOSED arc grouping the whole review, so a single confirm-arc
+    queues it — never N owner-stamps. `pieces` is [(atom_id, story), ...].
+    Returns (epic_id, the file's bytes)."""
+    eid = f"epic.{package}-response"
+    epic = {
+        "epic": {
+            "id": eid,
+            "owner": "bdo",
+            "status": "proposed",
+            "arc": (
+                f"The foreign review of exports/{package}/ comes home as "
+                "work. Each finding is a proposed atom under this one arc; "
+                "bdo's confirm-arc queues them all, his decline retires "
+                "them — either way the review stops stranding as context."),
+            "context": (
+                "Returned through the inbound envoy seam (done-line 0059) "
+                f"against seal {seal.get('package_hash', '')[:12]}… on "
+                "exports/log.jsonl. The reviewer saw a sealed snapshot, so "
+                "every finding is PROPOSED and unverified: the value gate "
+                "judges each story and a session verifies its claim against "
+                "the live repo before any is acted on."),
+            "value": (
+                "A foreign review becomes value-gated, queued work instead "
+                "of read-only context — the return leg the one-way envoy "
+                "lacked."),
+            "horizon": (
+                "Every finding judged by the value gate and either carried "
+                "under bdo's confirmed arc or refused; none hand-carried "
+                "into a doc."),
+            "pieces": [{"atom": aid, "glue": story} for aid, story in pieces],
+        },
+    }
+    return eid, (json.dumps(epic, indent=2) + "\n").encode("utf-8")
+
+
+def cmd_respond(ns):
+    root = repo_root()
+    package = ns.package
+
+    # §10: a response to something never sent refuses.
+    seal = find_seal(root, package)
+    if seal is None:
+        print(f"result: needs-you — no seal receipt for {package!r} on "
+              f"exports/{LOG_NAME}; you cannot receive a response to a "
+              "package that was never sent. Seal and send it first.")
+        return 2
+
+    findings = []
+    for raw in (ns.finding or []):
+        parsed = parse_finding(raw)
+        if parsed is None:
+            print(f"result: needs-you — finding {raw!r} is not "
+                  "'slug=story': the slug is a kebab-case address, the story "
+                  "is the sentence the value gate judges.")
+            return 2
+        findings.append(parsed)
+    if not findings:
+        print("result: needs-you — a response carries at least one "
+              "--finding 'slug=story'; an empty response is not a response.")
+        return 2
+    slugs = [s for s, _ in findings]
+    if len(set(slugs)) != len(slugs):
+        print("result: needs-you — two findings share a slug; each is an "
+              "address and must be unique within the response.")
+        return 2
+
+    atoms_dir = root / ".ai-native" / "atoms"
+    epics_dir = root / ".ai-native" / "epics"
+
+    # build every atom, refusing any collision with existing atom bytes
+    # (editing an atom restarts its pipeline — never clobber one).
+    planned, changed = [], False
+    for slug, story in findings:
+        aid, data = response_atom_bytes(package, seal, slug, story,
+                                        f"epic.{package}-response")
+        path = atoms_dir / f"{aid}.json"
+        if path.exists() and path.read_bytes() != data:
+            print(f"result: needs-you — {aid} already exists with different "
+                  "bytes; editing an atom restarts its pipeline. Pick a fresh "
+                  "slug or bump the version deliberately.")
+            return 2
+        if not path.exists():
+            changed = True
+        planned.append((aid, story, path, data))
+
+    eid, epic_data = response_epic_bytes(
+        package, seal, [(aid, story) for aid, story, _, _ in planned])
+    epic_path = epics_dir / f"{eid}.json"
+    if not epic_path.exists() or epic_path.read_bytes() != epic_data:
+        changed = True
+
+    if not changed:
+        print(f"result: done — already received: {len(planned)} finding(s) "
+              f"under {eid}; re-responding with unchanged bytes is a no-op.")
+        return 0
+
+    # all clear — write the atoms, then the proposed epic, then the receipt.
+    atoms_dir.mkdir(parents=True, exist_ok=True)
+    epics_dir.mkdir(parents=True, exist_ok=True)
+    for _, _, path, data in planned:
+        path.write_bytes(data)
+    epic_path.write_bytes(epic_data)
+
+    append_line(root / "exports" / LOG_NAME, {
+        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "kind": "response_received",
+        "package": package,
+        "answers_seal": seal.get("package_hash", ""),
+        "by": ns.by,
+        "epic": eid,
+        "atoms": [aid for aid, _, _, _ in planned],
+    })
+
+    print(f"received: {len(planned)} finding(s) atomized under {eid} "
+          "(proposed) — the value gate judges each story; one confirm-arc "
+          "queues them all.")
+    print(f"result: report — the response is queued work, not context. bdo "
+          f"admits the whole review with one gesture: loop.node confirm-arc "
+          f"--epic {eid} --by bdo.")
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="envoy.py", description=__doc__,
@@ -1133,6 +1336,15 @@ def main(argv=None):
 
     lst = verbs.add_parser("list", help="packages on disk vs the ledger")
     lst.set_defaults(func=cmd_list)
+
+    resp = verbs.add_parser("respond", help="land a foreign review as "
+                            "value-gated atoms (the inbound seam, 0059)")
+    resp.add_argument("package")
+    resp.add_argument("--finding", action="append", metavar="SLUG=STORY",
+                      help="one finding -> one proposed atom; repeatable")
+    resp.add_argument("--by", default="claude",
+                      help="who lands the response — receipts are signed")
+    resp.set_defaults(func=cmd_respond)
 
     ns = parser.parse_args(argv)
     return ns.func(ns)

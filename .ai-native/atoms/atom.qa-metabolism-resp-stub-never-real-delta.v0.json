@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.qa-metabolism-resp-stub-never-real-delta.v0",
+    "story": {
+      "text": "Mock-vs-real as an auditable runtime admission that screams every turn until resolved (mock-shame) is above the baseline naming-convention hygiene for test doubles. Protect it.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.qa-metabolism-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/qa-metabolism/",
+        "seal:8538e3ef1cd0"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'qa-metabolism' and landed as proposed work through the inbound envoy seam (done-line 0057). The value gate judges the story; bdo's confirm-arc on 'epic.qa-metabolism-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

@@ -34,7 +34,7 @@ can vary; the owner does not.
 
 ## Quickstart
 
-The loop is pure stdlib — nothing to install. Run everything from the repo root.
+The loop is stdlib-first — nothing to install today. Run everything from the repo root.
 
 ```sh
 # the fold over the log

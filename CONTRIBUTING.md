@@ -66,7 +66,10 @@ up the discipline without re-deriving it.
   2026-06-10 the shared checkout switched branches four times under the
   owner's explorer while merged work seemed to vanish, and local `main`
   proved 38 commits behind — it had never been pulled.)*
-- **Stdlib only** in `loop/` for now. No broker, no daemon, no network. Every
+- **Stdlib-first** in `loop/`; local-first always. No broker, no daemon, no
+  network at runtime. The blanket no-dependency ban is lifted (bdo,
+  2026-06-12): a dependency that creates clear value is admissible by common
+  sense — prefer stdlib, and keep any dep offline and named. Every
   invocation ends with a clear stdout result: `done` | `report` | `needs-you`.
 
 ## Before you push
