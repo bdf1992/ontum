@@ -1,0 +1,41 @@
+{
+  "atom": {
+    "id": "atom.causality-feature-audit.v0",
+    "story": {
+      "text": "As bdo's session, I need an honest, hands-on verdict on whether Causality has the editing, data, and persistence to be a usable tool or is still a toy — run live in a real browser against real local inference, not read off the code — because a beautiful demo can hide the absence of working memory.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Causality feature audit: toy-vs-tool, run live",
+      "value": "The browser-driven companion to the desk-read reality audit (PR #114): the foundry canvas served, infer-bridge started with real ollama inference, canvas.html driven through its __cz debug handle with screenshots at each state. The verdict is grounded in observed behavior, not inferred from source.",
+      "why_now": "bdo asked to launch Causality and run a quality scan and feature audit. It stacks on #114 (the causality/ module); landed after it, this reduces to the single audit doc.",
+      "if_accepted": "A grounded verdict — a proven grammar with a beautiful body and no working memory: today a toy, an extraordinary one. Editing shallow (only the label is editable; the prompt that defines an inference node is invisible). Data half-real (inference works end-to-end; the canvas has no ingress of the real ontum log). Persistence absent and decisive (no save/load/export; every reload is total loss). Plus a prioritized punch list mapped onto epic.causality-surface's own waves.",
+      "if_rejected": "Causality's toy-vs-tool gap stays a felt impression instead of an evidenced punch list, and the P0 changes that flip the verdict stay unprioritized.",
+      "cost_of_wrong_call": "Low: the audit is a document — observation written down with embedded evidence; it moves no truth and gates nothing.",
+      "mechanism": "causality/audit/feature-audit.md, the hands-on companion to reality-audit.md. Evidence embedded inline (screenshots foundry-side at experience-foundry/shots/audit-01..05) so the doc stands alone; the punch list maps to the epic's waves rather than inventing a new plan.",
+      "reading": [
+        "causality/audit/feature-audit.md",
+        ".ai-native/epics/epic.causality-surface.json"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": ["causality/audit/feature-audit.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["causality/audit/feature-audit.md"]
+    }
+  },
+  "_note": "Birth record for the Causality feature audit, authored to adopt PR #118 into the loop (bdo, 2026-06-13). Stacks on atom.causality-term-economy.v0. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
