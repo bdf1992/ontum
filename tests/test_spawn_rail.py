@@ -49,6 +49,45 @@ class TestParsing(unittest.TestCase):
         self.assertFalse(spawn.is_headless_claude("echo claude is great"))
 
 
+class TestUnbrandedNodeActDenied(unittest.TestCase):
+    """The prevention half (2026-06-13): an unbranded spawn that performs a
+    node-only act is refused — the accident where a session filled the merge-node
+    seat with a plain Agent. A node-fill must claim a node identity to reach the
+    land/judge pens; a plain helper never does, so the deny is surgical."""
+
+    def test_unbranded_merge_node_land_is_refused(self):
+        # the exact accident: spawn instructed to run `pr.py land ... --by
+        # merge-node.claude.v1`, no brand.
+        reason = spawn.unbranded_nodeact_refusal({"prompt":
+            "be the merge-node and land PR 115:\n"
+            "python .claude/skills/branch-ritual/pr.py land --epic epic.x "
+            "--by merge-node.claude.v1 115"})
+        self.assertIsNotNone(reason)
+        self.assertIn("ontum-node:", reason)
+
+    def test_unbranded_gate_judge_is_refused(self):
+        self.assertIsNotNone(spawn.unbranded_nodeact_refusal(
+            {"prompt": "run python -m loop.node judge --node value-gate.claude.v1"}))
+
+    def test_a_branded_node_act_is_not_refused_here(self):
+        # branded -> this refusal stands down; node_spawn_refusal governs it.
+        self.assertIsNone(spawn.unbranded_nodeact_refusal(
+            {"prompt": "ontum-node: merge-node.claude.v1\n"
+                       "pr.py land --epic epic.x --by merge-node.claude.v1 115"}))
+
+    def test_a_plain_helper_spawn_passes(self):
+        # the false-positive guard: a research spawn that touches none of the
+        # node-only verbs is not a node-fill and must not be denied.
+        self.assertIsNone(spawn.unbranded_nodeact_refusal(
+            {"prompt": "explore the repo and summarise how the gateway folds the log"}))
+
+    def test_by_bdo_is_not_a_node_identity(self):
+        # `--by bdo` is the owner stamping a pen directly, not a node-fill — it
+        # must not trip the node-identity signal (no `.<class>.v<n>`).
+        self.assertIsNone(spawn.node_act_of(
+            {"prompt": "register a mind: loop.minds register --backing env:X --by bdo"}))
+
+
 class TestRefusalAgainstRepo(unittest.TestCase):
     """The refusal half, hermetic: a pinnable node on an empty ladder is
     refused for want of a rung (a temp root, so bdo's live grants — #89/#91,
@@ -133,6 +172,23 @@ class TestHook(unittest.TestCase):
         self.assertEqual(entry["status"], "spawn")
         self.assertEqual(entry["node"], "value-gate.claude.v1")
         self.assertTrue(entry["prompt_hash"])
+
+    def test_unbranded_node_fill_spawn_is_denied_by_the_hook(self):
+        # the accident, end to end: the live PreToolUse hook refuses an
+        # unbranded merge-node spawn (exit 2) and names the brand it needs.
+        proc = self._invoke({"tool_name": "Agent", "session_id": "s1",
+                             "tool_input": {"description": "land PR 115",
+                                            "prompt": "pr.py land --epic epic.x "
+                                            "--by merge-node.claude.v1 115"}})
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("ontum-node:", proc.stderr)
+        self.assertEqual(self._entries()[0]["status"], "spawn-denied-unbranded")
+
+    def test_plain_helper_agent_still_passes_the_hook(self):
+        proc = self._invoke({"tool_name": "Agent", "session_id": "s1",
+                             "tool_input": {"prompt": "search for the term economy doc"}})
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(self._entries()[0]["status"], "spawn-unbranded")
 
     def test_headless_claude_is_a_spawn(self):
         proc = self._invoke({"tool_name": "Bash", "session_id": "s1",
