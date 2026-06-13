@@ -1,0 +1,46 @@
+{
+  "atom": {
+    "id": "atom.causality-term-economy.v0",
+    "story": {
+      "text": "As an AI keeping ontum's vocabulary honest, I need Causality to be a living, evidence-backed witness over the repo's own terminology — a surface that shows whether a term is alive, dead, overloaded, or pretending — because a handle severed from its evidence costs real money, and the system has no way today to tell a minted term from a ghost.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Causality as a term-economy witness",
+      "value": "The terminology-economy slice of epic.causality-surface: a pure read-only fold that takes a declared seed of terms and their candidate citations, resolves each citation against committed repo bytes by stable substring, and classifies each term by which evidence strata actually resolve — minted-runtime, minted-doctrine, minted-workflow, projected, proposed, poetic, overloaded, orphaned, or ghost.",
+      "why_now": "bdo handed this session a fully-shaped /goal: make Causality a living witness over ontum's terminology, on a dedicated branch until validated to fold into main. It reads epic.the-field's fold and the glyph/language surfaces as evidence rather than double-building them (the §10 don't-double-build line).",
+      "if_accepted": "Causality gains its first real sensor over the vocabulary: atom/receipt/node resolve minted-runtime; seam and arc surface as overloaded (two real senses each), each named as a gap to split. The repo stays truth; the seed is only a claim; promotion past proposed stays bdo's (D-4).",
+      "if_rejected": "The vocabulary keeps drifting unwitnessed — a minted term and a ghost look the same until a retro finds the cost.",
+      "cost_of_wrong_call": "Low: term_economy.py is a pure read-only fold (no writes but the one explicit projection regeneration); retiring it deletes files the log never depended on.",
+      "mechanism": "causality/term_economy.py in the loop/gaps.py and census.py grain — stdlib, no network. Citations resolve by substring (an absent substring is exactly the ghost signal); a term is never minted by appearing here. Pinned by tests that prefer refuse-to-fit: no evidence can never mint, a ghost citation is flagged, two incompatible senses surface as overloaded, the projection reproduces byte-for-byte, and a fabricated classifier fails all three refusals.",
+      "reading": [
+        ".ai-native/done/0060-causality-term-economy.md",
+        "causality/term_economy.py",
+        ".ai-native/epics/epic.causality-surface.json"
+      ]
+    },
+    "concern_surface": "language",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": ["causality/term_economy.py", "causality/CLAUDE.md", ".gitattributes"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0060-causality-term-economy.md",
+        "causality/term_economy.py"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record for the causality term-economy witness, authored to adopt PR #114 into the loop (bdo: 'I would like the orphans to be adopted', 2026-06-13). Never mutated; current verdicts are the fold over .ai-native/log/ (D-5)."
+}
