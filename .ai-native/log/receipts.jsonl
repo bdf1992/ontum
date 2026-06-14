@@ -133,3 +133,4 @@
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/handoff-correction","id":"rcp.merge.126","kind":"merge","node":"merge-node.claude.v1","pr":126,"ts":"2026-06-14T21:09:02Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/pen-carbon-copy","id":"rcp.merge.128","kind":"merge","node":"merge-node.claude.v1","pr":128,"ts":"2026-06-14T21:09:14Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/standing-surface","id":"rcp.merge.133","kind":"merge","node":"merge-node.claude.v1","pr":133,"ts":"2026-06-14T21:09:22Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/async-signal-surfacing","id":"rcp.merge.143","kind":"merge","node":"merge-node.claude.v1","pr":143,"ts":"2026-06-14T22:14:35Z","verdict":"landed"}
