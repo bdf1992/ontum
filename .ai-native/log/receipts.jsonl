@@ -129,3 +129,4 @@
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/slowloop-proposer","id":"rcp.merge.138","kind":"merge","node":"merge-node.claude.v1","pr":138,"ts":"2026-06-14T15:52:29Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/summon-slowloop","id":"rcp.merge.139","kind":"merge","node":"merge-node.claude.v1","pr":139,"ts":"2026-06-14T16:02:08Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/slowloop-report","id":"rcp.merge.140","kind":"merge","node":"merge-node.claude.v1","pr":140,"ts":"2026-06-14T16:06:00Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/goal-skill-outcome-pressure","id":"rcp.merge.124","kind":"merge","node":"merge-node.claude.v1","pr":124,"ts":"2026-06-14T21:08:49Z","verdict":"landed"}
