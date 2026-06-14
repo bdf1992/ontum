@@ -1,10 +1,14 @@
-"""Tests for the write pen and guard against done-line 0013:
+"""Tests for the write pen and guard (done-lines 0013, 0070):
 the guard denies creation in ungoverned directories (no CLAUDE.md below
-the root), denies wrong-next ids, malformed names, and missing required
-sections in records directories carrying .pen.json — each refusal naming
-the paved path — and passes edits, dotfiles, CLAUDE.md founding, files
-outside the repo, and garbage stdin; the pen allocates ids from the
-directory fold, scaffolds the required sections, and writes LF bytes."""
+the root), and in a records directory carrying .pen.json it allows a raw
+Write only as a faithful CARBON COPY of the pen's output — refusing a
+wrong-next id, a malformed name, missing required sections, a CRLF twin,
+a missing trailing newline, and an in-file heading that drifts from the
+filename id — each refusal naming the paved path; it passes edits,
+dotfiles, CLAUDE.md founding, files outside the repo, and garbage stdin.
+The pen allocates ids from the (fleet-safe) fold, scaffolds the required
+sections, and writes LF bytes — and self-checks its own output against
+the one shared carbon-copy definition (test_pen.py)."""
 
 import json
 import os
@@ -75,20 +79,42 @@ class WriteGuardTest(unittest.TestCase):
         self.assertEqual(self.guard(self.root / "void" / "CLAUDE.md")[0], 0)
 
     def test_records_form_holds_the_line(self):
-        # right next id with the form: passes
+        # a faithful carbon copy at the right id with the form: passes
         self.assertEqual(self.guard(self.root / "rec" / "0002-next.md", GOOD_BODY)[0], 0)
-        # wrong next id: refused, fold named
+        # wrong next id: refused, the fleet-safe fold named
         code, err = self.guard(self.root / "rec" / "0004-skip.md", GOOD_BODY)
         self.assertEqual(code, 2)
-        self.assertIn("next id here is 0002", err)
+        self.assertIn("fleet-safe next id is 0002", err)
         # malformed name: refused by pattern
         code, err = self.guard(self.root / "rec" / "0002_Bad.md", GOOD_BODY)
         self.assertEqual(code, 2)
-        self.assertIn("does not fit this directory's form", err)
+        self.assertIn("does not fit the form", err)
         # missing required sections: refused, pen named
         code, err = self.guard(self.root / "rec" / "0002-empty.md", "just text\n")
         self.assertEqual(code, 2)
-        self.assertIn("required section(s) missing", err)
+        self.assertIn("missing required section", err)
+        self.assertIn("loop.pen", err)
+
+    def test_carbon_copy_refuses_what_the_pen_would_never_write(self):
+        # the §10 test: each of these is a locally-fine file that refuses to
+        # fit, because it is NOT a byte-faithful copy of the pen's output.
+        rec = self.root / "rec" / "0002-next.md"
+        # 1) CRLF twin of the passing body — identical text, Windows line ends.
+        #    The pen writes LF only; CRLF breaks .ai-native byte-identity.
+        code, err = self.guard(rec, GOOD_BODY.replace("\n", "\r\n"))
+        self.assertEqual(code, 2)
+        self.assertIn("LF only", err)
+        # 2) no trailing newline — the pen always terminates with LF
+        code, err = self.guard(rec, GOOD_BODY.rstrip("\n"))
+        self.assertEqual(code, 2)
+        self.assertIn("end with a newline", err)
+        # 3) in-file heading disagrees with the filename id (0099 vs 0002) —
+        #    the pen stamps the heading from the id it claimed; these can't drift
+        drift = "# Done-line 0099 — next\n\n> **Done when:** the fold says so.\n"
+        code, err = self.guard(rec, drift)
+        self.assertEqual(code, 2)
+        self.assertIn("the pen's heading", err)
+        # the refusal always offers the paved path (the fail notification)
         self.assertIn("loop.pen", err)
 
     def test_what_the_guard_leaves_alone(self):
