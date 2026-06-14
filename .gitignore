@@ -17,6 +17,12 @@
 # (done-line 0058) — the unsurfaced set is a fold over reports + the log
 .ai-native/owner-ask-shame.json
 
+# session-ephemeral UI state, not truth: each session's last-seen open set
+# and last-poll clock for the standing-surface projection (done-line 0071) —
+# the surface is the truth; this only remembers what was last shown, to tick
+# up a change once without re-spamming. Per-session, deletable.
+.ai-native/standing-state.json
+
 # envoy packages are rebuildable artifacts (done-line 0015); the
 # environment doc and the disclosure ledger are the committed trace
 exports/*
