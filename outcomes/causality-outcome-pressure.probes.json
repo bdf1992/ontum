@@ -1,0 +1,95 @@
+{
+  "outcome": "Causality as the operational knowledge surface, carried by outcome-pressure",
+  "cites": "outcomes/causality-outcome-pressure.md",
+  "note": "The checkable projection of the human-legible outcome doc. The .md holds the narrative and the prose checks (browser-drive, test-green); this file expresses each probe's check in a form loop/pressure.py can resolve deterministically against committed bytes or log records. A probe whose check the fold cannot resolve is refused at load (no aspirational prose enters the set). 'met' requires the evidence to resolve on disk now; a browser-drive cap probe resolves against a committed verification attestation under outcomes/evidence/, never against a procedure the fold cannot run.",
+  "probes": [
+    {
+      "id": "OP1",
+      "statement": "the pressure fold exists",
+      "class": "cap",
+      "depends": [],
+      "check": {
+        "kind": "all_of",
+        "checks": [
+          {"kind": "path_exists", "path": "loop/pressure.py"},
+          {"kind": "path_exists", "path": "tests/test_pressure.py"}
+        ]
+      },
+      "move": "this done-line builds it: loop/pressure.py + a committed probe-set + tests green",
+      "cites": "outcomes/causality-outcome-pressure.md (OP1)"
+    },
+    {
+      "id": "OP2",
+      "statement": "summon delivers outcome-pressure",
+      "class": "cap",
+      "depends": ["OP1"],
+      "check": {"kind": "file_contains", "path": "loop/summon.py", "pattern": "loop\\.pressure"},
+      "move": "loop.summon --hook hands the waking session the outcome's top leverage, not only gaps work-pressure; a test drives the hook and asserts the line",
+      "cites": "outcomes/causality-outcome-pressure.md (OP2)"
+    },
+    {
+      "id": "OP3",
+      "statement": "pressure composes (owner + work + outcome into one ranked field)",
+      "class": "cap",
+      "depends": ["OP1", "OP2"],
+      "check": {"kind": "file_contains", "path": "loop/summon.py", "pattern": "compose_pressure"},
+      "move": "owner-pressure + work-pressure (gaps) + outcome-pressure fold into one ranked field; a fixture test ranks across all three",
+      "cites": "outcomes/causality-outcome-pressure.md (OP3)"
+    },
+    {
+      "id": "CZ1",
+      "statement": "Causality persists authored graphs",
+      "class": "cap",
+      "depends": [],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/cz1-persistence.md"},
+      "move": "build persistence: the canvas engine gains a save verb, a graph survives reload; then commit outcomes/evidence/cz1-persistence.md attesting the browser drive",
+      "cites": "outcomes/causality-outcome-pressure.md (CZ1)"
+    },
+    {
+      "id": "CZ2",
+      "statement": "per-node / per-edge configuration",
+      "class": "cap",
+      "depends": [],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/cz2-config.md"},
+      "move": "click node -> config panel for its type; click edge -> its config; a field change persists; then commit outcomes/evidence/cz2-config.md attesting it",
+      "cites": "outcomes/causality-outcome-pressure.md (CZ2)"
+    },
+    {
+      "id": "CZ3",
+      "statement": "Causality ingests real Ontum evidence",
+      "class": "cap",
+      "depends": ["CZ1"],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/cz3-ingest.md"},
+      "move": "the editable canvas loads real log/atoms/term-projection, not demo data; then commit outcomes/evidence/cz3-ingest.md attesting it",
+      "cites": "outcomes/causality-outcome-pressure.md (CZ3)"
+    },
+    {
+      "id": "CZ4",
+      "statement": "Causality projects the typed knowledge graph",
+      "class": "cap",
+      "depends": ["CZ3"],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/cz4-typed-graph.md"},
+      "partial": {"kind": "file_contains", "path": "causality/term_economy.py", "pattern": "project"},
+      "move": "terms, probes, artifacts, folds, agents, sites, records, evidence render as a living typed graph with evidence edges, in-canvas; today term_economy projects terms only (partial)",
+      "cites": "outcomes/causality-outcome-pressure.md (CZ4)"
+    },
+    {
+      "id": "OUT1",
+      "statement": "sessions inherit and reduce pressure across wakes",
+      "class": "out",
+      "depends": ["OP2"],
+      "check": {"kind": "log_record", "ledger": "receipts", "match": {"verdict": "probe-reduced"}},
+      "move": "a use-trace on the log: a waking session received the outcome-pressure line and a subsequent receipt resolved a probe (unmet->met)",
+      "cites": "outcomes/causality-outcome-pressure.md (OUT1)"
+    },
+    {
+      "id": "OUT2",
+      "statement": "the outcome survives session-end",
+      "class": "out",
+      "depends": ["OP1"],
+      "check": {"kind": "log_record", "ledger": "receipts", "match": {"verdict": "outcome-carried"}},
+      "move": "the fold, re-run in a new session, still reports the unresolved probes as continuing pressure; a use-trace shows no victory declared on partial work",
+      "cites": "outcomes/causality-outcome-pressure.md (OUT2)"
+    }
+  ]
+}
