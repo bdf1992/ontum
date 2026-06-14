@@ -140,6 +140,36 @@ def outcome_pressure_lines(root, hour=None):
     ]
 
 
+def slowloop_lines(root, hour=None):
+    """The slow loop's dial proposal (done-line 0075), surfaced read-only —
+    informational, never actionable here. A session sees the field's own
+    outcomes proposing a temperature change, but it cannot dispose it: the
+    dial moves only when the outside admits the proposal (D-4). This honours
+    propose-vs-dispose at the surface too — showing a proposal is not routing
+    anyone into admitting it. Tied to the same root; fail-soft, since the hook
+    is exit-0-always. The wall clock is read here, at the edge."""
+    if not (Path(root) / "log").is_dir():
+        return None
+    from loop import slowloop as slowloop_mod
+    if hour is None:
+        from datetime import datetime
+        hour = datetime.now().hour
+    result = slowloop_mod.slowloop(root, hour)
+    p = result["proposal"]
+    if not p or not p["change"]:
+        return None  # no admitted setpoint, or the slow loop proposes no change
+    delta = ", ".join(f"{k} {p['current'][k]}→{p['proposed'][k]}" for k in p["deltas"])
+    because = p["because"][0] if p["because"] else ""
+    if len(because) > 200:
+        because = because[:200].rstrip() + " …"
+    return [
+        "[loop] slow-loop dial — the field's outcomes propose a setpoint change:",
+        f"[loop]   {delta} · because {because}",
+        "[loop]   a proposal, not a change — the dial moves only when the outside "
+        "admits it (D-4); the full read: python -m loop.slowloop",
+    ]
+
+
 def resolve_root(arg_root):
     """Hooks run wherever the harness runs them; the project dir is the
     anchor when given (CLAUDE_PROJECT_DIR), the CWD default otherwise."""
@@ -185,6 +215,12 @@ def main(argv=None):
             op_lines = outcome_pressure_lines(root)
             if op_lines:
                 for ln in op_lines:
+                    print(ln)
+            # done-line 0075: the slow loop's dial proposal, read-only — shown,
+            # never disposed (showing a proposal is not routing anyone to admit it)
+            sl_lines = slowloop_lines(root)
+            if sl_lines:
+                for ln in sl_lines:
                     print(ln)
             gap = top_gap(root)
             if gap:
