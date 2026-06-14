@@ -101,6 +101,11 @@
             "type": "command",
             "command": "python .claude/hooks/gesture_surface.py",
             "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/standing_surface.py",
+            "timeout": 20
           }
         ]
       }
@@ -133,6 +138,11 @@
             "type": "command",
             "command": "python .claude/hooks/owner_ask_shame.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/standing_surface.py",
+            "timeout": 20
           }
         ]
       }
