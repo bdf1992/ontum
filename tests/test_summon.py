@@ -132,6 +132,36 @@ class SummonTest(unittest.TestCase):
         text = self.hook_text(Path(self.tmp) / "nowhere", "{}")
         self.assertEqual(text, "")
 
+    # --- OP2 (done-line 0073): summon delivers outcome-pressure at wake ---
+
+    def test_outcome_pressure_line_names_phase_and_focus(self):
+        # over the real committed Causality probe-set: a morning hour leans
+        # heat -> the big unblocker (CZ1); an evening hour leans cool -> the
+        # nearest-closeable leaf (CZ2). The line names the phase and the focus.
+        real_root = REPO / ".ai-native"
+        morning = summon.outcome_pressure_lines(real_root, hour=8)
+        self.assertIsNotNone(morning)
+        blob = "\n".join(morning)
+        self.assertIn("outcome-pressure", blob)
+        self.assertIn("phase build", blob)
+        self.assertIn("focus CZ1", blob)
+        evening = "\n".join(summon.outcome_pressure_lines(real_root, hour=20))
+        self.assertIn("focus CZ2", evening)
+
+    def test_outcome_pressure_silent_without_a_probeset(self):
+        # fail-soft: a foreign/missing root has no probe-set -> no line, no crash
+        self.assertIsNone(
+            summon.outcome_pressure_lines(Path(self.tmp) / "elsewhere" / ".ai-native",
+                                          hour=8))
+
+    def test_hook_delivers_outcome_pressure_beside_the_gap(self):
+        # the situation rides the same channel as the work-pressure; the hook
+        # stays exit-0 (hook_text asserts it) and the line composes, not replaces
+        text = self.hook_text(REPO / ".ai-native", "{}")
+        self.assertIn("outcome-pressure", text)
+        self.assertIn("leverage-top CZ1", text)
+        self.assertIn("python -m loop.temporal", text)
+
     def test_hook_surfaces_the_owner_backlog_as_a_count(self):
         self.judge("atom.summon-00.v0")                 # L0 accepts atom 00
         orchestrate.orchestrate(self.root, quiet=True)  # it advances to the stamp
