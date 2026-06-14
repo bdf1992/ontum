@@ -131,3 +131,4 @@
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/slowloop-report","id":"rcp.merge.140","kind":"merge","node":"merge-node.claude.v1","pr":140,"ts":"2026-06-14T16:06:00Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/goal-skill-outcome-pressure","id":"rcp.merge.124","kind":"merge","node":"merge-node.claude.v1","pr":124,"ts":"2026-06-14T21:08:49Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/handoff-correction","id":"rcp.merge.126","kind":"merge","node":"merge-node.claude.v1","pr":126,"ts":"2026-06-14T21:09:02Z","verdict":"landed"}
+{"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/pen-carbon-copy","id":"rcp.merge.128","kind":"merge","node":"merge-node.claude.v1","pr":128,"ts":"2026-06-14T21:09:14Z","verdict":"landed"}
