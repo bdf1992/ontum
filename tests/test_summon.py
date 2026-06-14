@@ -162,6 +162,32 @@ class SummonTest(unittest.TestCase):
         self.assertIn("leverage-top CZ1", text)
         self.assertIn("python -m loop.temporal", text)
 
+    # --- done-line 0075: summon shows the slow loop's dial proposal ---
+
+    def test_slowloop_lines_names_the_proposed_change(self):
+        lines = summon.slowloop_lines(REPO / ".ai-native", hour=8)
+        self.assertIsNotNone(lines)
+        blob = "\n".join(lines)
+        self.assertIn("slow-loop dial", blob)
+        self.assertIn("step_budget_per_tick", blob)
+        self.assertIn("→", blob)            # a concrete proposed change
+        self.assertIn("because", blob)      # carrying its attribution
+
+    def test_slowloop_line_marks_it_a_proposal_not_a_change(self):
+        # propose != dispose, at the surface: it must not read as an instruction
+        blob = "\n".join(summon.slowloop_lines(REPO / ".ai-native", hour=8))
+        self.assertIn("a proposal, not a change", blob)
+        self.assertIn("the outside admits it", blob)
+
+    def test_slowloop_lines_silent_without_a_log(self):
+        self.assertIsNone(
+            summon.slowloop_lines(Path(self.tmp) / "nowhere" / ".ai-native", hour=8))
+
+    def test_hook_shows_the_slowloop_proposal(self):
+        text = self.hook_text(REPO / ".ai-native", "{}")
+        self.assertIn("slow-loop dial", text)
+        self.assertIn("python -m loop.slowloop", text)
+
     def test_hook_surfaces_the_owner_backlog_as_a_count(self):
         self.judge("atom.summon-00.v0")                 # L0 accepts atom 00
         orchestrate.orchestrate(self.root, quiet=True)  # it advances to the stamp
