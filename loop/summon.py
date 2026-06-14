@@ -101,6 +101,45 @@ def owner_backlog(root):
             if next_action(fold, atom, ahash, real_map) == ("await", human)]
 
 
+def outcome_pressure_lines(root, hour=None):
+    """OP2 (done-line 0073): the situation a waking session inherits — the
+    outcome's gap modulated by the hour, not only the janitorial backlog.
+
+    Imports the folds (loop.pressure, via loop.temporal); it never
+    reimplements them — one fold, one truth. Tied to the same `root` the rest
+    of the hook reads: the probe-set is resolved from that repo, so a foreign
+    or missing root yields no line, never a crash and never another repo's
+    pressure — fail-soft, because the hook that calls it is exit-0-always. The
+    wall clock is read here, at the edge, never inside a fold."""
+    from loop.pressure import DEFAULT_PROBES
+    repo = Path(root).resolve().parent
+    probes_path = repo / "outcomes" / DEFAULT_PROBES.name
+    if not probes_path.exists():
+        return None
+    if hour is None:
+        from datetime import datetime
+        hour = datetime.now().hour
+    from loop import temporal as temporal_mod
+    result = temporal_mod.temporal(hour, probes_path=probes_path, repo=repo,
+                                   root=root)
+    pr, view = result["pressure"], result["temporal"]
+    if pr["phase"] == "met" or not view or not view["focus"]:
+        return None  # the outcome resolved, or no capability work to surface
+    unresolved = len(pr["partial"]) + len(pr["unmet"]) + len(pr["dormant"])
+    top = pr["top_leverage"]["id"] if pr["top_leverage"] else "—"
+    move = view["next_move"]
+    if len(move) > 220:
+        move = move[:220].rstrip() + " …"
+    return [
+        f"[loop] outcome-pressure — {pr['outcome']}:",
+        f"[loop]   phase {pr['phase']}, {unresolved} unresolved · leverage-top "
+        f"{top} · the hour leans {view['lean']} ({view['register']}) → "
+        f"focus {view['focus']}",
+        f"[loop]   the move: {move}",
+        "[loop]   the full read: python -m loop.temporal",
+    ]
+
+
 def resolve_root(arg_root):
     """Hooks run wherever the harness runs them; the project dir is the
     anchor when given (CLAUDE_PROJECT_DIR), the CWD default otherwise."""
@@ -140,6 +179,13 @@ def main(argv=None):
                 # (done-line 0018); applying stays the reflector pen's act
                 print(f"[loop] surface drift: {unreflected} act(s) not yet "
                       "reflected — python -m loop.reflect")
+            # OP2 (done-line 0073): the outcome's gap, modulated by the hour —
+            # the situation, surfaced beside the work-pressure below (composing,
+            # not replacing it; the single ranked field is OP3).
+            op_lines = outcome_pressure_lines(root)
+            if op_lines:
+                for ln in op_lines:
+                    print(ln)
             gap = top_gap(root)
             if gap:
                 # gap-to-work (done-line 0048): the idle default is the
