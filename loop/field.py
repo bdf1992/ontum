@@ -249,6 +249,107 @@ def field(root, epic_id):
     }
 
 
+def whole_field(root):
+    """The WHOLE field (done-line 0078): every arc composed into one
+    ladder-graph — the holonic whole — so the loop can load the complete
+    ontum environment, not one arc at a time. Each arc keeps its full
+    altitude ladder (arc -> epic -> story -> ... -> occupant); it is never
+    flattened into a bag of nodes (that hairball is the non-example). An
+    `agenda` rung sits above them all — the arcs themselves, each with its
+    confirm-state and the admission that proves it.
+
+    Deterministic by construction: epics are folded in sorted id order and
+    the result is byte-reproducible (the holographic rule: a projection
+    that cannot drift). It reuses `field()` per arc rather than
+    re-deriving — one fold per arc; at the current arc count that is cheap,
+    and correctness beats sharing a Fold across the ladder builders."""
+    root = Path(root)
+    fold = Fold(root)
+    epics = sorted(load_epics(root), key=lambda e: e["id"])
+    agenda = []
+    for epic in epics:
+        agenda.extend(_arc_rung(fold, epic))
+    arcs = {epic["id"]: field(root, epic["id"]) for epic in epics}
+    return {"agenda": agenda, "arcs": arcs}
+
+
+def _known_ids(root, fold):
+    """The universe of ids that resolve to a first-class thing on disk —
+    an epic file, an atom file, a pipeline stage, an admitted node, or a
+    node prompt. A subject in this set carries its own route; anything
+    outside it must cite log evidence or be an explicitly surfaced gap."""
+    root = Path(root)
+    ids = {e["id"] for e in load_epics(root)}
+    ids |= {a["id"] for a, _ in load_atoms(root)}
+    ids |= {stage["node"] for stage in PIPELINE}
+    ids |= set(real_nodes(fold).values())
+    nodes_dir = root / "nodes"
+    if nodes_dir.is_dir():
+        ids |= {p.stem for p in nodes_dir.glob("*.md")}
+    return ids
+
+
+def _walk_items(whole):
+    for it in whole["agenda"]:
+        yield it
+    for eid in sorted(whole["arcs"]):
+        ladder = whole["arcs"][eid]
+        if ladder is None:
+            continue
+        for rung in ladder["rungs"]:
+            yield from rung["items"]
+
+
+# the field's own vocabulary for an HONEST absence — a node surfaced as a
+# gap, not asserted as fact. A routeless node in one of these states is the
+# field doing its job (absence is information), never a ghost.
+GAP_STATES = ("absent", "unconfirmed", "not-first-class", "MOCK")
+
+
+def _is_surfaced_gap(item):
+    if item.get("why"):
+        return True
+    state = item.get("state", "")
+    return any(state.startswith(g) for g in GAP_STATES)
+
+
+def route_audit(whole, known_ids):
+    """The holographic rule, made checkable: every emitted node carries a
+    resolvable route — it cites log evidence, OR its subject resolves to a
+    first-class id on disk — OR it is an explicitly surfaced gap (an honest
+    absence: `why`, or one of `GAP_STATES`). A node that is none of these is
+    a ghost asserted as fact; this returns the list of such violations. A
+    clean field returns []. The §10 teeth: a fold that emits a routeless
+    node *as fact* (a non-gap state, no evidence, no on-disk subject) fails
+    here."""
+    violations = []
+    for item in _walk_items(whole):
+        if item.get("evidence"):
+            continue
+        if item.get("subject") in known_ids:
+            continue
+        if _is_surfaced_gap(item):
+            continue
+        violations.append(item)
+    return violations
+
+
+def render_all(whole):
+    print("# the whole field — every arc, one ladder-graph (the holonic whole)")
+    print("\nagenda")
+    for it in whole["agenda"]:
+        print(f"  {it['subject']} — {it['state']}")
+        if it["evidence"]:
+            print(f"    evidence: {it['evidence'][0]}")
+        print(f"    move: {it['next_safe_move']}")
+    for eid in sorted(whole["arcs"]):
+        ladder = whole["arcs"][eid]
+        if ladder is None:
+            continue
+        print()
+        render(ladder)
+
+
 def render(ladder):
     print(f"# the field — {ladder['arc']}")
     for rung in ladder["rungs"]:
@@ -266,11 +367,36 @@ def render(ladder):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--arc", required=True, help="the epic id, e.g. epic.the-field")
+    sel = ap.add_mutually_exclusive_group(required=True)
+    sel.add_argument("--arc", help="the epic id, e.g. epic.the-field")
+    sel.add_argument("--all", action="store_true", dest="whole",
+                     help="fold the COMPLETE environment — every arc "
+                          "composed into one ladder-graph (the holonic whole)")
     ap.add_argument("--root", type=Path, default=Path(DEFAULT_ROOT))
     ap.add_argument("--json", action="store_true",
                     help="emit the ladder as JSON (the dataset, not the view)")
     args = ap.parse_args(argv)
+
+    if args.whole:
+        whole = whole_field(args.root)
+        violations = route_audit(whole, _known_ids(args.root, Fold(args.root)))
+        if args.json:
+            print(json.dumps(whole, indent=2, sort_keys=True))
+        else:
+            render_all(whole)
+        if violations:
+            subjects = ", ".join(v.get("subject", "?") for v in violations[:6])
+            print(f"\nresult: needs-you — {len(violations)} node(s) emitted "
+                  f"with no resolvable route and no surfaced gap ({subjects}) "
+                  "— the holographic rule is broken; a projection that points "
+                  "nowhere is a ghost, not a fact")
+            return 2
+        n_present = sum(1 for ladder in whole["arcs"].values() if ladder)
+        print(f"\nresult: report — the whole field: {n_present} arc(s) "
+              "composed into one ladder-graph, altitude preserved; every "
+              "node carries a route or is a surfaced gap (the holographic "
+              "rule holds); read-only, byte-reproducible")
+        return 0
 
     ladder = field(args.root, args.arc)
     if ladder is None:
