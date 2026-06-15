@@ -33,6 +33,7 @@ from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, load_atoms,
 from loop.gaps import top_gap
 from loop.orchestrate import HUMAN_NODE, next_action
 from loop.reflect import drift, registered_surfaces
+from loop.agenda import agenda_lines
 
 
 def open_summons(root):
@@ -192,6 +193,11 @@ def main(argv=None):
     if args.hook:
         try:
             sys.stdin.read()  # the hook payload; the fold below is the truth, not it
+            # the agenda frame first (done-line 0079): which agenda we are on and
+            # the arcs that serve it, read from the declaration, never a literal —
+            # so we stay on-agenda and a second agenda forces an explicit one.
+            for ln in agenda_lines(root):
+                print(ln)
             summons = open_summons(root)
             if summons:
                 print("[loop] open summons in this repo — if you are the named node,"
