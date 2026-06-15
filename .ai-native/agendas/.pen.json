@@ -1,0 +1,19 @@
+{
+  "kind": "agenda",
+  "pattern": "^\\d{4}-[a-z0-9][a-z0-9-]*\\.md$",
+  "required_sections": ["# Agenda", "**status:**", "## Arcs"],
+  "pen": "python -m loop.pen new .ai-native/agendas --slug <slug> --title \"<title>\"",
+  "frozen": false,
+  "scaffold": [
+    "# Agenda {id} — {title}",
+    "",
+    "**status:** proposed",
+    "",
+    "> <one flowing line: what this agenda is>",
+    "",
+    "## Arcs",
+    "",
+    "_none named yet — bdo names the converging arcs_",
+    ""
+  ]
+}
