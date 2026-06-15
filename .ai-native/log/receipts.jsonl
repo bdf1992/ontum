@@ -136,3 +136,4 @@
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/async-signal-surfacing","id":"rcp.merge.143","kind":"merge","node":"merge-node.claude.v1","pr":143,"ts":"2026-06-14T22:14:35Z","verdict":"landed"}
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/field-folds-whole-environment","id":"rcp.merge.145","kind":"merge","node":"merge-node.claude.v1","pr":145,"ts":"2026-06-15T01:38:37Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/agenda-as-code","id":"rcp.merge.146","kind":"merge","node":"merge-node.claude.v1","pr":146,"ts":"2026-06-15T02:10:14Z","verdict":"landed"}
+{"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/anima-energy-fold","id":"rcp.merge.147","kind":"merge","node":"merge-node.claude.v1","pr":147,"ts":"2026-06-15T03:49:12Z","verdict":"landed"}
