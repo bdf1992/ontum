@@ -96,8 +96,11 @@ yourself**:
 - **Don't invent missing context.** If something referenced isn't on disk,
   surface it (`needs-you`) rather than authoring it; flag anything authored
   provisionally, in the file.
-- **Stdlib only in `loop/` and `glyphs/`** — no broker, daemon, network,
-  or dependency.
+- **Stdlib-first in `loop/` and `glyphs/`; local-first always** — no
+  broker, daemon, or network at runtime. The blanket no-dependency ban
+  is lifted (bdo, 2026-06-12): a value-creating dependency is admissible
+  by common sense — don't hand-roll what a mature library does right —
+  provided it stays offline and named. Prefer stdlib.
 - **No one signs their own line (D-2)** — a gate never judges its own
   writer's work.
 

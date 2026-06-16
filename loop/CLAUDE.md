@@ -1,7 +1,12 @@
 # loop/ — the loop substrate
 
-Pure stdlib — no broker, no daemon, no network, no dependencies (hard
-rule). Run everything from the repo root.
+Stdlib by default; local-first always — no broker, no daemon, no
+network at runtime (hard rule). The blanket no-dependency ban is lifted
+(bdo, 2026-06-12): a third-party dependency is admissible when common
+sense says it creates real value — don't hand-roll what a mature,
+well-kept library does correctly — provided it stays offline and is
+named. Prefer stdlib; reach for a dep when it earns its place. Run
+everything from the repo root.
 
 ## Commands
 

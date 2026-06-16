@@ -2,6 +2,11 @@
 flat files, refusals before features (§10: a locally-fine eleventh file
 must not fit), byte-deterministic pen slots, authored prose never
 clobbered, and a receipt on the disclosure ledger for every seal.
+
+Also pins done-line 0059: the inbound seam (`respond`) — a foreign
+review lands as value-gated atoms under one proposed arc, with §10
+teeth (a response to a package never sealed refuses; a colliding atom
+refuses), not stranded as read-only context.
 """
 
 import importlib.util
@@ -128,6 +133,19 @@ class EnvoyCase(unittest.TestCase):
 
     def seal(self, package, by="test-bdo"):
         return envoy.cmd_seal(types.SimpleNamespace(package=package, by=by))
+
+    def respond(self, package, findings, by="test-gpt"):
+        return envoy.cmd_respond(types.SimpleNamespace(
+            package=package, finding=findings, by=by))
+
+    def sealed_pkg(self):
+        """Build, author, and seal the fixture package — the precondition
+        for receiving a response to it."""
+        spec = base_spec()
+        pkg_dir = self.build(spec)
+        self.author_all(spec, pkg_dir)
+        self.assertEqual(self.seal("pkg"), 0)
+        return pkg_dir
 
     # ------------------------------------------------------------ the spec
 
@@ -292,6 +310,84 @@ class EnvoyCase(unittest.TestCase):
         self.build(spec)  # stubs unfilled
         self.assertEqual(self.seal("pkg"), 1)
         self.assertFalse((self.root / "exports" / "log.jsonl").exists())
+
+    # ------------------------------------------------- respond (done-line 0059)
+
+    def test_respond_refuses_a_package_never_sealed(self):
+        # the §10 teeth: the findings are well-formed, but the package was
+        # never sent — you cannot receive a response to nothing. Locally
+        # fine, must not land.
+        rc = self.respond("pkg", ["vanity-count=The 370 count is a proxy."])
+        self.assertEqual(rc, 2)
+        self.assertFalse((self.root / ".ai-native" / "atoms").exists())
+        self.assertFalse((self.root / ".ai-native" / "epics").exists())
+
+    def test_respond_lands_findings_as_atoms_under_one_proposed_arc(self):
+        self.sealed_pkg()
+        rc = self.respond("pkg", [
+            "vanity-count=The refuse-token count is a vanity metric.",
+            "mutation-honesty=One mutant is not a mutation score.",
+        ])
+        self.assertEqual(rc, 0)
+        atoms = self.root / ".ai-native" / "atoms"
+        a1 = json.loads((atoms / "atom.pkg-resp-vanity-count.v0.json")
+                        .read_bytes())["atom"]
+        a2 = json.loads((atoms / "atom.pkg-resp-mutation-honesty.v0.json")
+                        .read_bytes())["atom"]
+        # each is a PROPOSED foreign claim, pending the value gate
+        self.assertEqual(a1["story"]["value_confidence"], "proposed")
+        self.assertEqual(a1["story"]["owner_stamp"], "pending")
+        # both serve the one proposed arc — one confirm-arc, not two stamps
+        self.assertEqual(a1["incidence"]["serves"], ["epic.pkg-response"])
+        self.assertEqual(a2["incidence"]["serves"], ["epic.pkg-response"])
+        # provenance points back to the package and its seal
+        self.assertIn("exports/pkg/", a1["lineage"]["source_artifacts"])
+        epic = json.loads((self.root / ".ai-native" / "epics"
+                           / "epic.pkg-response.json").read_bytes())["epic"]
+        self.assertEqual(epic["status"], "proposed")
+        self.assertEqual(len(epic["pieces"]), 2)
+        # the return leg leaves a receipt — symmetry with the seal
+        entries = [json.loads(line) for line in (self.root / "exports"
+                   / "log.jsonl").read_bytes().decode("utf-8").splitlines()]
+        received = [e for e in entries if e.get("kind") == "response_received"]
+        self.assertEqual(len(received), 1)
+        self.assertEqual(received[0]["epic"], "epic.pkg-response")
+        self.assertEqual(received[0]["by"], "test-gpt")
+        self.assertEqual(len(received[0]["atoms"]), 2)
+
+    def test_respond_refuses_a_colliding_atom(self):
+        # an atom with the would-be id already exists with different bytes:
+        # responding again must not clobber it (editing an atom restarts its
+        # pipeline). Locally fine, must not land.
+        self.sealed_pkg()
+        atoms = self.root / ".ai-native" / "atoms"
+        atoms.mkdir(parents=True, exist_ok=True)
+        (atoms / "atom.pkg-resp-vanity-count.v0.json").write_bytes(
+            b'{"atom": {"id": "atom.pkg-resp-vanity-count.v0"}}\n')
+        rc = self.respond("pkg", ["vanity-count=A different story entirely."])
+        self.assertEqual(rc, 2)
+        # the pre-existing atom is untouched, and the epic never got written
+        self.assertIn(b'"id": "atom.pkg-resp-vanity-count.v0"}}',
+                      (atoms / "atom.pkg-resp-vanity-count.v0.json").read_bytes())
+        self.assertFalse((self.root / ".ai-native" / "epics"
+                          / "epic.pkg-response.json").exists())
+
+    def test_respond_is_idempotent_on_unchanged_bytes(self):
+        self.sealed_pkg()
+        findings = ["only-finding=A single proposed claim."]
+        self.assertEqual(self.respond("pkg", findings), 0)
+        ledger = self.root / "exports" / "log.jsonl"
+        before = ledger.read_bytes()
+        self.assertEqual(self.respond("pkg", findings), 0)  # no-op
+        self.assertEqual(ledger.read_bytes(), before)  # no second receipt
+
+    def test_respond_refuses_a_malformed_or_empty_response(self):
+        self.sealed_pkg()
+        self.assertEqual(self.respond("pkg", []), 2)          # empty
+        self.assertEqual(self.respond("pkg", None), 2)        # none
+        self.assertEqual(self.respond("pkg", ["no-equals-sign"]), 2)
+        self.assertEqual(self.respond("pkg", ["Bad_Slug=story"]), 2)
+        self.assertEqual(self.respond("pkg", ["dup=a", "dup=b"]), 2)
 
     # ------------------------------------------------------------- the CLI
 
