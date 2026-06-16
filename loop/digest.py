@@ -40,6 +40,7 @@ Stdlib only. Ends with a clear result on stdout (D-6): done | report.
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -156,7 +157,8 @@ def digest(root, since=None, until=None):
                              for t in ticks), default=0),
     }
 
-    divergences = _divergences(fold, arcs, ticks, since, until)
+    superseded = _superseded([p for a in arcs for p in a["pieces"]] + loose)
+    divergences = _divergences(fold, arcs, ticks, since, until, superseded)
 
     return {
         "span": {"since": since, "until": until},
@@ -170,13 +172,54 @@ def digest(root, since=None, until=None):
     }
 
 
-def _divergences(fold, arcs, ticks, since, until):
+_VERSION_RE = re.compile(r"^(?P<base>.+)\.v(?P<ver>\d+)$")
+
+
+def _base_version(atom_id):
+    """Split an atom id into (base, version): 'atom.field-topology.v3' ->
+    ('atom.field-topology', 3). Identity for the pipeline is the content hash
+    (reconcile.py); the '.vN' suffix is the human version marker the pipeline
+    restarts on. No suffix -> version 0."""
+    m = _VERSION_RE.match(atom_id or "")
+    if m:
+        return m.group("base"), int(m.group("ver"))
+    return atom_id, 0
+
+
+def _superseded(pieces):
+    """Atom ids whose refusal is settled history, not a live divergence: a
+    *later version of the same atom* reached terminal (landed).
+
+    The doctrine's own rule — editing an atom file makes a new version that
+    restarts the pipeline from scratch; old receipts stay valid history but no
+    longer apply (reconcile.py, identity-is-content-hash). A confirmed arc that
+    harbours a refused piece is the digest's teeth (§10) — but a refusal a newer
+    landed version already cleared is not a contradiction bdo must see; surfacing
+    it cries wolf (the stale `atom.field-topology.v0` 'missed' that rode every
+    digest after v1 landed and loop/field.py shipped, done-line 0078). This
+    suppresses only that false *alarm*: the current/highest version's own
+    refusal still fires, and the parked/refused counts keep the record."""
+    top_landed = {}  # base -> highest landed version
+    for p in pieces:
+        if p.get("landed"):
+            base, ver = _base_version(p.get("atom"))
+            if ver > top_landed.get(base, -1):
+                top_landed[base] = ver
+    return {p.get("atom") for p in pieces
+            if top_landed.get(_base_version(p.get("atom"))[0], -1)
+            > _base_version(p.get("atom"))[1]}
+
+
+def _divergences(fold, arcs, ticks, since, until, superseded=frozenset()):
     """Where two locally-fine records refuse to fit — the digest's teeth.
 
     1. refusal-under-confirmed-arc (§10): bdo confirmed the arc (his standing
        stamp), yet a gate refused a piece under it. Each side is sound on its
        own; the contradiction is what bdo asked to be surfaced richly, not
-       carried silently.
+       carried silently. A refusal a *newer landed version* of the same atom
+       already cleared is settled history, not a live divergence (`superseded`);
+       it is skipped here so the banner never cries wolf, while the piece's
+       refusal still stands in the per-arc counts as honest record.
     2. queue-over-cap: a tick whose human backlog exceeded the cap its own
        setpoint admitted — the cool valve is meant to hold it, so a breach is
        the dial and reality disagreeing.
@@ -186,6 +229,8 @@ def _divergences(fold, arcs, ticks, since, until):
         if not arc.get("confirmed"):
             continue
         for piece in arc["pieces"]:
+            if piece.get("atom") in superseded:
+                continue
             for rc in piece.get("refusals", []):
                 out.append({
                     "kind": "refusal-under-confirmed-arc",
