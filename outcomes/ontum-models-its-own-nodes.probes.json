@@ -1,0 +1,52 @@
+{
+  "outcome": "Ontum models its own parts: deterministic folds become graded, stress-measured, composable learned stand-ins",
+  "cites": "outcomes/ontum-models-its-own-nodes.md",
+  "note": "The checkable projection of the human-legible holon outcome doc. The .md holds the narrative, the why, and the per-probe non-examples; this file expresses each probe's check in a form loop/pressure.py can resolve deterministically against committed ONTUM bytes or log records. Two design choices the projection makes explicit: (1) the model/grade/yield work lives in a separate sandbox (c:/holonsearch), which ontum's read-only fold cannot reach — so every capability probe resolves against a committed outcomes/evidence/p*.md attestation of the sandbox drive, the same 'no evidence, no mint' refusal causality CZ1/CZ2 make (an attestation is a procedure the fold can re-check; a sibling directory's live state is not). (2) The .md labels P4 and P5 'realization' in the val_bpb sense; here P1-P4 are class 'cap' because each is a buildable, artifact-checked achievement, and only P5 is class 'out' (a use-trace: composition actually reproduced a real chain on the log) so it stays dormant until P1-P3, matching the prose's 'dormant until P1+P2'. A probe whose check the fold cannot resolve is refused at load (no aspirational prose enters the set).",
+  "probes": [
+    {
+      "id": "P1",
+      "statement": "harvest: >=3 grounded bench nodes beyond classify, each with a resolvable oracle",
+      "class": "cap",
+      "depends": [],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/p1-harvest.md"},
+      "move": "build the fold-harvester in holonsearch: scan ontum read-only for pure folds with clean contracts, emit >=3 bench nodes beyond classify, each model-oracle reproducing the real fold on sampled inputs (a round-trip passes); then commit outcomes/evidence/p1-harvest.md attesting the drive",
+      "cites": "outcomes/ontum-models-its-own-nodes.md (P1)"
+    },
+    {
+      "id": "P2",
+      "statement": "score & yield: a score+yield receipt per bench node under rising stress",
+      "class": "cap",
+      "depends": ["P1"],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/p2-score-yield.md"},
+      "move": "run.py emits, per harvested node, the score against its oracle and the yield (the stress level where the model breaks the fold's invariant); commit outcomes/evidence/p2-score-yield.md attesting the runs",
+      "cites": "outcomes/ontum-models-its-own-nodes.md (P2)"
+    },
+    {
+      "id": "P3",
+      "statement": "honest tiers: harvested/rubric/inferred kept distinct, each ranked below the one above, every score declaring its tier",
+      "class": "cap",
+      "depends": ["P1"],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/p3-tiers.md"},
+      "move": "label each run with its oracle tier (harvested=exact fold, rubric=exemplar-anchored+inspectable+human-refined, inferred=consult-the-resource constraints), rank a run below any higher-tier run for the same node; a rubric cites its exemplars, an inferred run cites its constraints; commit outcomes/evidence/p3-tiers.md",
+      "cites": "outcomes/ontum-models-its-own-nodes.md (P3)"
+    },
+    {
+      "id": "P4",
+      "statement": "genuine generalization: a node-model beats baseline without copying the oracle's lookup tables",
+      "class": "cap",
+      "depends": ["P1", "P2"],
+      "check": {"kind": "path_exists", "path": "outcomes/evidence/p4-generalization.md"},
+      "move": "a run beats baseline AND a copy-guard confirms the solution does not embed the oracle's literal data (it models behaviour, not the answer key); commit outcomes/evidence/p4-generalization.md with the run + the copy-guard report",
+      "cites": "outcomes/ontum-models-its-own-nodes.md (P4)"
+    },
+    {
+      "id": "P5",
+      "statement": "bootstrap composition: a seed composes through >=2 node-models and reproduces a real chain of folds end-to-end",
+      "class": "out",
+      "depends": ["P1", "P2", "P3"],
+      "check": {"kind": "log_record", "ledger": "receipts", "match": {"verdict": "holon-composition-reproduced"}},
+      "move": "an end-to-end run whose output equals the real composed functions; where it fails to compose, the receipt names the exact joint that broke. This resolves on a use-trace (a composition receipt on the log), not a build — dormant until P1-P3 land",
+      "cites": "outcomes/ontum-models-its-own-nodes.md (P5)"
+    }
+  ]
+}

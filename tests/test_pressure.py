@@ -252,5 +252,46 @@ class RealCausalitySet(unittest.TestCase):
         self.assertTrue({"CZ1", "CZ2", "CZ3", "CZ4", "OUT1", "OUT2"} <= unresolved)
 
 
+class RealHolonSet(unittest.TestCase):
+    """The committed holon probe-set (done-line 0084: 'Ontum models its own
+    nodes' turned from prose into teeth) is a *checkable* outcome the fold can
+    rank — not aspirational narrative. Pins the structure the fold guarantees,
+    never a snapshot id a later session's harvester progress would trip (the
+    brittle-pin lesson of report 0065): the set loads clean, it is a real gap
+    (not met), build phase names a real unmet capability as top leverage, and
+    the realization probe stays dormant until its capability preconditions."""
+
+    HOLON = DEFAULT_PROBES.parent / "ontum-models-its-own-nodes.probes.json"
+
+    def test_holon_set_is_checkable_and_a_real_build_gap(self):
+        r = pressure(self.HOLON)
+        # checkable: every probe carries a check the fold can resolve. The set
+        # only earns the right to apply pressure by passing this gate.
+        self.assertEqual(r["refused"], [], "the holon set must be checkable")
+        # a real gap, never a fake victory on undone sandbox work
+        self.assertNotEqual(r["phase"], "met")
+        self.assertEqual(r["phase"], "build")
+        # top leverage is a real, currently-unmet capability — not a literal
+        self.assertTrue(r["top_leverage"], "build phase must name a top leverage")
+        self.assertIn(r["top_leverage"]["id"], set(r["unmet"]))
+        # every probe is carried as continuing pressure (nothing vanished)
+        carried = set(r["met"]) | set(r["partial"]) | set(r["unmet"]) | set(r["dormant"])
+        self.assertEqual(carried, set(r["by_id"].keys()))
+
+    def test_realization_probe_is_dormant_until_its_preconditions(self):
+        # P5 (class 'out') resolves on a use-trace and must not count as build
+        # pressure while its capability preconditions are unmet — the dormancy
+        # that makes 'you cannot build your way to adoption' true on this set.
+        # Teeth: were it misclassified 'cap', it would read 'unmet' and inflate
+        # the buildable gap; dormant is the correct, distinct state.
+        r = pressure(self.HOLON)
+        out_ids = [pid for pid, p in r["by_id"].items() if p["class"] == "out"]
+        self.assertTrue(out_ids, "the holon set carries a realization probe")
+        for pid in out_ids:
+            self.assertEqual(r["state"][pid], "dormant",
+                             f"{pid} must be dormant while its preconditions are unmet")
+            self.assertNotIn(pid, r["unmet"])
+
+
 if __name__ == "__main__":
     unittest.main()
