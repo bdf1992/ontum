@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — mock: a node made of nodes (zoom / recursion)</title>
+<script>window.__pageErr = null; addEventListener('error', e => { if (!window.__pageErr) window.__pageErr = (e.error && e.error.stack) || e.message; });</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:wght@300;600&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#f6f1e7; --ink:#2b2a33; --dim:#8d8678; --plus:#0e8a7b; --think:#7a5ba6; --amber:#b8742c; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; background:var(--paper); color:var(--ink); font-family:"Space Grotesk",system-ui,sans-serif; overflow:hidden; }
+  body { display:grid; grid-template-columns:1fr 420px; grid-template-rows:auto 1fr; gap:0 14px; padding:18px 22px; }
+  header { grid-column:1/-1; }
+  h1 { font-family:"Fraunces",serif; font-weight:300; font-size:23px; } h1 b { color:var(--think); font-weight:600; }
+  .sub { font:300 9.5px "IBM Plex Mono",monospace; color:var(--dim); letter-spacing:.18em; text-transform:uppercase; margin-top:3px; }
+  .mock { display:inline-block; font:600 8px "IBM Plex Mono",monospace; letter-spacing:.12em; text-transform:uppercase; color:#fff; background:var(--amber); padding:3px 7px; border-radius:20px; vertical-align:middle; margin-left:8px; }
+
+  .pane { position:relative; border:1.4px solid rgba(43,42,51,.3); border-radius:12px; background:rgba(255,255,255,.4); overflow:hidden; }
+  .pane h4 { position:absolute; top:8px; left:12px; z-index:2; font:500 8.5px "IBM Plex Mono",monospace; letter-spacing:.2em; color:var(--dim); text-transform:uppercase; pointer-events:none; }
+  canvas { display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+
+  .zoom { display:flex; flex-direction:column; border:1.4px solid var(--think); border-radius:12px; background:rgba(255,252,245,.96); overflow:hidden; }
+  .zoom .crumb { padding:9px 12px; font:400 10.5px "IBM Plex Mono",monospace; color:var(--think); border-bottom:1px solid rgba(122,91,166,.25); white-space:nowrap; overflow:auto; }
+  .zoom .crumb a { color:var(--think); cursor:pointer; text-decoration:none; }
+  .zoom .crumb a:hover { text-decoration:underline; }
+  .zoom .crumb .sep { color:var(--dim); margin:0 5px; }
+  .zoom .stage { position:relative; flex:1; min-height:0; }
+  .zoom .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; font:300 12px "IBM Plex Mono",monospace; color:var(--dim); line-height:1.7; }
+  .zoom .leaf { border-top:1px solid rgba(122,91,166,.25); padding:11px 13px; }
+  .zoom .leaf label { display:block; font:400 9px "IBM Plex Mono",monospace; color:var(--amber); text-transform:uppercase; letter-spacing:.12em; margin-bottom:5px; }
+  .zoom .leaf textarea, .zoom .leaf input { width:100%; font:400 12px "IBM Plex Mono",monospace; color:var(--ink); background:#fff; border:1.2px solid rgba(43,42,51,.35); border-radius:7px; padding:6px 8px; resize:vertical; }
+  .zoom .leaf .note { font:300 9px "IBM Plex Mono",monospace; color:var(--dim); margin-top:6px; line-height:1.5; }
+  .tip { grid-column:1/-1; font:300 10px "IBM Plex Mono",monospace; color:var(--dim); padding-top:8px; line-height:1.6; }
+  .tip b { color:var(--ink); font-weight:500; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Causa<b>lity</b> · a node made of nodes <span class="mock">mock · decides C12/C13</span></h1>
+  <div class="sub">the inspector is a zoom · select a node → see what makes it, as nodes · keep selecting to recurse · the leaf is where you type</div>
+</header>
+
+<div class="pane"><h4>the graph</h4><canvas id="main"></canvas></div>
+
+<div class="zoom">
+  <div class="crumb" id="crumb">select a node →</div>
+  <div class="stage"><canvas id="zoom"></canvas><div class="empty" id="empty">A node is not a form of hidden fields.<br>It is <i>made of nodes</i> — its type, its config —<br>wired so you see the whole relationship.<br><br>Select a node on the left.</div></div>
+  <div class="leaf" id="leaf" style="display:none"></div>
+</div>
+
+<div class="tip"><b>left</b>: the real graph (drag / wire / cycle type). <b>right</b>: the same engine, one level down — a node's <i>constituent graph</i>. Click a constituent to recurse; the breadcrumb climbs back. Editing the <b>leaf</b> changes the real node on the left — nothing is hidden.</div>
+
+<script src="canvas.js"></script>
+<script>
+(() => {
+  const C = window.Causality;
+  const snip = v => v == null ? '∅' : (Array.isArray(v) ? '[' + v.join(',') + ']' : ('' + v)).slice(0, 18);
+
+  // left: the real working graph
+  const main = C.canvas(document.getElementById('main'), { onselect: sel => { if (sel && sel.kind === 'node') { stack = [{ t: 'node', node: sel.ref }]; renderZoom(); } } });
+  function seedMain() { main.clear(); const w = main.W || 700, cy = (main.H || 500) / 2;
+    const a = main.node(w * 0.2, cy - 60, 'input', { type: 'source', data: 'recursive feedback', hue: '#3f7cb6' });
+    const b = main.node(w * 0.5, cy, 'search (local LM)', { type: 'inference', hue: '#7a5ba6', prompt: 'Give 3 leads:\n{{data}}' });
+    const c = main.node(w * 0.8, cy + 60, 'return', { type: 'pen', hue: '#bf4a3e', required: ['result'] });
+    main.link(a.id, b.id, { sign: 1 }); main.link(b.id, c.id, { sign: 1 });
+  }
+
+  // right: the zoom — the SAME engine, rendering a node's makeup as a graph
+  const zoom = C.canvas(document.getElementById('zoom'), { perms: { create: false, link: false, flip: false, move: true, rename: false, erase: false, tap: false, type: false, setline: false } });
+  window.__mockMain = main; window.__mockZoom = zoom;   // test handles (verify loop)
+  const emptyEl = document.getElementById('empty'), crumbEl = document.getElementById('crumb'), leafEl = document.getElementById('leaf');
+  let stack = [];                 // the recursion path; top is the current subject
+  let zmap = new Map();           // zoom-node id -> descriptor (for recursing)
+
+  zoom.onselect = sel => { if (!sel || sel.kind !== 'node') return; const d = zmap.get(sel.ref.id);
+    if (d && !d._self) { stack.push(d); renderZoom(); } };
+
+  // a descriptor's constituents — "what is this made of?"
+  function constituents(d) {
+    if (d.t === 'node') {
+      const out = [{ t: 'type', node: d.node, label: 'type', value: d.node.type }];
+      for (const f of C.fieldsFor(d.node.type)) out.push({ t: 'field', node: d.node, f, label: f.label, value: C.getPath(d.node, f.key) });
+      return out;
+    }
+    if (d.t === 'type') {  // a type is made of its field-definitions (the schema = the type, as nodes)
+      return (C.SCHEMA[d.node.type] || []).map(f => ({ t: 'fielddef', f, label: f.label, value: f.kind }));
+    }
+    if (d.t === 'field') { // a field is made of its value (a leaf you type) and its kind
+      return [{ t: 'leaf', node: d.node, f: d.f, label: 'value', value: C.getPath(d.node, d.f.key) },
+              { t: 'kind', f: d.f, label: 'kind', value: d.f.kind }];
+    }
+    if (d.t === 'fielddef') return [{ t: 'kind', f: d.f, label: 'kind', value: d.f.kind }, { t: 'leaf-ro', label: 'default', value: d.f.def }];
+    return [];   // leaf / kind / leaf-ro bottom out (the glyph floor)
+  }
+  const subjLabel = d => d.t === 'node' ? (C.GLYPH[d.node.type] + ' ' + d.node.label)
+    : d.t === 'type' ? ('type · ' + d.node.type) : (d.label + (d.value != null ? ' · ' + snip(d.value) : ''));
+
+  function renderZoom() {
+    const d = stack[stack.length - 1];
+    if (!d) { emptyEl.style.display = 'flex'; crumbEl.textContent = 'select a node →'; leafEl.style.display = 'none'; zoom.clear(); return; }
+    emptyEl.style.display = 'none';
+    // breadcrumb
+    crumbEl.innerHTML = '';
+    stack.forEach((s, i) => { if (i) { const sp = document.createElement('span'); sp.className = 'sep'; sp.textContent = '›'; crumbEl.appendChild(sp); }
+      const a = document.createElement('a'); a.textContent = subjLabel(s); a.onclick = () => { stack = stack.slice(0, i + 1); renderZoom(); }; crumbEl.appendChild(a); });
+    // build the constituent graph in the SAME engine
+    zoom.clear(); zmap = new Map();
+    const w = zoom.W || 400, h = zoom.H || 360, cx = w / 2, cy = h / 2;
+    const self = zoom.node(cx, cy, subjLabel(d), { type: (d.t === 'node' ? d.node.type : 'stock'), hue: '#2b2a33' });
+    self._self = true; zmap.set(self.id, Object.assign({ _self: true }, d));
+    const kids = constituents(d);
+    kids.forEach((k, i) => { const ang = -Math.PI / 2 + (i / Math.max(1, kids.length)) * Math.PI * 2;
+      const R = Math.min(w, h) * 0.33; const kn = zoom.node(cx + Math.cos(ang) * R, cy + Math.sin(ang) * R,
+        k.label + (k.value != null ? ': ' + snip(k.value) : ''),
+        { type: k.t === 'type' ? 'pointer' : k.t === 'leaf' || k.t === 'leaf-ro' ? 'card' : 'stock',
+          hue: k.t === 'leaf' ? '#b8742c' : k.t === 'type' ? '#7a5ba6' : '#6b8f3c' });
+      zoom.link(kn.id, self.id, { sign: 1 }); zmap.set(kn.id, k); });
+    // the leaf editor — the one place a primitive lives; edits the real node live
+    if (d.t === 'leaf') showLeaf(d); else leafEl.style.display = 'none';
+  }
+  function showLeaf(d) {
+    leafEl.style.display = 'block'; leafEl.innerHTML = '';
+    const lab = document.createElement('label'); lab.textContent = d.f.label + '  (' + d.f.kind + ')'; leafEl.appendChild(lab);
+    const cur = C.getPath(d.node, d.f.key);
+    let inp;
+    if (d.f.kind === 'textarea') { inp = document.createElement('textarea'); inp.rows = 3; inp.value = cur == null ? '' : cur; }
+    else { inp = document.createElement('input'); inp.type = d.f.kind === 'number' ? 'number' : 'text'; inp.value = cur == null ? '' : (Array.isArray(cur) ? cur.join(', ') : cur); }
+    inp.oninput = () => { let v = inp.value;
+      if (d.f.kind === 'number') v = v === '' ? null : parseFloat(v);
+      else if (d.f.kind === 'csv') v = v.split(',').map(s => s.trim()).filter(Boolean);
+      else if (v === '') v = null;
+      C.setPath(d.node, d.f.key, v);              // writes the REAL node on the left
+      main.onchange && main.onchange(main);
+    };
+    leafEl.appendChild(inp);
+    const note = document.createElement('div'); note.className = 'note'; note.textContent = 'this is the leaf — the one primitive. typing here changes the real node on the left (try the "label" field to see it move).'; leafEl.appendChild(note);
+  }
+
+  requestAnimationFrame(() => requestAnimationFrame(() => { dispatchEvent(new Event('resize')); seedMain(); }));
+})();
+</script>
+</body>
+</html>
