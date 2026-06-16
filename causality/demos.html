@@ -120,6 +120,11 @@
 
   // ── the component board (mirrors display-system.md; the spec stays the source) ──
   const COMPONENTS = [
+    ['Front door — Interface as AI (authoring)', [
+      ['AI', 'NL → graph authoring', 'shipped', 'describe a node/graph in words → local inference generates a schema-valid graph; invalid is refused (no slop)', 'authoring.js (done-line 0083)'],
+      ['AI', 'Schema-validated generation', 'shipped', 'the SCHEMA is the contract — generated specs validate before render (§10 teeth)', 'authoring.test.js'],
+      ['AI', 'Pattern-Commons generative UI', 'planned', 'AI composes the surface from the governed Commons (the maker half)', 'Pattern Commons'],
+    ]],
     ['Plane 1 — data strata (compared per unit)', [
       ['C1', 'Fundamental', 'planned', 'the raw given — log appends + source bytes; the only free layer', '.ai-native/log/*.jsonl'],
       ['C2', 'Derived', 'planned', 'deterministic precipitate folded from fundamental', 'loop/*.py, term_economy.py'],

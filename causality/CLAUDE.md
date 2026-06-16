@@ -45,7 +45,17 @@ python -m unittest tests.test_term_economy -v
 # the canvas — the agnostic graph surface (done-line 0082)
 python -m http.server 8080      # then open http://localhost:8080/causality/canvas.html
 node causality/canvas.persist.test.js    # the §10 persistence round-trip check (with teeth)
+
+# Interface as AI — describe → local inference generates a schema-valid graph (0083)
+node causality/authoring.test.js         # the §10 validate→instantiate check (valid lands, malformed refused)
+open http://localhost:8080/causality/demos.html   # the component progress gallery
 ```
+
+**Interface as AI** (front door, defined in `display-system.md`): authoring is
+conversational — `authoring.js` sends a description + the live SCHEMA to local
+inference and **validates the returned graph-spec against the schema before
+anything renders** (a malformed spec is refused with a reason, never drawn). The
+click-canvas / recursion / gallery are **witness lenses** behind it.
 
 The canvas is **schema-driven**: one `SCHEMA` in `canvas.js` drives node
 defaults, the inspector panel (click a node/route → edit its config), and

@@ -508,6 +508,6 @@ const TEMPLATES = {
     S.link(input.id, q.id, { sign: 1 }); S.link(q.id, lm.id, { sign: 1 }); S.link(lm.id, out.id, { sign: 1 }); S.onchange && S.onchange(S); },
 };
 
-if (typeof window !== 'undefined') window.Causality = { canvas: Canvas, templates: TEMPLATES, PIGMENT, TYPES, LINK_KINDS, POKES, GLYPH, FNS, PORTS, SCHEMA, EDGE_SCHEMA, HOLONIC, fieldsFor, getPath, setPath };
-if (typeof module !== 'undefined' && module.exports) module.exports = { canvas: Canvas, templates: TEMPLATES, SCHEMA, EDGE_SCHEMA, HOLONIC, TYPES, fieldsFor, getPath, setPath };
+if (typeof window !== 'undefined') window.Causality = { canvas: Canvas, templates: TEMPLATES, PIGMENT, TYPES, LINK_KINDS, POKES, GLYPH, FNS, PORTS, SCHEMA, EDGE_SCHEMA, HOLONIC, fieldsFor, getPath, setPath, assignable };
+if (typeof module !== 'undefined' && module.exports) module.exports = { canvas: Canvas, templates: TEMPLATES, SCHEMA, EDGE_SCHEMA, HOLONIC, TYPES, PORTS, LINK_KINDS, fieldsFor, getPath, setPath, assignable };
 })();

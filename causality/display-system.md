@@ -14,6 +14,36 @@ the **three-way comparison of fundamental vs derived vs learned data** — the
 divergence *is* the meaning the witness reports. ontum's term-economy and
 holonsearch's fabric mesh are two **presets** of the same engine.
 
+## The front door — Interface as AI (the authoring paradigm)
+
+> bdo's coinage, 2026-06-15. **Status: PROPOSED** (his term to mint; this is the
+> drafted pin, awaiting his bless). It names and unifies threads already latent in
+> the repo: the API-first rule in `epic.causality-surface`, Pattern Commons, and
+> the experience skill. Belongs in Pattern Commons as the canonical deposit.
+
+**Interface as AI — the AI is both the *maker* and the *medium* of the interface.**
+
+- **AI as maker (generative).** The UI/UX is *generated* by AI from the governed
+  **Pattern Commons**, fitted to the data and the user's intent — not hand-built
+  per feature. The Commons is the vocabulary; the AI composes the surface.
+- **AI as medium (interfacing).** The product is **fully API-first** (every element
+  addressable by an AI) and the human's primary channel is **natural language**,
+  mediated by the AI — not bespoke buttons / click-ops.
+- **The governable substrate (the load-bearing third).** It only holds because of
+  the **Commons** (generation stays consistent, not random), **API-first elements**
+  (an AI can drive anything), and **schema + pens** (NL produces *validated drafts*;
+  durable change still lands only through governed seams — D-4).
+
+**The teeth (testable, refuses non-examples, §10):** a chatbot sidebar on a
+click-ops app is **not** Interface-as-AI (bolt-on; elements not all API-addressable;
+UI not AI-generated); an NL search box is **not** (a feature, not the paradigm);
+one-time AI codegen of a static UI is **not** (maker once, not the live medium). It
+qualifies only when the AI **generates the surface from the Commons** *and* the
+human interfaces in **NL over a fully API-first product**.
+
+This is why authoring on this surface is conversational, and the click-canvas /
+recursion / gallery are **witness lenses** behind it — not the way you build.
+
 ## Baseline — already on the board (an *expectation*, not a component to design)
 
 Present in `experience-foundry/lib/causality.js` today; carved out so we don't

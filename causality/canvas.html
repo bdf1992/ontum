@@ -92,6 +92,13 @@
 
 <div class="out" id="out"><span class="close" onclick="document.getElementById('out').classList.remove('on')">✕</span><h5 id="outH">result</h5><div id="outB"></div></div>
 
+<div class="bar" style="bottom:auto;top:64px">
+  <label>describe</label>
+  <input id="describe" placeholder="describe a node / site / graph in words…" style="min-width:340px">
+  <button class="run" id="generate">✦ generate</button>
+  <span class="saved" id="genState"></span>
+</div>
+
 <div class="bar">
   <label>template</label>
   <select id="tpl"></select>
@@ -109,6 +116,7 @@
 
 <script src="canvas.js"></script>
 <script src="inspector.js"></script>
+<script src="authoring.js"></script>
 <script>
 (() => {
   const C = window.Causality;
@@ -166,6 +174,19 @@
   };
   document.getElementById('run').onclick = fire;
   document.getElementById('inject').addEventListener('keydown', e => { if (e.key === 'Enter') fire(); });
+
+  // ── Interface as AI: describe → local inference generates a schema-valid graph (done-line 0083) ──
+  const genState = document.getElementById('genState');
+  async function generate() {
+    const desc = document.getElementById('describe').value.trim();
+    if (!desc) return;
+    genState.style.color = 'var(--think)'; genState.textContent = 'generating…';
+    const res = await window.CausalityAuthoring.generate(S, desc);
+    if (res.ok) { genState.style.color = 'var(--plus)'; genState.textContent = 'generated ✓'; persistNow(); setTimeout(() => genState.textContent = '', 1800); }
+    else { genState.style.color = 'var(--minus)'; genState.textContent = 'refused'; showOut('generation refused — nothing rendered', res.errors.join('\n')); }
+  }
+  document.getElementById('generate').onclick = generate;
+  document.getElementById('describe').addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
 
   setInterval(() => {
     const st = S.stats();

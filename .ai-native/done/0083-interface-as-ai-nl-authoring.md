@@ -1,0 +1,9 @@
+# Done-line 0083 — Interface as AI: describe a node, local inference generates a schema-valid graph
+
+Written before code, per §9.4. When this line is met, stop.
+
+> **Arc:** causality-canvas
+
+The first slice of the Interface-as-AI front door (definition pinned PROPOSED in `causality/display-system.md`): authoring becomes conversational. Instead of click-ops, you describe a node/site/graph in natural language and local inference generates the typed graph against the SCHEMA (done-line 0082) — the schema is the contract that makes generation validatable (§10 teeth: an invalid spec is refused, never instantiated as slop). The graph is declarable JSON (infra-as-code via toJSON/fromJSON); the inference plane (the canvas bridge → qwen/mistral) is the generator. NL produces a validated DRAFT; this slice renders it — durable change through pens stays a later piece (D-4). The click-canvas/recursion/gallery become witness lenses behind this. Composes `epic.causality-surface`'s `atom.graph-authoring-skill.v0` (wave 4) pulled to the front, and `atom.atom-search-request-node.v0` (wave 1), without double-building them (§10).
+
+> **Done when:** the Causality surface has a natural-language authoring path where (1) a description plus the live SCHEMA are sent to local inference (the canvas bridge) with a prompt that asks for a graph-spec in the `toJSON` shape; (2) a returned spec is **validated against the schema** before anything renders — a valid spec instantiates and draws on the canvas, an invalid or malformed spec is **refused with a legible reason and instantiates nothing** (no slop); and (3) the validate→instantiate path is proven by a deterministic headless test with teeth — a hand-authored valid spec instantiates to the expected nodes/edges, and a malformed spec (bad type, dangling edge, non-schema field) is refused — with the live describe→generate step wired to the bridge for when inference is up.
