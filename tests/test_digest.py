@@ -211,6 +211,49 @@ class TestRenderAndCli(_Temp):
         self.assertIn("divergences", payload)
 
 
+class TestGestureSurface(_Temp):
+    """The 2026-06-16 redesign: bdo found the digest 'hard to read and make
+    gestures about'. The teeth here are the gesture contract — a digest may
+    only call something 'your move' when there is a gesture actually waiting
+    on him. The §10 pair that refuses to fit at the surface: a *divergence
+    exists* and *nothing is on bdo* are both true at once, and the old render
+    fused them into a false 'these need you'."""
+
+    def test_session_work_divergence_is_not_an_owner_gesture(self):
+        # confirmed arc + refused piece: a real divergence whose move is a
+        # session's rebuild. It must surface (the teeth) but must NOT be
+        # presented as bdo's gesture (the lie the redesign kills).
+        node.confirm_arc(self.root, "epic.test", "bdo")
+        _append_receipt(self.root, "collision", "2026-06-05T10:00:00Z")
+        d = digest.digest(self.root)
+        self.assertEqual(len(d["divergences"]), 1, "the divergence must still surface")
+        self.assertEqual(digest.owner_gestures(d), [],
+                         "session work must not be folded into 'your move'")
+        text = digest.render(d)
+        self.assertIn("**Your move:** nothing", text)
+        self.assertNotIn("these need you", text)
+
+    def test_unconfirmed_arc_with_built_work_is_an_owner_gesture(self):
+        # the converse: an arc with a real built piece and no confirmation is
+        # exactly the gesture bdo should see at the top — confirm to unblock.
+        d = digest.digest(self.root)
+        self.assertEqual([a["epic"] for a in digest.owner_gestures(d)], ["epic.test"])
+        self.assertIn("**Your move — confirm 1 arc", digest.render(d))
+
+    def test_confirmed_arc_is_never_a_gesture(self):
+        # crying wolf the other way: never tell bdo to confirm what he has.
+        node.confirm_arc(self.root, "epic.test", "bdo")
+        d = digest.digest(self.root)
+        self.assertEqual(digest.owner_gestures(d), [])
+
+    def test_arc_prose_is_not_re_dumped(self):
+        # the volume half of unreadable: the arc's full description lives in
+        # its epic file and must not be echoed into the daily glance.
+        d = digest.digest(self.root)
+        self.assertNotIn("a test arc", digest.render(d),
+                         "the arc's prose was re-dumped — the unreadability bdo refused")
+
+
 class TestEndLineVerdict(_Temp):
     """Done-line 0055: the end line may never claim cleaner than the dataset.
 
