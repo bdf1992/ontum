@@ -293,6 +293,26 @@ its schema (the type requirements above), its etymon (provenance), and its
 divergence class. A new domain ships as a **preset of Commons types**, which is
 what makes the engine agnostic.
 
+## The work pattern (demo-driven — bdo, 2026-06-15)
+
+A component is not "progress" until it can be *seen and clicked*. Each component on
+the board moves through one loop:
+
+1. **done-line** — the frozen bar (what "this component works" means).
+2. **build** — schema-driven, in `causality/`.
+3. **interactive demo** — a live card in `causality/demos.html` (the gallery /
+   progress board), opened in a browser and judged by hand (the experience skill's
+   accept/reject surface). No component ships without one.
+4. **§10 headless test** — deterministic, with a negative control (the teeth).
+5. **PR → the merge-node lands** (the arc is confirmed).
+6. **bdo's reaction → Pattern Commons** — praise/refusal becomes a reusable deposit.
+
+The gallery doubles as the **progress surface**: every component shows
+`shipped / building / baseline / planned`, and shipped ones are live. Progress is
+that board filling in — `python -m http.server 8080` →
+`localhost:8080/causality/demos.html`. Reusable parts (the inspector → `inspector.js`)
+are factored to one source so the tool and the demos never drift (the Commons rule).
+
 ## Named holes (grip discipline — open, not invented)
 
 - **H1 — the unified three-way comparator (C4)** does not exist; it is the heart

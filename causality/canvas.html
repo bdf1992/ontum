@@ -108,6 +108,7 @@
 </div>
 
 <script src="canvas.js"></script>
+<script src="inspector.js"></script>
 <script>
 (() => {
   const C = window.Causality;
@@ -124,9 +125,9 @@
       if (k === 'refused-link') showOut('route refused', 'incompatible types — the seam contract held.');
     },
     onchange: () => { persistSoon(); },
-    onselect: (sel) => renderInspector(sel),
   });
   window.__cz = S;
+  window.CausalityInspector.mount(S, document.getElementById('insp'));   // the shared schema-driven inspector
   function lastResult() { const lm = S.nodes.find(n => n.type === 'inference' && n.lastOut); return lm ? lm.lastOut : ''; }
 
   // ───────────── persistence: auto-save to localStorage, export/import file ─────────────
@@ -142,61 +143,8 @@
   document.getElementById('importFile').onchange = e => { const f = e.target.files[0]; if (!f) return;
     const r = new FileReader(); r.onload = () => { try { S.fromJSON(JSON.parse(r.result)); persistNow(); } catch (err) { showOut('import failed', String(err)); } }; r.readAsText(f); };
 
-  // ───────────── the inspector — schema-driven config panel ─────────────
-  const insp = document.getElementById('insp');
-  function parseVal(kind, raw) {
-    if (kind === 'number') return raw === '' ? null : parseFloat(raw);
-    if (kind === 'bool') return !!raw;
-    if (kind === 'ref') return raw === '' ? null : parseInt(raw, 10);
-    if (kind === 'csv') return raw.split(',').map(s => s.trim()).filter(Boolean);
-    return raw === '' ? null : raw;   // text / textarea / select
-  }
-  function fieldRow(target, f, holo) {
-    const cur = C.getPath(target, f.key);
-    const id = 'f_' + f.key.replace(/\W/g, '_');
-    const wrap = document.createElement('div'); wrap.className = 'fld' + (holo ? ' holo' : '');
-    const lab = document.createElement('label'); lab.textContent = f.label; lab.htmlFor = id; wrap.appendChild(lab);
-    let inp;
-    if (f.kind === 'textarea') { inp = document.createElement('textarea'); inp.value = cur == null ? '' : cur; }
-    else if (f.kind === 'bool') { inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!cur; }
-    else if (f.kind === 'select') { inp = document.createElement('select'); const opts = typeof f.opts === 'function' ? f.opts() : (f.opts || []);
-      for (const o of opts) { const op = document.createElement('option'); op.value = o; op.textContent = o; if (String(cur) === String(o)) op.selected = true; inp.appendChild(op); } }
-    else { inp = document.createElement('input'); inp.type = f.kind === 'number' ? 'number' : 'text';
-      inp.value = cur == null ? '' : (Array.isArray(cur) ? cur.join(', ') : cur); if (f.kind === 'csv') inp.placeholder = 'comma,separated'; }
-    inp.id = id;
-    const commit = () => { const raw = f.kind === 'bool' ? inp.checked : inp.value; C.setPath(target, f.key, parseVal(f.kind, raw)); S.onchange && S.onchange(S); };
-    inp.addEventListener(f.kind === 'bool' || f.kind === 'select' ? 'change' : 'input', commit);
-    wrap.appendChild(inp); return wrap;
-  }
-  function renderInspector(sel) {
-    insp.innerHTML = '';
-    if (!sel) { insp.classList.remove('on'); return; }
-    insp.classList.add('on');
-    if (sel.kind === 'edge') {
-      const e = sel.ref; const A = S.byId(e.a), B = S.byId(e.b);
-      const h = document.createElement('h4'); h.textContent = 'route'; insp.appendChild(h);
-      const k = document.createElement('div'); k.className = 'kind'; k.textContent = (A ? A.label : e.a) + ' → ' + (B ? B.label : e.b); insp.appendChild(k);
-      for (const f of C.EDGE_SCHEMA) insp.appendChild(fieldRow(e, f, false));
-      const acts = document.createElement('div'); acts.className = 'acts';
-      const del = document.createElement('button'); del.className = 'del'; del.textContent = 'erase route';
-      del.onclick = () => { S.links = S.links.filter(l => l !== e); S.select(null); S.onchange && S.onchange(S); };
-      acts.appendChild(del); insp.appendChild(acts); return;
-    }
-    const n = sel.ref;
-    const h = document.createElement('h4'); h.textContent = n.type + ' node'; insp.appendChild(h);
-    const k = document.createElement('div'); k.className = 'kind'; k.textContent = '#' + n.id + ' · ' + C.GLYPH[n.type] + ' ' + n.label; insp.appendChild(k);
-    const common = C.fieldsFor(n.type).filter(f => !C.HOLONIC.includes(f) && !(C.SCHEMA[n.type] || []).includes(f));
-    const typed = (C.SCHEMA[n.type] || []);
-    for (const f of common) insp.appendChild(fieldRow(n, f, false));
-    if (typed.length) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = n.type + ' config'; insp.appendChild(g); for (const f of typed) insp.appendChild(fieldRow(n, f, false)); }
-    const g2 = document.createElement('div'); g2.className = 'grp'; g2.textContent = 'holonic · strata + anima'; insp.appendChild(g2);
-    for (const f of C.HOLONIC) insp.appendChild(fieldRow(n, f, true));
-    const acts = document.createElement('div'); acts.className = 'acts';
-    const poke = document.createElement('button'); poke.textContent = '▷ poke'; poke.onclick = () => S.pulseNode(n);
-    const del = document.createElement('button'); del.className = 'del'; del.textContent = 'erase';
-    del.onclick = () => { S.links = S.links.filter(l => l.a !== n.id && l.b !== n.id); S.nodes = S.nodes.filter(m => m !== n); S.select(null); S.onchange && S.onchange(S); };
-    acts.appendChild(poke); acts.appendChild(del); insp.appendChild(acts);
-  }
+  // the inspector is the shared module (inspector.js), mounted above — one source
+  // for the full tool and the component demos.
 
   // legend of node types
   document.getElementById('legend').innerHTML =
