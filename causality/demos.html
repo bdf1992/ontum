@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — component progress gallery</title>
+<script>window.__pageErr = null; addEventListener('error', e => { if (!window.__pageErr) window.__pageErr = (e.error && e.error.stack) || e.message; });</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#f6f1e7; --ink:#2b2a33; --dim:#8d8678; --plus:#0e8a7b; --minus:#d4543f; --think:#7a5ba6; --amber:#b8742c; --blue:#3f7cb6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { background:var(--paper); color:var(--ink); font-family:"Space Grotesk",system-ui,sans-serif; }
+  body { padding:30px 36px 80px; max-width:1180px; margin:0 auto; }
+  h1 { font-family:"Fraunces",serif; font-weight:300; font-size:30px; }
+  h1 b { color:var(--think); font-weight:600; }
+  .sub { font:300 10px "IBM Plex Mono",monospace; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; margin:4px 0 26px; }
+  h2 { font-family:"Fraunces",serif; font-weight:600; font-size:18px; margin:30px 0 4px; }
+  .planenote { font:300 11px "IBM Plex Mono",monospace; color:var(--dim); margin-bottom:14px; }
+
+  /* the live demo */
+  .demo { display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start; margin:8px 0 10px;
+          background:rgba(255,252,245,.7); border:1.5px solid var(--think); border-radius:14px; padding:16px; box-shadow:3px 4px 0 rgba(122,91,166,.12); }
+  .demo .stage { position:relative; }
+  canvas#demo { width:100%; height:340px; display:block; border:1.4px dashed rgba(43,42,51,.25); border-radius:10px; background:rgba(255,255,255,.45); cursor:crosshair; touch-action:none; }
+  .demo .tip { font:300 11px "IBM Plex Mono",monospace; color:var(--dim); margin-top:8px; line-height:1.6; }
+  .demo .tip b { color:var(--ink); font-weight:500; }
+  .demo .cta { display:inline-block; margin-top:8px; font:600 11px "IBM Plex Mono",monospace; color:var(--think); text-decoration:none; border:1.4px solid var(--think); border-radius:8px; padding:6px 10px; }
+  .demo .cta:hover { background:rgba(122,91,166,.1); }
+
+  /* reuse the inspector look from canvas.html */
+  .insp { background:rgba(255,252,245,.97); border:1.4px solid var(--think); border-radius:12px; padding:13px 15px; max-height:360px; overflow:auto; display:none; }
+  .insp.on { display:block; }
+  .insp h4 { font:500 9px "IBM Plex Mono",monospace; letter-spacing:.2em; color:var(--think); text-transform:uppercase; margin-bottom:2px; }
+  .insp .kind { font:300 9px "IBM Plex Mono",monospace; color:var(--dim); margin-bottom:10px; }
+  .insp .fld { margin-bottom:9px; }
+  .insp .fld label { display:block; font:400 9.5px "IBM Plex Mono",monospace; color:var(--dim); margin-bottom:3px; }
+  .insp .fld input[type=text], .insp .fld input[type=number], .insp .fld textarea, .insp .fld select {
+    width:100%; font:400 11.5px "IBM Plex Mono",monospace; color:var(--ink); background:#fff; border:1.2px solid rgba(43,42,51,.35); border-radius:7px; padding:5px 7px; }
+  .insp .fld textarea { resize:vertical; min-height:44px; line-height:1.45; }
+  .insp .fld.holo label { color:var(--amber); }
+  .insp .grp { margin-top:10px; padding-top:9px; border-top:1px dashed rgba(43,42,51,.22); font:500 8px "IBM Plex Mono",monospace; letter-spacing:.18em; color:var(--dim); text-transform:uppercase; margin-bottom:6px; }
+  .insp .acts { display:flex; gap:6px; margin-top:12px; }
+  .insp .acts button { flex:1; font:600 10px "IBM Plex Mono",monospace; color:var(--think); background:none; border:1.4px solid var(--think); border-radius:8px; padding:6px; cursor:pointer; }
+  .insp .acts button.del { color:var(--minus); border-color:var(--minus); }
+  .insp .empty { font:300 11px "IBM Plex Mono",monospace; color:var(--dim); line-height:1.6; }
+
+  /* the component board */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
+  .card { background:rgba(255,252,245,.78); border:1.3px solid rgba(43,42,51,.28); border-radius:12px; padding:12px 14px; }
+  .card .top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .card .id { font:500 9px "IBM Plex Mono",monospace; color:var(--dim); }
+  .card .name { font:600 14px "Space Grotesk"; margin:1px 0 4px; }
+  .card .what { font:300 11.5px "Space Grotesk"; color:#5a564d; line-height:1.45; }
+  .card .src { font:300 9px "IBM Plex Mono",monospace; color:var(--dim); margin-top:7px; }
+  .badge { font:600 8px "IBM Plex Mono",monospace; letter-spacing:.12em; text-transform:uppercase; padding:3px 7px; border-radius:20px; white-space:nowrap; }
+  .b-shipped { color:#fff; background:var(--plus); }
+  .b-building { color:#fff; background:var(--amber); }
+  .b-baseline { color:#fff; background:var(--blue); }
+  .b-planned { color:var(--dim); border:1px solid rgba(43,42,51,.3); }
+  .legend { font:300 10px "IBM Plex Mono",monospace; color:var(--dim); margin:6px 0 20px; display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+  .progress { font:300 11px "IBM Plex Mono",monospace; color:var(--ink); margin-bottom:18px; }
+  .progress b { color:var(--plus); }
+</style>
+</head>
+<body>
+<h1>Causa<b>lity</b> · component gallery</h1>
+<div class="sub">demos of progress · interactive · the work pattern made visible</div>
+
+<div class="progress" id="progress">—</div>
+<div class="legend">
+  <span><span class="badge b-shipped">shipped</span> built + demoed + tested</span>
+  <span><span class="badge b-building">building</span> in progress</span>
+  <span><span class="badge b-baseline">baseline</span> already capable (an expectation)</span>
+  <span><span class="badge b-planned">planned</span> on the board, not yet built</span>
+</div>
+
+<h2>Live · schema-driven editing + persistence <span class="badge b-shipped" style="vertical-align:middle">shipped · 0082</span></h2>
+<div class="planenote">click a node or a route → edit its config in the panel → reload this page; your edits persist to this browser. This is C5 + C10 + C13 + C14 of the board, alive.</div>
+<div class="demo">
+  <div class="stage">
+    <canvas id="demo"></canvas>
+    <div class="tip"><b>click</b> a node/route to inspect · <b>double-click paper</b> new node · <b>click the ○ badge</b> cycle type · <b>drag rim→node</b> wire · <b>right-click</b> erase</div>
+    <a class="cta" href="canvas.html">open the full tool →</a>
+  </div>
+  <div class="insp" id="insp"><div class="empty">select a node or route to edit its typed config — including the holonic <i>strata</i> and <i>anima</i> fields the full vision lands on next.</div></div>
+</div>
+
+<h2>The component board</h2>
+<div class="planenote">the catalog from <code>display-system.md</code> — the backlog, with each component's live status. Progress is this board filling in.</div>
+<div class="grid" id="board"></div>
+
+<script src="canvas.js"></script>
+<script src="inspector.js"></script>
+<script>
+(() => {
+  const C = window.Causality;
+  const DEMO_STORE = 'causality.demo.v1';
+
+  // ── the live demo: a real engine instance + the shared inspector ──
+  const S = C.canvas(document.getElementById('demo'), {
+    height: 340,
+    onchange: () => { try { localStorage.setItem(DEMO_STORE, JSON.stringify(S.toJSON())); } catch (e) {} },
+  });
+  window.__czDemo = S;
+  const insp = document.getElementById('insp');
+  const inspector = window.CausalityInspector.mount(S, insp);
+  S.onselect = (sel) => { if (!sel) { insp.classList.add('on'); insp.innerHTML = '<div class="empty">select a node or route to edit its typed config — including the holonic <i>strata</i> and <i>anima</i> fields.</div>'; } else inspector.render(sel); };
+
+  function seed() {
+    S.clear();
+    const w = S.W || 700, cy = (S.H || 340) / 2;
+    const a = S.node(w * 0.18, cy, 'input', { type: 'source', data: 'demo', hue: '#3f7cb6' });
+    const b = S.node(w * 0.45, cy, 'shape it', { type: 'code', fn: 'uppercase', hue: '#0e8a7b' });
+    const c = S.node(w * 0.72, cy, 'gate', { type: 'gate', hue: '#7a5ba6' });
+    S.link(a.id, b.id, { sign: 1 }); S.link(b.id, c.id, { sign: 1 });
+  }
+  function restoreDemo() { try { const raw = localStorage.getItem(DEMO_STORE); if (raw) return S.fromJSON(JSON.parse(raw)); } catch (e) {} return false; }
+  requestAnimationFrame(() => requestAnimationFrame(() => { dispatchEvent(new Event('resize')); if (!restoreDemo()) seed(); }));
+
+  // ── the component board (mirrors display-system.md; the spec stays the source) ──
+  const COMPONENTS = [
+    ['Front door — Interface as AI (authoring)', [
+      ['AI', 'NL → graph authoring', 'shipped', 'describe a node/graph in words → local inference generates a schema-valid graph; invalid is refused (no slop)', 'authoring.js (done-line 0083)'],
+      ['AI', 'Schema-validated generation', 'shipped', 'the SCHEMA is the contract — generated specs validate before render (§10 teeth)', 'authoring.test.js'],
+      ['AI', 'Pattern-Commons generative UI', 'planned', 'AI composes the surface from the governed Commons (the maker half)', 'Pattern Commons'],
+    ]],
+    ['Plane 1 — data strata (compared per unit)', [
+      ['C1', 'Fundamental', 'planned', 'the raw given — log appends + source bytes; the only free layer', '.ai-native/log/*.jsonl'],
+      ['C2', 'Derived', 'planned', 'deterministic precipitate folded from fundamental', 'loop/*.py, term_economy.py'],
+      ['C3', 'Learned', 'planned', "the model's reach, graded against an oracle", 'inference plane, holonsearch'],
+      ['C4', 'Divergence comparator', 'planned', 'the three-way compare; its output is the verdict — the heart (H1)', 'unifies term_economy + holonsearch'],
+    ]],
+    ['Plane 2 — the holonic typed unit', [
+      ['C5', 'TypedNode', 'shipped', 'schema-driven node: type + config, widened with sites/space/strata/anima', 'canvas.js SCHEMA'],
+      ['C6', 'TypedSite', 'planned', 'a place a node lives (file/log/§/glyph cell)', 'projection-api SiteNode'],
+      ['C7', 'TypedSpace', 'planned', 'the geometric cube frame a unit is embedded in', 'glyphs/ cube'],
+      ['C8', 'TypedPulse', 'baseline', 'a message carrying data; holonic internal-graph still planned', 'canvas.js pulses'],
+      ['C9', 'Glyph floor', 'planned', 'the atomic geometric floor where descent bottoms out', 'glyphs/registry.json'],
+      ['C10', 'TypedConnection', 'shipped', 'sync wire: typed ports refuse incompatible wires; editable in the inspector', 'canvas.js link/PORTS'],
+      ['C11', 'TypedIteration', 'planned', 'async, cross-cluster connection ("iterated space")', 'async seams'],
+    ]],
+    ['Plane 3 — the engine', [
+      ['C12', 'Recursive renderer', 'building', 'one renderer; descent node→site→space→glyph (flat today)', 'canvas.js render'],
+      ['C13', 'Inspector', 'shipped', 'click node/route → edit its type config; shared module', 'inspector.js'],
+      ['C14', 'Persistence', 'shipped', 'toJSON/fromJSON → localStorage + file import/export', 'canvas.js toJSON'],
+      ['C15', 'Query / provenance trace', 'planned', 'queryable graph; traceable route to source (holographic)', 'term_economy audit'],
+      ['C16', 'Ingress / preset', 'shipped', 'a domain loads as data (templates today; seeds next)', 'canvas.js TEMPLATES'],
+      ['C17', 'Self-host', 'planned', 'Causality renders Causality (the board as a graph)', 'new'],
+    ]],
+    ['The anima overlay (cross-cutting, felt field)', [
+      ['C18', 'AnimaSignature', 'building', 'weak↔strong (energy/impact) · fast↔slow (heat-cool/temporal); fields declared, render planned', 'loop/energy.py, impact.py, temporal.py'],
+    ]],
+  ];
+  const BADGE = { shipped: 'b-shipped', building: 'b-building', baseline: 'b-baseline', planned: 'b-planned' };
+  const board = document.getElementById('board');
+  let shipped = 0, total = 0;
+  for (const [plane, comps] of COMPONENTS) {
+    const h = document.createElement('h2'); h.textContent = plane; h.style.fontSize = '15px'; h.style.gridColumn = '1/-1'; board.appendChild(h);
+    for (const [id, name, status, what, src] of comps) {
+      total++; if (status === 'shipped') shipped++;
+      const card = document.createElement('div'); card.className = 'card';
+      card.innerHTML = `<div class="top"><span class="id">${id}</span><span class="badge ${BADGE[status]}">${status}</span></div>`
+        + `<div class="name">${name}</div><div class="what">${what}</div><div class="src">${src}</div>`;
+      board.appendChild(card);
+    }
+  }
+  document.getElementById('progress').innerHTML = `progress: <b>${shipped}</b> shipped of ${total} components · the gallery fills as the arc lands.`;
+})();
+</script>
+</body>
+</html>

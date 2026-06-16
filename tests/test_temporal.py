@@ -173,21 +173,29 @@ class TruthInvariant(unittest.TestCase):
 
 class RealCausalitySet(unittest.TestCase):
     """The point: the same committed probe-set re-emphasised by the hour
-    (teeth 5). Morning heat takes CZ1 (the unblocker); evening cool takes CZ2
-    (the closeable leaf); both over an unchanged build-phase truth."""
+    (teeth 5). Morning heat takes the unblocker (the fold's top leverage);
+    evening cool takes a different, closeable leaf; both over one unchanged
+    build-phase truth. The specific ids move as probes resolve (CZ1→CZ2→CZ3…),
+    so this pins the *relationship* — heat names the leverage, cool names
+    something else, the clock never moves the truth — not the snapshot id."""
 
     def test_morning_vs_evening_emphasis(self):
         morning = temporal(8)
         evening = temporal(20)
         self.assertEqual(morning["temporal"]["lean"], "heat")
         self.assertEqual(evening["temporal"]["lean"], "cool")
-        self.assertEqual(morning["temporal"]["focus"], "CZ1")
-        self.assertEqual(evening["temporal"]["focus"], "CZ2")
-        # same underlying truth, different emphasis
+        # heat takes the unblocker the fold ranks top; cool takes a leaf that
+        # differs from it — the hour re-emphasises the same truth differently
+        self.assertEqual(morning["temporal"]["focus"],
+                         morning["pressure"]["top_leverage"]["id"])
+        self.assertNotEqual(evening["temporal"]["focus"],
+                            morning["temporal"]["focus"])
+        # same underlying truth, different emphasis: build phase and the same
+        # top leverage at both hours (the clock never moves reality)
         self.assertEqual(morning["pressure"]["phase"], "build")
         self.assertEqual(evening["pressure"]["phase"], "build")
-        self.assertEqual(morning["pressure"]["top_leverage"]["id"], "CZ1")
-        self.assertEqual(evening["pressure"]["top_leverage"]["id"], "CZ1")
+        self.assertEqual(morning["pressure"]["top_leverage"]["id"],
+                         evening["pressure"]["top_leverage"]["id"])
         self.assertNotEqual(morning["temporal"]["next_move"],
                             evening["temporal"]["next_move"])
 
