@@ -141,3 +141,4 @@
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/impact-assay-pan","id":"rcp.merge.149","kind":"merge","node":"merge-node.claude.v1","pr":149,"ts":"2026-06-16T15:20:09Z","verdict":"landed"}
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/holon-outcome","id":"rcp.merge.152","kind":"merge","node":"merge-node.claude.v1","pr":152,"ts":"2026-06-16T15:20:24Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/digest-readable","id":"rcp.merge.155","kind":"merge","node":"merge-node.claude.v1","pr":155,"ts":"2026-06-16T15:21:07Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/digest-divergence-supersede","id":"rcp.merge.162","kind":"merge","node":"merge-node.claude.v1","pr":162,"ts":"2026-06-16T15:21:47Z","verdict":"landed"}
