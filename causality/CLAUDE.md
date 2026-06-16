@@ -1,13 +1,18 @@
 # causality/ — the term-economy witness
 
-Causality's first governed slice in ontum: not the canvas app, but the
-**terminology-economy witness** behind it — a read-only fold that turns
-ontum's own vocabulary into a reproducible, evidence-backed projection.
-The owner uses it to see whether a term is *alive, dead, overloaded, or
-pretending*. It is a new vertical slice of `epic.causality-surface` (its
-witness register) and it does **not** double-build `epic.the-field`'s
-fold or the `glyphs/` + `language/` minted surfaces (§10) — it reads
-them.
+Causality's governed slice in ontum, now in two halves that compose into
+**one solution** (done-line 0082): the **terminology-economy witness**
+(`term_economy.py`) — a read-only fold that turns ontum's own vocabulary
+into a reproducible, evidence-backed projection — and the **canvas**
+(`canvas.html` + `canvas.js`), the agnostic graph engine homed here from
+the experience-foundry prototype. The owner uses the witness to see
+whether a term is *alive, dead, overloaded, or pretending*, and the
+canvas to render and edit any typed graph (ontum's term economy and
+holonsearch's fabric mesh are two presets). It is a vertical slice of
+`epic.causality-surface` and it does **not** double-build
+`epic.the-field`'s fold or the `glyphs/` + `language/` minted surfaces
+(§10) — it reads them. The full display target is
+[`display-system.md`](display-system.md).
 
 Done-line 0060. The horizon it serves: Causality as the live visual
 witness over the term economy (the repo stays the ledger, the fold stays
@@ -36,7 +41,21 @@ python causality/term_economy.py project --seed <path> # run over an alternate s
 
 # the §10 test (joins the main suite)
 python -m unittest tests.test_term_economy -v
+
+# the canvas — the agnostic graph surface (done-line 0082)
+python -m http.server 8080      # then open http://localhost:8080/causality/canvas.html
+node causality/canvas.persist.test.js    # the §10 persistence round-trip check (with teeth)
 ```
+
+The canvas is **schema-driven**: one `SCHEMA` in `canvas.js` drives node
+defaults, the inspector panel (click a node/route → edit its config), and
+serialization (`toJSON`/`fromJSON` → localStorage + file export/import).
+The node model carries the holonic display fields `sites` / `space` /
+`strata{fundamental,derived,learned}` / `anima{strength,tempo}` — declared
+now, populated by a later piece. A new node type ships as a `SCHEMA`
+entry, not new code (that is the agnosticism). Never hand-edit toward a
+non-schema field; add the field to the schema so the inspector and
+persistence move together.
 
 ## The taxonomy (bdo's, done-line 0060)
 
