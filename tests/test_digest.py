@@ -126,6 +126,58 @@ class TestDivergenceTheTeeth(_Temp):
         self.assertEqual(digest.digest(self.root)["divergences"], [])
 
 
+class TestSupersededRefusalIsHistory(unittest.TestCase):
+    """Done-line 0090: a refusal a newer LANDED version of the same atom
+    already cleared is settled history, not a live 'these need you' divergence
+    — the stale `atom.field-topology.v0` 'missed' that rode every digest after
+    v1 landed and loop/field.py shipped (done-line 0078). The teeth (§10) stay:
+    the current/highest version's own refusal still fires."""
+
+    def test_base_version_splits_on_the_v_suffix(self):
+        self.assertEqual(digest._base_version("atom.field-topology.v3"),
+                         ("atom.field-topology", 3))
+        self.assertEqual(digest._base_version("atom.no-suffix"),
+                         ("atom.no-suffix", 0))
+
+    def test_a_later_landed_version_supersedes_an_earlier_refusal(self):
+        pieces = [{"atom": "atom.x.v0", "landed": False},
+                  {"atom": "atom.x.v1", "landed": True}]
+        self.assertEqual(digest._superseded(pieces), {"atom.x.v0"})
+
+    def test_no_landed_successor_supersedes_nothing(self):
+        # v0 refused, v1 ALSO refused (nothing landed): the contradiction is
+        # still live — the fold must not go blind because a successor exists.
+        pieces = [{"atom": "atom.x.v0", "landed": False},
+                  {"atom": "atom.x.v1", "landed": False}]
+        self.assertEqual(digest._superseded(pieces), set())
+
+    def test_an_earlier_landed_version_does_not_supersede_a_later_refusal(self):
+        # the highest version's own refusal is the live one; a *lower* landed
+        # version must never silence it.
+        pieces = [{"atom": "atom.x.v0", "landed": True},
+                  {"atom": "atom.x.v1", "landed": False}]
+        self.assertEqual(digest._superseded(pieces), set())
+
+    def test_divergence_drops_superseded_but_keeps_the_live_one(self):
+        # two confirmed-arc pieces each carry a refusal: one (a.v0) is cleared
+        # by a landed successor (a.v1), one (b.v0) is the highest version. Each
+        # refusal is locally fine; only the live one is a divergence bdo sees.
+        import types
+        fold = types.SimpleNamespace(admissions=[])
+        arcs = [{"epic": "epic.x", "confirmed": {"by": "bdo"}, "pieces": [
+            {"atom": "atom.a.v0", "landed": False,
+             "refusals": [{"node": "g", "verdict": "missed", "reason": "stale"}]},
+            {"atom": "atom.a.v1", "landed": True, "refusals": []},
+            {"atom": "atom.b.v0", "landed": False,
+             "refusals": [{"node": "g", "verdict": "collision", "reason": "live"}]},
+        ]}]
+        superseded = digest._superseded([p for a in arcs for p in a["pieces"]])
+        self.assertEqual(superseded, {"atom.a.v0"})
+        div = digest._divergences(fold, arcs, [], None, None, superseded)
+        self.assertEqual([d["atom"] for d in div], ["atom.b.v0"])
+        self.assertEqual(div[0]["verdict"], "collision")
+
+
 class TestQueueOverCap(_Temp):
     def test_tick_over_its_setpoint_cap_is_a_divergence(self):
         sp = orchestrate.admit_setpoint(
