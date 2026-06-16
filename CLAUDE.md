@@ -11,6 +11,14 @@ beneath this file, and nested `CLAUDE.md` files load when working in
 their directories — local folder and global directories compose (bdo's
 @/@@ directive, 2026-06-10; done-line 0010).
 
+A module is `@`-imported here when its environment binds a session
+*wherever it works* — governance that travels (the harness config, the
+fence). A module whose knowledge only matters while you're inside it
+(`tests/`, `pivot/`) is left to nested loading and not imported here;
+promoting it would bloat every session for no carried rule. When a new
+module's `CLAUDE.md` is born, that is the test for whether it joins this
+surface.
+
 @loop/CLAUDE.md
 @glyphs/CLAUDE.md
 @language/CLAUDE.md
@@ -18,6 +26,8 @@ their directories — local folder and global directories compose (bdo's
 @exports/CLAUDE.md
 @causality/CLAUDE.md
 @outcomes/CLAUDE.md
+@.claude/CLAUDE.md
+@fence/CLAUDE.md
 
 ## What this repo is
 
