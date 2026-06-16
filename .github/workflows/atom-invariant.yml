@@ -1,0 +1,36 @@
+# The server-side atom gate (done-line 0068): every PR to main must carry
+# an atom on the log, or this check goes red and blocks the merge. It runs
+# the SAME pure check the client-side PR pen uses (loop.pr_audit via
+# `pr.py audit --range`), so the two can never disagree about what "on the
+# log" means. It enforces toward the log only — it never judges the work.
+#
+# This is built and tested ready for one owner gesture: marking it a
+# required status check in branch protection (and turning off the bare
+# merge button) is what turns it from visible to impossible (D-4).
+name: atom-invariant
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  atom-backed:
+    name: PR carries an atom on the log
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out base + head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # the audit diffs base...head; it needs both
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"  # pure stdlib; no dependencies to install
+
+      - name: Audit the PR for the atom invariant
+        run: >-
+          python .claude/skills/branch-ritual/pr.py audit
+          --range "${{ github.event.pull_request.base.sha }}"
+          "${{ github.event.pull_request.head.sha }}"
+          --pr "${{ github.event.pull_request.number }}"

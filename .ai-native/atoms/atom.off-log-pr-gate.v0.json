@@ -1,0 +1,43 @@
+{
+  "atom": {
+    "id": "atom.off-log-pr-gate.v0",
+    "story": {
+      "text": "As the loop's owner, I need a PR that reached GitHub without an atom on the log to be caught and refused — because the atom invariant (every work-particle is an atom on the log, §15/D-5) lives only client-side today, so work can route around the loop entirely: a branch pushed straight to a PR is zero atoms, zero receipts, invisible to every fold ambient control runs. The gate must read the same pure check the PR pen uses, so the two can never disagree about what 'on the log' means, and it must enforce toward the log only — never judge the work.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Catch a PR that reached GitHub without an atom on the log",
+      "value": "The atom invariant becomes enforceable at the seam where it was breached. A pure fold (loop.pr_audit) decides whether a PR's branch is atom-backed — it adds at least one atom under .ai-native/atoms/ that a receipt it also adds names by artifact_id — and a server-side GitHub Action runs the SAME check the client-side pen runs (pr.py audit --range), so an off-log orphan is surfaced and refused instead of landing invisibly. It enforces toward the log only; it never judges the work (D-2).",
+      "why_now": "Retro 0037 named it: a bypassable gate will be bypassed. The atom invariant was enforced only in two client-side places (the PR pen refusing to open, the lander refusing to land); a branch pushed straight to a PR met neither. This is the off-log orphan made catchable.",
+      "if_accepted": "An off-log PR goes red on the atom-invariant check and (on bdo's branch-protection gesture) cannot merge. The audit shares loop.pr_audit with the pen's atom_backed_refusal, so client and server can never drift. This atom dogfoods its own gate: its work is on the log, with a receipt, so the very PR that introduces the gate passes it.",
+      "if_rejected": "Work keeps reaching main outside the machinery; folds stay blind to it; the invariant stays an honor-system claim the doctrine makes but nothing enforces at the GitHub seam.",
+      "cost_of_wrong_call": "Low: the gate enforces toward the log only and reads a pure fold; a false positive is an honest off-log finding, surfaced never edited. Turning the check required is bdo's branch-protection gesture (D-4), not this atom's.",
+      "mechanism": "loop/pr_audit.py (the pure half: orphan_reason / audit), a pr.py audit verb that gathers the branch facts and prints the verdict, and .github/workflows/atom-invariant.yml running that verb on every PR to main. Done-lines 0066 (the pure audit caught off-log) and 0068 (the server-side gate).",
+      "reading": [
+        "loop/pr_audit.py",
+        ".github/workflows/atom-invariant.yml",
+        ".ai-native/done/0066-off-log-pr-is-caught.md",
+        ".ai-native/done/0068-server-side-atom-gate.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["loop/pr_audit.py", ".github/workflows/atom-invariant.yml", ".claude/skills/branch-ritual/pr.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/pr_audit.py", ".github/workflows/atom-invariant.yml"]
+    }
+  },
+  "_note": "Birth record for the off-log PR gate (done-lines 0066, 0068), authored so the PR that introduces the atom invariant's server-side enforcement carries an atom on the log itself — the gate dogfoods its own check. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
