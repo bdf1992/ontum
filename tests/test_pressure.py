@@ -235,21 +235,30 @@ class LogRecordCheck(unittest.TestCase):
 
 class RealCausalitySet(unittest.TestCase):
     """The committed Causality probe-set resolves as the done-line specifies:
-    build phase, CZ1 top leverage, outcome probes carried, nothing refused."""
+    build phase while a capability remains, a real unmet capability as top
+    leverage, outcome probes carried, nothing refused. The *specific* top probe
+    moves as the work resolves probes (CZ1, then CZ2, then CZ3…); this test
+    pins the structure the fold guarantees, not the snapshot of which id is top
+    today — a test that breaks on legitimate progress is a tripwire, not teeth
+    (§10). The fold's ranking is proven by the synthetic Leverage/Dormancy
+    tests above, which do not move under it."""
 
     def test_committed_set_is_clean_and_build_phase(self):
         r = pressure(DEFAULT_PROBES)
         self.assertEqual(r["refused"], [], "the committed set must be checkable")
+        # build phase holds exactly while some capability is unmet/partial
         self.assertEqual(r["phase"], "build")
-        self.assertEqual(r["top_leverage"]["id"], "CZ1")
-        # the outcome probes are carried as continuing pressure. OUT1 is
-        # dormant *until* OP2 lands and active-unmet *after* (done-line 0073
-        # built OP2: summon now references the pressure fold, so OP2 resolves
-        # and OUT1's precondition is met) — the durable invariant is that it is
-        # carried, not which of the two it is in at a given moment. The
-        # dormancy mechanism itself is proven by the synthetic Dormancy tests.
-        unresolved = set(r["partial"]) | set(r["unmet"]) | set(r["dormant"])
-        self.assertTrue({"CZ1", "CZ2", "CZ3", "CZ4", "OUT1", "OUT2"} <= unresolved)
+        # top leverage is a real, currently-unmet capability probe — never a
+        # met one and never a literal pinned in the test
+        unmet = set(r["unmet"])
+        self.assertTrue(r["top_leverage"], "build phase must name a top leverage")
+        self.assertIn(r["top_leverage"]["id"], unmet)
+        # the outcome (realization) probes are carried as continuing pressure —
+        # they cannot be built to met, so they stay unresolved across any amount
+        # of capability progress (the durable invariant, independent of which
+        # capability is currently top).
+        unresolved = set(r["partial"]) | unmet | set(r["dormant"])
+        self.assertTrue({"OUT1", "OUT2"} <= unresolved)
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
 from loop import node, orchestrate, reconcile, summon
+from loop import temporal as T
 
 SETPOINT = {"step_budget_per_tick": 3, "max_inflight_atoms": 8, "human_queue_cap": 2}
 L0_STAGE = "value-gate.mock.v0"
@@ -136,17 +137,22 @@ class SummonTest(unittest.TestCase):
 
     def test_outcome_pressure_line_names_phase_and_focus(self):
         # over the real committed Causality probe-set: a morning hour leans
-        # heat -> the big unblocker (CZ1); an evening hour leans cool -> the
-        # nearest-closeable leaf (CZ2). The line names the phase and the focus.
+        # heat -> the unblocker; an evening hour leans cool -> a different,
+        # closeable leaf. The line names the phase and *the focus the fold
+        # computes* — not a literal id, which moves as probes resolve. The
+        # contract under test is that the surface speaks the fold.
         real_root = REPO / ".ai-native"
+        m_focus = T.temporal(hour=8)["temporal"]["focus"]
+        e_focus = T.temporal(hour=20)["temporal"]["focus"]
+        self.assertNotEqual(m_focus, e_focus, "the hour must re-emphasise differently")
         morning = summon.outcome_pressure_lines(real_root, hour=8)
         self.assertIsNotNone(morning)
         blob = "\n".join(morning)
         self.assertIn("outcome-pressure", blob)
         self.assertIn("phase build", blob)
-        self.assertIn("focus CZ1", blob)
+        self.assertIn(f"focus {m_focus}", blob)
         evening = "\n".join(summon.outcome_pressure_lines(real_root, hour=20))
-        self.assertIn("focus CZ2", evening)
+        self.assertIn(f"focus {e_focus}", evening)
 
     def test_outcome_pressure_silent_without_a_probeset(self):
         # fail-soft: a foreign/missing root has no probe-set -> no line, no crash
@@ -159,7 +165,9 @@ class SummonTest(unittest.TestCase):
         # stays exit-0 (hook_text asserts it) and the line composes, not replaces
         text = self.hook_text(REPO / ".ai-native", "{}")
         self.assertIn("outcome-pressure", text)
-        self.assertIn("leverage-top CZ1", text)
+        # names the fold's current top leverage (hour-independent), not a literal
+        top = T.temporal(hour=8)["pressure"]["top_leverage"]["id"]
+        self.assertIn(f"leverage-top {top}", text)
         self.assertIn("python -m loop.temporal", text)
 
     # --- done-line 0075: summon shows the slow loop's dial proposal ---
