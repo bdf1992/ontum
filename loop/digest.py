@@ -231,63 +231,126 @@ def _span_label(span):
     return f"{since or 'start'} … {until or 'now'}"
 
 
-def render(d):
-    """The dataset as prose, divergences first — they are what needs bdo."""
-    lines = ["# Merge digest", f"_span: {_span_label(d['span'])}_", ""]
+def _glance(text, n=160):
+    """One scannable line from a gate's reason — its first sentence, capped.
+    The full reason lives in the dataset (`--json`) and on the atom; the
+    digest is bdo's glance, not the transcript. The wall-of-prose reason was
+    half of why the surface was unreadable (bdo, 2026-06-16)."""
+    if not text:
+        return "no reason given"
+    head = text.strip().split(". ")[0].strip().rstrip(".")
+    if len(head) > n:
+        head = head[:n - 1].rstrip() + "…"
+    return head
 
+
+def owner_gestures(d):
+    """The only things in the dataset that are bdo's *to do*: an unconfirmed
+    arc with built work waiting on his standing stamp — confirm-arc unblocks
+    its pieces. Everything else the loop carries. A digest that cries 'needs
+    you' over session work is the surface bdo refused (2026-06-16): he opens
+    it, there is no gesture, the surface lied. So 'your move' is a fold, not a
+    paragraph — and it is honestly empty when nothing is on him."""
+    return [a for a in d["arcs"]
+            if not a.get("confirmed")
+            and any(p.get("present") for p in a["pieces"])]
+
+
+def _arc_line(arc):
+    """One arc, collapsed to a glanceable tally line. The arc's full prose
+    lives in its epic file and never changes day to day — re-dumping all of it
+    every digest was the other half of the unreadability. The mark: ✓
+    confirmed, ○ not."""
+    mark = "✓" if arc["confirmed"] else "○"
+    total = len(arc["pieces"])
+    extra = []
+    if arc["awaiting"]:
+        extra.append(f"{arc['awaiting']} awaiting")
+    if arc["parked"]:
+        extra.append(f"{arc['parked']} parked")
+    if arc["refused"]:
+        extra.append(f"{arc['refused']} refused")
+    suffix = (" · " + " · ".join(extra)) if extra else ""
+    return f"- {mark} `{arc['epic']}` — {arc['landed']}/{total} landed{suffix}"
+
+
+def render(d):
+    """The dataset as a scannable glance — your-move first, then what refuses
+    to fit, then the field, then arcs collapsed to one line each.
+
+    The redesign (bdo, 2026-06-16: 'honestly hard to read and make gestures
+    about'): the old render led with a paragraph-long divergence under a
+    'these need you' banner — over work that was a session's to rebuild, not
+    his — and then re-dumped nine full arc descriptions and every atom every
+    single day. Two failures: unreadable (volume) and ungesturable (it
+    promised a gesture that wasn't there). So: lead with the honest answer to
+    'is anything on me?', keep the §10 teeth but terse and ownership-marked,
+    and collapse the arcs (their prose is in their epic files)."""
+    lines = [f"# Arc digest — {_span_label(d['span'])}", ""]
+
+    # 1. the line bdo opens the digest for: is anything actually his to do?
+    gestures = owner_gestures(d)
+    if gestures:
+        names = ", ".join(f"`{g['epic']}`" for g in gestures)
+        lines += [f"**Your move — confirm {len(gestures)} arc(s):** {names}.",
+                  "Each has built work waiting on your stamp; close its "
+                  "confirm-issue with a yes and the loop lands its pieces.", ""]
+    else:
+        lines += ["**Your move:** nothing — every arc with live work is "
+                  "confirmed; the loop is carrying its pieces.", ""]
+
+    # 2. the §10 teeth: where two locally-fine records refuse to fit. Kept,
+    #    but terse and marked with whose move it is — most are the loop's.
     div = d["divergences"]
     if div:
-        lines.append(f"## ⚠ Divergences ({len(div)}) — these need you")
+        lines.append(f"## ⚠ Divergences ({len(div)}) — what refuses to fit")
+        lines.append("_surfaced for your eyes; the loop carries each unless "
+                     "marked **(yours)**._")
         for x in div:
             if x["kind"] == "refusal-under-confirmed-arc":
                 lines.append(
-                    f"- **{x['atom']}** refused under confirmed arc "
-                    f"`{x['epic']}` (you confirmed it): {x['node']} → "
-                    f"`{x['verdict']}` — {x.get('reason') or 'no reason given'}")
+                    f"- `{x['atom']}` · `{x['epic']}` → **{x['verdict']}**: "
+                    f"{_glance(x.get('reason'))} — a session rebuilds and "
+                    f"re-announces.")
             elif x["kind"] == "queue-over-cap":
                 lines.append(
                     f"- **queue over cap** at tick {x['tick']}: backlog "
-                    f"{x['backlog']} > cap {x['cap']} ({x['setpoint_id']})")
+                    f"{x['backlog']} > cap {x['cap']} — re-dial if it recurs "
+                    f"**(yours)**.")
         lines.append("")
-    else:
-        lines += ["## Divergences", "_none — every confirmed arc's pieces fit, "
-                  "the cap held_", ""]
 
+    # 3. the field, one glance — the dial in play and how it ran
     sp = d["setpoint"]
-    lines.append("## Dials in play")
-    if sp:
-        lines.append(f"- setpoint `{sp['id']}` by {sp.get('by')}: "
-                     f"`{canon(sp['value'])}`")
-    else:
-        lines.append("- no setpoint admitted (I-8: the dial is an admitted "
-                     "record, not a default)")
     f = d["field"]
-    lines.append(f"- field: {f['ticks']} ticks ({f['heat']} heat / {f['cool']} "
-                 f"cool), {f['budget_spent']} steps spent, {f['deferred']} "
-                 f"deferred, peak backlog {f['peak_backlog']}")
+    dial = (f"`{canon(sp['value'])}` by {sp.get('by')}" if sp
+            else "no setpoint admitted (I-8)")
+    lines += ["## The field at a glance",
+              f"- dial {dial}",
+              f"- {f['ticks']} ticks ({f['heat']} heat / {f['cool']} cool), "
+              f"{f['budget_spent']} steps, peak backlog {f['peak_backlog']}"]
     if f["deferred_reasons"]:
         why = ", ".join(f"{k}×{v}" for k, v in sorted(f["deferred_reasons"].items()))
-        lines.append(f"  - deferrals: {why}")
+        lines.append(f"- deferrals: {why}")
     lines.append("")
 
-    lines.append(f"## Arcs ({len(d['arcs'])})")
+    # 4. arcs — collapsed to one tally line each; only a non-quiet arc expands
+    #    its live pieces (landed/unbuilt pieces stay folded into the tally).
+    lines.append(f"## Arcs ({len(d['arcs'])}) — {d['landings']} landing(s) in span")
     for arc in d["arcs"]:
-        mark = (f"confirmed by {arc['confirmed'].get('by')}"
-                if arc["confirmed"] else "unconfirmed")
-        lines.append(f"\n### {arc['epic']} — {mark}")
-        if arc.get("arc"):
-            lines.append(f"_{arc['arc']}_")
-        lines.append(f"- {arc['landed']} landed · {arc['awaiting']} awaiting · "
-                     f"{arc['parked']} parked · {arc['refused']} refused")
-        for p in arc["pieces"]:
-            lines.append(f"  - `{p['atom']}` — {p.get('standing', p.get('state'))}")
+        lines.append(_arc_line(arc))
+        if arc["awaiting"] or arc["parked"] or arc["refused"]:
+            for p in arc["pieces"]:
+                st = p.get("standing", p.get("state"))
+                if st not in ("landed", "unbuilt"):
+                    lines.append(f"    - `{p['atom']}` — {st}")
     if d["loose"]:
-        lines.append(f"\n### (no arc) — {len(d['loose'])} loose atom(s)")
+        lines.append(f"- ○ (no arc) — {len(d['loose'])} loose atom(s)")
         for p in d["loose"]:
-            lines.append(f"  - `{p['atom']}` — {p.get('standing')}")
+            if p.get("standing") not in ("landed", "unbuilt"):
+                lines.append(f"    - `{p['atom']}` — {p.get('standing')}")
     lines.append("")
     lines.append(f"_{d['landings']} landing(s), {d['refusals']} refusal(s) "
-                 f"in span_")
+                 f"in span._")
     return "\n".join(lines)
 
 
