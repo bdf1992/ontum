@@ -120,3 +120,4 @@
 {"by":"bdo","id":"adm.82df4bcf4bad","order":["local.qwen3-14b","local.mistral"],"route":"default","supersedes":null,"ts":"2026-06-13T19:46:42Z","type":"route"}
 {"by":"bdo","caller":"summoned-session","id":"adm.e05409ba0f7a","mind":"*","permit":true,"supersedes":null,"surface":"*","ts":"2026-06-13T19:46:42Z","type":"policy"}
 {"by":"bdo","enabled":true,"id":"adm.bf0aa654739e","kind":"owner-ask-backlog","surface":"github-issues","ts":"2026-06-13T22:47:21Z","type":"reflection_rule"}
+{"by":"bdo","enabled":true,"epic":"epic.test-metabolism","id":"adm.f786723b59c3","supersedes":null,"ts":"2026-06-16T15:34:39Z","type":"arc_confirmed"}
