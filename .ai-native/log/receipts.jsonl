@@ -143,3 +143,4 @@
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/digest-readable","id":"rcp.merge.155","kind":"merge","node":"merge-node.claude.v1","pr":155,"ts":"2026-06-16T15:21:07Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/digest-divergence-supersede","id":"rcp.merge.162","kind":"merge","node":"merge-node.claude.v1","pr":162,"ts":"2026-06-16T15:21:47Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/test-metabolism-arc","id":"rcp.merge.164","kind":"merge","node":"merge-node.claude.v1","pr":164,"ts":"2026-06-16T15:34:17Z","verdict":"landed"}
+{"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/compose-harness-fence","id":"rcp.merge.107","kind":"merge","node":"merge-node.claude.v1","pr":107,"ts":"2026-06-16T15:52:27Z","verdict":"landed"}
