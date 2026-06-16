@@ -26,6 +26,7 @@ it decides and explains, it acts on nothing.
 
 import argparse
 from dataclasses import dataclass
+from pathlib import Path
 
 # reversible, zero-commitment acts — autonomous, no gesture. Pre-staging is the
 # whole point: anticipate cheaply, dismiss freely.
@@ -88,13 +89,28 @@ def gate(act, *, gesture=None):
         reason=f"{treated} act {verb!r}: blocked — needs a gesture to proceed")
 
 
+def operate(act, *, gesture=None, mark_root):
+    """`gate`, but a blocked act leaves a mark (done-line 0092): a refused
+    irreversible/unknown act becomes a recorded signal the harvest can farm.
+    `mark_root` is the records root (`.ai-native`). The pure `gate`/`classify`
+    are untouched; this seam is the only writer. Returns the Decision."""
+    d = gate(act, gesture=gesture)
+    if not d.allowed:
+        from loop import signals
+        signals.mark(mark_root, f"gate-block:{d.reversibility}",
+                     str(act.get("verb")), d.reason)
+    return d
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("verb", help="the act's verb (e.g. pre-stage, send, delete)")
     ap.add_argument("--gesture", default=None,
                     help="the person's authorization (truthy = authorized)")
+    ap.add_argument("--mark-root", type=Path, default=Path(".ai-native"),
+                    help="records root for block signals (default .ai-native)")
     args = ap.parse_args(argv)
-    d = gate({"verb": args.verb}, gesture=args.gesture)
+    d = operate({"verb": args.verb}, gesture=args.gesture, mark_root=args.mark_root)
     verdict = "allowed" if d.allowed else "blocked"
     print(f"result: report — {verdict} ({d.reversibility}): {d.reason}")
     return 0

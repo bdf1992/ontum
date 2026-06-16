@@ -22,7 +22,10 @@ loop's work. Loop N writes a tie; loop N+1's fold reads it. That is the
 controllable closed loop — setpoint (the epic's ordered pieces), error (the
 unlanded ones), brake (Stop when converged or stuck).
 
-Pure stdlib. Read-only: it derives and reports, it never writes a record.
+Pure stdlib. `next_increment` is a read-only fold — it never writes a record.
+`operate` is the thin marking seam (done-line 0092): a `Stop` leaves a foldable
+signal so the harvest can farm the stopping point. The fold stays pure; only the
+seam writes.
 """
 
 import argparse
@@ -133,13 +136,25 @@ def next_increment(epic_id, *, root=Path(".ai-native")) -> Union[Increment, Stop
                 f"every piece of {epic_id} carries a landed done-line tie")
 
 
+def operate(epic_id, *, root=Path(".ai-native")):
+    """`next_increment`, but a `Stop` leaves a mark (done-line 0092): the loop's
+    stopping point becomes a recorded signal the harvest can farm — "the refusal
+    is the signal," landed. The pure derivation is untouched; this seam is the
+    only writer. Returns the Increment or Stop unchanged."""
+    result = next_increment(epic_id, root=root)
+    if isinstance(result, Stop):
+        from loop import signals
+        signals.mark(root, f"loop-stop:{result.reason}", epic_id, result.detail)
+    return result
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("epic_id", help="the arc to derive the next increment for")
     ap.add_argument("--root", type=Path, default=Path(".ai-native"),
                     help="the records root (defaults to .ai-native)")
     args = ap.parse_args(argv)
-    result = next_increment(args.epic_id, root=args.root)
+    result = operate(args.epic_id, root=args.root)
     if isinstance(result, Increment):
         print(f"result: report — next increment for {result.epic_id}: "
               f"{result.atom}")

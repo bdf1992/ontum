@@ -29,6 +29,21 @@
         "glue": "Given a bounded-run candidate, pre-stage a REVERSIBLE control surface autonomously (no gesture) and gate every irreversible/outward act behind a gesture. DO NOT double-build (§10): the blast-radius/reversibility classifier is the Risk pan of the anima arc (the assay schema, epic.the-field); the gesture seam is bdo's standing 'human acts by gesture' discipline and the virtual-request-node form (epic.causality-surface, atom.virtual-request-node.v0). Acceptance: a reversible pre-stage runs with no gesture; an irreversible act is blocked with a legible reason. This is where 'so I don't have to worry' is made safe — autonomy on the reversible, gesture on the irreversible. Probe P4."
       },
       {
+        "atom": "atom.signal-mark.v0",
+        "status": "wave 4 — the harvest line; teeth leave a mark (bdo, 2026-06-16)",
+        "glue": "The precondition for farming a stopping point: the teeth must leave a mark. Today loopmaker's Stop, cited_sensor's ghost, and reversibility_gate's block all return/print and vanish — a meteor that burns up, no meteorite. This records each firing as a foldable signal on an append-only stream (.ai-native/log/signals.jsonl), reusing reconcile.append_line/short_hash (§10, not a new mechanism): content-hashed for idempotence, torn-tail tolerant, absent-stream-empty. A recorded firing lands as state 'seed' (raw potential). The pure classify/fold functions stay pure; the mark is added at the operation seam. Without this the harvest farms an empty field. Probe P6."
+      },
+      {
+        "atom": "atom.seed-bank.v0",
+        "status": "wave 4 — the harvest line; where seed is banked, not planted",
+        "glue": "The seed bank: a proposed-tier patterns surface, reusing loop/tags.py's proposed→admitted discipline (no new mechanism, §10). A harvested generative shape is banked as 'proposed' — seen, recorded, but NOT minted; 'a seed is not automatically planted.' Planting (promotion to a real Pattern Commons entry) is a deliberate admission (D-4), like admit_tag. No Pattern Commons is homed in ontum today (only the separate experience-foundry); this homes the seed bank as the proposed pool. Probe P7."
+      },
+      {
+        "atom": "atom.harvest.v0",
+        "status": "wave 4 — the harvest line; the stopping point becomes a harvest",
+        "glue": "The creative move at a Stop (bdo, 2026-06-16: 'if a loop maker hits a stopping point they should be creative'). On a Stop it folds the recorded signals and sorts by GENERATIVITY: thresh → grain of insight (consumed now: a stated learning + the next concrete increment, via the gaps.py grain) and bank → proposed seed (a generative shape held in the seed bank). The §10 teeth guard the transitions (meteor→meteorite): refuse to auto-plant a seed (planting is deliberate, D-4), refuse to bank a one-off as seed (noise), refuse to consume a generative shape as mere grain (seed eaten). HORIZON (not this piece): autonomous planting — once the full loop is prepared and trusted, an in-fence seed self-plants, the bounded auto-admit fence pattern (PR #163) applied to the Commons; out-of-fence still needs a gesture. Probe P8; autonomous-plant is a later, fenced probe. "
+      },
+      {
         "atom": "atom.adoption-use-trace.v0",
         "status": "wave 3 — graded by adoption (dormant until the slice exists)",
         "glue": "A use-trace that grades a pre-staged surface by whether it is USED in preference to the alternative; an ignored guess records a miss that bends the model. DO NOT double-build (§10): use-trace grading is the outcomes/ realization measure (outcome probes resolve against a use-trace on the log, not the artifact). Acceptance: a use-trace record shows adoption; an ignored pre-stage records a miss; rendering is never counted as use. Probe P5 (realization; dormant until P1–P4)."

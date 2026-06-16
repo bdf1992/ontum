@@ -97,13 +97,33 @@ def ghosts(data_root, records):
     return [ev for ev in records if is_ghost(data_root, ev)]
 
 
+def operate(data_root, *, mark_root, records=None):
+    """Resolve evidence against `data_root`, and each refused ghost leaves a mark
+    (done-line 0092): a citation that pointed at nothing becomes a recorded
+    signal the harvest can farm. `records` defaults to a fresh honest scan (which
+    yields no ghosts); pass claimed evidence to resolve it — ghosts arise from
+    *claims*, not from the sensor's own scan. `mark_root` is the records root
+    (`.ai-native`), distinct from the scanned `data_root`. The pure scan/resolve
+    functions are untouched; this seam is the only writer. Returns (cited,
+    ghosts)."""
+    records = scan(data_root) if records is None else records
+    good, bad = cited(data_root, records), ghosts(data_root, records)
+    if bad:
+        from loop import signals
+        for ev in bad:
+            signals.mark(mark_root, "cited-ghost", ev.get("file", "?"),
+                         "citation does not resolve to committed bytes")
+    return good, bad
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("data_root", help="the data surface to sense (read-only)")
+    ap.add_argument("--mark-root", type=Path, default=Path(".ai-native"),
+                    help="records root for ghost signals (default .ai-native)")
     args = ap.parse_args(argv)
     records = scan(args.data_root)
-    good = cited(args.data_root, records)
-    bad = ghosts(args.data_root, records)
+    good, bad = operate(args.data_root, mark_root=args.mark_root)
     for ev in good:
         print(f"  cited: {ev['file']} [{ev['kind']}, {ev['size']}B]")
     for ev in bad:
