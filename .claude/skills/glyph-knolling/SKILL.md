@@ -40,11 +40,9 @@ carries its provenance.
    `glyphs/knolling.md`, and the data block between the `GLYPH_DATA`
    markers in `glyphs/viewer.html` all come from `glyphs/knoll.py`. The
    viewer app *around* the markers is authored and may be edited.
-5. **Stdlib-first, no network, local-first** — same rules as the rest of
-   the repo (the blanket no-dependency ban is lifted, bdo 2026-06-12; a
-   value-creating dependency is admissible by common sense). The viewer
-   *specifically* stays a single zero-dependency HTML file that works
-   from `file://` — that constraint is the viewer's own, and it holds.
+5. **Stdlib only, no network, no dependencies** — same rules as the rest of
+   the repo. The viewer stays a single zero-dependency HTML file that works
+   from `file://`.
 
 ## The pass
 
