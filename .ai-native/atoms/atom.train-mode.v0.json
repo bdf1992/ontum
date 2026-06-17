@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.train-mode.v0",
+    "story": {
+      "text": "As bdo, I want a security MODE I can switch on for a session — train: observe everything, block nothing — so I can watch what the guards WOULD deny without actually un-guarding the system. The posture is an admitted record, never a constant; only I can open it (a session signer is refused — no self-granted un-guard); and the safe default is the strict one, so an unreadable log stays normal and train can never silently un-guard.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "train mode: the first security mode — observe-everything, block-nothing",
+      "value": "A signed security_mode admission (type:security_mode, mode:train, scoped to a session or '*', enabled, --by bdo, superseded to close), opened through the one pen (loop.node mode-train start --session <id> --by bdo). The guard reads the posture at hook time from a pure log fold (active_mode in reconcile.py, default normal). While train is active for the calling session the guard OBSERVES and TAGS but does not deny: every op normal mode would deny is allowed (exit 0) and recorded to the sensor trace as status:would-deny carrying the fence rule, the intent tag, the surface, and the opening admission id — instead of denied + exit 2.",
+      "why_now": "Least-permissions is the direction, but a blanket guard can only deny — it cannot show bdo the shape of what it blocks. train is the sensor: it turns the guard into an observer for a scoped session so the would-deny stream can be learned from, without ever weakening the strict default.",
+      "if_accepted": "bdo can open a train session and watch the would-deny trace accumulate (the fence rules, intents, surfaces) without a single real un-guard elsewhere. D-4 holds: only bdo's --by opens it, a session signer is refused, and the safe default is strict (unreadable/absent fold = normal). bdo is never gated.",
+      "if_rejected": "The guard stays deny-only and opaque; the only way to see what it blocks is to be blocked, and there is no scoped, recorded, owner-opened way to observe-without-un-guarding.",
+      "cost_of_wrong_call": "Low and fail-safe: the change is additive (a new fold defaulting to normal) and relaxes the guard ONLY under a positive, bdo-signed admission scoped to one session; with no admission nothing changes. Reverting is superseding the admission (enabled:false) or removing the fold read. Default security is untouched.",
+      "mechanism": "loop/reconcile.py active_mode(fold, session) reads the posture (default normal, latest-enabled-wins, unreadable=normal); loop/node.py adds the mode-train pen verb (--by bdo, session signer refused); .claude/hooks/command_guard.py reads the posture and files status:would-deny + exit 0 in place of denied + exit 2 while train is active for the session. tests/test_train_mode.py carries the §10 control: git add . is denied (exit 2) with NO admission, would-deny (exit 0) under an active train session — divergence on the record. Done-line 0096.",
+      "reading": [
+        ".claude/hooks/command_guard.py",
+        "loop/reconcile.py",
+        "loop/node.py",
+        "tests/test_train_mode.py",
+        ".ai-native/done/0096-train-mode-first-security-mode.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": [".claude/hooks/command_guard.py", "loop/reconcile.py", "loop/node.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/hooks/command_guard.py", "loop/reconcile.py", "loop/node.py"]
+    }
+  },
+  "_note": "Birth record for train mode, the first security mode (done-line 0096), authored so the off-log work carries an atom on the log under the now-live atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5). The mode itself is bdo's signed switch (security_mode --by bdo); this atom is the mechanism, strict-by-default until he opens a train session."
+}
