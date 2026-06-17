@@ -42,6 +42,16 @@ python causality/term_economy.py project --seed <path> # run over an alternate s
 # the §10 test (joins the main suite)
 python -m unittest tests.test_term_economy -v
 
+# the Pattern Commons — DERIVED from the repo's common patterns (done-line 0097)
+python causality/commons.py derive            # the grounded subset, graded
+python causality/commons.py derive --json      # the raw dataset
+
+# the curl-first HTTP layer (done-line 0097): the browser is one client
+python causality/api.py serve                  # localhost:8077
+curl localhost:8077/commons                    # the derived Pattern Commons
+curl localhost:8077/projection                 # the committed term-economy view
+python -m unittest tests.test_commons -v        # the §10 fold + curl-surface check
+
 # the canvas — the agnostic graph surface (done-line 0082)
 python -m http.server 8080      # then open http://localhost:8080/causality/canvas.html
 node causality/canvas.persist.test.js    # the §10 persistence round-trip check (with teeth)
@@ -94,6 +104,21 @@ classifier.
   `loop/census.py` grain: stdlib, no network, evidence is `file:line` or
   a log record substring, never prose). Resolve → classify → project →
   audit → render.
+- `commons.py` — the Pattern Commons, **derived** from the repo's own
+  common patterns (done-line 0097, bdo's "derive pattern commons from
+  our common patterns"): each candidate names its **etymon** (the
+  `file:symbol` it recurs at), the fold resolves it against committed
+  bytes and grades it (`minted-eligible` / `proposed` / `ghost`).
+  Grounded subset (`node`/`site`/`edge` + the strata) — `node:<kind>` is
+  mined live from `canvas.js`'s `SCHEMA`. No grounding, no mint (the
+  closure rule); promotion stays bdo's (D-4). Read-only, stdlib.
+- `api.py` — the **curl-first** HTTP layer (done-line 0097, bdo's "curl
+  first"): the projection-api contract made servable. `GET /commons`
+  (the derivation), `GET /projection` (the committed view, verbatim
+  bytes), `GET /health`; localhost, stdlib, no writes. One pure
+  `route()` is the single source the handler and the test both call
+  (I-4); the canvas fetches `/projection` from it and falls back to the
+  committed file — the browser is one client, never the authority.
 - `examples/ontum-terms.seed.json` — committed input: the five canonical
   terms (atom, receipt, seam, node, arc) and their declared evidence.
 - `examples/ontum-terms.projection.json` — committed output, regenerated

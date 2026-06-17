@@ -149,10 +149,18 @@
     const blob = new Blob([JSON.stringify(S.toJSON(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'causality-graph.json'; a.click(); URL.revokeObjectURL(a.href);
   };
-  // load REAL Ontum evidence — the committed term-economy projection, not a demo (done-line 0096)
+  // load REAL Ontum evidence — the committed term-economy projection, not a demo (done-line 0096).
+  // curl-first (done-line 0097): try the API (the browser is one client), fall back to the committed file.
+  async function fetchProjection() {
+    try {
+      const r = await fetch('http://127.0.0.1:8077/projection');
+      if (r.ok) return r.json();
+    } catch (e) { /* API down — fall back to the committed bytes */ }
+    return (await fetch('examples/ontum-terms.projection.json')).json();
+  }
   document.getElementById('ingest').onclick = async () => {
     try {
-      const projection = await (await fetch('examples/ontum-terms.projection.json')).json();
+      const projection = await fetchProjection();
       const res = C === window.Causality ? window.CausalityIngest.projectionToGraph(projection) : null;
       if (!res || !res.ok) return showOut('ingest refused', (res && res.reason) || 'not a projection');
       S.fromJSON(res.graph); persistNow();
