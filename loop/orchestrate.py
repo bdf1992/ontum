@@ -60,9 +60,18 @@ def read_setpoint(admissions):
     return setpoint
 
 
-def admit_setpoint(root, value, by, supersedes=None):
+def admit_setpoint(root, value, by, supersedes=None, authorized_by=None,
+                   because=None):
     """Append a setpoint admission. `by` is whoever stamps it (D-4: a node
-    never admits its own dial)."""
+    never admits its own dial).
+
+    `authorized_by` cites a standing authorization the stamper is *executing*
+    rather than originating — bdo's auto-admit fence (done-line 0091), the same
+    way a merge-node landing cites the confirm-arc it did not author. When set,
+    `by` is the loop's disposer identity and `authorized_by` is the fence id, so
+    the record reads honestly: the loop moved the dial, bdo's fence authorized
+    it. `because` carries the proposer's attribution (the outcomes that caused
+    the change), keeping an auto-admitted dial move auditable to its cause."""
     adm = {
         "id": "adm." + short_hash(SETPOINT_DIAL, canon(value), str(by), now_ts()),
         "type": "setpoint",
@@ -72,6 +81,10 @@ def admit_setpoint(root, value, by, supersedes=None):
         "supersedes": supersedes,
         "ts": now_ts(),
     }
+    if authorized_by is not None:
+        adm["authorized_by"] = authorized_by
+    if because is not None:
+        adm["because"] = because
     append_line(root / "log" / "admissions.jsonl", adm)
     return adm
 

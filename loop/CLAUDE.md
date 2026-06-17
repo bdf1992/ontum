@@ -49,6 +49,10 @@ python -m loop.digest                      # the owner's merge digest — read-o
 python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
 python -m loop.digest --since 2026-06-01 --until 2026-06-11
 
+python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
+python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
+python -m loop.disposer dispose            # self-admit one in-fence proposal (else escalate)
+
 python -m loop.tags                        # the intent tag pool and its drift, read-only
 python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a proposed value
 
@@ -129,6 +133,22 @@ so a prompt edit can't reopen a settled verdict (I-2).
   (a fold), reads the admitted setpoint dial, budgets steps per tick
   *both ways* (heat when stalled, cool when the human queue is at cap).
   Every actual move is still `pass_once`.
+- [slowloop.py](slowloop.py) — the slow loop's *proposer* (§14,
+  done-line 0074): folds the tick history + outcome phase + the hour's
+  lean into a *proposed* setpoint change carrying its attribution
+  (the `because`). Read-only — it proposes, never disposes.
+- [disposer.py](disposer.py) — the slow loop's *disposer* (done-line
+  0091): bdo's chosen disposition, a **bounded standing auto-admit**.
+  An admitted `auto_admit_fence` (his one stamp, per-dial bounds) is the
+  standing authorization; `evaluate` decides a proposal **admit /
+  escalate / noop** (heating capped at the ceiling, cooling always
+  allowed, an unnamed dial escalates, and one breached key escalates the
+  whole proposal — §10); `dispose` self-admits an in-fence change citing
+  the fence as `authorized_by` (the loop executes the stamp, it never
+  signs its own line — the merge-node/confirm-arc shape), or leaves an
+  out-of-fence one for bdo. Read from the log at runtime; inert until a
+  fence is drawn. Named for the propose/dispose split, distinct from the
+  command-guard `fence/` (tool policy) — two different layers.
 - [node.py](node.py) — the one pen for summoned verdicts and
   admissions; enforces the seam contract (right node, right verdict
   set, no judging your own announcement, write-twice is a no-op).
