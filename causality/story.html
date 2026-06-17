@@ -67,13 +67,15 @@
   <button data-t="lasso">⬚ Lasso</button>
   <button data-t="voice">🎙 Voice</button>
 </div>
-<div class="zoom"><span>100%</span></div>
+<div class="zoom"><span>100%</span><button id="devgrid" title="toggle dev grid (g)" style="background:none;border:1.2px solid rgba(43,42,51,.4);border-radius:7px;padding:3px 8px;cursor:pointer;font:600 11px 'IBM Plex Mono',monospace;color:var(--ink)">⊞</button></div>
 <div class="phrases" id="phrases"></div>
 
 <script src="canvas-system.js"></script>
+<script src="space.js"></script>
 <script>
 (async () => {
   const SYS = window.CausalitySystem.TOKENS, COL = SYS.COLOR, FACET = SYS.FACET, LINE = SYS.LINE, EASE = SYS.EASE;
+  const SPACE = window.CausalitySpace; let showGrid = false; try{ showGrid = location.search.indexOf('dev')>=0; }catch(e){}
   const cv = document.getElementById('cv'), cx = cv.getContext('2d');
   const TAU = Math.PI * 2; let W, H, t = 0, DPR = Math.min(2, devicePixelRatio || 1);
   const R = 34, FR = 15;
@@ -119,10 +121,15 @@
   //    enrichment seam behind the same node spec, iterations 0006) ──
   let M = null;
   function layout(){ const ph = DATA.phrases[idx]; if(!ph) return;
-    const n = ph.glyphs.length, cy = H*0.46, span = Math.min(250, (W*0.78)/Math.max(1,n-1)), x0 = W*0.5 - (n-1)*span/2;
-    const glyphs = ph.glyphs.map((g,i)=>{ const gx = x0 + i*span, gy = cy + (i%2?28:-28);
-      const fac = g.facets.map((k,j)=>{ const a = -0.55 + (j-(g.facets.length-1)/2)*0.8; const fx = gx+Math.sin(a)*58, fy = gy+64+Math.cos(a)*6; return { key:k, x: fx, y: fy, ax: gx, ay: gy, ar: 0 }; });
-      return { word:g.word, icon:g.icon, facets:fac, x:gx, y:gy, hue: COL.pigment[i%COL.pigment.length],
+    const n = ph.glyphs.length;
+    // the coordinate volume (iterations 0010): a chunked grid sized to the phrase;
+    // glyphs take ADDRESSES (reading order, gently alternating rows for routing room)
+    const nx = Math.max(11, n*3 + 2), ny = 9, midY = (ny>>1);
+    const S = SPACE.Space({ nx, ny, nz: 10 }); S.fit(W, H, 0.07);
+    const glyphs = ph.glyphs.map((g,i)=>{ const gxC = 1 + Math.round(i*(nx-3)/Math.max(1,n-1)), gyC = midY + (i%2?2:-2);
+      S.place(g.word, gxC, gyC); const c = S.center(gxC, gyC);
+      const fac = g.facets.map((k,j)=>{ const a = -0.55 + (j-(g.facets.length-1)/2)*0.8; const fx = c.x+Math.sin(a)*58, fy = c.y+64+Math.cos(a)*6; return { key:k, x: fx, y: fy, ax: c.x, ay: c.y, ar: 0 }; });
+      return { word:g.word, icon:g.icon, facets:fac, gx:gxC, gy:gyC, x:c.x, y:c.y, hue: COL.pigment[i%COL.pigment.length],
                openA:0, waterA:0, birthA:0, ringT:1, wasOpen:false, deg:0, waterTarget:0.5, birthDelay:i*0.09 }; });
     const find = ref => { const [w,f]=ref.split('.'); const g=glyphs.find(z=>z.word===w); if(!g)return null; const fc=f&&g.facets.find(z=>z.key===f); return { g, fc: fc||null }; };
     const rels = ph.relations.map((r,i)=>{ const a=find(r.from), b=find(r.to); if(!a||!b)return null; return { ...r, a, b, i }; }).filter(Boolean);
@@ -131,15 +138,16 @@
     rels.forEach(r=>{ if(r.a.g===r.b.g) return; const key = glyphs.indexOf(r.a.g)+'>'+glyphs.indexOf(r.b.g);
       (gemap[key] = gemap[key] || { a:r.a.g, b:r.b.g, rels:[], feedback:false }); gemap[key].rels.push(r); if(r.line==='feedback') gemap[key].feedback=true; });
     const gedges = Object.values(gemap);
-    // ── fold the felt-field from the mesh (not painted): per-glyph weight → water
-    //    level; edge density → energy (ink amplitude); loops → tempo (pulse speed) ──
+    // route each glyph-level edge through free cells (orthogonal, around nodes)
+    gedges.forEach(e=>{ e.cells = S.route({x:e.a.gx,y:e.a.gy}, {x:e.b.gx,y:e.b.gy}); });
+    // ── fold the felt-field from the mesh (not painted) ──
     const deg = new Map(); gedges.forEach(e=>{ deg.set(e.a,(deg.get(e.a)||0)+e.rels.length); deg.set(e.b,(deg.get(e.b)||0)+e.rels.length); });
     const maxDeg = Math.max(1, ...glyphs.map(g=>deg.get(g)||0));
     glyphs.forEach(g=>{ g.deg = deg.get(g)||0; g.waterTarget = 0.34 + 0.5*(g.deg/maxDeg); });
     const edgeCount = gedges.reduce((a,e)=>a+e.rels.length,0), loops = gedges.filter(e=>e.feedback).length;
     const energy = Math.max(0.6, Math.min(1.5, edgeCount/Math.max(1,glyphs.length)));
     const tempo  = 0.09 + 0.05*loops + 0.02*edgeCount;
-    M = { ph, glyphs, gedges, energy, tempo, t0: t };
+    M = { ph, glyphs, gedges, energy, tempo, t0: t, S, nx, ny };
   }
   const isOpen = g => { const i = M.glyphs.indexOf(g); return i===hoverG || (sel && sel.kind==='glyph' && sel.ref===i); };
 
@@ -160,6 +168,24 @@
       cx.fillStyle='rgba(246,241,231,.9)'; cx.fillRect(lx-w/2-3,ly-9,w+6,16); cx.fillStyle=col; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label,lx,ly); }
     return q; }
 
+  // a grid-routed edge: orthogonal lanes through free cells (iterations 0010),
+  // rim-trimmed, smoothed corners, label on paper. returns q(phase) for the pulse.
+  function routeEdge(cells,col,spec,label,seed){
+    let pts = cells.map(c=>{ const p=M.S.center(c.x,c.y); return [p.x,p.y]; });
+    if(pts.length<2) return tt=>pts[0]||[0,0];
+    const trim=(p,q,r)=>{const dx=q[0]-p[0],dy=q[1]-p[1],d=Math.hypot(dx,dy)||1;return[p[0]+dx/d*r,p[1]+dy/d*r];};
+    pts[0]=trim(pts[0],pts[1],R+2); pts[pts.length-1]=trim(pts[pts.length-1],pts[pts.length-2],R+2);
+    cx.strokeStyle=col; cx.lineWidth=spec.width; cx.lineCap='round'; cx.lineJoin='round'; if(spec.dash)cx.setLineDash(spec.dash);
+    cx.beginPath(); cx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length-1;i++){ const m=[(pts[i][0]+pts[i+1][0])/2,(pts[i][1]+pts[i+1][1])/2]; cx.quadraticCurveTo(pts[i][0],pts[i][1],m[0],m[1]); }
+    cx.lineTo(pts[pts.length-1][0],pts[pts.length-1][1]); cx.stroke(); cx.setLineDash([]);
+    if(spec.arrow){ const a=pts[pts.length-1],b=pts[pts.length-2],an=Math.atan2(a[1]-b[1],a[0]-b[0]); cx.lineWidth=spec.width; cx.beginPath();
+      cx.moveTo(a[0],a[1]); cx.lineTo(a[0]-Math.cos(an-.5)*8,a[1]-Math.sin(an-.5)*8); cx.moveTo(a[0],a[1]); cx.lineTo(a[0]-Math.cos(an+.5)*8,a[1]-Math.sin(an+.5)*8); cx.stroke(); }
+    const mid=pts[Math.floor(pts.length/2)]; if(label){ cx.font='400 12px "Caveat",cursive'; const w=cx.measureText(label).width;
+      cx.fillStyle='rgba(246,241,231,.92)'; cx.fillRect(mid[0]-w/2-3,mid[1]-9,w+6,16); cx.fillStyle=col; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label,mid[0],mid[1]); }
+    return tt=>{ const f=tt*(pts.length-1), i=Math.min(pts.length-2,Math.floor(f)), fr=f-i; return [pts[i][0]+(pts[i+1][0]-pts[i][0])*fr, pts[i][1]+(pts[i+1][1]-pts[i][1])*fr]; };
+  }
+
   // ── advance the per-glyph animation state. Entrance + water are CLOSED-FORM in
   //    the clock (deterministic, frame-rate independent); open/ring are interactive
   //    eased lerps (they only move on hover/click). ──
@@ -176,6 +202,9 @@
   const T0 = performance.now();
   function draw(){ t=(performance.now()-T0)/1000; cx.clearRect(0,0,W,H); if(!M){requestAnimationFrame(draw);return;}
     WAMP = M.energy; advance();
+    if(showGrid && M.S){ cx.strokeStyle='rgba(43,42,51,.07)'; cx.lineWidth=1; M.S.gridLines().forEach(l=>{cx.beginPath();cx.moveTo(l[0][0],l[0][1]);cx.lineTo(l[1][0],l[1][1]);cx.stroke();});
+      cx.fillStyle=COL.faint; cx.font='400 8px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='alphabetic';
+      M.glyphs.forEach(g=>cx.fillText('['+g.gx+','+g.gy+']', g.x, g.y+R+14)); }
     const mem = membraneBlob(); M._mem = mem; const memSel = sel&&sel.kind==='membrane';
     cx.fillStyle='rgba(255,252,245,.5)'; cx.beginPath(); mem.ring.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])); cx.closePath(); cx.fill();
     inkPath(mem.ring,3,memSel?COL.inference:'rgba(43,42,51,.4)',memSel?2:1.3,true,[6,7]);
@@ -188,7 +217,7 @@
         const q=edge(pa,pb,col,spec,r.label,r.i); M._edges.push({q,relIdx:r.i});
         pulseDot(q,(t*M.tempo + r.i*0.31)%1, r.line==='feedback'?COL.strain:COL.pulse, 2.3); }); }
       else{ const r=ge.rels[0]; const col=ge.feedback?COL.strain:COL.positive; const spec=ge.feedback?LINE.feedback:LINE.relation;
-        const q=edge(rim(ge.a,ge.b,R+2),rim(ge.b,ge.a,R+2),col,spec,r.label,r.i); M._edges.push({q,relIdx:r.i});
+        const q=routeEdge(ge.cells||[],col,spec,r.label,r.i); M._edges.push({q,relIdx:r.i});   // grid-routed lane (0010)
         pulseDot(q,(t*M.tempo + r.i*0.31)%1, ge.feedback?COL.strain:COL.pulse, 2.3); } });
     // glyphs always; facets only as the glyph opens (progressive discovery, eased)
     M.glyphs.forEach((g,gi)=>{ const selG=sel&&sel.kind==='glyph'&&sel.ref===gi; const open=g.openA>0.5;
@@ -244,6 +273,8 @@
   const ph=document.getElementById('phrases');
   DATA.phrases.forEach((p,i)=>{ const b=document.createElement('button'); b.textContent=p.id; if(i===0)b.className='on'; b.onclick=()=>{idx=i;sel=null;hoverG=null;[...ph.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');document.getElementById('kind').textContent=p.kind;layout();renderLens();}; ph.appendChild(b); });
   document.querySelectorAll('.tools button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tools button').forEach(z=>z.classList.remove('on'));b.classList.add('on');});
+  const dg=document.getElementById('devgrid'); const tg=()=>{ showGrid=!showGrid; dg.style.background=showGrid?'rgba(122,91,166,.16)':'none'; };
+  dg.onclick=tg; addEventListener('keydown',e=>{ if((e.key==='g'||e.key==='G')&&!/input/i.test((e.target.tagName||''))) tg(); });
   document.getElementById('new').onclick=()=>{ sel=null; renderLens(); };
   document.getElementById('save').onclick=()=>{ try{localStorage.setItem('causality.story.idx',idx);}catch(e){} };
   if(DATA.phrases[0]) document.getElementById('kind').textContent=DATA.phrases[0].kind;

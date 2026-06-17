@@ -50,6 +50,7 @@ jobs:
           # the phrase portfolio
           cp causality/story.html       _site/index.html
           cp causality/canvas-system.js _site/canvas-system.js
+          cp causality/space.js         _site/space.js
           cp causality/phrases.json     _site/phrases.json
           # the simulation editor canvas, secondary (one surface, two modes)
           cp causality/canvas.html  _site/canvas.html
