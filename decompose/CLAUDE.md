@@ -49,6 +49,9 @@ without those fields is a **smuggled seam** and is refused.
 
 - **smeared-axis** — two modules declare the same change-axis (the §10
   teeth: two locally-fine modules refuse to fit; they are really one).
+- **undercut-axis** — one module declares (via `also_changes_for`) that it
+  changes for further reasons: the dual of the smear (done-line 0105), two
+  axes collapsed into one module; split it, one module per axis.
 - **incomplete-axis** — a module's axis is missing `reason` / `rate` /
   `authority` / `kind`; it cannot be reasoned about.
 - **dependency-cycle** — `depends_on` forms a cycle; a false boundary
@@ -58,8 +61,9 @@ without those fields is a **smuggled seam** and is refused.
   AI-native fields `trust` / `authority` / `change_rate`.
 
 Each new refusal is one more invariant; the schema and the test move
-together. The *undercut* detector (one module secretly owning two axes)
-is the named next node — out of scope here (done-line 0104).
+together. Wiring the gate into the loop (a `decomposition-drift` gap
+kind, a summon surface) so the invariant is carried ambiently is the
+named next node — out of scope here (done-line 0105).
 
 ```sh
 python decompose/change_gate.py check                          # the anchor manifest

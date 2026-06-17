@@ -70,6 +70,27 @@ class ChangeAxisGate(unittest.TestCase):
         m["modules"][1]["axis"]["reason"] = "  Aesthetic   CHANGE "
         self.assertIn("smeared-axis", kinds(cg.findings(m)))
 
+    # (a-dual) one module owning two axes — the undercut, distinct from smear.
+    def test_undercut_axis_refused(self):
+        m = self.fresh()
+        # wiring honestly declares it also changes for a second reason.
+        m["modules"][1]["also_changes_for"] = ["data-shape change"]
+        status, found = cg.verdict(m)
+        self.assertEqual(status, "refused")
+        self.assertIn("undercut-axis", kinds(found))
+        # it is the DUAL of smeared-axis, not the same finding: one module here.
+        self.assertNotIn("smeared-axis", kinds(found))
+        uc = next(f for f in found if f["kind"] == "undercut-axis")
+        self.assertEqual(uc["subject"], "wiring")
+        self.assertIn("interaction change", uc["why"])
+        self.assertIn("data-shape change", uc["why"])
+
+    # an empty/absent also_changes_for is no admission — the anchor is clean.
+    def test_undercut_empty_is_not_a_finding(self):
+        m = self.fresh()
+        m["modules"][1]["also_changes_for"] = []
+        self.assertNotIn("undercut-axis", kinds(cg.findings(m)))
+
     # (b) an axis that cannot be reasoned about.
     def test_incomplete_axis_refused(self):
         m = self.fresh()

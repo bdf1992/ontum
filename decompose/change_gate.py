@@ -26,6 +26,8 @@ The refusals, each a hardened invariant:
 
     smeared-axis       two modules declare the same change-axis — the §10
                        teeth: two locally-fine modules refuse to fit
+    undercut-axis      one module declares it also changes for further
+                       reasons — the dual: two axes smeared into one module
     incomplete-axis    a module's axis lacks reason/rate/authority/kind
     dependency-cycle   depends_on forms a cycle — a false boundary
     uncontracted-seam  a dependency edge crosses no named contract
@@ -102,6 +104,28 @@ def smeared_axis_findings(modules):
                 f"these modules change for one reason ({reason!r}) — one axis "
                 "smeared across many modules is a false boundary (overcut); "
                 "they are really one module"))
+    return out
+
+
+def undercut_axis_findings(modules):
+    """The dual of the smear (procedure step 3): one module that owns more
+    than one axis. The honest author declares the further reasons in
+    `also_changes_for`; the gate refuses the admission — a module with more
+    than one reason to change is undercut and must be split, one module per
+    axis. Declared-then-refused, the same discipline a seed runs on."""
+    out = []
+    for m in modules:
+        also = [r for r in (m.get("also_changes_for") or []) if str(r).strip()]
+        if also:
+            name = m.get("name", "<unnamed>")
+            primary = ((m.get("axis") or {}).get("reason") or "").strip()
+            reasons = [primary] + also if primary else also
+            out.append(_finding(
+                "undercut-axis", name,
+                f"owns more than one axis — it changes for "
+                f"{len(reasons)} reasons ({', '.join(repr(r) for r in reasons)}); "
+                "one reason to change per module, so split it, one module per "
+                "axis (procedure step 3)"))
     return out
 
 
@@ -202,6 +226,7 @@ def findings(manifest):
     out = []
     out += incomplete_axis_findings(modules)
     out += smeared_axis_findings(modules)
+    out += undercut_axis_findings(modules)
     out += cycle_findings(modules)
     out += seam_findings(modules, contracts)
     return out
