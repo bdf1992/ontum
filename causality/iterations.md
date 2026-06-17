@@ -9,6 +9,91 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0005 — The design target + overnight mandate: frame the canvas design system 🟡
+**2026-06-17 · bdo** (with reference mockups)
+
+bdo supplied polished reference mockups that lock the visual + interaction
+language, and set an **overnight-loop mandate**: *build a portfolio of phrases and
+loop until the canvas design system is framed* — supporting **ASCII, colors,
+shapes, connections, line-types, animations, easing, nodes, physics, hover &
+click interaction, gestures, and more.**
+
+**The reference (the "Story demo" hero + four Lens states):**
+- **Hero / Story physics:** the phrase sentence as skin (key words highlighted in
+  glyph colors) over a dashed **phrase membrane**. Inside: glyph holons drawn with
+  *figurative icons* (cat face, sun, cloud) over the water-fill, each composing
+  **facet sub-nodes with their own icons** (actor=person, objective=heart "warmth",
+  source=waves "warmth", time=clock "drift", signal=bell). Relations are **labelled
+  hand-ink edges** (`wants`, `moves`, `satisfies`) with a dashed **`interrupts`**
+  feedback loop spanning the membrane. A slider strip — **Complexity · Length ·
+  Twists · Weirdness · Colors** (swatches) — and complexity reveals an extra glyph
+  (`moves`).
+- **Glyph selected:** a right **Lens** panel — the glyph, its facet chips, and
+  *Connected through* (`sunbeam.source → cat.objective`, `shadow.signal →
+  cat.actor`). Selection shows a sparkle.
+- **Relation selected:** Lens shows the facet edge + actions **explain · invert ·
+  stitch**.
+- **Membrane selected:** Lens shows **counts** (glyphs · loops · facet-edges) and
+  an **"Ask this membrane…"** inference box (e.g. "what interrupts the cat?").
+- **Chrome:** top bar `Causality · Story demo · + New · Save · ⋯`; bottom
+  toolbar **Select · Pan · Lasso · Voice**; **zoom** (100 % − +) bottom-left;
+  **minimap** bottom-right.
+
+**Caveat (bdo):** the cat/shadow/warmth example is *logically wrong on purpose* —
+the real chain is `warmth → holds cat`, `shadow → blocks warmth (−)`, `loss of
+warmth → signals cat` (not `shadow.signal → cat` directly). It is an **idea
+collection**, not a correct model; the design system must NOT hardcode this chain
+— the portfolio should aim for correct mechanics, the demo proves the *capabilities*.
+
+**Deliverables of the overnight loop:**
+1. A **portfolio of phrases** (many cute-but-mechanically-rich seeds, each with its
+   glyph set, facet compositions, relations, membrane, and cross-membrane links).
+2. A **framed canvas design system** — the token + primitive system behind the
+   reference, covering every capability above (ASCII fallback included), so a node
+   type / line type / interaction / animation ships as a *spec entry*, not new code
+   (the schema-driven discipline of `canvas.js`), in the established look-and-feel.
+
+Lands in: _(overnight loop on `epic.causality-surface`; slices pushed to the live
+URL as `claude/*` previews; this entry + 0001–0004 are the brief.)_
+
+---
+
+## 0004 — Type by composition + compress-to-enrich (the governing principle) 🟡
+**2026-06-17 · bdo**
+
+Two locked decisions that govern the story demo's engine:
+
+**Type by composition.** A glyph is not one primitive type — it is a **bundle of
+typed facets**, and that bundle *is* a small system. `cat` = `actor` +
+`objective`(warmth); `sunbeam` = `source`(warmth) + `time`(its drift is a clock);
+`shadow` = `signal` + `time`. Zoomed in, a glyph is a network of facets; zoomed
+out, one node in the phrase-membrane. Relations connect **facets across glyphs**
+(sunbeam's `source` → cat's `objective`; shadow's `signal` → cat's `actor`), which
+is where the mechanical richness lives. (Proven: `concept-compose` shot.)
+
+**Compress to enrich, not to fit (vs. headroom).** Ref:
+`github.com/chopratejas/headroom` — content-aware context compression for "60–95%
+fewer tokens, same answers," reversible (CCR: cache the original, expand on
+demand), routed by a `ContentRouter` (code→AST, json→structure, text→trained
+model). It compresses **to fit a budget**. We invert the *objective*, keep the
+*mechanism*:
+
+> The glyph is the compression (intelligence densified into a holon, reversible
+> the same way CCR is — zoom it open to its facets). But the budget we win is
+> **reinvested into relationships** — facet-to-facet edges, membranes, the
+> network. The dividend from compressing meaning buys the *edges*. The context
+> gets **richer, not smaller**. We don't compress to save; we compress to enrich.
+
+Borrowed concretely: headroom's `ContentRouter` ≈ the missing **composition
+router** — the "filter through logic + register + learned patterns (Pattern
+Commons)" that maps a word to its facet-bundle (a creature → `{actor, objective}`;
+a moving light → `{source, time}`). Their router picks a compressor; ours picks a
+composition. CCR reversibility ≈ glyph zoom-open.
+
+Lands in: _(governs 0003's build — the composition router + the facet vocabulary.)_
+
+---
+
 ## 0003 — The story demo: cute skin, mechanical body, sliders steer both 🟡
 **2026-06-17 · bdo**
 
