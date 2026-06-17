@@ -181,6 +181,38 @@ def arc_confirmation(fold, epic_id):
     return active
 
 
+def active_mode(fold, session):
+    """The security posture in force for a session — "normal" by default,
+    read from admitted records (never a constant), latest-enabled-wins like
+    real_nodes/arc_confirmation (done-line 0096).
+
+    train is the first security MODE: observe-everything / block-nothing. A
+    `security_mode` admission is bdo's signed open/close switch (see
+    loop.node.mode_train); it is scoped to a concrete session_id or "*"
+    (global). The latest matching admission wins; an `enabled: false` one
+    closes the posture back to "normal" (superseded, never erased).
+
+    A mode only ever RELAXES the guard, so the safe default is the strict
+    one: an unreadable or absent fold returns "normal". train can never
+    silently un-guard — its absence is information, not permission. Returns
+    (posture, opening_admission_id): the id is None under "normal"."""
+    posture, opener = "normal", None
+    try:
+        for adm in fold.admissions:
+            if adm.get("type") != "security_mode":
+                continue
+            scope = adm.get("session")
+            if scope != "*" and scope != session:
+                continue
+            if adm.get("enabled", True):
+                posture, opener = adm.get("mode", "normal"), adm.get("id")
+            else:
+                posture, opener = "normal", None
+    except Exception:  # noqa: BLE001 — an unreadable fold stays strict, never relaxes
+        return "normal", None
+    return posture, opener
+
+
 def receipt_for_stage(fold, stage, artifact_hash, real_map=None):
     """The receipt that satisfies a stage: from the stage's mock node, or
     from its admitted real node. History is never retro-invalidated (D-5):

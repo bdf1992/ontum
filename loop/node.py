@@ -226,6 +226,41 @@ def confirm_arc(root, epic, by, enabled=True, supersedes=None):
     return adm
 
 
+def mode_train(root, session, by, enabled=True, supersedes=None):
+    """Open (or close) train — the first security MODE — for a session
+    (done-line 0096). train is observe-everything / block-nothing: while it
+    is active the guard observes and tags every operation normal mode would
+    deny, but blocks nothing. Turning it on is a signed admitted record, read
+    by `loop.reconcile.active_mode` at hook time — never a constant, never a
+    flag a session sets for itself.
+
+    bdo-only, the way arc confirmation is (D-4): a session cannot un-guard
+    itself, so a posture that relaxes the guard is the owner's alone to open.
+    Session-scoped: `session` is a concrete id, or "*" for global. Closing
+    (`enabled=False`) supersedes back to "normal"; the open admission stands
+    as history. Returns the admission, or None on refusal (already printed)."""
+    if (by or "").strip().lower() != "bdo":
+        print("result: needs-you — a security mode relaxes the guard — --by "
+              "must be bdo (a session cannot un-guard itself, D-4)")
+        return None
+    if not (session or "").strip():
+        print("result: needs-you — name the session this mode scopes to "
+              "(a concrete session_id, or \"*\" for global)")
+        return None
+    adm = {
+        "id": "adm." + short_hash("security_mode", "train", session, str(enabled), str(by), now_ts()),
+        "type": "security_mode",
+        "mode": "train",
+        "session": session,
+        "enabled": bool(enabled),
+        "by": by,
+        "supersedes": supersedes,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm
+
+
 def arcs(root):
     """The arcs and whether each is confirmed — the owner steers here, one
     stamp per arc (done-line 0028). Read-only (I-3)."""
@@ -288,7 +323,28 @@ def main(argv=None):
     a = sub.add_parser("arcs", help="the arcs and which are confirmed (read-only)")
     a.add_argument("--root", type=Path, default=DEFAULT_ROOT)
 
+    m = sub.add_parser("mode-train",
+                       help="open/close train — the first security mode, observe-everything (bdo only)")
+    m.add_argument("action", choices=("start", "stop"),
+                   help="start opens train for the session; stop closes it back to normal")
+    m.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    m.add_argument("--session", required=True,
+                   help="the session id this mode scopes to, or \"*\" for global")
+    m.add_argument("--by", required=True, help="who opens it (D-4: bdo only)")
+    m.add_argument("--supersedes", default=None, help="a prior mode admission id this replaces")
+
     args = ap.parse_args(argv)
+    if args.cmd == "mode-train":
+        enabled = args.action == "start"
+        adm = mode_train(args.root, args.session, args.by, enabled, args.supersedes)
+        if adm is None:
+            return 2
+        verb = "opened" if adm["enabled"] else "closed"
+        print(f"result: report — {adm['id']}: {args.by} {verb} train mode for "
+              f"session {args.session} — the guard "
+              + ("observes and tags but blocks nothing while it is active"
+                 if adm["enabled"] else "returns to normal (it blocks again)"))
+        return 0
     if args.cmd == "judge":
         return judge(args.root, args.atom, args.node, args.verdict, args.reason)
     if args.cmd == "inbox":

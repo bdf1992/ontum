@@ -45,6 +45,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 WATCH_LOG = pathlib.Path(
     os.environ.get("ONTUM_TOOL_WATCH_LOG", ROOT / ".ai-native" / "log" / "tool-use.jsonl")
 )
+# The truth-log root the posture fold reads from — the `.ai-native` two
+# levels above the sensor trace, so the one env override (ONTUM_TOOL_WATCH_LOG)
+# points both the would-deny record and the security_mode admissions it
+# branches on at the same temp root under test (done-line 0096).
+AI_NATIVE_ROOT = WATCH_LOG.parent.parent
 def _compile(argv):
     """A registry argv prefix in this guard's regex shape: the verbs in
     sequence anywhere in the quote-stripped command, refusing to bleed
@@ -190,6 +195,26 @@ def classify_intent(command):
         return None
 
 
+def read_mode(session):
+    """The security posture for this session at hook time (done-line 0096):
+    ("normal", None) by default, ("train", <opening adm id>) under an active
+    train admission. A pure fold over the truth log, read fresh every call —
+    never a constant, never cached state.
+
+    Fail-open to the STRICT default: any failure to read the fold degrades to
+    "normal" (logged like the fence-load path), so a mode can only ever be in
+    force when the log positively says so. train relaxes the guard, so its
+    absence — or an unreadable fold — must never relax it."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from loop.reconcile import Fold, active_mode
+        return active_mode(Fold(AI_NATIVE_ROOT), session)
+    except Exception as exc:  # noqa: BLE001 — any load failure degrades, none crashes
+        record({"status": "degraded", "rule": "mode-load",
+                "error": repr(exc), "session": session})
+        return "normal", None
+
+
 def _payload():
     try:
         # the harness pipes UTF-8; Windows' default stdin is cp1252 — read
@@ -205,6 +230,40 @@ def _payload():
 DENY_RULES = _deny_rules()  # compiled once per process, after record exists
 
 
+TRUNK_MESSAGE = (
+    "denied, firm: never push to main — push the session's claude/* "
+    "branch and PR it through the pen (branch-ritual)."
+)
+
+
+def first_deny(acting):
+    """The first deny rule this command would hit — the trunk carve-out
+    (a push naming main deserves the firm line, not the generic git-push
+    refusal the registry also carries), then the fence registry — or
+    (None, None). One match, the way normal mode returns on the first hit;
+    train reads the same first hit to name what it would have denied."""
+    if pushes_to_trunk(acting):
+        return "git-push-trunk", TRUNK_MESSAGE
+    for rule, pattern, message in DENY_RULES:
+        if re.search(pattern, acting):
+            return rule, message
+    return None, None
+
+
+def surface_of(command):
+    """The tool family a command reaches for (its first external bin, e.g.
+    `git`), or the command head when nothing external is named — the surface
+    a would-deny record is filed under."""
+    bins = external_bins(command)
+    if bins:
+        return bins[0]
+    words = strip_quoted(command).split()
+    if not words:
+        return ""
+    head = words[0].strip("'\"").rsplit("/", 1)[-1].rsplit("\\", 1)[-1].lower()
+    return head[:-4] if head.endswith(".exe") else head
+
+
 def hook():
     payload = _payload()
     if payload is None:
@@ -213,29 +272,35 @@ def hook():
     session = payload.get("session_id") or ""
     acting = strip_quoted(command)  # prose mentions a verb; only this acts
 
-    # the trunk carve-out first: a push naming main deserves the firm
-    # line, not the generic git-push refusal the registry also carries
-    if pushes_to_trunk(acting):
-        record({"status": "denied", "rule": "git-push-trunk",
-                "command": command, "session": session})
-        print(
-            "denied, firm: never push to main — push the session's claude/* "
-            "branch and PR it through the pen (branch-ritual).",
-            file=sys.stderr,
-        )
-        return 2
-    for rule, pattern, message in DENY_RULES:
-        if re.search(pattern, acting):
+    # the posture in force for this session, read fresh from the truth log
+    # (done-line 0096) — "normal" by default; train only ever relaxes
+    posture, train_session = read_mode(session)
+    training = posture == "train"
+
+    rule, message = first_deny(acting)
+    if rule is not None:
+        if not training:
+            # normal: the firm line — block, explain, exit 2 (unchanged)
             record({"status": "denied", "rule": rule, "command": command,
                     "session": session})
             print(message, file=sys.stderr)
             return 2
+        # train: observe-everything / block-nothing — record what would have
+        # been denied (no stderr, no exit 2) and fall through to the watch
+        record({"status": "would-deny", "rule": rule, "mode": "train",
+                "train_session": train_session, "surface": surface_of(command),
+                "intent": classify_intent(command),
+                "command": command, "session": session})
 
     bins = external_bins(command)
     if bins:
-        record({"status": "watched", "bins": bins,
-                "intent": classify_intent(command),
-                "command": command, "session": session})
+        entry = {"status": "watched", "bins": bins,
+                 "intent": classify_intent(command),
+                 "command": command, "session": session}
+        if training:  # ordinary watched calls under train carry the stamp too
+            entry["mode"] = "train"
+            entry["train_session"] = train_session
+        record(entry)
     return 0
 
 
