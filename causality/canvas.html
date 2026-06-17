@@ -107,7 +107,8 @@
   <input id="inject" placeholder="type input for the first source node…">
   <button class="run" id="run">▷ inject &amp; fire</button>
   <span class="sep"></span>
-  <button id="save" title="save to this browser">save</button>
+  <button id="new" class="run" title="clear the canvas — a fresh home to compose and save">+ New</button>
+  <button id="save" title="save this canvas to the browser">Save</button>
   <button id="export" title="download as a file">export</button>
   <button id="import" title="load from a file">import</button>
   <input id="importFile" type="file" accept="application/json" style="display:none">
@@ -143,6 +144,7 @@
   function persistNow() { try { localStorage.setItem(STORE, JSON.stringify(S.toJSON())); savedTag.textContent = 'saved ✓'; setTimeout(() => savedTag.textContent = '', 1400); } catch (e) {} }
   function tryRestore() { try { const raw = localStorage.getItem(STORE); if (!raw) return false; return S.fromJSON(JSON.parse(raw)); } catch (e) { return false; } }
   document.getElementById('save').onclick = persistNow;
+  document.getElementById('new').onclick = () => { S.clear(); persistNow(); };   // + New: a blank home to compose
   document.getElementById('export').onclick = () => {
     const blob = new Blob([JSON.stringify(S.toJSON(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'causality-graph.json'; a.click(); URL.revokeObjectURL(a.href);
@@ -161,7 +163,7 @@
   // templates
   const tpl = document.getElementById('tpl');
   Object.keys(C.templates).forEach(name => { const o = document.createElement('option'); o.textContent = name; tpl.appendChild(o); });
-  tpl.value = 'search agent';
+  tpl.value = 'home';
   tpl.onchange = () => { C.templates[tpl.value](S); persistNow(); };
   document.getElementById('poke').onchange = e => S.poke = e.target.value;
 

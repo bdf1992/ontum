@@ -488,6 +488,15 @@ function fmtMs(ms) { return ms < 1000 ? Math.round(ms) + 'ms' : (ms / 1000).toFi
 
 // ───────────── templates — named starting systems & agents ─────────────
 const TEMPLATES = {
+  // the home screen IS a canvas document (iterations-log 0001): the whole app
+  // lives on the canvas, so even the landing is nodes you can edit and save.
+  'home': S => { S.clear(); const cx = S.W / 2, cy = S.H / 2, R = Math.min(S.W, S.H) * 0.26;
+    const core = S.node(cx, cy, 'Causality', { type: 'stock', level: 0.62, hue: '#7a5ba6' });
+    const modes = [['witness', '#0e8a7b'], ['request', '#3f7cb6'], ['simulate', '#b8742c']];
+    modes.forEach((m, i) => { const a = -Math.PI / 2 + (i / modes.length) * TAU;
+      const n = S.node(cx + Math.cos(a) * R, cy + Math.sin(a) * R * 0.85, m[0], { type: 'stock', level: 0.45, hue: m[1] });
+      S.link(core.id, n.id, { sign: 1 }); });
+    S.onchange && S.onchange(S); },
   'blank page': S => S.clear(),
   'ontum controller': S => { S.clear(); const w = S.W, cx = w / 2, cy = S.H / 2, R = Math.min(w, S.H) * 0.30;
     const defs = [['the pile', 0.72], ['heat', 0.4], ['work landed', 0.35], ['owner’s pile', 0.3], ['cool', 0.25]];

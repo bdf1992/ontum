@@ -45,15 +45,17 @@ jobs:
       - name: Assemble the static experience layer
         run: |
           mkdir -p _site
-          # the canvas + its modules — committed, self-contained, served as-is
-          cp causality/canvas.html  _site/canvas.html
+          # one surface: the canvas IS the landing (iterations-log 0001 — the
+          # whole app takes place on the canvas; the home screen is a canvas doc)
+          cp causality/canvas.html  _site/index.html
           cp causality/canvas.js    _site/canvas.js
           cp causality/inspector.js _site/inspector.js
           cp causality/authoring.js _site/authoring.js
           cp causality/demos.html   _site/demos.html
           cp causality/mock-recursion.html _site/mock-recursion.html
-          # the welcome mat: a fold over the committed log, rendered to the root
-          python -m causality.welcome render --out _site/index.html
+          # the felt-field mat, kept as a secondary page until it becomes a home
+          # canvas document (a fold over the committed log)
+          python -m causality.welcome render --out _site/welcome.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
