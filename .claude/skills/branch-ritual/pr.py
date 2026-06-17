@@ -14,6 +14,8 @@ Verbs:
     push    the branded git push (done-line 0014): alive branch, green
             suite (or declared red), force only with lease — with
             feature parity: anything else git push takes is forwarded
+    retire  close an open PR without landing it (work already on main,
+            superseded, or abandoned), with the reason on the record
 
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report`: it tells the
@@ -370,6 +372,43 @@ def cmd_check(_ns):
         f"result: report — {len(unwritten)} unwritten story(ies); "
         f"repair each with: {PEN} edit <number> ..."
     )
+
+
+def retire_refusal(state, reason):
+    """Why a PR may not be retired (closed without landing), or None. Retire is
+    the paved path for a PR that should *die* rather than merge — its work is
+    already on main, it was superseded, or it was abandoned. It demands what
+    every pen demands: a reason a cold reader can read alone, on the record.
+    Pure (state + reason in, reason-or-None out), like push_refusal /
+    integrate_refusal — so the §10 refusal is unit-testable without GitHub."""
+    reason = (reason or "").strip()
+    if not reason:
+        return ("--reason is required — say why this PR dies without landing, "
+                "for a cold reader (already on main / superseded / abandoned)")
+    if _is_pointer(reason):
+        return ("--reason is a pointer, not writing — name the reason in prose, "
+                "the way a closing comment must read alone")
+    if state != "OPEN":
+        return f"PR is {str(state).lower()} — only an open PR is retired"
+    return None
+
+
+def cmd_retire(ns):
+    """Close an open PR without landing it. bdo gestures a redundant PR closed
+    (he never runs the CLI); this is the session doing that close on his behalf,
+    through the one pen, with the reason on the record. Not a land — `land`
+    merges a confirmed arc; this retires work that should never merge. The
+    reason becomes the closing comment a cold reader reads alone."""
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number), "--json", "state,title"]))
+    refusal = retire_refusal(info.get("state"), ns.reason)
+    if refusal:
+        _refuse(refusal)
+    reason = ns.reason.strip()
+    comment = f"Retired — closed without landing: {reason}\n\n{FOOTER}"
+    _run(["gh", "pr", "close", str(ns.number), "--comment", comment])
+    print(f"result: done — retired PR #{ns.number} '{info['title']}' "
+          f"(closed without landing): {reason}")
 
 
 def _range_atom_facts(base, head):
@@ -866,6 +905,15 @@ def main(argv=None):
 
     check = verbs.add_parser("check", help="audit open PRs for unwritten stories")
     check.set_defaults(func=cmd_check)
+
+    retire = verbs.add_parser(
+        "retire", help="close an open PR without landing it — work already on "
+                       "main, superseded, or abandoned; the reason is recorded")
+    retire.add_argument("number", type=int)
+    retire.add_argument("--reason", required=True,
+                        help="why this PR dies without landing — prose for a "
+                             "cold reader, posted as the closing comment")
+    retire.set_defaults(func=cmd_retire)
 
     audit = verbs.add_parser(
         "audit", help="audit open PRs for the atom invariant: name every PR "

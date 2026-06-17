@@ -1,0 +1,40 @@
+{
+  "atom": {
+    "id": "atom.pr-retire-verb.v0",
+    "story": {
+      "text": "As bdo, I want a verified-redundant PR to have a paved way to close without merging — the way I gesture #118/#127 shut — so a dead PR never strands on my board for want of a path. The PR pen could open and reshape a PR but never close one, and the command_guard denies raw `gh pr close` as ritual, so a session faced with a redundant PR had nowhere to go but back to me: my own 'close it' comment on #118 sat unactioned for two days. The session should close it on my behalf, through the one pen, with the reason recorded as the closing comment — never raw, never a guess.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "PR pen: a retire verb to close a redundant PR without landing it",
+      "value": "A new `retire` verb on the PR pen (.claude/skills/branch-ritual/pr.py): `pr.py retire <number> --reason \"<why>\"`. It demands a reason a cold reader can read alone (the pure `retire_refusal` refuses a missing or pointer-only reason and an already-settled PR), posts that reason as the closing comment, and closes the PR through the pen's existing gh seam. Not a land — `land` merges a confirmed arc; `retire` kills work that should never merge (already on main, superseded, abandoned).",
+      "why_now": "bdo gestured #118 and #127 closed (both verified redundant against main). The pen had no close path, so the close had to bounce back to him — exactly the offloading the loop exists to prevent. The same gap is why his own 'close it' on #118 sat two days. A paved retire is the missing seam.",
+      "if_accepted": "A session that verifies a PR is redundant closes it itself, with the reason on the record, instead of handing the chore to bdo. His board stops accumulating dead-but-open PRs. The close stays through the one pen (the command_guard's deny on raw `gh pr close` is unchanged — retire is the paved alternative, not a loophole).",
+      "if_rejected": "Sessions keep bouncing redundant-PR closes back to bdo (or leave them stranded open), and the only way a PR closes is a raw verb the guard denies or an owner gesture nobody can action through the machine.",
+      "cost_of_wrong_call": "Low and reversible: retire only closes (a closed PR reopens), it requires a recorded reason, and it refuses to act on a non-open PR. It adds a verb; it removes no guard. The blast radius is one PR per invocation, named in the call.",
+      "mechanism": "pr.py gains `retire_refusal(state, reason)` (pure: missing/pointer reason or non-OPEN state -> a reason string, else None) and `cmd_retire` (view state+title, refuse or post the reason as the closing comment and `gh pr close`). tests/test_pr_ritual.py::TestRetire pins the §10 refusals: a reasoned close on an OPEN PR passes, a missing/pointer reason refuses, a MERGED/CLOSED PR refuses. The command_guard's raw-close deny is untouched; the pen is the write path, as for every other PR mutation.",
+      "reading": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_pr_ritual.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": [".claude/skills/branch-ritual/pr.py", "tests/test_pr_ritual.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/branch-ritual/pr.py", "tests/test_pr_ritual.py"]
+    }
+  }
+}
