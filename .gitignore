@@ -2,6 +2,8 @@
 .ai-native/queues/
 .ai-native/offsets/
 .ai-native/inbox.html
+causality/welcome.html
+causality/welcome-preview.png
 
 # sensor trace, not truth: the command watcher's log (done-line 0011) — deletable
 .ai-native/log/tool-use.jsonl
