@@ -49,6 +49,9 @@ python -m loop.digest                      # the owner's merge digest — read-o
 python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
 python -m loop.digest --since 2026-06-01 --until 2026-06-11
 
+python -m loop.retro                        # the retrospective fold — recurring patterns across all history, read-only
+python -m loop.retro --json                 # the raw dataset (machine-readable)
+
 python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
 python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
 python -m loop.disposer dispose            # self-admit one in-fence proposal (else escalate)
@@ -61,8 +64,8 @@ python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new ba
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
-`node`, `summon`, `reflect`, `web`, `census`, and `digest` import from
-the `loop` package and must run as modules (`python -m loop.<name>`)
+`node`, `summon`, `reflect`, `web`, `census`, `digest`, and `retro`
+import from the `loop` package and must run as modules (`python -m loop.<name>`)
 from the repo root.
 
 Every invocation ends with a clear stdout result: `done | report |
@@ -205,6 +208,21 @@ so a prompt edit can't reopen a settled verdict (I-2).
   out of the merge seat); the merge-node is the *hand*, and it does not
   move until bdo admits it real (`--by bdo`) and the `bdo merges` hard
   rule is amended — both his, neither this surface's.
+- [retro.py](retro.py) — the retrospective fold (done-line 0098): the loop
+  reads its *own history* for recurring patterns to refine on. Sibling of
+  `digest` on a new axis — the digest folds one span, retro folds **all of
+  history** and asks what keeps happening. No second truth (§10): it folds
+  the same log and *reuses* the digest's version-split and divergence
+  detection rather than re-deriving them; evidence is cited to log records,
+  never report prose (the grip rule). Three detectors today — **churn** (an
+  atom re-derived ≥2× via versions and/or repeated negating verdicts — the
+  rework the shame beat cannot see: shame senses *stalling*, retro senses
+  *churning*), **dead-valve** (a control mode advertised but never taken —
+  cool ran 0 of 91 ticks), **standing-divergence** (a digest divergence
+  left un-reconciled across the history, with its age). Read-only: it names
+  the pattern and the one move; the fix stays a session's or bdo's (D-4).
+  `--json` emits the dataset. The first node of the refinement-and-retro
+  surface; more detectors and any owner surface ride later increments.
 - [tags.py](tags.py) — the tag pool (done-line 0032): governed vocabulary
   for what tools do, the census fix pushed upstream to the write seam.
   Holds the one shared verb→intent `classify()` the watcher and the git
