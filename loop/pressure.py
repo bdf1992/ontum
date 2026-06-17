@@ -253,6 +253,13 @@ def compute(probes, repo, fold):
             cap_notmet,
             key=lambda p: (leverage[p["id"]],
                            -sum(1 for d in p.get("depends", []) if d not in met_ids),
+                           # on a leverage tie, the rawer gap leads: a wholly
+                           # unmet probe outranks a partial one (build/explore
+                           # favours the untouched front; cool, below, favours
+                           # the nearest-done partial). Without this the field
+                           # would fall straight to the id tiebreak the moment
+                           # the leverage gradient flattens.
+                           1 if state[p["id"]] == "unmet" else 0,
                            # stable, deterministic final tiebreak
                            -ord(p["id"][0]) if p["id"] else 0),
         )["id"]

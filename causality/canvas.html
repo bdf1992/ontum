@@ -107,6 +107,7 @@
   <input id="inject" placeholder="type input for the first source node…">
   <button class="run" id="run">▷ inject &amp; fire</button>
   <span class="sep"></span>
+  <button id="ingest" title="load the real term-economy projection (real Ontum evidence, not a demo)">load real ontum</button>
   <button id="save" title="save to this browser">save</button>
   <button id="export" title="download as a file">export</button>
   <button id="import" title="load from a file">import</button>
@@ -115,6 +116,7 @@
 </div>
 
 <script src="canvas.js"></script>
+<script src="ingest.js"></script>
 <script src="inspector.js"></script>
 <script src="authoring.js"></script>
 <script>
@@ -146,6 +148,17 @@
   document.getElementById('export').onclick = () => {
     const blob = new Blob([JSON.stringify(S.toJSON(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'causality-graph.json'; a.click(); URL.revokeObjectURL(a.href);
+  };
+  // load REAL Ontum evidence — the committed term-economy projection, not a demo (done-line 0096)
+  document.getElementById('ingest').onclick = async () => {
+    try {
+      const projection = await (await fetch('examples/ontum-terms.projection.json')).json();
+      const res = C === window.Causality ? window.CausalityIngest.projectionToGraph(projection) : null;
+      if (!res || !res.ok) return showOut('ingest refused', (res && res.reason) || 'not a projection');
+      S.fromJSON(res.graph); persistNow();
+      const c = res.counts;
+      showOut('loaded real ontum evidence', `${c.terms} terms · ${c.evidence} evidence files · ${c.links} edges` + (c.refused ? ` · ${c.refused} refused` : ''));
+    } catch (err) { showOut('ingest failed', String(err)); }
   };
   document.getElementById('import').onclick = () => document.getElementById('importFile').click();
   document.getElementById('importFile').onchange = e => { const f = e.target.files[0]; if (!f) return;

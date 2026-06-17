@@ -184,10 +184,15 @@ def modulate(pressure_result, band):
         why = ("the hour leans cool — close what is nearest done rather than "
                "opening the big front")
     else:  # heat | steady
-        # the big unblocker: most dependents first, then most-ready, then id.
+        # the big unblocker: most dependents first, then most-ready, then the
+        # rawer gap (a wholly unmet probe before a partial — heat explores the
+        # untouched front, mirroring pressure's own top-leverage tiebreak), then
+        # id. The unmet-before-partial term is what keeps heat and cool distinct
+        # once the leverage gradient flattens.
         order = sorted(cands, key=lambda p: (
             -_leverage(p, pressure_result),
             _unmet_deps(p, pressure_result),
+            0 if pressure_result["state"][p] == "unmet" else 1,
             p))
         why = ("the hour leans hot — take the large-leverage unblocker while "
                "there is room to explore" if lean == "heat"
