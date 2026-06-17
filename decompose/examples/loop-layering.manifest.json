@@ -1,0 +1,74 @@
+{
+  "decomposition": "loop fold-layering (declared from loop/CLAUDE.md, 2026-06-17)",
+  "note": "Declared input — a reading of ontum's OWN module layering, not a toy. The gate biting reality: does the loop's documented fold-layering survive the change test? Authored from loop/CLAUDE.md's 'Module layering' section, faithfully and NOT tuned to pass. A refusal here is a real finding to surface to bdo, never a thing to edit away.",
+  "anchor": ["reconcile.py — the fold; everything else builds on it"],
+  "modules": [
+    {
+      "name": "reconcile",
+      "axis": {
+        "reason": "how the append-only log folds into atom state (the derivation rules)",
+        "rate": "rare — the fold shape is the load-bearing contract",
+        "authority": "engineer",
+        "kind": "code"
+      },
+      "depends_on": [],
+      "contracts": ["pass-and-pressure", "tick-history-fold"]
+    },
+    {
+      "name": "orchestrate",
+      "axis": {
+        "reason": "ambient control budgeting — how many steps a tick takes, heat vs cool",
+        "rate": "occasional — the budgeting policy is tuned as the field teaches",
+        "authority": "engineer; the setpoint itself is an admitted dial (bdo / the fence)",
+        "kind": "code"
+      },
+      "depends_on": ["reconcile"],
+      "contracts": ["pass-and-pressure"]
+    },
+    {
+      "name": "slowloop",
+      "axis": {
+        "reason": "the setpoint-proposal heuristic — what dial change to propose and the because",
+        "rate": "occasional — the heuristic evolves as outcomes are read",
+        "authority": "engineer",
+        "kind": "code"
+      },
+      "depends_on": ["reconcile"],
+      "contracts": ["tick-history-fold", "setpoint-proposal"]
+    },
+    {
+      "name": "disposer",
+      "axis": {
+        "reason": "the disposition policy — admit / escalate / noop a proposal within the fence",
+        "rate": "occasional — independent of how proposals are generated",
+        "authority": "engineer owns the policy; bdo owns the fence it executes",
+        "kind": "code"
+      },
+      "depends_on": ["slowloop"],
+      "contracts": ["setpoint-proposal"]
+    }
+  ],
+  "contracts": {
+    "pass-and-pressure": {
+      "between": ["reconcile", "orchestrate"],
+      "crosses": "pass_once (the one level-triggered step) and the pressure fold orchestrate senses",
+      "trust": "trusted: deterministic code in one package, no boundary to cross",
+      "authority": "engineer owns both sides",
+      "change_rate": "the fold/pass_once shape changes rarely; the budgeting that consumes it occasionally"
+    },
+    "tick-history-fold": {
+      "between": ["reconcile", "slowloop"],
+      "crosses": "the read-only tick/receipt history fold slowloop reads to propose",
+      "trust": "trusted in-process read; slowloop never writes through it",
+      "authority": "engineer owns both sides",
+      "change_rate": "the fold shape rarely; the proposal heuristic that reads it occasionally"
+    },
+    "setpoint-proposal": {
+      "between": ["slowloop", "disposer"],
+      "crosses": "the proposed setpoint-change record carrying its because/attribution",
+      "trust": "trusted record; the disposer re-validates it against the admitted fence before acting",
+      "authority": "engineer owns the proposer; bdo owns the fence the disposer executes (D-4)",
+      "change_rate": "the proposal record shape rarely; the heuristic and the fence move independently of each other"
+    }
+  }
+}
