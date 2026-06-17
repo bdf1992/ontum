@@ -9,6 +9,40 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0006 — Each node goes through the gateway (governed composition) 🟡
+**2026-06-17 · bdo**
+
+bdo: *"Each node should technically go through the gateway."* Confirmed — and it
+unifies the canvas with `epic.inference-gateway` and the inference-as-composition
+layer.
+
+A node's **composition is an inference act** — the composition router deciding
+"this word → `{actor, objective}`" *is* inference filtered through logic + register
++ learned patterns. So it must not be a free, ungoverned LLM call; it routes
+through **the gateway**: policy-gated, affirmed, fallback-on-failure, **receipted**
+(every node's typing attributable to a record), on local minds at zero disclosure
+— the same governance the rest of the loop carries.
+
+This reconciles with the deterministic-compiler call (0003) as exactly the
+**inference-as-composition** pattern:
+- **The deterministic compiler is the bounded FLOOR** — always works, offline,
+  on the static served site (the settled-safe baseline).
+- **The gateway is the ENRICHMENT** — when the local inference plane is up, a node
+  routes through it for richer/looser composition, governed and receipted.
+- **The gateway's fallback IS the deterministic compiler.** So a node always
+  resolves: gateway when present (enriched), floor when not. Bounded floor +
+  governed inference = no settling-drift, no hallucination-drift.
+
+So: every glyph's typing is a **governed, receipted composition with a
+deterministic floor under it.** The render layer is agnostic to which produced the
+composition (it reads the same node spec either way).
+
+Lands in: _(the composition router is built floor-first; the gateway seam is the
+enrichment layer behind the same node spec — built/wired when the local plane is
+the host, never required for the static served floor.)_
+
+---
+
 ## 0005 — The design target + overnight mandate: frame the canvas design system 🟡
 **2026-06-17 · bdo** (with reference mockups)
 
