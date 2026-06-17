@@ -9,6 +9,42 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0009 — The hero comes alive: the four idle ANIM tokens wired, motion folded from the mesh 🟡
+**2026-06-17 · bdo (animations & polish pass)** — built on `claude/canvas-home-reshape`, screenshot-verified, eyeball-pending
+
+bdo: *"let's work on animations and polish for this canvas."* The design system
+(`canvas-system.js`) **declared** six motions but the Story-demo renderer only ever
+used `wobble` + `membrane-breath` — four were **declared-but-idle**. This pass wires
+all four and grounds motion in the phrase's own structure (three layers, hero first):
+
+1. **Idle ANIM tokens, now real** (in `story.html`):
+   - `water-fill` → glyph holons are **water-level discs** (the look-and-feel
+     signature), the level **folded from the glyph's degree in the mesh** (central
+     glyphs sit fuller) — folded, not painted.
+   - `pulse-travel` → an amber pulse **travels each relation edge** (the beat of an
+     act); strain-rust on feedback edges.
+   - `ring` → an **activation ripple** fires when a glyph opens.
+   - `entrance-fade` → glyphs **scale+fade in**, staggered, on phrase switch.
+2. **Interaction feel & easing** — hover→open **eases the facets growing out** of the
+   glyph (not popping); facet-level edges re-anchor to the animated facet positions;
+   the Lens panel slides in.
+3. **Anima-driven (folded)** — since the served floor has no live log, `energy`
+   (ink-wobble amplitude) and `tempo` (pulse speed) are **folded per-phrase from the
+   mesh** (edge density, loop count). A denser phrase visibly runs more alive — the
+   felt field emerges from structure, paint-free (honors the anima "fold not paint").
+
+Engineering note: the clock is now **real-time-driven** and entrance/water are
+**closed-form in `t`** (frame-rate independent; also what made deterministic
+headless-screenshot verification possible). No new tokens invented — every motion
+is an existing `canvas-system.js` ANIM entry finally rendered.
+
+Lands in: `causality/story.html` (the served `index.html`). Carrying the same
+primitives into the editable `canvas.html` is the next slice. **To reach the live
+URL it must land to `main`** (only `main` deploys via `pages.yml`); branch work is
+screenshot-verified meanwhile.
+
+---
+
 ## 0008 — Relations are typed by composition too: generative ends, perspective-flip is a type 🟡
 **2026-06-17 · bdo**
 
