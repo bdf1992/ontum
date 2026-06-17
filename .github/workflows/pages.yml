@@ -45,16 +45,20 @@ jobs:
       - name: Assemble the static experience layer
         run: |
           mkdir -p _site
-          # one surface: the canvas IS the landing (iterations-log 0001 — the
-          # whole app takes place on the canvas; the home screen is a canvas doc)
-          cp causality/canvas.html  _site/index.html
+          # the Story demo IS the landing (iterations 0003-0006): a phrase rendered
+          # the full membrane/composition way, reading the design-system tokens +
+          # the phrase portfolio
+          cp causality/story.html       _site/index.html
+          cp causality/canvas-system.js _site/canvas-system.js
+          cp causality/phrases.json     _site/phrases.json
+          # the simulation editor canvas, secondary (one surface, two modes)
+          cp causality/canvas.html  _site/canvas.html
           cp causality/canvas.js    _site/canvas.js
           cp causality/inspector.js _site/inspector.js
           cp causality/authoring.js _site/authoring.js
           cp causality/demos.html   _site/demos.html
           cp causality/mock-recursion.html _site/mock-recursion.html
-          # the felt-field mat, kept as a secondary page until it becomes a home
-          # canvas document (a fold over the committed log)
+          # the felt-field mat, kept as a secondary page
           python -m causality.welcome render --out _site/welcome.html
 
       - name: Configure Pages

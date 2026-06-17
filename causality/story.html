@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — Story demo</title>
+<script>window.__pageErr=null;addEventListener('error',e=>{if(!window.__pageErr)window.__pageErr=(e.error&&e.error.stack)||e.message;});</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f6f1e7;--ink:#2b2a33;--dim:#8d8678;--faint:#b8b1a2;--positive:#0e8a7b;--strain:#d4543f;--inference:#7a5ba6;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--paper);}
+  body{font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);}
+  canvas#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:12px;padding:18px 24px;pointer-events:none;}
+  .top .mark{font-family:"Fraunces",serif;font-size:22px;font-weight:300;}
+  .top .mark b{color:var(--inference);font-weight:600;}
+  .top .tag{font:300 9.5px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;}
+  .top .sp{flex:1;}
+  .top .btn{pointer-events:auto;font:500 11px "IBM Plex Mono",monospace;color:var(--ink);background:rgba(255,252,245,.85);border:1.4px solid var(--ink);border-radius:9px;padding:6px 12px;cursor:pointer;}
+  .top .btn:hover{background:rgba(122,91,166,.12);}
+  /* the Lens — what the inspector becomes per selection */
+  .lens{position:fixed;right:22px;top:70px;z-index:13;width:286px;background:rgba(255,252,245,.97);border:1.5px solid var(--inference);border-radius:13px;padding:15px 17px;box-shadow:3px 4px 0 rgba(122,91,166,.14);display:none;}
+  .lens.on{display:block;}
+  .lens h4{font:600 10px "IBM Plex Mono",monospace;letter-spacing:.2em;color:var(--inference);text-transform:uppercase;margin-bottom:10px;}
+  .lens .row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .lens .ico{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.4px solid var(--ink);font:600 14px "Caveat",cursive;flex:none;}
+  .lens .ttl{font:300 18px "Fraunces",serif;}
+  .lens .chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px;}
+  .lens .chip{font:400 9.5px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.4);border-radius:20px;padding:4px 9px;color:var(--ink);}
+  .lens .sub{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:10px 0 6px;}
+  .lens .conn{font:400 11px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.7;}
+  .lens .conn b{color:var(--ink);font-weight:500;}
+  .lens .acts{display:flex;gap:6px;margin-top:12px;}
+  .lens .acts button{flex:1;font:600 10px "IBM Plex Mono",monospace;color:var(--inference);background:none;border:1.4px solid var(--inference);border-radius:8px;padding:7px 4px;cursor:pointer;}
+  .lens .acts button:hover{background:rgba(122,91,166,.12);}
+  .lens .ask{width:100%;margin-top:8px;font:400 11px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.35);border-radius:8px;padding:7px 9px;}
+  .lens .big{display:flex;gap:14px;margin:6px 0 4px;}
+  .lens .big div{text-align:center;}
+  .lens .big .n{font:300 22px "Fraunces",serif;}
+  .lens .big .l{font:400 8px "IBM Plex Mono",monospace;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;}
+  /* bottom toolbar */
+  .tools{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:12;display:flex;gap:4px;background:rgba(255,252,245,.94);border:1.5px solid var(--ink);border-radius:13px;padding:7px 9px;box-shadow:3px 4px 0 rgba(43,42,51,.14);}
+  .tools button{font:500 11px "IBM Plex Mono",monospace;color:var(--dim);background:none;border:none;border-radius:9px;padding:7px 13px;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .tools button.on,.tools button:hover{color:var(--inference);background:rgba(122,91,166,.1);}
+  .zoom{position:fixed;left:22px;bottom:22px;z-index:12;display:flex;align-items:center;gap:8px;background:rgba(255,252,245,.9);border:1.5px solid rgba(43,42,51,.4);border-radius:11px;padding:6px 10px;font:500 10px "IBM Plex Mono",monospace;color:var(--ink);}
+  .phrases{position:fixed;right:22px;bottom:22px;z-index:12;display:flex;gap:5px;flex-wrap:wrap;max-width:300px;justify-content:flex-end;}
+  .phrases button{font:500 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.85);border:1.2px solid rgba(43,42,51,.3);border-radius:8px;padding:5px 8px;cursor:pointer;}
+  .phrases button.on{color:var(--inference);border-color:var(--inference);}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="top">
+  <span class="mark">Causa<b>lity</b></span>
+  <span class="tag" id="kind">story demo</span>
+  <span class="sp"></span>
+  <button class="btn" id="new">+ New</button>
+  <button class="btn" id="save">Save</button>
+</div>
+<div class="lens" id="lens"></div>
+<div class="tools">
+  <button class="on" data-t="select">▝ Select</button>
+  <button data-t="pan">✋ Pan</button>
+  <button data-t="lasso">⬚ Lasso</button>
+  <button data-t="voice">🎙 Voice</button>
+</div>
+<div class="zoom"><span>100%</span></div>
+<div class="phrases" id="phrases"></div>
+
+<script src="canvas-system.js"></script>
+<script>
+(async () => {
+  const SYS = window.CausalitySystem.TOKENS;
+  const COL = SYS.COLOR, FACET = SYS.FACET, LINE = SYS.LINE;
+  const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+  const TAU = Math.PI * 2; let W, H, t = 0, DPR = Math.min(2, devicePixelRatio || 1);
+  const roleColor = r => r === 'pigment' ? null : (COL[r] || COL.ink);
+  function size(){ W = innerWidth; H = innerHeight; cv.width = W*DPR; cv.height = H*DPR; cx.setTransform(DPR,0,0,DPR,0,0); }
+  size(); addEventListener('resize', () => { size(); layout(); });
+
+  // ── load the portfolio ──
+  let DATA; try { DATA = await (await fetch('phrases.json')).json(); } catch(e){ DATA = { phrases: [] }; }
+  let idx = 0, sel = null;   // sel = {kind:'glyph'|'relation'|'membrane', ref}
+
+  // ── ink (the hand-drawn primitives, from the design system) ──
+  function wob(x,y,s,a){ return [x+Math.sin(s*12.9+t*1.1)*a, y+Math.cos(s*78.2+t*.85)*a]; }
+  function inkPath(pts,s,col,w,close,dash){ cx.strokeStyle=col; cx.lineWidth=w; cx.lineCap='round'; cx.lineJoin='round'; if(dash)cx.setLineDash(dash); cx.beginPath(); pts.forEach((p,i)=>{const[x,y]=wob(p[0],p[1],s+i*.3,.5); i?cx.lineTo(x,y):cx.moveTo(x,y);}); if(close)cx.closePath(); cx.stroke(); cx.setLineDash([]); }
+  function inkCircle(x,y,r,s,col,w){ cx.strokeStyle=col; cx.lineWidth=w; cx.beginPath(); for(let i=0;i<=26;i++){const a=i/26*TAU+s; const rr=r+Math.sin(a*3+s*7)*.6; const px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr; i?cx.lineTo(px,py):cx.moveTo(px,py);} cx.stroke(); }
+  function relCurve(a,b,bow){ const dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1,nx=-dy/d,ny=dx/d; const mx=(a[0]+b[0])/2+nx*bow,my=(a[1]+b[1])/2+ny*bow; return tt=>[(1-tt)**2*a[0]+2*(1-tt)*tt*mx+tt*tt*b[0],(1-tt)**2*a[1]+2*(1-tt)*tt*my+tt*tt*b[1]]; }
+
+  // ── compose: the deterministic floor (reads the portfolio's declared composition;
+  //    the gateway is the enrichment seam behind this same node spec, iterations 0006) ──
+  let M = null;   // render model: {glyphs:[{word,icon,facets:[{key,x,y}],x,y,hue}], rels:[...], membrane}
+  function layout(){
+    const ph = DATA.phrases[idx]; if(!ph) return;
+    const n = ph.glyphs.length, cy = H*0.42, x0 = W*0.5 - (n-1)*Math.min(230,(W*0.74)/Math.max(1,n-1))/2, dx = Math.min(230,(W*0.74)/Math.max(1,n-1));
+    const glyphs = ph.glyphs.map((g,i)=>{ const gx = x0 + i*dx, gy = cy + (i%2?34:-20);
+      const fac = g.facets.map((k,j)=>{ const a = -0.5 + (j-(g.facets.length-1)/2)*0.85; return { key:k, x: gx+Math.sin(a)*54, y: gy+58+Math.cos(a)*8 }; });
+      return { word:g.word, icon:g.icon, facets:fac, x:gx, y:gy, hue: COL.pigment[i%COL.pigment.length] }; });
+    const find = ref => { const [w,f]=ref.split('.'); const g=glyphs.find(z=>z.word===w); if(!g)return null; if(f){const fc=g.facets.find(z=>z.key===f); return fc?{x:fc.x,y:fc.y,g,f:fc}:{x:g.x,y:g.y,g};} return {x:g.x,y:g.y,g}; };
+    const rels = ph.relations.map((r,i)=>{ const a=find(r.from),b=find(r.to); if(!a||!b)return null;
+      const spec=LINE[r.line]||LINE.relation; const bow=r.line==='feedback'?-Math.min(120,Math.abs(b.x-a.x)*0.3+60):Math.min(50,Math.abs(b.x-a.x)*0.18);
+      return { ...r, a, b, spec, bow, i }; }).filter(Boolean);
+    M = { ph, glyphs, rels };
+  }
+
+  function membraneBlob(){ const pts=[]; M.glyphs.forEach(g=>{pts.push([g.x,g.y]); g.facets.forEach(f=>pts.push([f.x,f.y]));});
+    const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]); const cxp=(Math.min(...xs)+Math.max(...xs))/2,cyp=(Math.min(...ys)+Math.max(...ys))/2;
+    const rx=(Math.max(...xs)-Math.min(...xs))/2+90,ry=(Math.max(...ys)-Math.min(...ys))/2+90; const ring=[];
+    for(let i=0;i<=46;i++){const a=i/46*TAU; const k=1+Math.sin(a*3+t*.4)*0.04; ring.push([cxp+Math.cos(a)*rx*k,cyp+Math.sin(a)*ry*k]);}
+    return {ring,cxp,cyp,rx,ry}; }
+
+  function draw(){ t+=0.016; cx.clearRect(0,0,W,H); if(!M){requestAnimationFrame(draw);return;}
+    const mem = membraneBlob(); const memSel = sel && sel.kind==='membrane';
+    cx.fillStyle='rgba(255,252,245,.5)'; cx.beginPath(); mem.ring.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])); cx.closePath(); cx.fill();
+    inkPath(mem.ring,3,memSel?COL.inference:'rgba(43,42,51,.4)',memSel?2:1.4,true,[6,7]); M._mem=mem;
+    // relations (facet→facet), labelled
+    M.rels.forEach(r=>{ const selR = sel&&sel.kind==='relation'&&sel.ref===r.i; const col = r.line==='feedback'?COL.strain:(selR?COL.inference:COL.positive);
+      const q=relCurve([r.a.x,r.a.y],[r.b.x,r.b.y],r.bow); const pts=[]; for(let s=.16;s<=.84;s+=.06)pts.push(q(s));
+      inkPath(pts,r.i*7,col,selR?3:r.spec.width,false,r.spec.dash); r._mid=q(.5);
+      if(r.spec.arrow){ const[hx,hy]=q(.84),[bx,by]=q(.78),an=Math.atan2(hy-by,hx-bx); cx.strokeStyle=col;cx.lineWidth=r.spec.width;cx.beginPath();
+        cx.moveTo(hx,hy);cx.lineTo(hx-Math.cos(an-.5)*8,hy-Math.sin(an-.5)*8);cx.moveTo(hx,hy);cx.lineTo(hx-Math.cos(an+.5)*8,hy-Math.sin(an+.5)*8);cx.stroke(); }
+      cx.fillStyle=col;cx.font='400 12px "Caveat",cursive';cx.textAlign='center';cx.textBaseline='middle'; const[mx,my]=q(.5); cx.fillText(r.label,mx,my-7); });
+    // glyph holons + composed facet chips
+    M.glyphs.forEach((g,gi)=>{ const selG = sel&&sel.kind==='glyph'&&sel.ref===gi;
+      g.facets.forEach(f=>{ const fc=FACET[f.key]; const col=roleColor(fc.role)||g.hue; cx.setLineDash([3,3]);
+        inkPath([[g.x,g.y],[f.x,f.y]],f.x,'rgba(43,42,51,.28)',1); cx.setLineDash([]);
+        cx.fillStyle=col+'22';cx.beginPath();cx.arc(f.x,f.y,15,0,TAU);cx.fill(); inkCircle(f.x,f.y,15,f.x+f.y,col,1.4);
+        cx.fillStyle=col;cx.font='600 12px "IBM Plex Mono",monospace';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(fc.icon,f.x,f.y+1);
+        cx.fillStyle=COL.dim;cx.font='400 8px "IBM Plex Mono",monospace';cx.fillText(f.key,f.x,f.y+24); });
+      cx.fillStyle=g.hue+'1e';cx.beginPath();cx.arc(g.x,g.y,34,0,TAU);cx.fill();
+      if(selG){cx.strokeStyle=COL.inference;cx.lineWidth=1.6;cx.setLineDash([3,4]);cx.beginPath();cx.arc(g.x,g.y,42,0,TAU);cx.stroke();cx.setLineDash([]);
+        cx.fillStyle=COL.inference;cx.font='14px serif';cx.fillText('✦',g.x+30,g.y-30);}
+      inkCircle(g.x,g.y,34,g.x,g.hue,2.4);
+      cx.fillStyle=COL.ink;cx.font='600 19px "Caveat",cursive';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(g.word,g.x,g.y+1); });
+    // the sentence skin (top), key words tinted to their glyph
+    drawSentence(mem);
+    requestAnimationFrame(draw); }
+
+  function drawSentence(mem){ const ph=M.ph; const words=ph.text.split(/(\s+)/);
+    cx.font='300 18px "Fraunces",serif'; cx.textBaseline='alphabetic';
+    const glyphWords={}; M.glyphs.forEach(g=>glyphWords[g.word.toLowerCase()]=g.hue);
+    let total=0; for(const w of words){ const clean=w.replace(/[.,;]/g,'').toLowerCase(); cx.font=(glyphWords[clean]?'600 ':'300 ')+'18px "Fraunces",serif'; total+=cx.measureText(w).width; }
+    let x=Math.max(40,W/2-total/2), y=Math.max(120, mem.cyp-mem.ry-30);
+    for(const w of words){ const clean=w.replace(/[.,;]/g,'').toLowerCase(); const hue=glyphWords[clean];
+      cx.font=(hue?'600 ':'300 ')+'18px "Fraunces",serif'; cx.fillStyle=hue||'rgba(43,42,51,.4)'; cx.textAlign='left'; cx.fillText(w,x,y); x+=cx.measureText(w).width; } }
+
+  // ── interaction: click → select → Lens (design-system INTERACT.click) ──
+  const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
+  cv.addEventListener('click',e=>{ if(!M)return; const[x,y]=pos(e);
+    let hit=null;
+    M.glyphs.forEach((g,gi)=>{ if(Math.hypot(x-g.x,y-g.y)<36) hit={kind:'glyph',ref:gi}; });
+    if(!hit) M.rels.forEach(r=>{ if(r._mid&&Math.hypot(x-r._mid[0],y-r._mid[1])<16) hit={kind:'relation',ref:r.i}; });
+    if(!hit && M._mem){ const m=M._mem; if(((x-m.cxp)/m.rx)**2+((y-m.cyp)/m.ry)**2 < 1) hit={kind:'membrane'}; }
+    sel=hit; renderLens(); });
+
+  function renderLens(){ const L=document.getElementById('lens'); if(!sel){L.classList.remove('on');return;} L.classList.add('on');
+    if(sel.kind==='glyph'){ const g=M.glyphs[sel.ref]; const chips=g.facets.map(f=>`<span class="chip">${FACET[f.key].icon} ${f.key}${f.key==='objective'||f.key==='source'?'':''}</span>`).join('');
+      const conns=M.rels.filter(r=>r.a.g===g||r.b.g===g).map(r=>{const o=r.a.g===g?r.b:r.a; const me=r.a.g===g?r.a:r.b; return `<div><b>${(r.a.g===g?r.from:r.to)}</b> ${r.label} <b>${(r.a.g===g?r.to:r.from)}</b></div>`;}).join('')||'<div>—</div>';
+      L.innerHTML=`<h4>Lens</h4><div class="row"><span class="ico" style="border-color:${g.hue};color:${g.hue}">${g.word[0]}</span><span class="ttl">${g.word}</span></div><div class="chips">${chips}</div><div class="sub">connected through</div><div class="conn">${conns}</div>`;
+    } else if(sel.kind==='relation'){ const r=M.rels.find(z=>z.i===sel.ref);
+      L.innerHTML=`<h4>Lens</h4><div class="conn"><b>${r.from}</b><br>&nbsp;&nbsp;${r.label} →<br><b>${r.to}</b></div><div class="sub">${r.line}</div><div class="acts"><button>explain</button><button>invert</button><button>stitch</button></div>`;
+    } else { const loops=M.rels.filter(r=>r.line==='feedback').length;
+      L.innerHTML=`<h4>Lens</h4><div class="row"><span class="ico">◌</span><span class="ttl">Membrane</span></div><div class="big"><div><div class="n">${M.glyphs.length}</div><div class="l">glyphs</div></div><div><div class="n">${loops}</div><div class="l">loops</div></div><div><div class="n">${M.rels.length}</div><div class="l">edges</div></div></div><div class="sub">ask this membrane</div><input class="ask" placeholder="e.g. what wakes the cat?">`; } }
+
+  // ── chrome ──
+  const ph=document.getElementById('phrases');
+  DATA.phrases.forEach((p,i)=>{ const b=document.createElement('button'); b.textContent=p.id; if(i===0)b.className='on'; b.onclick=()=>{idx=i;sel=null;[...ph.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');document.getElementById('kind').textContent=p.kind;layout();renderLens();}; ph.appendChild(b); });
+  document.querySelectorAll('.tools button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tools button').forEach(z=>z.classList.remove('on'));b.classList.add('on');});
+  document.getElementById('new').onclick=()=>{ sel=null; renderLens(); };
+  document.getElementById('save').onclick=()=>{ try{localStorage.setItem('causality.story.idx',idx);}catch(e){} };
+  if(DATA.phrases[0]) document.getElementById('kind').textContent=DATA.phrases[0].kind;
+  layout(); draw();
+})();
+</script>
+</body>
+</html>
