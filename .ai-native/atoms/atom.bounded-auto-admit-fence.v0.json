@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.bounded-auto-admit-fence.v0",
+    "story": {
+      "text": "As bdo, I want to stamp the slow loop's bounds once and then let in-fence dial proposals admit themselves, while any out-of-fence proposal still escalates to me — because the slow loop senses the field and proposes a setpoint change every tick, and routing each proposal to my queue floods me, but a blanket auto-admit hands the dial away. The fence is the arc-confirm shape applied to the dial: one standing stamp of the safe range, the loop self-admits within it, and a single breached key escalates the whole proposal.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The slow loop's bounded auto-admit fence: in-fence dial proposals self-admit",
+      "value": "An admitted auto_admit_fence record (signed --by bdo) declares the safe range for each setpoint key. The disposer then folds each slow-loop dial proposal against the fence: every key in-bounds -> the proposal self-admits as a setpoint change; any key out-of-bounds -> the whole proposal escalates to bdo (one breached key fails the lot). The owner stamps the bounds once instead of judging every tick, and never loses the dial: cooling is always allowed, out-of-fence always escalates.",
+      "why_now": "The slow loop proposes a dial change every tick (e.g. step_budget 3->4) and the disposition seam was answered (bounded auto-admit) but unbuilt; without the fence each proposal either floods bdo's queue or is ignored. This is the propose-vs-dispose resolution made executable.",
+      "if_accepted": "The field's outcomes move their own dial within bdo's stamped bounds, with receipts; out-of-bounds proposals still arrive at his queue. The §10 teeth: a proposal with one in-fence key and one out-of-fence key is each locally fine yet refuses to fit one auto-admit — the disposer escalates the whole thing rather than admitting the safe half.",
+      "if_rejected": "The slow loop keeps proposing into a void or into bdo's queue; the system cannot regulate its own pace without either flooding the owner or handing him the dial entirely.",
+      "cost_of_wrong_call": "Low and reversible: the fence is an admitted record (superseded, never erased); with no fence admitted, nothing auto-admits (the loop still proposes, bdo still disposes). Activation is bdo's stamp (--by bdo); the mechanism is inert until he sets the bounds.",
+      "mechanism": "loop/disposer.py folds proposals against the admitted auto_admit_fence; loop/orchestrate.py wires it into the tick; tests/test_disposer.py carries the §10 teeth (one breached key escalates the whole proposal; cooling always allowed; no fence = no auto-admit). Done-line 0091.",
+      "reading": [
+        "loop/disposer.py",
+        "loop/orchestrate.py",
+        ".ai-native/done/0091-bounded-auto-admit-fence.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["loop/disposer.py", "loop/orchestrate.py", "loop/CLAUDE.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/disposer.py", "loop/orchestrate.py"]
+    }
+  },
+  "_note": "Birth record for the slow loop's bounded auto-admit fence (done-line 0091), authored so the off-log work carries an atom on the log under the now-live atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5). The fence itself is bdo's stamp (auto_admit_fence --by bdo); this atom is the mechanism, inert until he sets the bounds."
+}
