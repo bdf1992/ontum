@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.causality-welcome-mat.v0",
+    "story": {
+      "text": "As bdo, I want a phone-readable welcome mat for Causality that shows the system's live felt-field — its pulse, its rhythm/breath, its energy and strain — folded from records already on the log and never painted, so the first surface anyone meets is the emergent felt-field carried honestly, not hand-authored 'feels alive' prose. The mat carries the field; it does not author it, and it is a projection only — never a second way to change the log.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Causality's welcome mat: the landing page that folds the live felt-field",
+      "value": "A pure read-only projection (causality/welcome.py, stdlib, the loop/web.py render grain) renders the felt-field by folding committed records: pulse (recent acts from loop.energy), rhythm/breath (the hour's heat/steady/cool lean from loop.temporal), and energy/tempo with strain (burned/fallback wasted latency from loop.energy). Every felt figure equals the number its fold emits — the census/term-economy citation discipline — and an empty log renders 'absence', not a fake zero.",
+      "why_now": "anima (priority one) needs its first surface: the place the emergent felt-field is carried through. Causality's confirmed arc opens at the welcome mat (welcome -> canvas -> tools -> paint); the canvas landed (#151), the mat is the front frame.",
+      "if_accepted": "The first Causality surface a person meets reads the system's real pulse/rhythm/strain off the log, headlessly provable (python -m causality.welcome render) with §10 teeth: a fabricated/constant value fails the equality test; a clean act + a burned act refuse to fit one 'all is well' impression — the page surfaces the strain rather than averaging it away.",
+      "if_rejected": "anima's felt-field stays internal to the folds with no surface to be met through; Causality's welcome frame stays a toy or hand-authored prose, the mercury the non-example warns against.",
+      "cost_of_wrong_call": "Low: a read-only projection, no write path, stdlib only; reverting is deleting one file. It folds only committed bytes and re-senses nothing (it projects loop.energy / loop.temporal, never re-derives them).",
+      "mechanism": "causality/welcome.py folds loop.energy (pulse, energy/tempo, strain) and loop.temporal (heat/steady/cool) and renders a phone-readable self-contained page; tests/test_welcome.py is the §10 equality test (every felt figure equals its fold over a fixture log; empty log renders absence). Done-line 0095.",
+      "reading": [
+        "causality/welcome.py",
+        "tests/test_welcome.py",
+        ".ai-native/done/0095-causality-welcome-mat.md"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": ["causality/welcome.py", "tests/test_welcome.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["causality/welcome.py", "tests/test_welcome.py"]
+    }
+  },
+  "_note": "Birth record for Causality's welcome mat (done-line 0095), authored so the off-log work carries an atom on the log under the now-live atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
