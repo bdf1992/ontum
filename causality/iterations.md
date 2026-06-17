@@ -9,7 +9,54 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
-## 0002 — Minimalist: remove before adding 🟡
+## 0003 — The story demo: cute skin, mechanical body, sliders steer both 🟡
+**2026-06-17 · bdo**
+
+The homepage's purpose: **tiny natural-language stories that are cute on the
+surface but mechanically rich underneath.** "The little robot waters the plant
+when the leaves droop, then checks tomorrow to see if it helped" reads casual,
+but the system hears `actor → desire → signal → action → state-change →
+evaluation → loop`. The proof: *natural language is a compressible interface to
+a working system.*
+
+> A tiny story is the visible skin. The graph is the hidden body. The sliders
+> alter both at once — they are **world-physics controls**, not "AI story
+> controls." Moving one changes the cute sentence *and* the underlying mesh.
+
+**Sliders = translation pressure:**
+- **Complexity** → node density + relationship variety (how much structure is extracted)
+- **Length** → timeline depth (how many temporal frames unfold)
+- **Twists** → how often causal assumptions invert (observer becomes observed, hidden parent loop)
+- **Colors** → palette + emotional/semantic register + node styling
+- **Weirdness (arbitrary inclusion)** → how aggressively odd objects must be integrated — and each object must *earn a relationship* (a key → lock/secret, a bell → signal/alert, a mushroom → growth/memory), not just decorate.
+
+**Random** → a *seed card* (creature, desire, world-signal, arbitrary object,
+twist, palette, complexity, length), which compiles to a story + a mesh.
+**Epic mode** → many time-series episodes from one world model: `local loop →
+learned rule → inherited behavior → world memory` (recursive teaching / network
+growth).
+
+**Three panes:** Story (the sentence) · Mesh (the animated canvas) · System
+(events, states, rules, loops, unresolved tensions).
+
+The five-seed first pack (covers observer/signal/state/memory/path/resource/
+recursion): owl+stars (observation), robot+plant (feedback), mouse+crumbs
+(path/memory), cat+sunbeam (moving attractor), caterpillar+leaf (growth/consumption).
+
+**Architecture call (mine):** the served site is static — no LLM backend — so the
+generator is a **deterministic local story-compiler** (seed + sliders →
+sentence + mesh, plain JS, instant, works for everyone, on-brand: real structure
+not a hallucination). Open-ended LLM authoring returns as a local-only mode when
+the inference bridge runs.
+
+Lands in: _(in progress — `causality/stories.js` compiler + a clean control
+strip + story pane on the minimal canvas; slice 1 = the five seeds + complexity/
+length/weirdness + Random + Generate; twists-matrix, epic mode, and the System
+pane follow.)_
+
+---
+
+## 0002 — Minimalist: remove before adding 🟢
 **2026-06-16 · bdo**
 
 Iteration 0001 put the canvas as the home but kept all the tool chrome
