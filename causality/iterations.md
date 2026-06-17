@@ -9,6 +9,27 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0002 — Minimalist: remove before adding 🟡
+**2026-06-16 · bdo**
+
+Iteration 0001 put the canvas as the home but kept all the tool chrome
+(describe-bar, template/poke/inject bar, help text, legend, system panel).
+**Too much. Remove before adding.** Strip to **just the canvas** and perfect the
+basic design-system patterns first: **canvas, size, color, lines.**
+
+- Strip the chrome to near-nothing — quiet `Causality` wordmark, and a faint
+  `+ New` / `Save` cluster that comes up on hover. Everything else removed for now.
+- **Hover tooltips, not always-on labels** — node metadata (type / latency)
+  appears on hover; the canvas stays clean.
+- Keep the **animations** (the living ink — wobble, water, pulses).
+- Perfect the fundamentals before re-adding any tool: node **size** + spacing,
+  the **color** application, and the hand-drawn **line** weight (fine-tipped
+  marker). Re-introduce tools deliberately, one clean affordance at a time.
+
+Lands in: _(in progress — strip canvas.html chrome; node sublabels hover-only.)_
+
+---
+
 ## 0001 — The whole app is the canvas 🟡
 **2026-06-16 · bdo**
 

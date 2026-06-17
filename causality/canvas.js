@@ -404,9 +404,11 @@ function Canvas(el, opts = {}) {
       if (!n.editing) { cx.textBaseline = 'alphabetic'; cx.fillStyle = INK; cx.font = '600 18px "Caveat", cursive';
         const words = n.label.split(' '); if (words.length > 2) { const mid = Math.ceil(words.length / 2);
           cx.fillText(words.slice(0, mid).join(' '), n.x, n.y - 6); cx.fillText(words.slice(mid).join(' '), n.x, n.y + 14); } else cx.fillText(n.label, n.x, n.y + 4); }
-      cx.font = '500 9px "IBM Plex Mono", monospace'; cx.fillStyle = DIM; cx.textAlign = 'center';
-      const lat = n.avgMs != null ? '·' + fmtMs(n.avgMs) : '';
-      cx.fillText(n.type + lat, n.x, n.y + NODE_R + 15);
+      if (n === S.hoverNode) {   // metadata on hover only — keep the canvas clean (iterations-log 0002)
+        cx.font = '500 9px "IBM Plex Mono", monospace'; cx.fillStyle = DIM; cx.textAlign = 'center';
+        const lat = n.avgMs != null ? '·' + fmtMs(n.avgMs) : '';
+        cx.fillText(n.type + lat, n.x, n.y + NODE_R + 15);
+      }
       if (n.verdict) { cx.fillStyle = HOT; cx.font = '600 12px "Caveat", cursive'; cx.fillText(n.verdict, n.x, n.y + NODE_R + 30); }
       if (n === S.hoverNode && n.lastOut != null) { cx.fillStyle = DIM; cx.font = '300 9px "IBM Plex Mono", monospace'; cx.fillText(snippet(n.lastOut, 34), n.x, n.y - NODE_R - 12); }
     }
