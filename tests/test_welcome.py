@@ -6,13 +6,12 @@ field from real records, never paints it. The teeth, each from the done-line:
 
   1. equality — every felt figure on the page is the number its fold emits
      (pulse count, total beat, tempo, lean, register all trace to the fold);
-  2. no-fabrication — the page reflects DIFFERENT fixtures differently (a
-     hardcoded constant cannot satisfy two logs at once), and the rhythm changes
-     with the hour (a constant lean fails);
+  2. no-fabrication — the page (and the anima mood) reflect DIFFERENT fixtures
+     differently: a hardcoded constant cannot satisfy two logs, nor two hours;
   3. strain (the refusal) — a clean act and a burned act, each locally valid,
      refuse to fit one "all is well" first impression: the page shows the strain
-     rather than averaging it away;
-  4. absence — an empty log renders "absence", not a fake "0.0 tok/s";
+     and the mood goes weak, rather than averaging it to calm;
+  4. absence — an empty log renders "absence" (mood None), not a fake tempo;
   5. projection — there is no write path: the source carries no log-writing
      symbol (Causality is never a second source of truth).
 """
@@ -23,7 +22,7 @@ import unittest
 from pathlib import Path
 
 from causality import welcome as W
-from causality.welcome import _ms, _tempo, felt_field, render_html
+from causality.welcome import _ms, _tempo_rate, felt_field, mood, render_html
 from loop.energy import energy
 from loop.temporal import load_schedule, register_at
 
@@ -62,26 +61,24 @@ class Equality(unittest.TestCase):
             schedule, _, _ = load_schedule(root)
             band = register_at(hour, schedule)
 
-            # pulse count
             self.assertEqual(e["acts"], 2)
-            self.assertIn(f'class="figure">{e["acts"]}', page)
-            # energy: total beat, median, tempo — exactly as the fold renders them
-            self.assertIn(_ms(e["total_latency_ms"]), page)
-            self.assertIn(_ms(e["median_latency_ms"]), page)
-            self.assertIn(_tempo(e["tempo_tokens_per_s"]), page)
-            self.assertIn(f'{e["total_tokens"]} tokens', page)
-            # rhythm: lean + register straight from temporal's band
-            self.assertIn(band["lean"], page)
-            self.assertIn(band["register"], page)
-            # the recent act ids are the real ones, freshest first (match the
-            # </code>-terminated forms so "r.clean" can't match inside "r.clean2")
+            self.assertIn(f'class="fig">{e["acts"]}', page)            # pulse count
+            self.assertIn(_ms(e["total_latency_ms"]), page)            # total beat
+            self.assertIn(_ms(e["median_latency_ms"]), page)           # median beat
+            self.assertIn(_tempo_rate(e["tempo_tokens_per_s"]), page)  # tempo
+            self.assertIn(f'{e["total_tokens"]} tok', page)            # yield
+            self.assertIn(band["lean"], page)                          # rhythm lean
+            self.assertIn(band["register"], page)                      # rhythm register
+            # recent act ids, freshest first (match </code> so "r.clean" can't
+            # match inside "r.clean2")
             self.assertIn("r.clean2</code>", page)
             self.assertLess(page.index("r.clean2</code>"),
                             page.index("r.clean</code>"))
 
 
 class NoFabrication(unittest.TestCase):
-    """Teeth 2: a constant cannot satisfy two different logs, nor two hours."""
+    """Teeth 2: a constant cannot satisfy two different logs, nor two hours —
+    and the anima mood tracks the folds too, not a fixed word."""
 
     def test_pulse_count_tracks_the_log_not_a_constant(self):
         with tempfile.TemporaryDirectory() as d2:
@@ -92,25 +89,30 @@ class NoFabrication(unittest.TestCase):
                 root3 = _root(d3, CLEAN, CLEAN2, CLEAN3)
                 three = render_html(root3, 8)
                 beat3 = energy(root=root3)["summary"]["total_latency_ms"]
-                # pulse count tracks each log — a constant cannot show 2 and 3
-                self.assertIn('class="figure">2', two)
-                self.assertIn('class="figure">3', three)
-                # and the folded total beat differs, each rendered from its log
+                self.assertIn('class="fig">2', two)
+                self.assertIn('class="fig">3', three)
                 self.assertNotEqual(beat2, beat3)
                 self.assertIn(_ms(beat2), two)
                 self.assertIn(_ms(beat3), three)
 
-    def test_rhythm_changes_with_the_hour(self):
+    def test_mood_tracks_tempo_and_strength_not_a_constant(self):
         with tempfile.TemporaryDirectory() as d:
-            root = _root(d, CLEAN)
-            heat = render_html(root, 8)    # dawn-explore
-            cool = render_html(root, 20)   # dusk-consolidate
-        self.assertIn("heat", heat)
-        self.assertIn("dawn-explore", heat)
-        self.assertIn("cool", cool)
-        self.assertIn("dusk-consolidate", cool)
-        # the same constant page could never carry both leans
-        self.assertNotIn("dusk-consolidate", heat)
+            root = _root(d, CLEAN, CLEAN2)
+            # same log, two hours -> tempo pole flips -> different mood
+            vigorous = mood(felt_field(root, 8))    # heat -> fast + strong
+            grounded = mood(felt_field(root, 20))   # cool -> slow + strong
+            self.assertEqual(vigorous["name"], "vigorous")
+            self.assertEqual(grounded["name"], "grounded")
+            self.assertIn("vigorous", render_html(root, 8))
+            self.assertNotIn("vigorous", render_html(root, 20))
+
+    def test_strength_pole_tracks_strain(self):
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            strong = mood(felt_field(_root(a, CLEAN, CLEAN2), 20))
+            weak = mood(felt_field(_root(b, CLEAN, BURNED), 20))
+            self.assertEqual(strong["strength"], "strong")   # all yielded
+            self.assertEqual(weak["strength"], "weak")       # a burned act
+            self.assertEqual(weak["name"], "guttering")      # slow + weak
 
 
 class Strain(unittest.TestCase):
@@ -134,17 +136,17 @@ class Strain(unittest.TestCase):
 
 
 class Absence(unittest.TestCase):
-    """Teeth 4: an empty log is absence, not a fake zero."""
+    """Teeth 4: an empty log is absence, not a fake figure; no mood to be in."""
 
-    def test_empty_log_renders_absence_not_a_fake_tempo(self):
+    def test_empty_log_renders_absence_and_no_mood(self):
         with tempfile.TemporaryDirectory() as d:
             root = _root(d)  # no receipts
             field = felt_field(root, 8)
             self.assertTrue(field["empty"])
+            self.assertIsNone(mood(field))
             page = render_html(root, 8)
             self.assertIn("absence", page)
-            # never a fabricated throughput on an empty field
-            self.assertNotIn("0.0 tok/s", page)
+            self.assertNotIn("tok/s", page)  # no fabricated throughput
 
 
 class Projection(unittest.TestCase):
