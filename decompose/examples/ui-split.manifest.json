@@ -1,0 +1,56 @@
+{
+  "decomposition": "ui-tokens-vs-wiring (bdo's anchor, 2026-06-17)",
+  "note": "Declared input. The worked example the procedure was read off of: the part bdo already trusted, decomposed around. tokens change for aesthetic reasons; wiring for interaction reasons; the copy agent for voice reasons edited hourly. Three reasons, three modules, three rates and authorities — the change-axes, not the categories.",
+  "anchor": ["the part I know I like"],
+  "modules": [
+    {
+      "name": "tokens",
+      "axis": {
+        "reason": "aesthetic change",
+        "rate": "frequent",
+        "authority": "designer",
+        "kind": "code"
+      },
+      "depends_on": [],
+      "contracts": ["token-port", "copy-style-port"]
+    },
+    {
+      "name": "wiring",
+      "axis": {
+        "reason": "interaction change",
+        "rate": "occasional",
+        "authority": "engineer",
+        "kind": "code"
+      },
+      "depends_on": ["tokens"],
+      "contracts": ["token-port"]
+    },
+    {
+      "name": "copy",
+      "axis": {
+        "reason": "voice and tone of generated copy",
+        "rate": "hourly",
+        "authority": "bdo (prompt)",
+        "kind": "agent"
+      },
+      "depends_on": ["tokens"],
+      "contracts": ["copy-style-port"]
+    }
+  ],
+  "contracts": {
+    "token-port": {
+      "between": ["tokens", "wiring"],
+      "crosses": "the token names and their resolved values; nothing else",
+      "trust": "trusted: both sides are deterministic code in one repo",
+      "authority": "designer owns the token set; engineer owns the consumption",
+      "change_rate": "tokens shift frequently, the port shape rarely"
+    },
+    "copy-style-port": {
+      "between": ["tokens", "copy"],
+      "crosses": "the style constraints the agent must honour (max length, casing, palette words)",
+      "trust": "untrusted agent output, validated against the constraints before it renders",
+      "authority": "designer owns the constraints; bdo owns the prompt that consumes them",
+      "change_rate": "constraints weekly; the prompt hourly — the seam holds across the gap"
+    }
+  }
+}
