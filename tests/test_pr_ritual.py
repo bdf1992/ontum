@@ -174,6 +174,32 @@ class TestIntegrate(unittest.TestCase):
         self.assertIsNone(pen.integrate_refusal("epic/owner-harness"))
 
 
+class TestRetire(unittest.TestCase):
+    """The retire verb: close a PR without landing it (work already on main,
+    superseded, abandoned). The §10 bar — a locally-fine close still refuses
+    to fit without a reason a cold reader can read, and a settled PR cannot
+    be retired twice."""
+
+    def test_open_pr_with_a_reason_may_retire(self):
+        self.assertIsNone(pen.retire_refusal(
+            "OPEN", "its content is already on main (folded into #114)"))
+
+    def test_no_reason_refuses(self):
+        self.assertIn("reason is required", pen.retire_refusal("OPEN", ""))
+        self.assertIn("reason is required", pen.retire_refusal("OPEN", "   "))
+
+    def test_a_pointer_reason_is_not_writing(self):
+        # a bare path or numbered ref is homework, not a reason a cold reader reads
+        for pointer in (".ai-native/done/0020-x.md", "0118", "`0118`"):
+            self.assertIn("pointer", pen.retire_refusal("OPEN", pointer), pointer)
+
+    def test_a_settled_pr_cannot_be_retired(self):
+        for state in ("MERGED", "CLOSED"):
+            reason = pen.retire_refusal(state, "already on main")
+            self.assertIn("only an open PR", reason)
+            self.assertIn(state.lower(), reason)
+
+
 class TestQuotedProse(unittest.TestCase):
     """Caught live: the shame hook read a here-string commit message as
     tool heads. Quoted content is prose, never commands."""
