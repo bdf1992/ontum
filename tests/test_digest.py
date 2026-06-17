@@ -220,6 +220,34 @@ class TestSpan(_Temp):
         self.assertEqual(len(d["divergences"]), 1)
 
 
+class TestLandingNotRefusal(_Temp):
+    """retro fold 0098 surfaced it: a merge-node `landed` verdict carries no
+    next event, so the old 'no next event == refusal' rule counted every merge
+    landing as a refusal (the 58-where-~7-were-real inflation). A landing is a
+    landing, not a refusal."""
+
+    def _merge_landed(self, n, ts):
+        reconcile.append_line(self.root / "log" / "receipts.jsonl", {
+            "id": f"rcp.merge.{n}", "node": "merge-node.claude.v1",
+            "artifact_id": None, "verdict": "landed",
+            "reason": f"landed PR #{n}", "next_suggested_event": None, "ts": ts})
+
+    def test_merge_landings_are_landings_not_refusals(self):
+        self._merge_landed(1, "2026-06-05T10:00:00Z")
+        self._merge_landed(2, "2026-06-05T11:00:00Z")
+        _append_receipt(self.root, "collision", "2026-06-05T12:00:00Z")
+        d = digest.digest(self.root)
+        self.assertEqual(d["refusals"], 1)   # only the real one, not the 2 lands
+        self.assertEqual(d["landings"], 2)   # the merge lands now count as lands
+
+    def test_a_verdictless_receipt_refuses_nothing(self):
+        reconcile.append_line(self.root / "log" / "receipts.jsonl", {
+            "id": "rcp.noverdict", "node": "x", "artifact_id": None,
+            "verdict": None, "next_suggested_event": None,
+            "ts": "2026-06-05T10:00:00Z"})
+        self.assertEqual(digest.digest(self.root)["refusals"], 0)
+
+
 class TestField(_Temp):
     def test_tick_behaviour_folds_into_the_field(self):
         sp = orchestrate.admit_setpoint(
