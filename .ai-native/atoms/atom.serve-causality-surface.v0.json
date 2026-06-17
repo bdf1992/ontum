@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.serve-causality-surface.v0",
+    "story": {
+      "text": "As bdo, I want Causality's experience layer served at a public URL I can open from my phone — the welcome mat as the landing page, the canvas one tap in — so the surface the system is becoming communicable through is one I can actually reach, instead of a static page locked behind a localhost command I will never run. The serving is the experience layer, never the loop: the loop's metabolism stays local-first (no broker, no daemon, no socket at runtime); only the rendered surface leaves, as static artifacts published by a build step, a projection that writes nothing back.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Serve Causality: the canvas + welcome mat reach the owner's phone via GitHub Pages",
+      "value": "A GitHub Actions workflow (.github/workflows/pages.yml) assembles the experience layer as static files and publishes it to GitHub Pages on every push to main: the committed, self-contained canvas (canvas.html + canvas.js + inspector.js + authoring.js) served as-is, and the welcome mat rendered to the site root as the landing page (python -m causality.welcome render --out _site/index.html — a fold over the committed log). The welcome mat gains an 'open the canvas' link in its header (causality/welcome.py), so the owner's sequence welcome -> canvas is one tap, in Causality's own design language.",
+      "why_now": "The diagnosis of why the canvas kept failing to land: it was judged by eye, but the only judge with taste could not see it — it lived behind a localhost command the owner never runs, on a phone that cannot run it. The seeing loop was broken. Serving it closes that loop. epic.causality-surface is confirmed and its charter is exactly this: 'the system gains a place to be seen and steered'.",
+      "if_accepted": "The owner opens a URL on his phone and sees the live felt-field (welcome mat) and the typed-pulse canvas, both in the established design system. The canvas crosses from substrate to served experience without the loop ever gaining a network seam or a second way to be changed.",
+      "if_rejected": "The canvas and welcome mat stay rendered-but-unreachable static files behind localhost; the experience work keeps dying in the dark because the owner cannot look at it, and 'hard to land' persists for the same reason it always did.",
+      "cost_of_wrong_call": "Low and reversible: the workflow publishes only committed bytes and a read-only fold over the committed log; it adds no runtime network to the loop and writes nothing back. Reverting is deleting one workflow file and one header link. The repo is already public, so serving introduces no new disclosure.",
+      "mechanism": ".github/workflows/pages.yml (build-time, not runtime): checkout -> setup-python -> assemble _site (copy the canvas + modules, render welcome.html to _site/index.html) -> configure-pages (enablement: true) -> upload-pages-artifact -> deploy-pages. The welcome->canvas link is a single anchor in causality/welcome.py's header, styled with the existing design tokens. The loop runtime is untouched; the hard rule 'no network at runtime' is preserved and the experience-layer-vs-loop distinction is named in the workflow header.",
+      "reading": [
+        ".github/workflows/pages.yml",
+        "causality/welcome.py",
+        ".ai-native/done/0099-serve-causality-surface.md"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": [".github/workflows/pages.yml", "causality/welcome.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".github/workflows/pages.yml", "causality/welcome.py"]
+    }
+  },
+  "_note": "Birth record for serving Causality's experience layer (done-line 0098), authored so the work carries an atom on the log under the atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
