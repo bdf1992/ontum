@@ -9,6 +9,48 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0014 — Scored variations + the compose/accept/dismiss surface (the ASK shape for the mesh) 🔴
+**2026-06-18 · bdo** — divergence is too binary; a link has scored VARIATIONS the user composes
+
+bdo, on the compare lens: *"we should require **variations** with scores. I would say 'a
+shadow steals warmth'; I would also say 'it blocks the source by an object' and 'obscures
+the source.'"*
+
+**The model — a link is not present/absent (robust/flavor); it has VARIATIONS:**
+- Alternate *valid* framings at different **granularity**. The shadow: *steals warmth*
+  (acts on the `state` — coarse, trap-adjacent) → *blocks the source by an object* →
+  *obscures / dissolves the source* (acts on the `source`/sunbeam — finer). Both are legal
+  edges in our vocabulary: `signal|state|-` (*blocks*) vs `signal|source|-` (*dissolves*).
+  The finer one routes through the source (*shadow dissolves source → source feeds warmth →
+  warmth fades → cat wakes*). **The seed's "blocks warmth" is itself one variation — a
+  low-resolution one.** Not wrong; coarse. (This is "the seed was not robustly sourced,"
+  made precise: a variation, not the truth.)
+- Each variation carries a **score = fidelity × resolution** — the mediator preserved, the
+  trap dodged, and the *more granular faithful* reading wins. **Never seed-match** (the seed
+  is a variation). The score comes from the judge panel (freeform-but-deterministic), never
+  a constant.
+- **"Require variations"**: the bake-off brief asks each chef for *several* framings per
+  link, not one — the variation space is the deliverable.
+
+**The ideal shape to iterate into (bdo) — variations offered to the USER to COMPOSE /
+ACCEPT / DISMISS, modelled on the ASK surface:**
+- **Compatible** variations (can coexist) → a configuration-style **multi-select that
+  composes** (check the ones you keep).
+- **Truly incongruent** variations (same link, mutually exclusive — `shadow→warmth` vs
+  `shadow→source`) → **named, with radio buttons and a named recommendation** (the
+  highest-scored). Never a bare menu.
+- The user's choices **compose the winner mesh** — best of all flavors, by hand,
+  gesture-native. This is `compare.synthesize()` made interactive, and it mirrors the
+  **ask** skill's discipline (recommendation-first; compose vs radio; name the incongruent).
+
+Lands in: _(design target — logged now. The comparator (`compare.js` robust/flavor +
+`synthesize`) and the in-experience compare lens exist (0013-era). The next increment:
+elicit MULTIPLE scored variations per link, render the variation **ladder** (coarse→fine),
+and turn the lens into the compose/accept/dismiss surface. The score rubric
+(fidelity × resolution) and the panel that produces it are the build.)_
+
+---
+
 ## 0013 — The pattern named: Auditable Intent Mesh (AIM) — the gesture→AI→response loop, formalized 🟡
 **2026-06-18 · bdo** — generalize to the *intent of the pattern*, then make it executable
 
