@@ -171,3 +171,4 @@
 {"authorized_by":"adm.a675cb9d36fb","epic":"epic.causality-surface","head":"claude/canvas-hero-polish","id":"rcp.merge.189","kind":"merge","node":"merge-node.claude.v1","pr":189,"ts":"2026-06-18T00:24:24Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/bdo-brief-node","id":"rcp.merge.185","kind":"merge","node":"merge-node.claude.v1","pr":185,"ts":"2026-06-18T00:30:17Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/policy-intake","id":"rcp.merge.184","kind":"merge","node":"merge-node.claude.v1","pr":184,"ts":"2026-06-18T00:51:13Z","verdict":"landed"}
+{"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/harden-govern-seam","id":"rcp.merge.183","kind":"merge","node":"merge-node.claude.v1","pr":183,"ts":"2026-06-18T00:51:22Z","verdict":"landed"}
