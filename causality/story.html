@@ -45,9 +45,19 @@
   .tools button{font:500 11px "IBM Plex Mono",monospace;color:var(--dim);background:none;border:none;border-radius:9px;padding:7px 13px;cursor:pointer;transition:color .2s ease,background .2s ease;}
   .tools button.on,.tools button:hover{color:var(--inference);background:rgba(122,91,166,.1);}
   .zoom{position:fixed;left:22px;bottom:22px;z-index:12;display:flex;align-items:center;gap:8px;background:rgba(255,252,245,.9);border:1.5px solid rgba(43,42,51,.4);border-radius:11px;padding:6px 10px;font:500 10px "IBM Plex Mono",monospace;color:var(--ink);}
-  .phrases{position:fixed;right:22px;bottom:22px;z-index:12;display:flex;gap:5px;flex-wrap:wrap;max-width:300px;justify-content:flex-end;}
+  .phrases{position:fixed;right:22px;bottom:74px;z-index:12;display:flex;gap:5px;flex-wrap:wrap;max-width:300px;justify-content:flex-end;}
   .phrases button{font:500 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.85);border:1.2px solid rgba(43,42,51,.3);border-radius:8px;padding:5px 8px;cursor:pointer;transition:color .2s ease,border-color .2s ease;}
   .phrases button.on{color:var(--inference);border-color:var(--inference);}
+  /* small sizes: the controls stay out of each other's way and off the canvas edges */
+  @media (max-width:620px){
+    .top{padding:12px 14px;gap:8px;} .top .tag{display:none;} .top .mark{font-size:19px;}
+    .top .btn{padding:5px 9px;font-size:10px;}
+    .hint{top:50px;}
+    .phrases{max-width:none;left:10px;right:10px;bottom:66px;justify-content:center;}
+    .tools{bottom:12px;padding:6px 6px;gap:2px;} .tools button{padding:6px 9px;}
+    .zoom{bottom:12px;left:10px;padding:5px 8px;}
+    .lens{right:10px;left:10px;top:auto;bottom:120px;width:auto;}
+  }
 </style>
 </head>
 <body>
@@ -78,6 +88,7 @@
   const TAU = Math.PI * 2; let W, H, t = 0, DPR = Math.min(2, devicePixelRatio || 1);
   const R = 34, FR = 15;
   let WAMP = 1;  // ink amplitude, folded from the phrase's energy each frame (PHYSICS energy-coupling)
+  let VIEW = { s: 1, tx: 0, ty: 0 };  // fit-to-viewport transform (computed each frame)
   const roleColor = r => r === 'pigment' ? null : (COL[r] || COL.ink);
   const lerp = (a, b, k) => a + (b - a) * k;
   function size(){ W = innerWidth; H = innerHeight; cv.width = W*DPR; cv.height = H*DPR; cx.setTransform(DPR,0,0,DPR,0,0); }
@@ -114,6 +125,36 @@
     const g=cx.createRadialGradient(px,py,0,px,py,sz*3); g.addColorStop(0,col); g.addColorStop(1,col+'00');
     cx.fillStyle=g; cx.beginPath(); cx.arc(px,py,sz*3,0,TAU); cx.fill();
     cx.fillStyle=col; cx.beginPath(); cx.arc(px,py,sz,0,TAU); cx.fill(); }
+
+  // ── figurative glyph icons (the dropped `icon` field, rendered as small ink
+  //    line-art in the fine-marker style so a glyph reads as a figure, not just a
+  //    word). Abstract glyphs (icon null) stay word-only. ──
+  const ICONS = new Set(['sun','cloud','cat','mouse','owl','leaf','drop','robot']);
+  function drawIcon(name,x,y,u,col){
+    cx.save(); cx.strokeStyle=col; cx.fillStyle=col; cx.lineWidth=1.5; cx.lineCap='round'; cx.lineJoin='round';
+    const ring=(a,b,r)=>{cx.beginPath();cx.arc(a,b,r,0,TAU);cx.stroke();};
+    const dot=(a,b,r)=>{cx.beginPath();cx.arc(a,b,r,0,TAU);cx.fill();};
+    const seg=(a,b,c,d)=>{cx.beginPath();cx.moveTo(a,b);cx.lineTo(c,d);cx.stroke();};
+    switch(name){
+      case 'sun': ring(x,y,u*0.5); for(let i=0;i<8;i++){const a=i/8*TAU; seg(x+Math.cos(a)*u*0.8,y+Math.sin(a)*u*0.8,x+Math.cos(a)*u*1.15,y+Math.sin(a)*u*1.15);} break;
+      case 'cloud': cx.beginPath(); cx.arc(x-u*0.45,y+u*0.05,u*0.4,Math.PI*0.5,Math.PI*1.5); cx.arc(x-u*0.05,y-u*0.3,u*0.46,Math.PI*1.02,Math.PI*1.98); cx.arc(x+u*0.55,y-u*0.02,u*0.4,Math.PI*1.5,Math.PI*0.5); cx.closePath(); cx.stroke(); break;
+      case 'cat': ring(x,y+u*0.18,u*0.6);
+        cx.beginPath();cx.moveTo(x-u*0.5,y-u*0.22);cx.lineTo(x-u*0.66,y-u*0.78);cx.lineTo(x-u*0.16,y-u*0.42);cx.stroke();
+        cx.beginPath();cx.moveTo(x+u*0.5,y-u*0.22);cx.lineTo(x+u*0.66,y-u*0.78);cx.lineTo(x+u*0.16,y-u*0.42);cx.stroke();
+        dot(x-u*0.22,y+u*0.08,u*0.09); dot(x+u*0.22,y+u*0.08,u*0.09); break;
+      case 'mouse': ring(x,y+u*0.2,u*0.55); ring(x-u*0.45,y-u*0.32,u*0.32); ring(x+u*0.45,y-u*0.32,u*0.32); dot(x,y+u*0.32,u*0.08);
+        cx.beginPath();cx.moveTo(x+u*0.5,y+u*0.55);cx.quadraticCurveTo(x+u*1.1,y+u*0.6,x+u*0.92,y+u*0.08);cx.stroke(); break;
+      case 'owl': ring(x,y,u*0.68); ring(x-u*0.3,y-u*0.12,u*0.25); ring(x+u*0.3,y-u*0.12,u*0.25); dot(x-u*0.3,y-u*0.12,u*0.08); dot(x+u*0.3,y-u*0.12,u*0.08);
+        cx.beginPath();cx.moveTo(x,y+u*0.06);cx.lineTo(x-u*0.12,y+u*0.26);cx.lineTo(x+u*0.12,y+u*0.26);cx.closePath();cx.stroke();
+        seg(x-u*0.58,y-u*0.52,x-u*0.34,y-u*0.32); seg(x+u*0.58,y-u*0.52,x+u*0.34,y-u*0.32); break;
+      case 'leaf': cx.beginPath(); cx.moveTo(x-u*0.55,y+u*0.55); cx.quadraticCurveTo(x-u*0.7,y-u*0.7,x+u*0.6,y-u*0.6); cx.quadraticCurveTo(x-u*0.65,y+u*0.7,x-u*0.55,y+u*0.55); cx.stroke(); seg(x-u*0.4,y+u*0.4,x+u*0.35,y-u*0.35); break;
+      case 'drop': cx.beginPath(); cx.moveTo(x,y-u*0.78); cx.quadraticCurveTo(x+u*0.7,y+u*0.12,x,y+u*0.68); cx.quadraticCurveTo(x-u*0.7,y+u*0.12,x,y-u*0.78); cx.stroke(); break;
+      case 'robot':{ const w=u*0.6,h=u*0.52,rr=u*0.16;
+        cx.beginPath();cx.moveTo(x-w+rr,y-h);cx.arcTo(x+w,y-h,x+w,y+h,rr);cx.arcTo(x+w,y+h,x-w,y+h,rr);cx.arcTo(x-w,y+h,x-w,y-h,rr);cx.arcTo(x-w,y-h,x+w,y-h,rr);cx.closePath();cx.stroke();
+        dot(x-u*0.24,y-u*0.02,u*0.1); dot(x+u*0.24,y-u*0.02,u*0.1); seg(x,y-h,x,y-u*0.92); dot(x,y-u*1.04,u*0.12); break; }
+    }
+    cx.restore();
+  }
 
   // ── compose: the deterministic floor (declared composition; gateway is the
   //    enrichment seam behind the same node spec, iterations 0006) ──
@@ -156,8 +197,9 @@
     const pts=[]; for(let s=0;s<=1.001;s+=0.08) pts.push(q(s)); inkPath(pts,seed,col,spec.width,false,spec.dash);
     if(spec.arrow){ const[hx,hy]=q(1),[bx,by]=q(0.9),an=Math.atan2(hy-by,hx-bx); cx.strokeStyle=col;cx.lineWidth=spec.width;cx.beginPath();
       cx.moveTo(hx,hy);cx.lineTo(hx-Math.cos(an-.5)*8,hy-Math.sin(an-.5)*8);cx.moveTo(hx,hy);cx.lineTo(hx-Math.cos(an+.5)*8,hy-Math.sin(an+.5)*8);cx.stroke(); }
-    if(label){ const[lx,ly]=q(0.5); cx.font='400 12px "Caveat",cursive'; const w=cx.measureText(label).width;
-      cx.fillStyle='rgba(246,241,231,.9)'; cx.fillRect(lx-w/2-3,ly-9,w+6,16); cx.fillStyle=col; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label,lx,ly); }
+    if(label && d>62){ const[lx,ly]=q(0.5); cx.font='600 13px "Caveat",cursive'; const w=cx.measureText(label).width, bw=w+12, bh=19;
+      cx.beginPath(); cx.roundRect(lx-bw/2,ly-bh/2,bw,bh,6); cx.fillStyle='rgba(246,241,231,.96)'; cx.fill();
+      cx.fillStyle=col; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label,lx,ly); }
     return q; }
 
   // ── advance the per-glyph animation state. Entrance + water are CLOSED-FORM in
@@ -177,6 +219,14 @@
   function draw(){ t=(performance.now()-T0)/1000; cx.clearRect(0,0,W,H); if(!M){requestAnimationFrame(draw);return;}
     WAMP = M.energy; advance();
     const mem = membraneBlob(); M._mem = mem; const memSel = sel&&sel.kind==='membrane';
+    // ── fit-to-viewport: scale + center the whole graph so it never overflows or
+    //    crowds the chrome at small sizes. A pure VIEW transform over whatever
+    //    positions exist (so it survives a positioning change). Never zooms past 1. ──
+    const topPad=146, botPad=104, sidePad=20;
+    const availW=Math.max(60,W-2*sidePad), availH=Math.max(60,H-topPad-botPad);
+    VIEW.s = Math.min(availW/(2*mem.rx), availH/(2*mem.ry), 1);
+    VIEW.tx = W/2 - mem.cxp*VIEW.s; VIEW.ty = (topPad+availH/2) - mem.cyp*VIEW.s;
+    cx.save(); cx.translate(VIEW.tx, VIEW.ty); cx.scale(VIEW.s, VIEW.s);
     cx.fillStyle='rgba(255,252,245,.5)'; cx.beginPath(); mem.ring.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])); cx.closePath(); cx.fill();
     inkPath(mem.ring,3,memSel?COL.inference:'rgba(43,42,51,.4)',memSel?2:1.3,true,[6,7]);
     // edges — progressive: glyph-level when both ends collapsed; facet-level when an end is open.
@@ -208,20 +258,30 @@
       waterDisc(g.x,g.y,RR,g.waterA,g.hue,gi*1.7);
       if(selG){ cx.strokeStyle=COL.inference; cx.lineWidth=1.6; cx.setLineDash([3,4]); cx.beginPath(); cx.arc(g.x,g.y,RR+8,0,TAU); cx.stroke(); cx.setLineDash([]); }
       inkCircle(g.x,g.y,RR,g.x,open?COL.inference:g.hue,open?2.8:2.4);
-      cx.fillStyle=COL.ink; cx.font='600 19px "Caveat",cursive'; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(g.word,g.x,g.y+1);
+      // figurative icon (if the glyph has one) above a smaller word; else word centered
+      cx.textAlign='center'; cx.textBaseline='middle';
+      if(g.icon && ICONS.has(g.icon)){
+        drawIcon(g.icon, g.x, g.y-RR*0.24, RR*0.34, open?COL.inference:g.hue);
+        cx.fillStyle=COL.ink; cx.font='600 14px "Caveat",cursive'; cx.fillText(g.word, g.x, g.y+RR*0.5);
+      } else {
+        cx.fillStyle=COL.ink; cx.font='600 19px "Caveat",cursive'; cx.fillText(g.word, g.x, g.y+1);
+      }
       cx.restore(); });
-    drawSentence(mem);
+    cx.restore();
+    drawSentence(Math.max(108, VIEW.ty + (mem.cyp-mem.ry)*VIEW.s - 20));
     requestAnimationFrame(draw); }
 
-  function drawSentence(mem){ const ph=M.ph; const words=ph.text.split(/(\s+)/);
+  // the sentence skin lives in SCREEN space (above the graph), scaled to fit width
+  function drawSentence(baseY){ const ph=M.ph; const words=ph.text.split(/(\s+)/);
     const gw={}; M.glyphs.forEach(g=>gw[g.word.toLowerCase()]=g.hue);
-    let total=0; for(const w of words){ const c=w.replace(/[.,;]/g,'').toLowerCase(); cx.font=(gw[c]?'600 ':'300 ')+'18px "Fraunces",serif'; total+=cx.measureText(w).width; }
-    let x=Math.max(40,W/2-total/2), y=Math.max(116, mem.cyp-mem.ry-28);
+    let fs=18; const measure=()=>{ let tot=0; for(const w of words){ const c=w.replace(/[.,;]/g,'').toLowerCase(); cx.font=(gw[c]?'600 ':'300 ')+fs+'px "Fraunces",serif'; tot+=cx.measureText(w).width; } return tot; };
+    const maxW=W-32; let total=measure(); while(total>maxW && fs>9){ fs=Math.max(9, fs-0.5); total=measure(); }
+    let x=Math.max(16,W/2-total/2);
     for(const w of words){ const c=w.replace(/[.,;]/g,'').toLowerCase(); const hue=gw[c];
-      cx.font=(hue?'600 ':'300 ')+'18px "Fraunces",serif'; cx.fillStyle=hue||'rgba(43,42,51,.4)'; cx.textAlign='left'; cx.textBaseline='alphabetic'; cx.fillText(w,x,y); x+=cx.measureText(w).width; } }
+      cx.font=(hue?'600 ':'300 ')+fs+'px "Fraunces",serif'; cx.fillStyle=hue||'rgba(43,42,51,.4)'; cx.textAlign='left'; cx.textBaseline='alphabetic'; cx.fillText(w,x,baseY); x+=cx.measureText(w).width; } }
 
   // ── interaction (design-system INTERACT: hover→reveal, click→select) ──
-  const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
+  const pos=e=>{const r=cv.getBoundingClientRect(); const sx=e.clientX-r.left, sy=e.clientY-r.top; return [(sx-VIEW.tx)/VIEW.s,(sy-VIEW.ty)/VIEW.s];};
   cv.addEventListener('pointermove',e=>{ if(!M)return; const[x,y]=pos(e); let h=null; M.glyphs.forEach((g,i)=>{ if(Math.hypot(x-g.x,y-g.y)<R+8) h=i; }); hoverG=h;
     cv.style.cursor = h!=null ? 'pointer' : 'default'; const hint=document.getElementById('hint'); if(hint) hint.style.opacity = (h!=null||sel)?0:0.9; });
   cv.addEventListener('click',e=>{ if(!M)return; const[x,y]=pos(e); let hit=null;

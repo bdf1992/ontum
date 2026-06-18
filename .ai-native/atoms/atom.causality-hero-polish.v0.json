@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.causality-hero-polish.v0",
+    "story": {
+      "text": "As bdo, when I open the Causality hero I want the small expectations met, not silently assumed away: a glyph should read as a figure (the cat, sun, cloud it carries), labels should be legible instead of buried on a line, the controls shouldn't pile on top of each other, and the whole thing should hold together when the window is small instead of running off the edge. These are the little things that keep getting glossed into 'good enough'; this pass nails four of them on the served hero so the surface feels finished at every size, not just at one width on a big screen.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Four unmet small expectations on the Causality hero, met: figurative icons, legible labels, no chrome collision, fit-to-viewport responsive",
+      "value": "Iterating on the small visual expectations that were continuing to be unmet or assumed in causality/story.html. (1) Figurative glyph icons: the phrases.json `icon` field (cat/sun/cloud/owl/mouse/leaf/drop/robot) was carried but never drawn; it is now rendered as small hand-drawn ink line-art inside the glyph, with the word beneath; abstract glyphs (icon null) stay word-only. (2) Edge-label legibility: labels move onto a rounded opaque paper chip in a bolder hand, and are suppressed on too-short edges, instead of small text buried on the dashed line. (3) Chrome no-collision: the phrase chips, tool bar and zoom no longer overlap at any width, with a small-screen media query that repositions them. (4) Fit-to-viewport responsive: the whole graph is scaled and centered by a pure view transform so it never overflows or crowds the chrome at small sizes, and the sentence skin shrinks to fit the width. No design tokens invented; the look-and-feel (cream paper, fine-marker ink, the established palette) is unchanged.",
+      "why_now": "bdo named the working mode directly: iterate on the visual of smaller expectations that keep being unmet or assumed, and 'can we work on even small sizes'. The animated hero had landed but, looked at on a small window or a phone, the figurative icons were dropped, controls collided, labels were cramped, and the graph overflowed. These are exactly the assumed-away details he asked to stop glossing over.",
+      "if_accepted": "The hero reads as finished at every size: glyphs are figures, labels are clean, controls stay out of each other's way, and the graph fits whatever frame it is opened in. The owner can open it on a small screen and it holds together.",
+      "if_rejected": "The small expectations stay unmet: a glyph is a bare word with a dropped icon field, labels stay buried, controls overlap on small windows, and the graph runs off the edge below a certain width — the 'good enough at one width' state the pass exists to end.",
+      "cost_of_wrong_call": "Low and reversible: the change is confined to the experience layer (causality/story.html, a read-only fold over the committed design system + portfolio), published only as static artifacts by the existing Pages build. No runtime network, nothing written back; reverting is reverting one PR.",
+      "mechanism": "causality/story.html: a drawIcon(name,x,y,u,col) library of eight ink line-icons drawn in the glyph; the edge() label drawn on a roundRect paper chip and gated on edge length; a media query plus a per-frame fit-to-viewport VIEW transform (translate+scale, never above 1) wrapping all graph drawing, with the pointer hit-test inverse-transformed and the sentence font shrunk to fit width. Verified by headless screenshots across the viewport widths the harness renders (1440 / 760 / 484), each scaling correctly; a true sub-400px phone needs real-device or CDP emulation and is sound by construction.",
+      "reading": [
+        "causality/story.html",
+        "causality/phrases.json",
+        "causality/iterations.md"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": ["causality/story.html"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["causality/story.html"]
+    }
+  },
+  "_note": "Birth record for the Causality hero small-expectations polish pass, authored so the served-surface work carries an atom on the log under the atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
