@@ -26,11 +26,11 @@ import json
 import sys
 from pathlib import Path
 
-from loop.reconcile import (DEFAULT_ROOT, PIPELINE, SEED_EVENT, STAMP_NODE,
-                            TERMINAL_EVENT, Fold, append_line, arc_confirmation,
-                            atom_state, canon, epic_of, load_atoms, load_epics,
-                            now_ts, pass_once, real_nodes, receipt_for_stage,
-                            short_hash)
+from loop.reconcile import (DEFAULT_ROOT, DETERMINISTIC_GATE_NODES, PIPELINE,
+                            SEED_EVENT, STAMP_NODE, TERMINAL_EVENT, Fold,
+                            append_line, arc_confirmation, atom_state, canon,
+                            epic_of, load_atoms, load_epics, now_ts, pass_once,
+                            real_nodes, receipt_for_stage, short_hash)
 
 SETPOINT_DIAL = "orchestration.temperature"
 SETPOINT_KEYS = ("step_budget_per_tick", "max_inflight_atoms", "human_queue_cap")
@@ -114,11 +114,17 @@ def next_action(fold, atom, ahash, real_map=None, epics=None):
             break
         if receipt_for_stage(fold, stage, ahash, real_map) is None:
             if stage["node"] in real_map:
+                real_node = real_map[stage["node"]]
                 if epics is not None and stage["node"] == STAMP_NODE:
                     epic = epic_of(atom, epics)
                     if epic is not None and arc_confirmation(fold, epic["id"]) is not None:
-                        return ("judge", real_map[stage["node"]])
-                return ("await", real_map[stage["node"]])
+                        return ("judge", real_node)
+                # a deterministic real gate is a pure fold the loop runs itself
+                # (done-line 0107) — never a summoned-node await, the same way a
+                # confirmed arc's owner-stamp is the loop's to take.
+                if real_node in DETERMINISTIC_GATE_NODES:
+                    return ("judge", real_node)
+                return ("await", real_node)
             return ("judge", stage["node"])
     if atom_state(fold, ahash) == atom["desired_state"] and fold.event(TERMINAL_EVENT, ahash):
         return None

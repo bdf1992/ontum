@@ -401,6 +401,38 @@ def rebuild_cache(root, fold, artifact_hashes):
         (odir / f"{stage['node']}.offset").write_text(f"{max(receipted, default=0)}\n", encoding="utf-8")
 
 
+def _placement_det(atom, field):
+    from loop.placement_gate import placement_verdict
+    return placement_verdict(atom, field)
+
+
+def _handoff_det(atom, field):  # field unused — handoff reads only the atom
+    from loop.handoff_gate import handoff_verdict
+    return handoff_verdict(atom)
+
+
+# Deterministic real gates the loop runs itself instead of parking for a
+# summoned node (done-line 0107). A deterministic gate is a pure fold over the
+# field — `placement_gate`/`handoff_gate` compute their verdict with no
+# inference — so making the loop "park and wait for the summoned node" only
+# strands the atom inflight forever: nobody is coming to run a function. That is
+# the landed-but-unsettled clog (the merge-node lands a PR after the value gate,
+# and the atom sits at placement/handoff awaiting a human that never arrives,
+# until the inflight cap jams every new birth). The fix is to recognise that a
+# deterministic gate needs no human: the loop computes its verdict and writes the
+# receipt itself, exactly as it does for the owner's stamp on a confirmed arc.
+# It STILL bites — a computed `collision`/`send_back` is written verbatim, so a
+# real divergence fires precisely as a summoned node's refusal would; the check
+# runs, it is not skipped. Inference gates (value-gate.claude.v1,
+# value-confirm.claude.v1) are deliberately NOT here: they carry a real judgment
+# and still park for a summoned judge. Imports are lazy (the gate modules import
+# from this one). Each entry takes (atom, field) and returns (verdict, reason).
+DETERMINISTIC_GATE_NODES = {
+    "placement-gate.det.v1": _placement_det,
+    "handoff-gate.det.v1": _handoff_det,
+}
+
+
 def pass_once(root, pace=0.0, quiet=False, atom=None, artifact_hash=None):
     """One reconcile pass: re-read the log, move the atom at most one step.
 
@@ -474,7 +506,27 @@ def pass_once(root, pace=0.0, quiet=False, atom=None, artifact_hash=None):
                         if epic is not None:
                             confirmation = arc_confirmation(fold, epic["id"])
                     if confirmation is None:
-                        awaited = real_map[stage["node"]]
+                        real_node = real_map[stage["node"]]
+                        det = DETERMINISTIC_GATE_NODES.get(real_node)
+                        if det is None:
+                            # an inference real gate (value-gate, value-confirm):
+                            # only a summoned judge decides — park and name who.
+                            awaited = real_node
+                            next_seam = stage["seam"]
+                            break
+                        # a deterministic real gate: the loop runs the pure fold
+                        # itself rather than stranding the atom on a node that
+                        # never comes (done-line 0107). The computed verdict is
+                        # written verbatim, so a `collision`/`send_back` refusal
+                        # still fires as a divergence — the check bites.
+                        verdict, reason = det(atom, [a for a, _ in load_atoms(root)])
+                        _, prompt_hash = node_prompt(root, real_node)
+                        append_line(root / "log" / "receipts.jsonl", make_receipt(
+                            ev, stage, atom["id"], artifact_hash,
+                            node=real_node, verdict=verdict, reason=reason,
+                            prompt_hash=prompt_hash))
+                        step = (f"{real_node} judged {stage['event']} -> {verdict} "
+                                f"(deterministic, loop-run)")
                         next_seam = stage["seam"]
                         break
                     rc = make_receipt(
