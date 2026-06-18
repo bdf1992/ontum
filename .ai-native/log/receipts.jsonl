@@ -168,3 +168,4 @@
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/retro-fold","id":"rcp.merge.180","kind":"merge","node":"merge-node.claude.v1","pr":180,"ts":"2026-06-18T00:11:11Z","verdict":"landed"}
 {"authorized_by":"adm.a675cb9d36fb","epic":"epic.causality-surface","head":"claude/canvas-hero-polish","id":"rcp.merge.189","kind":"merge","node":"merge-node.claude.v1","pr":189,"ts":"2026-06-18T00:24:24Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/bdo-brief-node","id":"rcp.merge.185","kind":"merge","node":"merge-node.claude.v1","pr":185,"ts":"2026-06-18T00:30:17Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/policy-intake","id":"rcp.merge.184","kind":"merge","node":"merge-node.claude.v1","pr":184,"ts":"2026-06-18T00:51:13Z","verdict":"landed"}
