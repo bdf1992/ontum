@@ -221,29 +221,63 @@ def phrasing_only(path, before, after):
                    "pipeline")
 
 
-def branch_phrasing_clean(changes):
+def branch_phrasing_clean(changes, covered_paths):
     """Given ``changes`` — a list of {path, before, after} for every changed
-    NON-LOG file on a branch — is the whole branch a phrasing-only edit?
-    Returns (clean, reasons). Clean requires at least one changed file and
-    every one of them phrasing-only; the first non-phrasing file disqualifies
-    the branch (the off-log gate's second way to be backed). ``reasons`` names
-    each refusal for the surface."""
+    NON-LOG file on a branch — and ``covered_paths`` — the file paths a
+    `phrasing` admission on the branch declares — is the whole branch a
+    phrasing edit that went through the pen? Returns (clean, reasons).
+
+    Clean requires three things, all teeth: at least one changed file; every
+    changed file proven phrasing-only (no syntax/schema); AND every changed
+    file covered by a phrasing admission. That last clause is bdo's correction
+    (2026-06-18): the light lane still routes through the pen and leaves a mark
+    on the log — it is low-ceremony, NOT no-ceremony, and never blind. A change
+    that is prose-only but unmarked is refused: run the route (`pr.py phrasing`)
+    so the edit is recorded before it lands. The first failing file disqualifies
+    the branch; ``reasons`` names each for the surface."""
     if not changes:
         return False, ["no non-log file changed — nothing to take through the "
-                       "phrasing door"]
+                       "light lane"]
+    covered = set(covered_paths or ())
     reasons = []
     for ch in changes:
         ok, why = phrasing_only(ch["path"], ch.get("before", ""),
                                 ch.get("after", ""))
         if not ok:
             reasons.append(f"{ch['path']}: {why}")
+        elif ch["path"] not in covered:
+            reasons.append(
+                f"{ch['path']}: prose-only but not marked by a phrasing "
+                "admission — run `pr.py phrasing --files <…>` so the edit is "
+                "recorded on the log (the light lane leaves a mark; it is never "
+                "blind)")
     return (not reasons), reasons
+
+
+def phrasing_edits(admissions):
+    """The phrasing edits on the log, newest first — bdo's window on the prose
+    stream so the light lane is never blind (his correction, 2026-06-18). A
+    pure read over admissions: each is {id, by, ts, reason, files:[paths]}."""
+    out = []
+    for a in admissions:
+        if a.get("type") != "phrasing":
+            continue
+        out.append({
+            "id": a.get("id"),
+            "by": a.get("by"),
+            "ts": a.get("ts"),
+            "reason": a.get("reason"),
+            "files": [f.get("path") for f in a.get("files", [])],
+        })
+    return list(reversed(out))
 
 
 def main(argv=None):
     """`python -m loop.phrasing check --before A --after B --path P` — the
-    read-only, standalone check (a test aid and a session's pre-flight). The
-    git-bearing route lives in the PR pen (`pr.py phrasing`)."""
+    read-only, standalone proof (a test aid and a session's pre-flight).
+    `python -m loop.phrasing list` — the prose stream on the log, so the light
+    lane is never blind (bdo's correction). The git-bearing route that marks an
+    edit lives in the PR pen (`pr.py phrasing`)."""
     ap = argparse.ArgumentParser(prog="loop.phrasing",
                                  description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -251,13 +285,30 @@ def main(argv=None):
     chk.add_argument("--path", required=True)
     chk.add_argument("--before", required=True, help="path to the before-bytes")
     chk.add_argument("--after", required=True, help="path to the after-bytes")
+    lst = sub.add_parser("list", help="the phrasing edits on the log, newest "
+                                      "first (the prose stream — never blind)")
+    lst.add_argument("--limit", type=int, default=20)
     ns = ap.parse_args(argv if argv is not None else sys.argv[1:])
+
+    if ns.cmd == "list":
+        from loop.reconcile import DEFAULT_ROOT, Fold
+        edits = phrasing_edits(Fold(DEFAULT_ROOT).admissions)
+        if not edits:
+            print("result: done — no phrasing edits on the log yet")
+            return 0
+        for e in edits[: ns.limit]:
+            files = ", ".join(e["files"])
+            print(f"{e['id']}  by {e['by']}  ({e['ts']})\n  {e['reason']}\n  {files}")
+        print(f"\nresult: report — {len(edits)} phrasing edit(s) on the log "
+              f"(showing {min(ns.limit, len(edits))})")
+        return 0
+
     before = open(ns.before, "rb").read()
     after = open(ns.after, "rb").read()
     ok, why = phrasing_only(ns.path, before, after)
     if ok:
         print(f"result: done — {ns.path} is a phrasing-only edit; it may take "
-              "the backdoor (no atom needed)")
+              "the light lane (mark it with `pr.py phrasing`, no atom needed)")
         return 0
     print(f"result: report — {ns.path} is NOT phrasing-only: {why}")
     return 1

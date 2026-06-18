@@ -131,31 +131,54 @@ class TestUncoveredKinds(unittest.TestCase):
 
 
 class TestBranchAndGate(unittest.TestCase):
-    def test_all_prose_branch_is_clean_and_backed_without_atom(self):
+    def test_all_prose_marked_branch_is_clean_and_backed_without_atom(self):
         changes = [
             {"path": "CLAUDE.md", "before": "on phone\n", "after": "anywhere\n"},
             {"path": "m.py",
              "before": 'x = 1  # phone\n', "after": 'x = 1  # anywhere\n'},
         ]
-        clean, reasons = phrasing.branch_phrasing_clean(changes)
+        covered = {"CLAUDE.md", "m.py"}  # both marked through the pen
+        clean, reasons = phrasing.branch_phrasing_clean(changes, covered)
         self.assertTrue(clean, reasons)
         # the off-log gate: phrasing-clean is backed with NO atom, NO receipt
         self.assertIsNone(pr_audit.orphan_reason([], [], phrasing_clean=True))
+
+    def test_prose_but_unmarked_refuses_never_blind(self):
+        # bdo's correction: prose-only is not enough — the pen mark is required,
+        # so every light-lane edit leaves a visible record (never blind)
+        changes = [{"path": "CLAUDE.md", "before": "on phone\n",
+                    "after": "anywhere\n"}]
+        clean, reasons = phrasing.branch_phrasing_clean(changes, covered_paths=set())
+        self.assertFalse(clean)
+        self.assertTrue(any("not marked" in r or "blind" in r for r in reasons))
 
     def test_one_code_change_disqualifies_branch_and_gate_orphans_it(self):
         changes = [
             {"path": "CLAUDE.md", "before": "on phone\n", "after": "anywhere\n"},
             {"path": "m.py", "before": "x = 1\n", "after": "x = 2\n"},  # code!
         ]
-        clean, reasons = phrasing.branch_phrasing_clean(changes)
+        covered = {"CLAUDE.md", "m.py"}  # marked, but m.py is still real code
+        clean, reasons = phrasing.branch_phrasing_clean(changes, covered)
         self.assertFalse(clean)
         self.assertTrue(any("m.py" in r for r in reasons))
         # not phrasing-clean and no atom → still an off-log orphan
         self.assertIsNotNone(pr_audit.orphan_reason([], [], phrasing_clean=False))
 
     def test_empty_branch_is_not_clean(self):
-        clean, _ = phrasing.branch_phrasing_clean([])
+        clean, _ = phrasing.branch_phrasing_clean([], set())
         self.assertFalse(clean)
+
+    def test_phrasing_edits_fold_is_visible_newest_first(self):
+        admissions = [
+            {"type": "tick"},
+            {"type": "phrasing", "id": "adm.a", "by": "claude", "ts": "t1",
+             "reason": "one", "files": [{"path": "A.md"}]},
+            {"type": "phrasing", "id": "adm.b", "by": "claude", "ts": "t2",
+             "reason": "two", "files": [{"path": "B.md"}, {"path": "C.json"}]},
+        ]
+        edits = phrasing.phrasing_edits(admissions)
+        self.assertEqual([e["id"] for e in edits], ["adm.b", "adm.a"])  # newest first
+        self.assertEqual(edits[0]["files"], ["B.md", "C.json"])
 
     def test_atom_door_still_works_unchanged(self):
         # the original atom-backed path is untouched: atom + naming receipt = backed

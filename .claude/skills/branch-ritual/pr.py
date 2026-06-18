@@ -421,18 +421,36 @@ def _show_at(ref_path):
 
 def _range_phrasing_clean(base, head, names):
     """Re-verify, with the same pure checker the route uses, that EVERY non-log
-    change on this range is phrasing-only (done-line 0117). This is the server
-    side of the prose door: the gate recomputes the proof from the diff, so a
-    committed change can never lie about being prose. Returns the bool."""
+    change on this range is phrasing-only AND was marked through the pen
+    (done-line 0117, with bdo's 2026-06-18 correction). Two server-side teeth:
+    the gate recomputes the prose proof from the diff (a committed change can
+    never lie about being prose), and it requires a `phrasing` admission on the
+    range to cover each changed file (the light lane still routes through the pen
+    and leaves a visible mark — never blind). Returns the bool."""
     sys.path.insert(0, str(ROOT))
     from loop import phrasing
-    non_log = [n for n in names
+    non_log = [n.replace("\\", "/") for n in names
                if not n.replace("\\", "/").startswith(".ai-native/log/")]
     changes = [{"path": n,
                 "before": _show_at(f"{base}:{n}"),
                 "after": _show_at(f"{head}:{n}")}
                for n in non_log]
-    clean, _reasons = phrasing.branch_phrasing_clean(changes)
+    # the phrasing admissions ADDED on this range declare which files the pen
+    # marked — the required, visible mark of the light lane
+    covered = set()
+    adm_diff = _run(["git", "diff", f"{base}...{head}", "--",
+                     ".ai-native/log/admissions.jsonl"])
+    for line in adm_diff.splitlines():
+        if not line.startswith("+") or line.startswith("+++"):
+            continue
+        try:
+            a = json.loads(line[1:])
+        except json.JSONDecodeError:
+            continue
+        if a.get("type") == "phrasing":
+            for fr in a.get("files", []):
+                covered.add(fr.get("path"))
+    clean, _reasons = phrasing.branch_phrasing_clean(changes, covered)
     return clean
 
 
