@@ -540,11 +540,36 @@ def _ref_record_listing(staged_new):
         return None
 
 
+def _workspace():
+    """The workspace-binding module (loop/workspace.py, done-line 0121), or
+    None if loop isn't importable. The fold and the pure `binding_refusal`
+    live there; the pen only enforces."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from loop import workspace
+        return workspace
+    except Exception:  # noqa: BLE001 — handled at the call site
+        return None
+
+
 def cmd_commit(ns):
     branch = _run(["git", "branch", "--show-current"]).strip()
     reason = head_intent_refusal(branch, ns.on)
     if reason:
         _refuse(reason)
+    # The claim↔workspace binding (done-line 0121): a commit asserting it
+    # serves a claim (`--claim`) is refused unless this branch is bound to that
+    # claim — the branch belongs to its work, not the mortal session (§4).
+    # Opt-in like `--on`; omitted, the binding is never consulted.
+    if getattr(ns, "claim", None):
+        ws = _workspace()
+        if ws is None:
+            _refuse("--claim asked for the workspace-binding check, but "
+                    "loop.workspace is not importable from here — run from the "
+                    "repo root, or drop --claim")
+        reason = ws.binding_refusal(branch, ns.claim, ws.active_bindings(ROOT / ".ai-native"))
+        if reason:
+            _refuse(reason)
     reason = commit_refusal(branch, ns.message, ns.forward)
     if reason:
         _refuse(reason)
@@ -810,6 +835,11 @@ def main(argv=None):
                         help="the branch you believe you are on; the pen refuses "
                              "if live HEAD differs — the HEAD-intent guard "
                              "(done-line 0118), for the shared-tree fleet")
+    commit.add_argument("--claim", metavar="WORK",
+                        help="the work this branch serves; the pen refuses if the "
+                             "branch is unbound or bound to a different claim — "
+                             "the workspace binding (done-line 0121). Bind first "
+                             "with `python -m loop.workspace claim`")
     commit.set_defaults(func=cmd_commit)
 
     sync = verbs.add_parser(
