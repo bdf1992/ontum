@@ -9,6 +9,40 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0013 — The pattern named: Auditable Intent Mesh (AIM) — the gesture→AI→response loop, formalized 🟡
+**2026-06-18 · bdo** — generalize to the *intent of the pattern*, then make it executable
+
+The bake-off climb (a winner → a recipe book → "bake our experience" → *both* →
+the general pattern → its Pattern Commons) bottomed out where bdo named it: the
+move is **not** "a fancier graph." It is **name the actual pattern and make it
+executable.** He handed the full formalization brief and the working name.
+
+**Auditable Intent Mesh (AIM)** — the formal pattern under the surface, the **open
+heart** 0012 left unturned (the gesture→AI→response loop), now specified instead of
+guessed. The load-bearing correction: *a gesture is not the command — it is evidence
+of possible intent*; the system compiles gesture + selected context + source
+evidence into a normalized **intent packet**, then routes it proposal → gate →
+admitted pen → audit event → projection refresh. It is **ontum's own loop**
+(log-is-truth → pen → gate → receipt → fold) pointed at the interaction surface —
+not new machinery. Four registers (**Record / Runtime / Request / Simulation**) and
+the clean law: *infer/simulate/request freely; commit only through an admitted pen.*
+Six sub-graphs (source / witness / request / execution / audit / projection), 15
+primitives (reusing the display-system C1–C18 witness half), 7 failure modes each
+with teeth, 7 invariants + the §10 fit-refusal test.
+
+Recommended name: **AIM** over the native **WIM (Witnessed Intent Mesh)** — *audit*
+and *execution* are the missing requirements; *witness* names only the half already
+built. Status **PROPOSED**; the mint and the home in the Pattern Commons
+(`causality/patterns/`, PR #174) are bdo's (D-4).
+
+Lands in: [`auditable-intent-mesh.md`](auditable-intent-mesh.md) — the formal spec.
+Open holes named there (OH1 gesture→packet compile table, OH2 the gesture-pen, OH3
+virtual request-nodes, OH4 membrane scope, OH5 the mint). Next: bdo blesses the name
++ seeds OH1's compile table, *or* we pressure-test the spec via the diverge-judge
+panel (dogfooding AIM's own §3) before building the smallest executable slice.
+
+---
+
 ## 0012 — Causality is a spatial-graph RepoPrompt: the narrative is the directory (defined by negation) 🟡
 **2026-06-17 · bdo** — the frame, set before anyone cooks again
 
