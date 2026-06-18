@@ -191,6 +191,31 @@ def commit_refusal(branch, message, forwarded):
     return None
 
 
+def head_intent_refusal(branch, expected):
+    """Why this commit may not run because HEAD is not where the session
+    thinks it is, or None (done-line 0118).
+
+    `expected` is the branch the session ASSERTS it is on (`--on`); `branch`
+    is live HEAD. In the shared-tree fleet a parallel session can move the
+    worktree's branch between a session reading HEAD and committing — so a
+    commit that names its branch is refused when the names disagree (the
+    collision that authored this guard). The assertion is per-invocation and
+    explicit: nothing stored, nothing another session can race. Omitting
+    `--on` skips the check (backward compatible) — the protection is opt-in
+    until it is made the default (a later chapter of the session-gateway arc)."""
+    if not expected:
+        return None
+    if branch != expected:
+        return (
+            f"HEAD-intent mismatch: you declared --on '{expected}', but live HEAD "
+            f"is '{branch or 'detached'}'. A parallel session may have moved the "
+            f"shared worktree's branch under you. Check out '{expected}' (or work "
+            f"from its own worktree) before committing — this is the branch "
+            f"collision turned into a clean deny (done-line 0118)."
+        )
+    return None
+
+
 # Numbered records whose id must be fleet-unique: a new done-line or report
 # minted against a stale local fold collides with one already on a sibling
 # branch — the four 0020 done-lines are the incident, tonight's 0050 the
@@ -517,6 +542,9 @@ def _ref_record_listing(staged_new):
 
 def cmd_commit(ns):
     branch = _run(["git", "branch", "--show-current"]).strip()
+    reason = head_intent_refusal(branch, ns.on)
+    if reason:
+        _refuse(reason)
     reason = commit_refusal(branch, ns.message, ns.forward)
     if reason:
         _refuse(reason)
@@ -778,6 +806,10 @@ def main(argv=None):
     commit.add_argument("--intent", metavar="VALUE",
                         help="optional intent tag; a known value that lies about "
                              "the verb is refused, a new one rides as proposed")
+    commit.add_argument("--on", metavar="BRANCH",
+                        help="the branch you believe you are on; the pen refuses "
+                             "if live HEAD differs — the HEAD-intent guard "
+                             "(done-line 0118), for the shared-tree fleet")
     commit.set_defaults(func=cmd_commit)
 
     sync = verbs.add_parser(
