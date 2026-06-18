@@ -98,6 +98,32 @@ class TermEconomyProjection(unittest.TestCase):
         names = {t["term"] for t in self.projection["terms"]}
         self.assertLessEqual({"atom", "receipt", "seam", "node", "arc"}, names)
 
+    def test_sites_are_first_class_projected_records(self):
+        sites = {s["id"]: s for s in self.projection["sites"]}
+        self.assertEqual(self.projection["site_count"], len(sites))
+        self.assertIn(te.site_id("loop/reconcile.py"), sites)
+        self.assertEqual(sites[te.site_id("loop/reconcile.py")]["kind"], "code")
+        self.assertTrue(sites[te.site_id("loop/reconcile.py")]["exists"])
+        self.assertEqual(sites[te.site_id(".ai-native/log/events.jsonl")]["kind"], "log")
+        self.assertEqual(sites[te.site_id("ai-native-loop-substrate.md")]["kind"], "doctrine")
+        for site in sites.values():
+            self.assertEqual(site["record_kind"], "projected")
+            self.assertNotIn("contains", site, "sites index addresses, not citation claims")
+
+    def test_evidence_edges_target_sites(self):
+        site_ids = {s["id"] for s in self.projection["sites"]}
+        for edge in self.projection["evidence_edges"]:
+            self.assertIn(edge["to"], site_ids)
+            self.assertEqual(edge["to"], te.site_id(edge["ref"]["file"]))
+
+    def test_site_inbound_counts_distinct_terms(self):
+        expected = {}
+        for edge in self.projection["evidence_edges"]:
+            expected.setdefault(edge["to"], set()).add(edge["from"])
+        sites = {s["id"]: s for s in self.projection["sites"]}
+        for sid, terms in expected.items():
+            self.assertEqual(sites[sid]["inbound_term_count"], len(terms))
+
     def test_every_term_carries_a_must_not_mean_guard(self):
         for t in self.projection["terms"]:
             self.assertTrue(t["must_not_mean"],
