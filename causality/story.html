@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — Story demo</title>
+<script>window.__pageErr=null;addEventListener('error',e=>{if(!window.__pageErr)window.__pageErr=(e.error&&e.error.stack)||e.message;});</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f6f1e7;--ink:#2b2a33;--dim:#8d8678;--faint:#b8b1a2;--positive:#0e8a7b;--strain:#d4543f;--inference:#7a5ba6;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--paper);}
+  body{font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);}
+  canvas#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:12px;padding:18px 24px;pointer-events:none;}
+  .top .mark{font-family:"Fraunces",serif;font-size:22px;font-weight:300;}
+  .top .mark b{color:var(--inference);font-weight:600;}
+  .top .tag{font:300 9.5px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;}
+  .top .sp{flex:1;}
+  .top .btn{pointer-events:auto;font:500 11px "IBM Plex Mono",monospace;color:var(--ink);background:rgba(255,252,245,.85);border:1.4px solid var(--ink);border-radius:9px;padding:6px 12px;cursor:pointer;}
+  .top .btn:hover{background:rgba(122,91,166,.12);}
+  .hint{position:fixed;top:60px;left:0;right:0;text-align:center;z-index:9;font:300 10px "IBM Plex Mono",monospace;color:var(--faint);letter-spacing:.12em;pointer-events:none;transition:opacity .4s ease;}
+  .lens{position:fixed;right:22px;top:74px;z-index:13;width:286px;background:rgba(255,252,245,.97);border:1.5px solid var(--inference);border-radius:13px;padding:15px 17px;box-shadow:3px 4px 0 rgba(122,91,166,.14);display:none;opacity:0;transform:translateY(-6px);transition:opacity .26s ease,transform .26s cubic-bezier(.2,.9,.3,1.2);}
+  .lens.on{display:block;}
+  .lens.show{opacity:1;transform:translateY(0);}
+  .lens h4{font:600 10px "IBM Plex Mono",monospace;letter-spacing:.2em;color:var(--inference);text-transform:uppercase;margin-bottom:10px;}
+  .lens .row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .lens .ico{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.4px solid var(--ink);font:600 14px "Caveat",cursive;flex:none;}
+  .lens .ttl{font:300 18px "Fraunces",serif;}
+  .lens .chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px;}
+  .lens .chip{font:400 9.5px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.4);border-radius:20px;padding:4px 9px;color:var(--ink);}
+  .lens .sub{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:10px 0 6px;}
+  .lens .conn{font:400 11px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.8;}
+  .lens .conn b{color:var(--ink);font-weight:500;}
+  .lens .acts{display:flex;gap:6px;margin-top:12px;}
+  .lens .acts button{flex:1;font:600 10px "IBM Plex Mono",monospace;color:var(--inference);background:none;border:1.4px solid var(--inference);border-radius:8px;padding:7px 4px;cursor:pointer;}
+  .lens .acts button:hover{background:rgba(122,91,166,.12);}
+  .lens .ask{width:100%;margin-top:8px;font:400 11px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.35);border-radius:8px;padding:7px 9px;}
+  .lens .big{display:flex;gap:14px;margin:6px 0 4px;}
+  .lens .big div{text-align:center;}
+  .lens .big .n{font:300 22px "Fraunces",serif;}
+  .lens .big .l{font:400 8px "IBM Plex Mono",monospace;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;}
+  .tools{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:12;display:flex;gap:4px;background:rgba(255,252,245,.94);border:1.5px solid var(--ink);border-radius:13px;padding:7px 9px;box-shadow:3px 4px 0 rgba(43,42,51,.14);}
+  .tools button{font:500 11px "IBM Plex Mono",monospace;color:var(--dim);background:none;border:none;border-radius:9px;padding:7px 13px;cursor:pointer;transition:color .2s ease,background .2s ease;}
+  .tools button.on,.tools button:hover{color:var(--inference);background:rgba(122,91,166,.1);}
+  .zoom{position:fixed;left:22px;bottom:22px;z-index:12;display:flex;align-items:center;gap:8px;background:rgba(255,252,245,.9);border:1.5px solid rgba(43,42,51,.4);border-radius:11px;padding:6px 10px;font:500 10px "IBM Plex Mono",monospace;color:var(--ink);}
+  .phrases{position:fixed;right:22px;bottom:22px;z-index:12;display:flex;gap:5px;flex-wrap:wrap;max-width:300px;justify-content:flex-end;}
+  .phrases button{font:500 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.85);border:1.2px solid rgba(43,42,51,.3);border-radius:8px;padding:5px 8px;cursor:pointer;transition:color .2s ease,border-color .2s ease;}
+  .phrases button.on{color:var(--inference);border-color:var(--inference);}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="top">
+  <span class="mark">Causa<b>lity</b></span>
+  <span class="tag" id="kind">story demo</span>
+  <span class="sp"></span>
+  <button class="btn" id="new">+ New</button>
+  <button class="btn" id="save">Save</button>
+</div>
+<div class="hint" id="hint">hover or tap a glyph to open it</div>
+<div class="lens" id="lens"></div>
+<div class="tools">
+  <button class="on" data-t="select">▝ Select</button>
+  <button data-t="pan">✋ Pan</button>
+  <button data-t="lasso">⬚ Lasso</button>
+  <button data-t="voice">🎙 Voice</button>
+</div>
+<div class="zoom"><span>100%</span></div>
+<div class="phrases" id="phrases"></div>
+
+<script src="canvas-system.js"></script>
+<script>
+(async () => {
+  const SYS = window.CausalitySystem.TOKENS, COL = SYS.COLOR, FACET = SYS.FACET, LINE = SYS.LINE, EASE = SYS.EASE;
+  const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+  const TAU = Math.PI * 2; let W, H, t = 0, DPR = Math.min(2, devicePixelRatio || 1);
+  const R = 34, FR = 15;
+  let WAMP = 1;  // ink amplitude, folded from the phrase's energy each frame (PHYSICS energy-coupling)
+  const roleColor = r => r === 'pigment' ? null : (COL[r] || COL.ink);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  function size(){ W = innerWidth; H = innerHeight; cv.width = W*DPR; cv.height = H*DPR; cx.setTransform(DPR,0,0,DPR,0,0); }
+  size(); addEventListener('resize', () => { size(); layout(); });
+
+  let DATA; try { DATA = await (await fetch('phrases.json')).json(); } catch(e){ DATA = { phrases: [] }; }
+  let idx = 0, sel = null, hoverG = null;
+
+  // ── ink primitives (from the design system); wobble amplitude is bound to WAMP (energy) ──
+  function wob(x,y,s,a){ return [x+Math.sin(s*12.9+t*1.1)*a*WAMP, y+Math.cos(s*78.2+t*.85)*a*WAMP]; }
+  function inkPath(pts,s,col,w,close,dash){ cx.strokeStyle=col; cx.lineWidth=w; cx.lineCap='round'; cx.lineJoin='round'; if(dash)cx.setLineDash(dash); cx.beginPath(); pts.forEach((p,i)=>{const[x,y]=wob(p[0],p[1],s+i*.3,.45); i?cx.lineTo(x,y):cx.moveTo(x,y);}); if(close)cx.closePath(); cx.stroke(); cx.setLineDash([]); }
+  function inkCircle(x,y,r,s,col,w){ cx.strokeStyle=col; cx.lineWidth=w; cx.beginPath(); for(let i=0;i<=26;i++){const a=i/26*TAU+s; const rr=r+Math.sin(a*3+s*7)*.6*WAMP; const px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr; i?cx.lineTo(px,py):cx.moveTo(px,py);} cx.stroke(); }
+  const rim = (f, to, r) => { const dx=to.x-f.x, dy=to.y-f.y, d=Math.hypot(dx,dy)||1; return { x: f.x+dx/d*r, y: f.y+dy/d*r }; };
+
+  // ── water-fill disc (ANIM water-fill; the look-and-feel signature). level 0..1
+  //    rises bottom→top with a live meniscus; the level is FOLDED from the glyph's
+  //    weight in the mesh, never painted. ──
+  function waterDisc(x,y,r,level,hue,seed){
+    level = Math.max(0, Math.min(1, level));
+    cx.save();
+    cx.fillStyle = hue+'14'; cx.beginPath(); cx.arc(x,y,r,0,TAU); cx.fill();
+    cx.beginPath(); cx.arc(x,y,r,0,TAU); cx.clip();
+    const surf = y + r - 2*r*level;
+    const wave = i => surf + Math.sin(i*0.16 + t*1.6 + seed)*2.2*level;
+    cx.fillStyle = hue+'30'; cx.beginPath(); cx.moveTo(x-r, y+r);
+    for(let i=-r;i<=r;i+=3) cx.lineTo(x+i, wave(i)); cx.lineTo(x+r, y+r); cx.closePath(); cx.fill();
+    cx.strokeStyle = hue+'99'; cx.lineWidth = 1.1; cx.beginPath();
+    for(let i=-r;i<=r;i+=3){ const wy=wave(i); i===-r?cx.moveTo(x+i,wy):cx.lineTo(x+i,wy); } cx.stroke();
+    cx.restore();
+  }
+
+  // ── travelling pulse (ANIM pulse-travel; the beat of an act on a wire) ──
+  function pulseDot(q,phase,col,sz){ const[px,py]=q(phase);
+    const g=cx.createRadialGradient(px,py,0,px,py,sz*3); g.addColorStop(0,col); g.addColorStop(1,col+'00');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(px,py,sz*3,0,TAU); cx.fill();
+    cx.fillStyle=col; cx.beginPath(); cx.arc(px,py,sz,0,TAU); cx.fill(); }
+
+  // ── compose: the deterministic floor (declared composition; gateway is the
+  //    enrichment seam behind the same node spec, iterations 0006) ──
+  let M = null;
+  function layout(){ const ph = DATA.phrases[idx]; if(!ph) return;
+    const n = ph.glyphs.length, cy = H*0.46, span = Math.min(250, (W*0.78)/Math.max(1,n-1)), x0 = W*0.5 - (n-1)*span/2;
+    const glyphs = ph.glyphs.map((g,i)=>{ const gx = x0 + i*span, gy = cy + (i%2?28:-28);
+      const fac = g.facets.map((k,j)=>{ const a = -0.55 + (j-(g.facets.length-1)/2)*0.8; const fx = gx+Math.sin(a)*58, fy = gy+64+Math.cos(a)*6; return { key:k, x: fx, y: fy, ax: gx, ay: gy, ar: 0 }; });
+      return { word:g.word, icon:g.icon, facets:fac, x:gx, y:gy, hue: COL.pigment[i%COL.pigment.length],
+               openA:0, waterA:0, birthA:0, ringT:1, wasOpen:false, deg:0, waterTarget:0.5, birthDelay:i*0.09 }; });
+    const find = ref => { const [w,f]=ref.split('.'); const g=glyphs.find(z=>z.word===w); if(!g)return null; const fc=f&&g.facets.find(z=>z.key===f); return { g, fc: fc||null }; };
+    const rels = ph.relations.map((r,i)=>{ const a=find(r.from), b=find(r.to); if(!a||!b)return null; return { ...r, a, b, i }; }).filter(Boolean);
+    // aggregate facet-relations to GLYPH-level edges (the collapsed surface)
+    const gemap = {};
+    rels.forEach(r=>{ if(r.a.g===r.b.g) return; const key = glyphs.indexOf(r.a.g)+'>'+glyphs.indexOf(r.b.g);
+      (gemap[key] = gemap[key] || { a:r.a.g, b:r.b.g, rels:[], feedback:false }); gemap[key].rels.push(r); if(r.line==='feedback') gemap[key].feedback=true; });
+    const gedges = Object.values(gemap);
+    // ── fold the felt-field from the mesh (not painted): per-glyph weight → water
+    //    level; edge density → energy (ink amplitude); loops → tempo (pulse speed) ──
+    const deg = new Map(); gedges.forEach(e=>{ deg.set(e.a,(deg.get(e.a)||0)+e.rels.length); deg.set(e.b,(deg.get(e.b)||0)+e.rels.length); });
+    const maxDeg = Math.max(1, ...glyphs.map(g=>deg.get(g)||0));
+    glyphs.forEach(g=>{ g.deg = deg.get(g)||0; g.waterTarget = 0.34 + 0.5*(g.deg/maxDeg); });
+    const edgeCount = gedges.reduce((a,e)=>a+e.rels.length,0), loops = gedges.filter(e=>e.feedback).length;
+    const energy = Math.max(0.6, Math.min(1.5, edgeCount/Math.max(1,glyphs.length)));
+    const tempo  = 0.09 + 0.05*loops + 0.02*edgeCount;
+    M = { ph, glyphs, gedges, energy, tempo, t0: t };
+  }
+  const isOpen = g => { const i = M.glyphs.indexOf(g); return i===hoverG || (sel && sel.kind==='glyph' && sel.ref===i); };
+
+  function membraneBlob(){ const pts=[]; M.glyphs.forEach(g=>{ pts.push([g.x,g.y]); if(g.openA>0.5) g.facets.forEach(f=>pts.push([f.x,f.y])); });
+    const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]); const cxp=(Math.min(...xs)+Math.max(...xs))/2,cyp=(Math.min(...ys)+Math.max(...ys))/2;
+    const rx=(Math.max(...xs)-Math.min(...xs))/2+98,ry=(Math.max(...ys)-Math.min(...ys))/2+92; const ring=[];
+    for(let i=0;i<=46;i++){const a=i/46*TAU; const k=1+Math.sin(a*3+t*.4)*0.035; ring.push([cxp+Math.cos(a)*rx*k,cyp+Math.sin(a)*ry*k]);}
+    return {ring,cxp,cyp,rx,ry}; }
+
+  // one curved, rim-anchored, label-on-paper edge
+  function edge(p1,p2,col,spec,label,seed){ const dx=p2.x-p1.x,dy=p2.y-p1.y,d=Math.hypot(dx,dy)||1,nx=-dy/d,ny=dx/d;
+    const bow=(spec.dash?-1:1)*Math.min(48,d*0.16); const mx=(p1.x+p2.x)/2+nx*bow,my=(p1.y+p2.y)/2+ny*bow;
+    const q=tt=>[(1-tt)**2*p1.x+2*(1-tt)*tt*mx+tt*tt*p2.x,(1-tt)**2*p1.y+2*(1-tt)*tt*my+tt*tt*p2.y];
+    const pts=[]; for(let s=0;s<=1.001;s+=0.08) pts.push(q(s)); inkPath(pts,seed,col,spec.width,false,spec.dash);
+    if(spec.arrow){ const[hx,hy]=q(1),[bx,by]=q(0.9),an=Math.atan2(hy-by,hx-bx); cx.strokeStyle=col;cx.lineWidth=spec.width;cx.beginPath();
+      cx.moveTo(hx,hy);cx.lineTo(hx-Math.cos(an-.5)*8,hy-Math.sin(an-.5)*8);cx.moveTo(hx,hy);cx.lineTo(hx-Math.cos(an+.5)*8,hy-Math.sin(an+.5)*8);cx.stroke(); }
+    if(label){ const[lx,ly]=q(0.5); cx.font='400 12px "Caveat",cursive'; const w=cx.measureText(label).width;
+      cx.fillStyle='rgba(246,241,231,.9)'; cx.fillRect(lx-w/2-3,ly-9,w+6,16); cx.fillStyle=col; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(label,lx,ly); }
+    return q; }
+
+  // ── advance the per-glyph animation state. Entrance + water are CLOSED-FORM in
+  //    the clock (deterministic, frame-rate independent); open/ring are interactive
+  //    eased lerps (they only move on hover/click). ──
+  function advance(){ M.glyphs.forEach(g=>{ const tgt = isOpen(g)?1:0;
+      g.openA = lerp(g.openA, tgt, 0.18);
+      const age = (t - M.t0) - g.birthDelay; g.birthA = Math.max(0, Math.min(1, age/0.6));  // entrance-fade, staggered
+      g.waterA = g.waterTarget * EASE.easeOut(g.birthA);                                     // water-fill rises with birth
+      if(isOpen(g)&&!g.wasOpen) g.ringT = 0;  g.wasOpen = isOpen(g);                          // ring fires on open
+      if(g.ringT<1) g.ringT = Math.min(1, g.ringT+0.028);
+      const oa = EASE.easeOut(g.openA);
+      g.facets.forEach(f=>{ f.ax = g.x+(f.x-g.x)*oa; f.ay = g.y+(f.y-g.y)*oa; f.ar = FR*oa; }); // facets grow OUT, eased
+    }); }
+
+  const T0 = performance.now();
+  function draw(){ t=(performance.now()-T0)/1000; cx.clearRect(0,0,W,H); if(!M){requestAnimationFrame(draw);return;}
+    WAMP = M.energy; advance();
+    const mem = membraneBlob(); M._mem = mem; const memSel = sel&&sel.kind==='membrane';
+    cx.fillStyle='rgba(255,252,245,.5)'; cx.beginPath(); mem.ring.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])); cx.closePath(); cx.fill();
+    inkPath(mem.ring,3,memSel?COL.inference:'rgba(43,42,51,.4)',memSel?2:1.3,true,[6,7]);
+    // edges — progressive: glyph-level when both ends collapsed; facet-level when an end is open.
+    // each carries a travelling pulse (the beat) whose speed is the folded tempo.
+    M._edges = [];
+    M.gedges.forEach(ge=>{ const oa=ge.a.openA>0.5, ob=ge.b.openA>0.5;
+      if(oa||ob){ ge.rels.forEach(r=>{ const col=r.line==='feedback'?COL.strain:COL.positive; const spec=LINE[r.line]||LINE.relation;
+        const pa = (ge.a.openA>0.05&&r.a.fc)?{x:r.a.fc.ax,y:r.a.fc.ay}:rim(ge.a,ge.b,R+2); const pb = (ge.b.openA>0.05&&r.b.fc)?{x:r.b.fc.ax,y:r.b.fc.ay}:rim(ge.b,ge.a,R+2);
+        const q=edge(pa,pb,col,spec,r.label,r.i); M._edges.push({q,relIdx:r.i});
+        pulseDot(q,(t*M.tempo + r.i*0.31)%1, r.line==='feedback'?COL.strain:COL.pulse, 2.3); }); }
+      else{ const r=ge.rels[0]; const col=ge.feedback?COL.strain:COL.positive; const spec=ge.feedback?LINE.feedback:LINE.relation;
+        const q=edge(rim(ge.a,ge.b,R+2),rim(ge.b,ge.a,R+2),col,spec,r.label,r.i); M._edges.push({q,relIdx:r.i});
+        pulseDot(q,(t*M.tempo + r.i*0.31)%1, ge.feedback?COL.strain:COL.pulse, 2.3); } });
+    // glyphs always; facets only as the glyph opens (progressive discovery, eased)
+    M.glyphs.forEach((g,gi)=>{ const selG=sel&&sel.kind==='glyph'&&sel.ref===gi; const open=g.openA>0.5;
+      if(g.openA>0.02){ g.facets.forEach(f=>{ const fc=FACET[f.key]; const col=roleColor(fc.role)||g.hue;
+        cx.save(); cx.globalAlpha=g.openA;
+        cx.setLineDash([3,3]); inkPath([[g.x,g.y],[f.ax,f.ay]],f.ax,'rgba(43,42,51,.25)',1); cx.setLineDash([]);
+        cx.fillStyle=col+'22'; cx.beginPath(); cx.arc(f.ax,f.ay,f.ar,0,TAU); cx.fill(); inkCircle(f.ax,f.ay,f.ar,f.ax+f.ay,col,1.4);
+        cx.fillStyle=col; cx.font='600 12px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(fc.icon,f.ax,f.ay+1);
+        cx.fillStyle=COL.dim; cx.font='400 8px "IBM Plex Mono",monospace'; cx.fillText(f.key,f.ax,f.ay+22);
+        cx.restore(); }); }
+      // activation ring (ANIM ring) — an expanding ripple when a glyph opens
+      if(g.ringT<1){ cx.save(); cx.globalAlpha=(1-g.ringT)*0.55; cx.strokeStyle=COL.inference; cx.lineWidth=2;
+        cx.beginPath(); cx.arc(g.x,g.y,R+EASE.easeOut(g.ringT)*30,0,TAU); cx.stroke(); cx.restore(); }
+      // body — entrance scale+fade (ANIM entrance-fade) over a water-fill disc
+      const sc=0.55+0.45*EASE.easeOut(g.birthA), RR=R*sc;
+      cx.save(); cx.globalAlpha=Math.max(0,Math.min(1,g.birthA));
+      waterDisc(g.x,g.y,RR,g.waterA,g.hue,gi*1.7);
+      if(selG){ cx.strokeStyle=COL.inference; cx.lineWidth=1.6; cx.setLineDash([3,4]); cx.beginPath(); cx.arc(g.x,g.y,RR+8,0,TAU); cx.stroke(); cx.setLineDash([]); }
+      inkCircle(g.x,g.y,RR,g.x,open?COL.inference:g.hue,open?2.8:2.4);
+      cx.fillStyle=COL.ink; cx.font='600 19px "Caveat",cursive'; cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(g.word,g.x,g.y+1);
+      cx.restore(); });
+    drawSentence(mem);
+    requestAnimationFrame(draw); }
+
+  function drawSentence(mem){ const ph=M.ph; const words=ph.text.split(/(\s+)/);
+    const gw={}; M.glyphs.forEach(g=>gw[g.word.toLowerCase()]=g.hue);
+    let total=0; for(const w of words){ const c=w.replace(/[.,;]/g,'').toLowerCase(); cx.font=(gw[c]?'600 ':'300 ')+'18px "Fraunces",serif'; total+=cx.measureText(w).width; }
+    let x=Math.max(40,W/2-total/2), y=Math.max(116, mem.cyp-mem.ry-28);
+    for(const w of words){ const c=w.replace(/[.,;]/g,'').toLowerCase(); const hue=gw[c];
+      cx.font=(hue?'600 ':'300 ')+'18px "Fraunces",serif'; cx.fillStyle=hue||'rgba(43,42,51,.4)'; cx.textAlign='left'; cx.textBaseline='alphabetic'; cx.fillText(w,x,y); x+=cx.measureText(w).width; } }
+
+  // ── interaction (design-system INTERACT: hover→reveal, click→select) ──
+  const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
+  cv.addEventListener('pointermove',e=>{ if(!M)return; const[x,y]=pos(e); let h=null; M.glyphs.forEach((g,i)=>{ if(Math.hypot(x-g.x,y-g.y)<R+8) h=i; }); hoverG=h;
+    cv.style.cursor = h!=null ? 'pointer' : 'default'; const hint=document.getElementById('hint'); if(hint) hint.style.opacity = (h!=null||sel)?0:0.9; });
+  cv.addEventListener('click',e=>{ if(!M)return; const[x,y]=pos(e); let hit=null;
+    M.glyphs.forEach((g,i)=>{ if(Math.hypot(x-g.x,y-g.y)<R) hit={kind:'glyph',ref:i}; });
+    if(!hit&&M._edges) M._edges.forEach(h=>{ const m=h.q(0.5); if(Math.hypot(x-m[0],y-m[1])<16) hit={kind:'relation',ref:h.relIdx}; });
+    if(!hit&&M._mem){ const m=M._mem; if(((x-m.cxp)/m.rx)**2+((y-m.cyp)/m.ry)**2<1) hit={kind:'membrane'}; }
+    sel=hit; renderLens(); });
+
+  function renderLens(){ const L=document.getElementById('lens'); if(!sel){L.classList.remove('show'); setTimeout(()=>{if(!sel)L.classList.remove('on');},260); return;} L.classList.add('on'); requestAnimationFrame(()=>L.classList.add('show'));
+    if(sel.kind==='glyph'){ const g=M.glyphs[sel.ref];
+      const chips=g.facets.map(f=>`<span class="chip">${FACET[f.key].icon} ${f.key}</span>`).join('');
+      const conns=M.gedges.filter(e=>e.a===g||e.b===g).flatMap(e=>e.rels).map(r=>`<div><b>${r.from}</b> ${r.label} <b>${r.to}</b></div>`).join('')||'<div>—</div>';
+      L.innerHTML=`<h4>Lens</h4><div class="row"><span class="ico" style="border-color:${g.hue};color:${g.hue}">${g.word[0]}</span><span class="ttl">${g.word}</span></div><div class="chips">${chips}</div><div class="sub">connected through</div><div class="conn">${conns}</div>`;
+    } else if(sel.kind==='relation'){ let r=null; M.gedges.forEach(e=>e.rels.forEach(x=>{if(x.i===sel.ref)r=x;}));
+      L.innerHTML=`<h4>Lens</h4><div class="conn"><b>${r.from}</b><br>&nbsp;&nbsp;${r.label} →<br><b>${r.to}</b></div><div class="sub">${r.line}</div><div class="acts"><button>explain</button><button>invert</button><button>stitch</button></div>`;
+    } else { const loops=M.gedges.filter(e=>e.feedback).length; const edges=M.gedges.reduce((a,e)=>a+e.rels.length,0);
+      L.innerHTML=`<h4>Lens</h4><div class="row"><span class="ico">◌</span><span class="ttl">Membrane</span></div><div class="big"><div><div class="n">${M.glyphs.length}</div><div class="l">glyphs</div></div><div><div class="n">${loops}</div><div class="l">loops</div></div><div><div class="n">${edges}</div><div class="l">edges</div></div></div><div class="sub">ask this membrane</div><input class="ask" placeholder="e.g. what wakes the cat?">`; } }
+
+  // ── chrome ──
+  const ph=document.getElementById('phrases');
+  DATA.phrases.forEach((p,i)=>{ const b=document.createElement('button'); b.textContent=p.id; if(i===0)b.className='on'; b.onclick=()=>{idx=i;sel=null;hoverG=null;[...ph.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');document.getElementById('kind').textContent=p.kind;layout();renderLens();}; ph.appendChild(b); });
+  document.querySelectorAll('.tools button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tools button').forEach(z=>z.classList.remove('on'));b.classList.add('on');});
+  document.getElementById('new').onclick=()=>{ sel=null; renderLens(); };
+  document.getElementById('save').onclick=()=>{ try{localStorage.setItem('causality.story.idx',idx);}catch(e){} };
+  if(DATA.phrases[0]) document.getElementById('kind').textContent=DATA.phrases[0].kind;
+  layout(); draw();
+})();
+</script>
+</body>
+</html>

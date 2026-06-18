@@ -50,6 +50,26 @@ from loop.reconcile import (DEFAULT_ROOT, TERMINAL_EVENT, Fold, arc_confirmation
                             now_ts, real_nodes)
 from loop.orchestrate import next_action, read_setpoint
 
+# A merge-node `landed` verdict is the terminal act but carries no next event;
+# read it as a landing, not a refusal (retro fold 0098 surfaced the inflation).
+LANDING_VERDICTS = frozenset({"landed"})
+
+
+def _is_landing(rc):
+    """A receipt that advanced the work to terminal — the explicit advance into
+    TERMINAL_EVENT, or a `landed` verdict (terminal by nature, no next event)."""
+    return (rc.get("next_suggested_event") == TERMINAL_EVENT
+            or rc.get("verdict") in LANDING_VERDICTS)
+
+
+def _is_refusal(rc):
+    """A receipt that did not advance and is not a landing — a real pushed-back
+    verdict. A landing is never a refusal, and a receipt carrying no verdict
+    refused nothing (so neither merge landings nor verdict-less records count)."""
+    return (rc.get("next_suggested_event") is None
+            and not _is_landing(rc)
+            and bool(rc.get("verdict")))
+
 
 def in_span(ts, since, until):
     """A record's date (ts[:10]) within [since, until] inclusive; a None
@@ -102,11 +122,13 @@ def digest(root, since=None, until=None):
     setpoint = read_setpoint(fold.admissions)
 
     receipts = [rc for rc in fold.receipts if in_span(rc.get("ts"), since, until)]
-    # generic verdict reading: the advance into TERMINAL_EVENT is a landing;
-    # a receipt with no next event is a refusal — true for the mock pipeline
-    # today and the merge-node's {land, refuse, send_back} the day it lands.
-    landings = [rc for rc in receipts if rc.get("next_suggested_event") == TERMINAL_EVENT]
-    refusals = [rc for rc in receipts if rc.get("next_suggested_event") is None]
+    # generic verdict reading (corrected, retro fold 0098): a landing is the
+    # advance into TERMINAL_EVENT OR a `landed` verdict (which carries no next
+    # event — it IS terminal); a refusal is a non-advancing, non-landing verdict.
+    # The old "no next event == refusal" counted all 77 merge landings as
+    # refusals (the 58-where-~7-were-real inflation retro surfaced).
+    landings = [rc for rc in receipts if _is_landing(rc)]
+    refusals = [rc for rc in receipts if _is_refusal(rc)]
 
     # attribute every present atom to its arc (or to the loose pile)
     by_epic = {}

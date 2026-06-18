@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.retro-fold.v0",
+    "story": {
+      "text": "As the loop, I want to read my own history across all sessions for the patterns that keep recurring — work re-derived again and again, a control valve I advertise but never open, a contradiction I leave un-reconciled — so my self-critique becomes an organ instead of a hand-run chat exercise. Every instrument I grew senses a present state (gaps now, census now, digest over one span); none folds the accumulated record for what keeps happening. The shame beat senses stalling; nothing senses churn. This is that critique made a fold — read-only, evidence cited to log records not prose, naming the pattern and the one move, never judging or editing (the fix stays a session's or bdo's, D-4).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the retrospective fold: the loop reads its own history for recurring patterns",
+      "value": "loop/retro.py — a pure, stdlib, read-only fold over the entire append-only log, sibling of digest on a new axis (digest folds one span; retro folds all history). Three detectors, each cited to real records: churn (an atom re-derived >=2x via versions and/or repeated negating verdicts), dead-valve (a control mode the orchestrator can take but never has across a meaningful run), standing-divergence (a digest divergence left un-reconciled across the history, with its age). It reuses digest's version-split and divergence detection rather than re-deriving them (no second truth, §10).",
+      "why_now": "bdo asked for it directly (2026-06-16): author a refinement-and-retrospective node that runs like the digest, reads our own history, and surfaces the recurring patterns to improve on. The loop had every input for a retro (census, digest, gaps, reports) and no organ that folded them into cross-session self-critique.",
+      "if_accepted": "The loop gains its first cross-session self-refinement sensor. python -m loop.retro folds all history and names what keeps happening, each finding carrying one concrete refinement move. It proved itself on first run: it surfaced a real digest bug (merge landings counted as refusals, inflating the count to 58 where ~7 were real) which the same change fixes.",
+      "if_rejected": "Self-critique stays a hand-run chat exercise; churn, dead valves, and standing divergences keep slipping past the present-state instruments because nothing folds the accumulated record for them.",
+      "cost_of_wrong_call": "Low and fail-safe: the fold is read-only (it writes nothing, judges nothing, edits nothing — D-4), additive (a new sibling module beside digest/census/gaps), and reuses existing folds rather than introducing a second truth. Reverting is deleting the module; nothing depends on it.",
+      "mechanism": "loop/retro.py: churn_findings / dead_valve_findings / standing_divergence_findings fold over reconcile.Fold and reuse loop.digest's _base_version, _glance, digest, and divergence detection. tests/test_retro.py joins the suite with §10 teeth: it plants a churn pattern (an atom sent back twice before landing) and asserts the finding cites the planted receipt ids — the line a fabricated or constant classifier cannot fake; a clean fixture surfaces nothing; the fold writes nothing. The same change corrects loop/digest.py's landing/refusal count (the bug retro surfaced). Done-line 0098; full suite green at 845.",
+      "reading": [
+        "loop/retro.py",
+        "tests/test_retro.py",
+        "loop/digest.py",
+        "tests/test_digest.py",
+        ".ai-native/done/0098-retro-fold.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.the-field"],
+      "touches": ["loop/retro.py", "tests/test_retro.py", "loop/digest.py", "tests/test_digest.py", "loop/CLAUDE.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/digest.py", "loop/census.py", "loop/gaps.py"],
+      "receipts": []
+    }
+  }
+}
