@@ -52,6 +52,9 @@ python -m loop.digest --since 2026-06-01 --until 2026-06-11
 python -m loop.retro                        # the retrospective fold — recurring patterns across all history, read-only
 python -m loop.retro --json                 # the raw dataset (machine-readable)
 
+python -m loop.heal                         # the healing fold — where the loop's own teeth bit too sharp or stale, read-only
+python -m loop.heal --json                  # the raw dataset (machine-readable)
+
 python -m loop.gate_eval                    # the value-gate eval corpus (charades: matched-variant atoms), read-only
 python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") verdict transcript
 
@@ -229,6 +232,26 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the pattern and the one move; the fix stays a session's or bdo's (D-4).
   `--json` emits the dataset. The first node of the refinement-and-retro
   surface; more detectors and any owner surface ride later increments.
+- [heal.py](heal.py) — the healing fold (done-line 0111): the counterforce
+  to the teeth. Teeth without a healing reflex is autoimmunity — the loop
+  keeps a correct-but-stale bite inflamed on the owner surfaces and has no
+  organ that could ever see a tooth bite *wrong*. Sibling of `retro` on the
+  *bite* axis (retro: what keeps happening; heal: where did a tooth bite
+  wrong), reusing the same `Fold`, the digest's version-split, and
+  supersession — no second truth. Three detectors: **stale-park** (a gate
+  correctly negated an old version, the live version then passed the same
+  gate — the bite is healed, only its surfacing is stale; the field-topology
+  phantom), **flapping-gate** (a gate negates the *live* version after
+  advancing an earlier one — a current self-contradiction), and
+  **owner-override** (bdo's stamp advanced what a real gate refused, *after*
+  the refusal — ts-ordered, so the normal pipeline's early owner-stamp before
+  a later-stage gate is not a false override). The last two are the system's
+  first sensors of those failure modes — declared even at zero live instances
+  (like the cool valve), ready for when the gates judge un-vetted work.
+  Propose-only (D-4): it names the over-bite and the one heal move; it never
+  clears a park or re-opens a verdict — a bounded actuator, if it ever comes,
+  rides the disposer fence and is a later done-line. Surfaced ambiently
+  through `loop.summon`'s `heal_lines` (shown, never disposed).
 - [tags.py](tags.py) — the tag pool (done-line 0032): governed vocabulary
   for what tools do, the census fix pushed upstream to the write seam.
   Holds the one shared verb→intent `classify()` the watcher and the git
