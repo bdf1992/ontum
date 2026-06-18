@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — the living graph IS the context</title>
+<script>window.__pageErr=null;addEventListener('error',e=>{if(!window.__pageErr)window.__pageErr=(e.error&&e.error.stack)||e.message;});</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* CREAM ONLY — the established Causality look-and-feel. No dark mode, ever. */
+  :root{--paper:#f6f1e7;--ink:#2b2a33;--dim:#8d8678;--faint:#b8b1a2;--positive:#0e8a7b;--strain:#d4543f;--inference:#7a5ba6;--amber:#b8742c;--blue:#3f7cb6;--mock:#ff2bd6;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--paper);}
+  body{font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);}
+  /* two stacked canvases: the engine draws the living graph; ov captures the lasso (BLEND) */
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+  canvas#cv{z-index:1;}
+  canvas#ov{z-index:2;pointer-events:none;}
+  canvas#ov.lasso{pointer-events:auto;cursor:crosshair;}
+
+  /* ── chrome: quiet Fraunces wordmark · a tappable scale breadcrumb · faint New/Save ── */
+  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:12px;padding:18px 24px;pointer-events:none;}
+  .top .mark{font-family:"Fraunces",serif;font-size:23px;font-weight:300;letter-spacing:.01em;}
+  .top .mark b{color:var(--inference);font-weight:600;}
+  .top .tag{font:300 9.5px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;}
+  .top .sp{flex:1;}
+  .top .crumb{pointer-events:auto;display:flex;gap:2px;align-items:baseline;font-family:"Caveat",cursive;}
+  .top .crumb a{cursor:pointer;font-size:18px;color:var(--faint);padding:0 5px;border-bottom:2px solid transparent;transition:color .2s ease;}
+  .top .crumb a.on{color:var(--ink);border-bottom-color:var(--inference);}
+  .top .crumb .slash{color:var(--faint);font-size:13px;}
+  .top .btn{pointer-events:auto;font:500 11px "IBM Plex Mono",monospace;color:var(--ink);background:rgba(255,252,245,.85);border:1.4px solid var(--ink);border-radius:9px;padding:6px 12px;cursor:pointer;margin-left:6px;}
+  .top .btn:hover{background:rgba(122,91,166,.12);}
+  .hint{position:fixed;top:58px;left:0;right:0;text-align:center;z-index:9;font:300 10px "IBM Plex Mono",monospace;color:var(--faint);letter-spacing:.10em;pointer-events:none;transition:opacity .5s ease;}
+  .hint b{color:var(--inference);font-weight:400;}
+
+  /* ── the slider strip: Complexity is the LIVE backbone; the four named-but-unbuilt
+        dials wear the magenta missing-texture flag (canvas-system BUILD token) ── */
+  .sliders{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:12;display:flex;gap:13px;align-items:flex-end;background:rgba(255,252,245,.94);border:1.5px solid var(--ink);border-radius:13px;padding:9px 16px;box-shadow:3px 4px 0 rgba(43,42,51,.14);}
+  .sliders .sl{display:flex;flex-direction:column;gap:4px;width:212px;}
+  .sliders .sl .lab{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:5px;}
+  .sliders .sl input[type=range]{width:100%;accent-color:var(--positive);cursor:pointer;height:14px;}
+  .sliders .sl .val{font:500 8px "IBM Plex Mono",monospace;color:var(--positive);}
+  .sliders .sl .ends{display:flex;justify-content:space-between;font:400 7px "IBM Plex Mono",monospace;color:var(--faint);margin-top:-2px;}
+  .sliders .sl.mock{background:repeating-linear-gradient(45deg,rgba(255,43,214,.10),rgba(255,43,214,.10) 4px,transparent 4px,transparent 9px);border-radius:7px;padding:3px 5px 4px;width:74px;}
+  .sliders .sl.mock .lab{color:var(--mock);}
+  .sliders .sl.mock input[type=range]{accent-color:var(--mock);cursor:not-allowed;}
+  .sliders .sl .ftag{font:600 7px "IBM Plex Mono",monospace;color:#fff;background:var(--mock);border-radius:3px;padding:1px 4px;letter-spacing:.06em;}
+
+  /* the gesture floor: the gesture IS the command — no typed verbs, only motion. */
+  .gestures{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:11;display:flex;gap:13px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(255,252,245,.8);border:1.2px solid rgba(43,42,51,.2);border-radius:11px;padding:6px 14px;box-shadow:2px 3px 0 rgba(43,42,51,.07);max-width:92vw;transition:opacity .4s ease;}
+  .gestures .g{font:300 10px "IBM Plex Mono",monospace;color:var(--dim);white-space:nowrap;}
+  .gestures .g b{color:var(--inference);font-weight:500;}
+  .gestures .g.on b{color:var(--positive);}
+
+  /* the gesture-mode toggle (Point ⇄ Lasso) — single-node COMMAND vs region BLEND */
+  .tools{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:12;display:flex;gap:3px;background:rgba(255,252,245,.94);border:1.4px solid var(--ink);border-radius:12px;padding:5px 6px;box-shadow:2px 3px 0 rgba(43,42,51,.12);}
+  .tools button{font:500 10.5px "IBM Plex Mono",monospace;color:var(--dim);background:none;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;transition:color .2s ease,background .2s ease;}
+  .tools button.on{color:#fff;background:var(--inference);}
+  .tools button:not(.on):hover{color:var(--inference);background:rgba(122,91,166,.1);}
+
+  .legend{position:fixed;left:22px;bottom:22px;z-index:12;display:flex;flex-direction:column;gap:5px;font:400 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.85);border:1.2px solid rgba(43,42,51,.25);border-radius:9px;padding:8px 11px;max-width:248px;}
+  .legend .ln{display:flex;align-items:center;gap:7px;}
+  .legend .sw{width:11px;height:11px;border-radius:3px;flex:none;}
+  .legend .sw.m{background:var(--mock);} .legend .sw.t{background:var(--positive);} .legend .sw.r{background:var(--strain);}
+  .legend b{color:var(--ink);font-weight:500;}
+  .bench{position:fixed;right:22px;bottom:22px;z-index:12;font:400 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.85);border:1.2px solid rgba(43,42,51,.25);border-radius:9px;padding:8px 11px;max-width:256px;line-height:1.65;}
+  .bench b{color:var(--ink);font-weight:500;} .bench .m{color:var(--mock);} .bench .ok{color:var(--positive);} .bench .hot{color:var(--strain);} .bench .inf{color:var(--inference);}
+  .bench .hd{display:flex;align-items:center;gap:6px;font-family:"Fraunces",serif;font-weight:600;font-size:12px;color:var(--ink);margin-bottom:3px;letter-spacing:.01em;}
+  .bench .cmd{margin-top:5px;padding-top:5px;border-top:1px dashed rgba(43,42,51,.22);color:var(--inference);}
+  @keyframes breathe{0%,100%{opacity:.32;transform:scale(.82);}50%{opacity:1;transform:scale(1.12);}}
+  .bench .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--positive);animation:breathe 2.6s ease-in-out infinite;flex:none;}
+  .bench .live.h{background:var(--strain);} .bench .live.i{background:var(--inference);}
+  .toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:20;font:500 11px "IBM Plex Mono",monospace;color:var(--ink);background:rgba(255,252,245,.97);border:1.4px solid var(--inference);border-radius:9px;padding:7px 13px;box-shadow:2px 3px 0 rgba(122,91,166,.18);opacity:0;transition:opacity .25s ease;pointer-events:none;max-width:80vw;}
+  .toast.on{opacity:1;}
+  .err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font:400 13px "IBM Plex Mono",monospace;color:var(--strain);padding:40px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<canvas id="ov"></canvas>
+<div class="top">
+  <span class="mark">Causa<b>lity</b></span>
+  <span class="tag" id="kind">the living graph is the context</span>
+  <span class="sp"></span>
+  <span class="crumb" id="crumb"></span>
+  <button class="btn" id="new">+ New</button>
+  <button class="btn" id="save">Save</button>
+</div>
+<div class="hint" id="hint">tap a node to fire it · <b>hold</b> a node to COMMAND it (its real context blooms → ✦) · drag from a rim to wire · grow the Complexity slider — at its far end it points at the real ontum loop</div>
+<div class="tools" id="tools">
+  <button data-m="point" class="on">● Point — hold to COMMAND</button>
+  <button data-m="lasso">⬚ Lasso — BLEND a region</button>
+</div>
+<div class="gestures" id="gestures"></div>
+<div class="sliders" id="sliders"></div>
+<div class="legend" id="legend"></div>
+<div class="bench" id="bench"></div>
+<div class="toast" id="toast"></div>
+<div class="err" id="err"></div>
+
+<!-- REUSE the proven engine: the typed pulse-routing canvas + the design-system tokens
+     + the REAL committed recovery_scorer. exp-naturalist.js is loaded ONLY for its
+     figurative ink-creature library + repo parser (window.Naturalist) — grafted, never
+     edited; everything degrades gracefully if it is absent. No reimplemented drawing. -->
+<script src="canvas-system.js"></script>
+<script src="canvas.js"></script>
+<script src="recovery_scorer.js"></script>
+<script src="exp-naturalist.js"></script>
+<script>
+(async () => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  if (!window.Causality || !window.Causality.canvas) {
+    $('err').style.display = 'flex'; $('err').textContent = 'engine not loaded — canvas.js / canvas-system.js must sit beside this file'; return;
+  }
+  const SYS = window.CausalitySystem ? window.CausalitySystem.TOKENS : null;
+  const MOCKCOL = (SYS && SYS.BUILD && SYS.BUILD.mock.color) || '#ff2bd6';
+  const COL = (SYS && SYS.COLOR) || { ink:'#2b2a33', dim:'#8d8678', faint:'#b8b1a2', positive:'#0e8a7b', strain:'#d4543f', inference:'#7a5ba6', amber:'#b8742c', pulse:'#e8a13c' };
+  const PIG = (COL && COL.pigment) || window.Causality.PIGMENT;
+  const SCORER = window.CausalityScorer || null;
+  const NAT = window.Naturalist || null;                  // the grafted creature library (defensive — may be absent)
+  const TAU = Math.PI * 2;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const snippet = (v, n) => { const s = (v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v))).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+  let ASK = null;                                          // the one ✦ inference companion COMMAND/BLEND route through
+
+  // ── load the benchmark corpus (the authority; this surface only WITNESSES it) ──
+  let DATA; try { DATA = await (await fetch('phrases.json')).json(); } catch (e) { DATA = { phrases: [], links: [] }; }
+  const PHRASES = DATA.phrases || [];
+  const byPhrase = id => PHRASES.find(p => p.id === id);
+  const SEED = 'cat-sunbeam';
+  const NUCLEUS = byPhrase(SEED) || { glyphs: [], relations: [], stages: { texts: ['The cat naps.'] } };
+  const N_TEETH = PHRASES.filter(p => p.surface_trap).length;
+
+  // type-by-composition (iterations 0004) → the engine's channel types.
+  const typeFor = facets => { const f = facets || [];
+    if (f.includes('source')) return 'source';
+    if (f.includes('action')) return 'code';
+    if (f.includes('gate'))   return 'gate';
+    if (f.includes('sink'))   return 'sink';
+    if (f.includes('signal')) return 'source';
+    return 'stock'; };
+  // a creature for a glyph word (naturalist graft) — defensive if NAT absent.
+  const creatureFor = (word, icon) => NAT ? NAT.wordCreature(word, icon) : null;
+
+  const cv = $('cv');
+  const ov = $('ov'), oc = ov.getContext('2d');
+  let OVW = innerWidth, OVH = innerHeight, ODPR = Math.min(2, devicePixelRatio || 1);
+  const sizeOv = () => { OVW = innerWidth; OVH = innerHeight; ov.width = OVW * ODPR; ov.height = OVH * ODPR; oc.setTransform(ODPR, 0, 0, ODPR, 0, 0); };
+  sizeOv(); addEventListener('resize', sizeOv);
+
+  let toastT = 0;
+  const toast = (txt) => { const el = $('toast'); el.textContent = txt; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2000); };
+
+  const C = window.Causality.canvas(cv, {
+    bridge: (window.CAUSALITY_BRIDGE || 'http://localhost:8378/infer'),
+    onevent: (k, o) => {
+      if (k === 'refused-link') toast('wire refused — the seam types don\'t fit');
+      // the gesture→AI limb closing: a real answer came back over the bridge
+      if (k === 'inference' && ASK && ASK.lastOut != null) { ASK._answered = true; toast('✦ ' + snippet(ASK.lastOut, 64)); drawBench(); }
+    },
+  });
+  C.baseline = 0.42; C.regen = true;
+  C.onchange = () => scoreLive();      // every gesture (wire/cut/flip/move) re-scores the live circuit
+
+  // ── MESH — what the current complexity level built, for the construction-flag
+  //    overlay, the live scorer, and the COMMAND/BLEND context. ──
+  let MESH = blankMesh(0);
+  function blankMesh(lvl) { return { byWord:{}, edges:[], stitches:[], trap:null, membranes:[], level:lvl,
+    truth:null, glyphsMeta:[], regime:'cat', dirOk:false, dirStages:0, dirMock:0, cmd:{}, command:null }; }
+
+  // ── the ONE-grammar ladder (naturalist's legible spine, circuitry's biting end):
+  //      0 word    "The cat naps."                (the cute nucleus, phrases.json)
+  //      1 phrase  "...in the sunbeam."           (the slider blooms the phrase)
+  //      2 phrase  full sentence + the SCORE       (the benchmark teeth, real recovery_scorer)
+  //      3 corpus  N stories, one networked mesh    (phrase → corpus, the calibration set)
+  //      4 loop    ontum's real PIPELINE            (parsed live from loop/reconcile.py)
+  //    Same growth at every scale; story relations are hand-authored (magenta flag),
+  //    the directory's .mock stages are magenta because they are literally mock. ──
+  const CORPUS = 3, DIR = 4, SLIDERMAX = 4;
+  const stageMax = lvl => Math.min(2, lvl);
+  const stageText = lvl => { const tx = NUCLEUS.stages && NUCLEUS.stages.texts; return tx ? tx[Math.min(stageMax(lvl), tx.length - 1)] : NUCLEUS.text; };
+  const SCALE_NAME = ['the cute nucleus', 'a growing phrase', 'the full phrase + score', 'the corpus', 'the real ontum loop'];
+
+  function visibleGlyphs(phrase, maxStage) {
+    return (phrase.glyphs || []).filter(g => (typeof g.stage === 'number' ? g.stage : 0) <= maxStage);
+  }
+  function collapseRelations(rels, present) {
+    const m = {};
+    (rels || []).forEach(r => {
+      const a = r.from.split('.')[0], b = r.to.split('.')[0];
+      if (a === b || !present.has(a) || !present.has(b)) return;
+      const key = a + '>' + b;
+      (m[key] = m[key] || { a, b, feedback: false, labels: [] });
+      if (r.line === 'feedback') m[key].feedback = true;
+      m[key].labels.push(r.label);
+    });
+    return Object.values(m);
+  }
+
+  // ── the cute build: cat-sunbeam grown by the slider (the beloved backbone) ──
+  function buildCat(lvl) {
+    lvl = clamp(lvl, 0, 2);
+    C.clear(); MESH = blankMesh(lvl); MESH.regime = 'cat';
+    const W = C.W, H = C.H, truthRels = [];
+    const glyphs = visibleGlyphs(NUCLEUS, stageMax(lvl));
+    const present = new Set(glyphs.map(g => g.word));
+    const cx = W / 2, cy = H * 0.5, rad = Math.min(W * 0.20, H * 0.24);
+    const cluster = [];
+    glyphs.forEach((g, i) => {
+      let x, y;
+      if (glyphs.length === 1) { x = cx; y = cy; }
+      else { const a = -Math.PI / 2 + (i / glyphs.length) * TAU; x = cx + Math.cos(a) * rad; y = cy + Math.sin(a) * rad * 0.82; }
+      const type = typeFor(g.facets), hue = PIG[i % PIG.length];
+      const node = C.node(x, y, g.word, { type, hue, level: type === 'source' ? 0.55 : 0.34, data: g.word,
+        autorun: type === 'source', every: 0.85 + (i % 4) * 0.28, rate: 0.17 });
+      node._creature = creatureFor(g.word, g.icon);
+      MESH.byWord[g.word.toLowerCase()] = node;
+      MESH.glyphsMeta.push({ word: g.word.toLowerCase(), facets: g.facets || [] });
+      MESH.cmd[node.id] = { kind: 'glyph', title: g.word + ' · ' + (g.facets || []).join('+'),
+        word: g.word, facets: g.facets || [], phrase: NUCLEUS.id, text: stageText(lvl),
+        rels: (NUCLEUS.relations || []).filter(r => r.from.split('.')[0] === g.word || r.to.split('.')[0] === g.word)
+                .map(r => r.from + ' —' + r.label + '→ ' + r.to + (r.line === 'feedback' ? '  (feedback)' : '')) };
+      cluster.push(node);
+    });
+    MESH.membranes.push({ nodes: cluster, kind: NUCLEUS.kind || '', text: stageText(lvl) });
+
+    collapseRelations(NUCLEUS.relations, present).forEach(e => {
+      const A = MESH.byWord[e.a.toLowerCase()], B = MESH.byWord[e.b.toLowerCase()];
+      if (!A || !B) return;
+      const link = C.link(A.id, B.id, { sign: e.feedback ? -1 : 1, kind: e.feedback ? 'leak' : 'impulse', gain: 1 });
+      if (link) MESH.edges.push({ link, label: e.labels[0], feedback: e.feedback, mock: true });
+      truthRels.push({ from: e.a.toLowerCase(), to: e.b.toLowerCase() });
+    });
+    // the surface_trap — drawn as a ghost, never auto-wired. DRAW it (wire shadow→cat)
+    // to take it; SLASH it to reject. Either way the REAL recovery_scorer moves (the
+    // editorial verdict-IS-a-gesture grammar, grafted onto the live circuit).
+    if (NUCLEUS.surface_trap) {
+      const tp = NUCLEUS.surface_trap;
+      const fa = MESH.byWord[tp.edge.from.split('.')[0].toLowerCase()];
+      const tb = MESH.byWord[tp.edge.to.split('.')[0].toLowerCase()];
+      if (fa && tb) MESH.trap = { a: fa, b: tb, label: tp.edge.label, why: tp.why, type: tp.type };
+    }
+    MESH.truth = { glyphs: MESH.glyphsMeta, relations: truthRels,
+      surface_trap: MESH.trap ? { type: MESH.trap.type, edge: { from: MESH.trap.a.label.toLowerCase(), to: MESH.trap.b.label.toLowerCase() } } : null };
+    scoreLive();
+  }
+
+  // ── CORPUS (phrase → corpus): every phrase is one membrane (its lead creature);
+  //    the cross-membrane links are REAL declared structure from phrases.json. The
+  //    compression IS the joy — one slider notch and the whole calibration set blooms. ──
+  function buildCorpus() {
+    C.clear(); MESH = blankMesh(CORPUS); MESH.regime = 'corpus';
+    const W = C.W, H = C.H, cx = W / 2, cy = H * 0.52, RAD = Math.min(W * 0.36, H * 0.34);
+    const n = PHRASES.length, byId = {};
+    PHRASES.forEach((p, i) => {
+      const a = -Math.PI / 2 + i / n * TAU;
+      const x = cx + Math.cos(a) * RAD, y = cy + Math.sin(a) * RAD * 0.82;
+      const lead = NAT ? NAT.phraseCreature(p) : { word: (p.glyphs[0] || {}).word || p.id, key: null };
+      const isCat = p.id === SEED, hue = isCat ? COL.positive : PIG[i % PIG.length];
+      const node = C.node(x, y, lead.word, { type: 'stock', hue, level: 0.46,
+        autorun: isCat, every: 1.6, rate: 0.14 });
+      node._creature = lead.key || creatureFor(lead.word);
+      byId[p.id] = node;
+      MESH.cmd[node.id] = { kind: 'membrane', title: lead.word + ' · ' + (p.kind || 'story'),
+        phrase: p.id, text: p.text, teeth: !!p.surface_trap, trapType: (p.surface_trap || {}).type,
+        glyphs: p.glyphs.length, rels: p.relations.length };
+    });
+    (DATA.links || []).forEach(l => { const A = byId[l.a], B = byId[l.b]; if (!A || !B) return;
+      const link = C.link(A.id, B.id, { sign: 1, kind: 'delayed', delay: 1.4 });
+      if (link) MESH.stitches.push({ link, via: l.via }); });
+    drawBench();
+  }
+
+  // ── THE SYSTEM NAMED FROM REPO SEARCH: ontum's own PIPELINE. loop/reconcile.py
+  //    declares a 5-stage table — value-gate → owner-stamp → placement → handoff →
+  //    confirm. It IS a circuit: atoms are pulses, each stage a gate the pulse must
+  //    clear, the append-only log the source. We FETCH and PARSE the real file and
+  //    GENERATE the circuit from its bytes — the §10 directory teeth: structure
+  //    parsed, never hand-authored; the `.mock.v0` stages glow magenta because they
+  //    are LITERALLY mock in the source (the missing-texture rule, dogfooded). ──
+  async function buildDirectory() {
+    C.clear(); MESH = blankMesh(DIR); MESH.regime = 'dir';
+    let text = '', ok = false;
+    try { const r = await fetch('../loop/reconcile.py'); text = await r.text(); ok = !!(r.ok && text && text.indexOf('PIPELINE') >= 0); } catch (e) { ok = false; }
+
+    const stages = []; let pipeLine = 0;
+    if (ok) try {
+      const s = text.indexOf('PIPELINE = [');
+      pipeLine = text.slice(0, s).split('\n').length;
+      const e = text.indexOf('SEED_EVENT', s);
+      const block = text.slice(s, e > s ? e : text.length);
+      block.split(/\{\s*"event":/).slice(1).forEach((o, i) => {
+        const node = (o.match(/"node":\s*"([^"]+)"/) || [])[1];
+        const seam = (o.match(/"seam":\s*"([^"]+)"/) || [])[1];
+        const verdict = (o.match(/"verdict":\s*"([^"]+)"/) || [])[1];
+        const src = ('{"event":' + o).split(/\n\s*\{\s*"event":/)[0].replace(/,\s*$/, '').trim();
+        if (node) stages.push({ node, seam: seam || '', verdict: verdict || '', mock: /mock/i.test(node),
+          src: src.slice(0, 320), line: pipeLine + 1 + i });
+      });
+    } catch (e) {}
+    MESH.dirOk = stages.length >= 2; MESH.dirStages = stages.length; MESH.dirMock = stages.filter(s => s.mock).length;
+
+    const W = C.W, H = C.H, y = H * 0.5;
+    if (!MESH.dirOk) {
+      const n = C.node(W / 2, y, 'reconcile.py', { type: 'gate', hue: MOCKCOL, level: 0.3, data: 'unreachable' });
+      n._creature = NAT ? 'gate' : null;
+      MESH.edges.push({ node: n, dir: true, mock: true, label: 'parse unreachable' });
+      drawBench(); return;
+    }
+    const x0 = W * 0.10, xN = W * 0.90, span = (xN - x0);
+    const seed = C.node(x0, y, 'atom', { type: 'source', hue: COL.amber, level: 0.6, data: 'atom.created', autorun: true, every: 1.5, rate: 0.22 });
+    seed._creature = NAT ? 'drop' : null;
+    let prev = seed;
+    MESH.cmd[seed.id] = { kind: 'stage', title: 'the log · atom.created',
+      src: 'append_line(events.jsonl, {"event":"atom.created", "atom": <sha256-of-bytes>})',
+      seam: 'append', verdict: 'an atom enters the pipeline', line: 0, mock: false, file: 'loop/reconcile.py' };
+    MESH.dirNodes = [{ node: seed, mock: false, label: 'the log — append', sub: 'source' }];
+    stages.forEach((st, i) => {
+      const x = x0 + span * ((i + 1) / stages.length);
+      const short = st.node.split('.')[0];
+      const isLast = i === stages.length - 1;
+      const hue = st.mock ? MOCKCOL : PIG[i % PIG.length];
+      const n = C.node(x, y + (i % 2 ? 1 : -1) * 40, short, { type: isLast ? 'sink' : 'gate', hue, level: 0.32, data: st.verdict });
+      n._creature = NAT ? (isLast ? 'star' : 'gate') : null;
+      const link = C.link(prev.id, n.id, { sign: 1, kind: 'impulse', gain: 1 });
+      if (link) MESH.edges.push({ link, label: st.seam.replace(/-/g, ' '), feedback: false, mock: false, seam: true });
+      MESH.dirNodes.push({ node: n, mock: st.mock, label: st.mock ? 'mock · ' + st.node : st.node, sub: st.verdict });
+      MESH.cmd[n.id] = { kind: 'stage', title: short + (st.mock ? ' (mock)' : ''), src: st.src,
+        seam: st.seam, verdict: st.verdict, line: st.line, mock: st.mock, file: 'loop/reconcile.py' };
+      prev = n;
+    });
+    if (prev !== seed) { const fb = C.link(prev.id, seed.id, { sign: -1, kind: 'leak', gain: 1 });
+      if (fb) MESH.stitches.push({ link: fb, via: 'orchestrate.py · refuse → re-derive' }); }
+    drawBench();
+  }
+
+  function buildLevel(lvl) {
+    if (lvl === DIR) { toast('↗ parsing loop/reconcile.py …'); buildDirectory(); return; }
+    if (lvl === CORPUS) { buildCorpus(); return; }
+    buildCat(lvl);
+  }
+
+  // ── overlay: membrane walls, the figurative creatures (naturalist graft), relation
+  //    labels, the magenta construction flags, the trap ghost, the parsed-source
+  //    labels, and the COMMAND/BLEND context package — all on the engine's own ink. ──
+  C.draw = (ctx) => {
+    ctx.save();
+    // membrane walls (cat mode — a phrase is a cell)
+    if (MESH.regime === 'cat') MESH.membranes.forEach(m => {
+      if (m.nodes.length < 1) return;
+      const xs = m.nodes.map(n => n.x), ys = m.nodes.map(n => n.y);
+      const cxp = (Math.min(...xs) + Math.max(...xs)) / 2, cyp = (Math.min(...ys) + Math.max(...ys)) / 2;
+      const rx = (Math.max(...xs) - Math.min(...xs)) / 2 + (C.NODE_R + 38), ry = (Math.max(...ys) - Math.min(...ys)) / 2 + (C.NODE_R + 34);
+      ctx.strokeStyle = 'rgba(43,42,51,.24)'; ctx.lineWidth = 1.3; ctx.setLineDash([6, 7]); ctx.beginPath();
+      for (let i = 0; i <= 48; i++) { const a = i / 48 * TAU; const k = 1 + Math.sin(a * 3 + C.t * 0.4) * 0.03; const px = cxp + Math.cos(a) * rx * k, py = cyp + Math.sin(a) * ry * k; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+      ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+    });
+    // the creatures — a hand-drawn ink figure blooms above every glyph (the joy).
+    if (NAT) C.nodes.forEach(n => { if (!n._creature) return;
+      try { NAT.creature(ctx, n._creature, n.x, n.y - C.NODE_R - 15, 12, n.hue); } catch (e) {} });
+    // edge labels + flags
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    MESH.edges.forEach(me => {
+      if (!me.link) return; const e = me.link; if (!C.byId(e.a) || !C.byId(e.b)) return;
+      const g = C.geom(e); const [mx, my] = g.q(0.5);
+      const dx = g.B.x - g.A.x, dy = g.B.y - g.A.y, d = Math.hypot(dx, dy) || 1; const nx = -dy / d, ny = dx / d;
+      const lx = mx + nx * 17, ly = my + ny * 17;
+      if (me.label) { ctx.font = '400 12px "Caveat", cursive'; const w = ctx.measureText(me.label).width;
+        ctx.fillStyle = 'rgba(246,241,231,.9)'; ctx.fillRect(lx - w / 2 - 3, ly - 9, w + 6, 16);
+        ctx.fillStyle = me.seam ? COL.dim : (me.feedback ? COL.strain : COL.positive); ctx.fillText(me.label, lx, ly); }
+      if (me.mock && me.link) { const hot = (C.hoverLink === e);
+        if (hot) mockChip(ctx, mx - nx * 17, my - ny * 17, 'MOCK · hand-authored');
+        else { ctx.fillStyle = MOCKCOL; ctx.beginPath(); ctx.arc(mx - nx * 14, my - ny * 14, 3.2, 0, TAU); ctx.fill(); } }
+    });
+    MESH.stitches.forEach(me => { const e = me.link; if (!C.byId(e.a) || !C.byId(e.b)) return; const g = C.geom(e); const [mx, my] = g.q(0.5);
+      if (MESH.regime === 'dir') mockChip(ctx, mx, my - 13, 'INTERPRETIVE');   // read from the architecture, not the PIPELINE rows → flagged
+      else { ctx.font = '400 11px "Caveat", cursive'; ctx.fillStyle = COL.dim; ctx.textAlign = 'center';   // a REAL declared corpus link — dim ink, never the mock flag
+        ctx.fillText('shared · ' + (me.via || ''), mx, my - 11); } });
+    // dir mode: name each parsed stage; flag the .mock stages magenta
+    if (MESH.regime === 'dir' && MESH.dirNodes) MESH.dirNodes.forEach(dn => {
+      const n = dn.node; if (!C.byId(n.id)) return;
+      ctx.font = '300 9px "IBM Plex Mono", monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = COL.dim; ctx.fillText(dn.sub || '', n.x, n.y + C.NODE_R + 14);
+      if (dn.mock) mockChip(ctx, n.x, n.y + C.NODE_R + 30, dn.label);
+      else { ctx.fillStyle = COL.faint || '#b8b1a2'; ctx.fillText(dn.label, n.x, n.y + C.NODE_R + 30); }
+    });
+    // corpus mode: a faint "teeth" mark on the phrases that carry a surface_trap
+    if (MESH.regime === 'corpus') C.nodes.forEach(n => { const c = MESH.cmd[n.id];
+      if (c && c.teeth) { ctx.fillStyle = COL.amber; ctx.font = '600 10px "Caveat", cursive'; ctx.textAlign = 'center';
+        ctx.fillText('teeth', n.x, n.y + C.NODE_R + 16); } });
+    // the trap ghost — drawn, never auto-wired; DRAW it (drop the score) or SLASH it (restore)
+    if (MESH.trap) {
+      const a = MESH.trap.a, b = MESH.trap.b; if (C.byId(a.id) && C.byId(b.id)) {
+        const taken = !!C.links.find(l => l.a === a.id && l.b === b.id);
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2 - 44;
+        ctx.strokeStyle = MOCKCOL; ctx.lineWidth = 1.6; ctx.setLineDash([3, 5]); ctx.globalAlpha = taken ? 0.25 : 0.72;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y - C.NODE_R); ctx.quadraticCurveTo(mx, my, b.x, b.y - C.NODE_R); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+        mockChip(ctx, mx, my, taken ? 'TRAP · TAKEN' : 'TRAP · ' + MESH.trap.type);
+        ctx.fillStyle = COL.dim; ctx.font = '400 11px "Caveat", cursive'; ctx.textAlign = 'center';
+        ctx.fillText(taken ? '“' + MESH.trap.label + '” — wired direct; the mediator was skipped' : 'draw “' + MESH.trap.label + '”? — but the warmth is the mediator · slash to reject', mx, my + 16);
+      }
+    }
+    // the COMMAND / BLEND context package — the real, citation-bearing artifact the
+    // gesture assembled, drawn ON-CANVAS (the RepoPrompt grail: point/lasso → the
+    // narrative is generated FROM it). A deterministic FLOOR reply lands immediately;
+    // the bridge enriches it when up — so the loop closes visibly on the static floor.
+    if (MESH.command && ASK && C.byId(ASK.id)) {
+      const sp = MESH.command.srcPt;
+      if (sp) {
+        ctx.strokeStyle = COL.inference; ctx.lineWidth = 1.5; ctx.setLineDash([2, 5]); ctx.globalAlpha = 0.7;
+        ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(ASK.x, ASK.y); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+        const age = (Date.now() - MESH.command.at) / 700;
+        if (age >= 0 && age <= 1) { const px = sp.x + (ASK.x - sp.x) * age, py = sp.y + (ASK.y - sp.y) * age;
+          ctx.fillStyle = COL.inference; ctx.beginPath(); ctx.arc(px, py, 5, 0, TAU); ctx.fill(); }
+      }
+      const lines = MESH.command.pkg.split('\n').slice(0, 11);
+      ctx.font = '300 9.5px "IBM Plex Mono", monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      let wmax = 150; lines.forEach(l => wmax = Math.max(wmax, ctx.measureText(l).width));
+      const padX = 11, padY = 10, lh = 13, w = Math.min(wmax + padX * 2, C.W * 0.52), h = lines.length * lh + padY * 2 + 30;
+      let px = clamp(ASK.x - w / 2, 12, C.W - w - 12), py = clamp(ASK.y - C.NODE_R - h - 14, 8, C.H - h - 8);
+      ctx.fillStyle = 'rgba(246,241,231,.97)'; ctx.strokeStyle = COL.inference; ctx.lineWidth = 1.6;
+      roundRect(ctx, px, py, w, h, 9); ctx.fill(); ctx.stroke();
+      const answered = ASK._answered && ASK.lastOut != null;
+      ctx.fillStyle = COL.inference; ctx.font = '500 9px "IBM Plex Mono", monospace';
+      ctx.fillText((MESH.command.verb === 'blend' ? '⬚ ' : '⌘ ') + snippet(MESH.command.title, 36), px + padX, py + 13);
+      if (answered) { ctx.fillStyle = COL.positive; ctx.fillText('✦ answered', px + w - 66, py + 13); }
+      else mockChip(ctx, px + w - 52, py + 9, 'bridge ← :8378');
+      ctx.fillStyle = COL.ink; ctx.font = '300 9.5px "IBM Plex Mono", monospace';
+      lines.forEach((l, i) => { ctx.fillStyle = l[0] === '#' ? COL.dim : COL.ink; ctx.fillText(l, px + padX, py + 28 + i * lh); });
+      // the floor reply (always real & immediate) → upgraded to the bridge reply when it lands
+      const reply = answered ? snippet(ASK.lastOut, 72) : MESH.command.floor;
+      ctx.fillStyle = answered ? COL.positive : COL.dim; ctx.font = '400 10.5px "Caveat", cursive';
+      ctx.fillText((answered ? '✦ ' : 'floor · ') + '“' + snippet(reply, 60) + '”', px + padX, py + h - 8);
+    }
+    ctx.restore();
+  };
+  function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function mockChip(ctx, x, y, label) {
+    ctx.save(); ctx.font = '600 8px "IBM Plex Mono", monospace';
+    const w = ctx.measureText(label).width; ctx.fillStyle = MOCKCOL;
+    ctx.beginPath(); ctx.rect(x - w / 2 - 4, y - 7, w + 8, 14); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x, y); ctx.restore();
+  }
+
+  // ── gesture floor (COMMAND, gesture-native — no typed verbs). The engine already
+  //    gives wire (drag a rim), flip (re-drag a wire), erase (right-click). We add:
+  //    tap = fire, hold = COMMAND, slash = cut. Lasso mode adds BLEND (see below). ──
+  let MODE = 'point';
+  let down = null, holdT = 0, commanded = false, scoreBefore = null, ptr = { x: 0, y: 0 };
+  const canvasXY = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  cv.addEventListener('pointerdown', e => {
+    if (e.button === 2 || MODE !== 'point') return;
+    const node = C.hoverNode;
+    down = { x: e.clientX, y: e.clientY, t: Date.now(), onNode: !!node, onLink: !!C.hoverLink, node };
+    commanded = false;
+    scoreBefore = MESH.regime === 'cat' ? recoveredScore() : null;
+    clearTimeout(holdT);
+    if (node && MESH.cmd[node.id]) holdT = setTimeout(() => {
+      if (down && down.node === node) { commanded = true; commandNode(node); }
+    }, 460);
+  });
+  cv.addEventListener('pointermove', e => { ptr = canvasXY(e);
+    if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8) clearTimeout(holdT); });
+  cv.addEventListener('pointerup', e => {
+    clearTimeout(holdT); ptr = canvasXY(e);
+    if (!down || MODE !== 'point') { down = null; return; }
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dur = Date.now() - down.t;
+    const d = down; down = null;
+    if (commanded) { commanded = false; return; }
+    if (scoreBefore && MESH.regime === 'cat') { const before = scoreBefore; const where = { x: ptr.x, y: ptr.y };
+      setTimeout(() => { feelScore(before, recoveredScore(), where); }, 0); }
+    scoreBefore = null;
+    if (moved < 6 && dur < 400 && d.onNode && d.node) { C.pulseNode(d.node); toast('▷ ' + d.node.label + ' fired'); return; }
+    // slash to cut: a drag that started on empty canvas and crosses a wire
+    if (!d.onNode && moved > 26) {
+      const r = cv.getBoundingClientRect();
+      const ax = d.x - r.left, ay = d.y - r.top, bx = e.clientX - r.left, by = e.clientY - r.top;
+      let cut = null, best = 11;
+      C.links.forEach(l => { const A = C.byId(l.a), B = C.byId(l.b); if (!A || !B) return; const g = C.geom(l);
+        for (let s = 0.15; s <= 0.85; s += 0.07) { const [px, py] = g.q(s); const dd = segDist(ax, ay, bx, by, px, py); if (dd < best) { best = dd; cut = l; } } });
+      if (cut) { C.pulses = C.pulses.filter(p => p.e !== cut); C.links = C.links.filter(l => l !== cut);
+        MESH.edges = MESH.edges.filter(m => !m.link || C.links.indexOf(m.link) >= 0);
+        MESH.stitches = MESH.stitches.filter(m => C.links.indexOf(m.link) >= 0);
+        toast('✂ wire cut'); scoreLive(); }
+    }
+  });
+  function segDist(ax, ay, bx, by, px, py) {
+    const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy || 1;
+    let t = ((px - ax) * dx + (py - ay) * dy) / l2; t = clamp(t, 0, 1);
+    return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+  }
+
+  // ── BLEND (spatial's verb, grafted beside COMMAND): lasso a region = a real cited
+  //    context package, then act over it. Same on-canvas package as COMMAND; the ✦
+  //    companion sits at the region's centroid. ──
+  let lasso = null, capturing = false;
+  const ovXY = e => { const r = ov.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  function drawLasso() {
+    oc.clearRect(0, 0, OVW, OVH);
+    if (capturing && lasso && lasso.length > 1) {
+      oc.save(); oc.fillStyle = 'rgba(122,91,166,.08)'; oc.beginPath(); oc.moveTo(lasso[0].x, lasso[0].y);
+      for (let i = 1; i < lasso.length; i++) oc.lineTo(lasso[i].x, lasso[i].y); oc.closePath(); oc.fill();
+      oc.strokeStyle = COL.inference; oc.lineWidth = 1.8; oc.setLineDash([6, 6]); oc.stroke(); oc.setLineDash([]); oc.restore();
+    }
+    requestAnimationFrame(drawLasso);
+  }
+  drawLasso();
+  function inPoly(x, y, poly) { let inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].x, yi = poly[i].y, xj = poly[j].x, yj = poly[j].y;
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside; } return inside; }
+  ov.addEventListener('pointerdown', e => { if (MODE !== 'lasso') return; capturing = true; lasso = [ovXY(e)]; });
+  ov.addEventListener('pointermove', e => { if (capturing) lasso.push(ovXY(e)); });
+  ov.addEventListener('pointerup', e => { if (!capturing) return; capturing = false;
+    oc.clearRect(0, 0, OVW, OVH);
+    if (!lasso || lasso.length < 3) { lasso = null; return; }
+    const region = lasso.slice(); lasso = null;
+    const inside = C.nodes.filter(n => MESH.cmd[n.id] && inPoly(n.x, n.y, region));
+    blendNodes(inside, region);
+  });
+
+  // ── the live benchmark scorer (the REAL recovery_scorer) — every gesture re-scores ──
+  function scoreLive() { if (MESH.regime === 'cat') drawBench(); }
+  function recoveredScore() {
+    if (!SCORER || !MESH.truth) return null;
+    const recovered = { glyphs: MESH.glyphsMeta, relations: [] };
+    C.links.forEach(l => { const A = C.byId(l.a), B = C.byId(l.b); if (A && B) recovered.relations.push({ from: (A.label || '').toLowerCase(), to: (B.label || '').toLowerCase() }); });
+    try { return SCORER.score(recovered, MESH.truth); } catch (e) { return null; }
+  }
+  // the teeth, FELT: a gesture that moves the score writes the delta in hand-ink, at the gesture.
+  function feelScore(before, after, where) {
+    if (!before || !after || !where) return;
+    const push = (txt, col, dy) => C.floats && C.floats.push({ x: where.x, y: where.y - 24 - (dy || 0), t: 0, txt, col });
+    const teal = COL.positive, hot = COL.strain;
+    const wasHit = before.trap && before.trap.hit, isHit = after.trap && after.trap.hit;
+    if (!wasHit && isHit) { push('✗ trap taken — mediator skipped', hot, 0); push('−' + (SCORER.TRAP_PENALTY || 0.5).toFixed(2) + ' composite', hot, 18); return; }
+    if (wasHit && !isHit) { push('✓ mediator restored', teal, 0); push('+' + (SCORER.TRAP_PENALTY || 0.5).toFixed(2) + ' composite', teal, 18); return; }
+    const dr = after.relation.recall - before.relation.recall;
+    if (Math.abs(dr) >= 0.005) push((dr > 0 ? '+' : '−') + Math.round(Math.abs(dr) * 100) + '% recovered', dr > 0 ? teal : hot, 0);
+    const dc = after.composite - before.composite;
+    if (Math.abs(dc) >= 0.005) push((dc > 0 ? '+' : '−') + Math.abs(dc).toFixed(2) + ' composite', dc > 0 ? teal : hot, Math.abs(dr) >= 0.005 ? 18 : 0);
+  }
+
+  // ── the context assembler — real, citation-bearing, never authored prose ──
+  function assembleContext(c) {
+    if (c.kind === 'stage') return [
+      '# CONTEXT — assembled live by gesture from ' + c.file + ' (parsed, never authored)',
+      '# stage:  ' + c.title,
+      '# seam:   ' + (c.seam || '—') + '     mock-verdict: ' + (c.verdict || '—') + (c.line ? '     ≈ line ' + c.line : ''),
+      '', (c.src || '(row source unavailable)'), '',
+      c.mock ? '# COMMAND: this stage is MOCK in the real source. Name the node_real\n#          admission (loop.node admit-real) that would make it judge for real.'
+             : '# COMMAND: explain what this stage decides and what a refusal here means.',
+    ].join('\n');
+    if (c.kind === 'membrane') return [
+      '# CONTEXT — assembled live from causality/phrases.json (corpus, not authored)',
+      '# phrase:  ' + c.phrase + '   →   "' + c.text + '"',
+      '# mesh:    ' + c.glyphs + ' glyphs · ' + c.rels + ' relations (the known label)',
+      '# teeth:   ' + (c.teeth ? 'carries a surface_trap (' + c.trapType + ')' : 'omission-only — recall alone scores it'),
+      '', '# COMMAND: what is the latent mechanism of this story, and which edge\n#          is the surface most likely to misread?',
+    ].join('\n');
+    return [
+      '# CONTEXT — assembled live from causality/phrases.json (corpus, not authored)',
+      '# phrase:  ' + c.phrase + '   →   "' + c.text + '"',
+      '# glyph:   ' + c.word + '   typed-by-composition: ' + (c.facets.join(' + ') || '—'),
+      '# edges this glyph carries:',
+      ...(c.rels.length ? c.rels.map(r => '#   ' + r) : ['#   (none yet at this complexity)']),
+      '', '# COMMAND: what role does ' + c.word + ' play in the mechanism, and which edge\n#          is the surface most likely to misread?',
+    ].join('\n');
+  }
+  // a deterministic FLOOR answer (real, immediate) — folded from what is on disk; the
+  // bridge's reply replaces it when localhost:8378 is up.
+  function floorAnswer(c) {
+    if (c.kind === 'stage') return c.mock
+      ? c.title.replace(' (mock)', '') + ' is a fixed-verdict placeholder — it needs a node_real admission to judge for real.'
+      : c.title + ' clears the “' + (c.seam || '?') + '” seam; a refusal here re-derives the atom from the log.';
+    if (c.kind === 'membrane') return 'a ' + (c.teeth ? 'trap-bearing' : 'clean') + ' story: ' + c.glyphs + ' glyphs, ' + c.rels + ' relations — its mesh is the benchmark label.';
+    const reads = (c.facets || []).map(f => f).join(' + ');
+    return c.word + ' acts as ' + (reads || 'a glyph') + (c.rels.length ? '; it carries ' + c.rels.length + ' edge' + (c.rels.length > 1 ? 's' : '') + '.' : ' and stands alone for now.');
+  }
+
+  function placeAsk(x, y) {
+    if (!ASK || !C.byId(ASK.id)) ASK = C.node(x, Math.max(96, y - 120), '✦ ask', { type: 'inference', hue: COL.inference, level: 0.3, prompt: '{{data}}', backend: 'ollama' });
+    else { ASK.x = x; ASK.y = Math.max(96, y - 120); }
+    ASK._answered = false; ASK.verdict = null; ASK._creature = NAT ? 'spark' : null;
+  }
+  function commandNode(node) {
+    const c = MESH.cmd[node.id]; if (!c) { toast('nothing to command here'); return; }
+    const pkg = assembleContext(c);
+    placeAsk(node.x, node.y);
+    MESH.command = { pkg, title: c.title, floor: floorAnswer(c), verb: 'command', at: Date.now(), srcPt: { x: node.x, y: node.y } };
+    C.inject(ASK, pkg);     // the engine's OWN inference node POSTs to the bridge (real reply when up)
+    toast('⌘ commanded ' + c.title + ' — its real context →✦');
+    drawBench();
+  }
+  function blendNodes(nodes, region) {
+    if (!nodes.length) { toast('empty region — lasso around some nodes'); return; }
+    const cx = nodes.reduce((s, n) => s + n.x, 0) / nodes.length, cy = nodes.reduce((s, n) => s + n.y, 0) / nodes.length;
+    const lines = ['# CONTEXT package — ' + nodes.length + ' nodes lassoed from the living graph (cited, not authored)'];
+    nodes.forEach(n => { const c = MESH.cmd[n.id]; if (!c) return;
+      if (c.kind === 'stage') lines.push('- ' + c.title + (c.mock ? '  [MOCK]' : '') + '  · seam ' + (c.seam || '—') + (c.line ? ' ≈L' + c.line : ''));
+      else if (c.kind === 'membrane') lines.push('- ' + c.phrase + '  · ' + c.glyphs + ' glyphs/' + c.rels + ' rels' + (c.teeth ? '  [teeth]' : ''));
+      else lines.push('- ' + c.word + '  · ' + (c.facets.join('+') || '—'));
+    });
+    // internal relations within the region
+    const ids = new Set(nodes.map(n => n.id));
+    const rels = C.links.filter(l => ids.has(l.a) && ids.has(l.b));
+    if (rels.length) { lines.push(''); lines.push('# relations inside the region:');
+      rels.forEach(l => { const A = C.byId(l.a), B = C.byId(l.b); if (A && B) lines.push('#   ' + A.label + ' → ' + B.label); }); }
+    lines.push(''); lines.push('# BLEND: act over this region — what holds it together, and where does it break?');
+    const pkg = lines.join('\n');
+    placeAsk(cx, cy);
+    const dirRegion = nodes.some(n => (MESH.cmd[n.id] || {}).kind === 'stage');
+    MESH.command = { pkg, title: nodes.length + (dirRegion ? ' loop stages' : ' nodes') + ' blended', verb: 'blend',
+      floor: nodes.length + ' nodes, ' + rels.length + ' relation' + (rels.length === 1 ? '' : 's') + ' — a real cited region package, ready to act over.',
+      at: Date.now(), srcPt: { x: cx, y: cy } };
+    C.inject(ASK, pkg);
+    toast('⬚ blended ' + nodes.length + ' nodes — region context →✦');
+    drawBench();
+  }
+
+  // ── chrome: the Complexity slider (live backbone) + four flagged mocks ──
+  let level = 0; try { const m = location.search.match(/[?&]c=(\d)/); if (m) level = clamp(+m[1], 0, SLIDERMAX); } catch (e) {}
+  function setSlider(v) { const r = $('crange'); if (r) r.value = v; const lab = $('cval'); if (lab) lab.textContent = SCALE_NAME[v] || ('Lv' + v); markCrumb(); }
+  function buildSliders() {
+    const S = $('sliders'); S.innerHTML = '';
+    const c = document.createElement('div'); c.className = 'sl';
+    c.innerHTML = '<div class="lab"><span>Complexity</span><span class="val" id="cval"></span></div>';
+    const r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = SLIDERMAX; r.step = 1; r.value = level; r.id = 'crange';
+    r.oninput = () => { level = +r.value; buildLevel(level); setSlider(level); };
+    c.appendChild(r);
+    const ends = document.createElement('div'); ends.className = 'ends'; ends.innerHTML = '<span>cute nucleus</span><span>the real loop ↗</span>';
+    c.appendChild(ends); S.appendChild(c);
+    ['Length', 'Twists', 'Weirdness', 'Colors'].forEach(name => { const d = document.createElement('div'); d.className = 'sl mock';
+      d.innerHTML = '<div class="lab"><span>' + name + '</span><span class="ftag">MOCK</span></div><input type="range" min="0" max="4" value="0" disabled>'; S.appendChild(d); });
+  }
+  // the tappable scale breadcrumb (naturalist) — a gesture too: tap a milestone to slide there.
+  const CRUMB = [[0, 'word'], [2, 'phrase'], [3, 'corpus'], [4, 'loop']];
+  function buildCrumb() { const el = $('crumb'); el.innerHTML = '';
+    CRUMB.forEach((m, i) => { if (i) { const s = document.createElement('span'); s.className = 'slash'; s.textContent = '·'; el.appendChild(s); }
+      const a = document.createElement('a'); a.dataset.lv = m[0]; a.textContent = m[1];
+      a.onclick = () => { level = m[0]; buildLevel(level); setSlider(level); }; el.appendChild(a); }); }
+  function markCrumb() { let cur = CRUMB[0][0]; CRUMB.forEach(m => { if (level >= m[0]) cur = m[0]; });
+    document.querySelectorAll('#crumb a').forEach(a => a.classList.toggle('on', +a.dataset.lv === cur)); }
+
+  $('legend').innerHTML =
+    '<div class="ln"><span class="sw t"></span> teal wire = a relation / seam (+)</div>' +
+    '<div class="ln"><span class="sw r"></span> rust wire = feedback / interrupt (−)</div>' +
+    '<div class="ln"><span class="sw m"></span> <b>magenta</b> = mock / under construction (the missing-texture rule)</div>';
+  $('gestures').innerHTML =
+    '<span class="g"><b>tap</b> — fire a pulse</span>' +
+    '<span class="g g-cmd"><b>hold</b> — COMMAND a node (real context → ✦)</span>' +
+    '<span class="g g-blend"><b>lasso</b> — BLEND a region → ✦</span>' +
+    '<span class="g"><b>drag a rim</b> — wire</span>' +
+    '<span class="g"><b>slash</b> — cut a wire / reject the trap</span>';
+
+  function cmdLine() {
+    if (!MESH.command || !ASK) return '<div class="cmd">⌘ <b>hold</b> a node, or ⬚ <b>lasso</b> a region — its real context → ✦ ask</div>';
+    const answered = ASK._answered && ASK.lastOut != null;
+    return '<div class="cmd"><span class="live i"></span> ' + (MESH.command.verb === 'blend' ? '⬚ ' : '⌘ ') + snippet(MESH.command.title, 26) + ' → ✦<br>' +
+      (answered ? '<span class="inf">✦ real answer landed over the bridge</span>'
+                : 'the <b>context is real</b> & on-canvas, with a <b>floor reply</b>; <span class="m">the bridge enriches it ← :8378</span>') + '</div>';
+  }
+  function drawBench() {
+    const el = $('bench');
+    if (MESH.regime === 'dir') {
+      el.innerHTML = (MESH.dirOk
+        ? '<div class="hd"><span class="live h"></span> the loop, running</div>' +
+          '<b>' + MESH.dirStages + '</b> stages parsed live from <b>loop/reconcile.py</b><br>' +
+          'the log is the source · an <b>atom</b> is a pulse · each stage a gate it must clear<br>' +
+          '<span class="m">' + MESH.dirMock + ' magenta</span> — the loop\'s own <b>.mock.v0</b> nodes, glowing because they are <em>literally</em> mock in the source<br>' +
+          '<span class="hot">rust loop</span> = orchestrate.py heat/cool — a refusal re-derives'
+        : '<div class="hd">directory · loop/reconcile.py</div><span class="m">unreachable — parse mock</span><br>serve from the repo root so ../loop is fetchable') + cmdLine();
+      return;
+    }
+    if (MESH.regime === 'corpus') {
+      el.innerHTML = '<div class="hd"><span class="live"></span> the corpus · a benchmark</div>' +
+        '<b>' + PHRASES.length + '</b> cute stories — one networked mesh, known structure (the label)<br>' +
+        '<b>' + N_TEETH + '</b> carry a <span class="hot">surface_trap</span> — the fluent-but-wrong edge the score must refuse<br>' +
+        '<span class="ok">text → recovered mesh → score</span> · the round-trip is the benchmark' + cmdLine();
+      return;
+    }
+    const s = recoveredScore(); const reads = s && s.reads_mechanism;
+    el.innerHTML =
+      '<div class="hd"><span class="live' + (s && s.trap.hit ? ' h' : '') + '"></span> ' + SEED + ' · scored live</div>' +
+      'you\'ve recovered <b>' + (s ? Math.round(s.relation.recall * 100) : '—') + '%</b> of the true relations<br>' +
+      'the trap: ' + (s && s.trap.defined ? (s.trap.hit ? '<span class="m">TAKEN — shadow→cat, the mediator skipped</span>' : '<span class="ok">held off · warmth still mediates</span>') : '—') + '<br>' +
+      'composite <b>' + (s ? s.composite.toFixed(2) : '—') + '</b>' + (reads ? ' <span class="ok">· reads the mechanism ✓</span>' : '') + '<br>' +
+      '<span class="ok">every gesture re-scored — recovery_scorer.js</span>' + cmdLine();
+  }
+
+  // gesture-mode toggle
+  document.querySelectorAll('#tools button').forEach(b => b.onclick = () => {
+    MODE = b.dataset.m;
+    document.querySelectorAll('#tools button').forEach(z => z.classList.toggle('on', z === b));
+    ov.classList.toggle('lasso', MODE === 'lasso');
+    document.querySelectorAll('.gestures .g').forEach(g => g.classList.remove('on'));
+    const hl = MODE === 'lasso' ? '.g-blend' : '.g-cmd'; const e = document.querySelector(hl); if (e) e.classList.add('on');
+    toast(MODE === 'lasso' ? '⬚ Lasso — draw a loop around nodes to BLEND them' : '● Point — tap to fire, hold to COMMAND');
+  });
+
+  $('kind').textContent = 'the living graph is the context';
+  $('new').onclick = () => { level = 0; if (ASK) { ASK = null; } buildLevel(0); setSlider(0); toast('new — back to “The cat naps.”'); };
+  $('save').onclick = () => { try { localStorage.setItem('causality.experience', JSON.stringify({ level, graph: C.toJSON() })); toast('saved this canvas'); } catch (e) { toast('save failed'); } };
+  setTimeout(() => { const h = $('hint'); if (h) h.style.opacity = 0; }, 7000);
+
+  buildSliders(); buildCrumb();
+  requestAnimationFrame(() => { buildLevel(level); setSlider(level); });
+})();
+</script>
+</body>
+</html>

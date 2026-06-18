@@ -9,6 +9,77 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0012 — Causality is a spatial-graph RepoPrompt: the narrative is the directory (defined by negation) 🟡
+**2026-06-17 · bdo** — the frame, set before anyone cooks again
+
+The hunt for the home surface's *shape* converged here. A 4-chef bake-off
+(full-live, on-canvas, both-axes — orchestrated as a workflow) cooked a
+"minimal element zoo," and bdo named the result exactly: *"this is like the
+ingredients… not quite the right shape to even enter the context yet."* A
+**catalog** frame can only ever produce ingredients; the missing things —
+editing, flavor, animation, nuance, usability, **narrative** — are properties
+of an *experience with an arc*, which a specimen sheet structurally cannot
+have. The bake-off's keep: the **decomposition vocabulary** (3-strata: word →
+mortar/glyph → facets → real engine channels, the editorial chef's, judged
+best) and a harvested plating (naturalist's, judged best surface). The four
+candidate pages live in `causality/zoo-*.html` + the synthesis `zoo.html` as
+the **pantry, not the dish** — kept, not landed.
+
+**The reference (bdo): RepoPrompt** (`github.com/repoprompt/repoprompt-ce`) —
+a native **context-engineering** tool: point it at a repo → index → curate
+files / line-ranges / CodeMaps / git-diffs → assemble a dense, reviewable
+**context package** for an AI agent. **We are making the spatial-graph,
+AI-native version: point Causality at a directory and the narrative is
+*generated from the files* you pointed it at.** The living graph *is* the
+curated context; you shape it by gesture, not checkboxes. It dogfoods on day
+one — point it at `ontum`, get ontum's own story.
+
+**Defined by negation first (bdo's framing — non-examples do the heavy
+lifting). What it shouldn't be:**
+1. **Not RepoPrompt's file-tree redrawn as a graph** — folder-nesting-as-edges
+   is a reskin; the narrative is the *relationships and meaning*, not the
+   hierarchy with prettier lines.
+2. **Not a static architecture diagram** — not a dead Mermaid/dependency
+   picture; it moves, it's alive, you edit it by touching it (instrument, not
+   render).
+3. **Not a zoo / catalog of file-nodes** — the exact failure above; ingredients
+   laid out, no arc.
+4. **Not a token-budget spreadsheet** — meaning leads; the budget is a quiet
+   consequence of what you've selected, never the hero.
+5. **Not a chatbot with a graph sidebar** — the conversation happens *through*
+   the graph (selection zones, gestures), not a bolted-on chat panel (the
+   Interface-as-AI anti-pattern named in `display-system.md`).
+6. **Not click-ops** — gesture-native (select-patterns, move, recolor, draw),
+   no checkbox tree or menu-of-buttons.
+7. **Not a second source of truth** — the graph is a *witness* of the directory
+   (Causality's one hard rule), never the authority over the files it reads.
+
+**What it therefore is (the one line):** *a living, gesture-native spatial
+graph that generates a navigable story from a directory, and lets a person
+build AI context and steer their AI by playing it.*
+
+**The experience (bdo, painted):** you open on the canvas; a **simple cut
+story** is alive in nodes / connections / pulses, moving and dynamic; you
+**read it by scrolling and zooming, and that act edits it** (no separate
+mode); zoom a node and you find **its own story** on the same page;
+**interacting is the animation and the authoring**; **NL-collection zones**
+open from your selection/click *patterns*; every gesture — a node moved, a
+color changed, a line drawn — is **collected as interaction data**, so you talk
+to your AI about what you're doing and **steer it by gesture**.
+
+**The open heart (still bdo's to turn):** the **gesture → AI → response
+loop** — does a gesture (a) interpret-and-propose (you draw, the AI guesses
+intent and shows a change you accept/reject), (b) become context for a
+conversation, or (c) act directly (the gesture *is* the command)? That loop is
+the difference between a pretty canvas and the thing described; it is named
+here as the next decision, not guessed.
+
+Lands in: _(the frame only — no build yet. The bake-off's vocabulary + plating
+are the harvested ingredients; the next slice re-aims at the
+narrative-from-a-directory experience once the gesture→AI loop is chosen.)_
+
+---
+
 ## 0011 — The construction flag (game-dev missing-texture rule) + the Complexity slider on one three-word phrase 🟢
 **2026-06-17 · bdo · done-line 0106** — built on `claude/canvas-home-reshape`, screenshot-verified
 
