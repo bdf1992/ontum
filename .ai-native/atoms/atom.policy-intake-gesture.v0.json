@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.policy-intake-gesture.v0",
+    "story": {
+      "text": "As bdo, I want to set a gateway policy — the inference-plane AuthZ — from GitHub by closing one issue with a plain-language comment, never a CLI, because that is how I make every decision (GitHub on my phone). The inference-verified cut (done-line 0100) is held by default-deny until a policy authorizes the gardener to consult a mind; today that policy is only settable by `loop.inference policy --by bdo`, which I do not run. Give me the fourth sibling of arc-intake / realness-intake / rung-intake so I authorize the cut — and any future policy — by gesture. This is how I set the BOUND of the inference-as-composition layer: the settled, owner-stamped edge inside which just-in-time inference composes behavior.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "bdo authorizes a gateway policy from GitHub — the fourth intake sibling",
+      "value": "A policy.py pen beside a policy-intake SKILL.md giving the three deterministic gh verbs the rung-intake pen gives — open (one policy-confirm issue carrying a hidden caller/surface/mind/permit marker, refusing any policy loop.inference.policy_refusal would reject), pending (the closed, not-yet-acted policy-confirm issues parsed back to their policy with bdo's closing comment), and reply (echo what was done, reopen-to-ask on unclear, mark intake-done so a re-run never double-acts). The pen imports loop.inference for one vocabulary so what is asked and what can be admitted never drift; the SKILL states the one invariant (never admit on a guess — a clear permit runs loop.inference policy --by bdo, a decline leaves default-deny, an unclear comment reopens-and-asks) and the waiting-act discipline (open only when a gateway caller is held for want of the policy).",
+      "why_now": "The inference-verified cut (done-line 0100) is inert until bdo stamps its gateway policy, and a policy is config-as-code AuthZ settable only by CLI today — which bdo does not run. Without a gesture path the cut never activates; with one, bdo authorizes it the way he authorizes everything.",
+      "if_accepted": "bdo opens nothing himself; a session opens the policy-confirm issue when a cut is actually held, he closes it with a comment, and a session reads his intent and runs the admission on his authorization (D-4). The gateway then permits the cut-verifier and the gardener resumes verified cuts.",
+      "if_rejected": "Gateway policies stay CLI-only, so either bdo runs a command (which he will not) or a session sets AuthZ without his gesture (which it must not, D-4) — the cut stays permanently inert, or the bound is set without the owner.",
+      "cost_of_wrong_call": "Low and fail-safe: this only moves bytes to and from GitHub and runs the admission solely on a clear confirm; default-deny is the safe failure (a policy never set is a caller still held, never a caller wrongly let through). The pen refuses to open a policy the admission pen could not admit, so it can ask no question that cannot be answered. Reverting is deleting the skill; no policy is set without bdo.",
+      "mechanism": "policy.py mirrors rung.py (done-line 0051): marker(caller,surface,mind,permit) + policy_from_body (all four fields or none — a half-marker is not a marker), open_refusal == inference.policy_refusal (one vocabulary), open/pending/reply over gh. The act stays the SKILL's, run on a clear confirm: loop.inference policy --by bdo. tests/test_policy_intake.py carries the §10 control: a half-marker does not parse, open_refusal is exactly the admission pen's refusal, and the join both ways — a policy set --by bdo flips the gateway authorize() from default-deny to permit, a non-bdo signer writes nothing. Done-line 0102.",
+      "reading": [
+        ".claude/skills/policy-intake/policy.py",
+        ".claude/skills/policy-intake/SKILL.md",
+        "loop/inference.py",
+        "tests/test_policy_intake.py",
+        ".ai-native/done/0102-policy-intake-gesture.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [".claude/skills/policy-intake/policy.py", ".claude/skills/policy-intake/SKILL.md", "tests/test_policy_intake.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/policy-intake/policy.py", "tests/test_policy_intake.py"]
+    }
+  },
+  "_note": "Birth record for the policy-intake gesture path (done-line 0102), the fourth sibling of arc/realness/rung-intake, authored so the off-log work carries an atom on the log under the atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5). The policy itself stays bdo's gesture; this skill only carries it from GitHub to the log."
+}
