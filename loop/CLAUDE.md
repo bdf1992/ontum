@@ -52,6 +52,9 @@ python -m loop.digest --since 2026-06-01 --until 2026-06-11
 python -m loop.retro                        # the retrospective fold — recurring patterns across all history, read-only
 python -m loop.retro --json                 # the raw dataset (machine-readable)
 
+python -m loop.gate_eval                    # the value-gate eval corpus (charades: matched-variant atoms), read-only
+python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") verdict transcript
+
 python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
 python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
 python -m loop.disposer dispose            # self-admit one in-fence proposal (else escalate)
