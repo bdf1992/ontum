@@ -62,8 +62,8 @@ Current direction lives in `.ai-native/epics/` — each epic carries an
 mid-2026 the horizons are: all five gates real (only L0 is today), the
 slow loop re-admitting its own dials from outcomes, corpus-to-system (a
 corpus pointed at the machine becomes *proposed* atoms), and a served,
-authenticated phone inbox where bdo steers arcs — not tickets — with
-one stamp. Making a node real is not just de-mocking: each real node is
+authenticated inbox where bdo steers arcs — not tickets — with one
+stamp, from whatever device he happens to be on. Making a node real is not just de-mocking: each real node is
 the system's first sensor of a given kind of meaning (report 0004 §3).
 
 Orientation reading order for a fresh session (report 0004 §5): the
