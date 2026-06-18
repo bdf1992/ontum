@@ -52,6 +52,9 @@ python -m loop.digest --since 2026-06-01 --until 2026-06-11
 python -m loop.retro                        # the retrospective fold — recurring patterns across all history, read-only
 python -m loop.retro --json                 # the raw dataset (machine-readable)
 
+python -m loop.gate_eval                    # the value-gate eval corpus (charades: matched-variant atoms), read-only
+python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") verdict transcript
+
 python -m loop.phrasing check --path <p> --before <f> --after <f>   # the phrasing door: is an edit prose-only? read-only proof
 python .claude/skills/branch-ritual/pr.py phrasing --files <p>... --why "<note>" --by <who>   # mark a proven prose-only edit so it lands without an atom (the route)
 
