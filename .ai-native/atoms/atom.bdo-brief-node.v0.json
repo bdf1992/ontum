@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.bdo-brief-node.v0",
+    "story": {
+      "text": "As bdo, I said: can we stop putting things on me? A \"what's on you\" list is still a queue, just politely worded. When a session genuinely needs me, I don't want a decision handed over — I want an inference CONSTRUCT I can set beside my own read: the context actually weighed (tight, cited), the recommendation it produced and the reasoning that produced it, and the one seam where my model and the fold's might differ. A peer's argument that opens a shared space to discuss, never a menu. And over bulk it must FOLD — a digest of the aggregate shape, not N briefs (a flood in a nicer font). Make that shape structural so it stops depending on a session's discipline.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The bdo-brief node: owner-bound work folds to a digest over bulk; each item drills into a cited inference construct",
+      "value": "loop/brief.py, a read-only fold (the census/gaps/digest grain) with two zoom levels over the work that would otherwise land on bdo. Over bulk (the default) it renders a digest that AGGREGATES — grouped by arc, counted, with the few that need his read named; N pieces under one arc fold to ONE group, never N rows. Drill in (--item <id>) it renders that item's inference construct: the considered context (the atom's briefing + its receipts, each line citing a real record), the recommendation derived from those records with its reasoning shown, and the one divergence seam — the judgment the fold cannot make and bdo can. It composes the owner-item folds that already exist (orchestrate.next_action, reconcile.arc_confirmation/load_epics) and never re-folds them.",
+      "why_now": "bdo named the failure directly (2026-06-17): even a minimal, cold-read 'what's on you' list is a queue that transfers load instead of giving him something to compare his own model against. The fix he asked for is a shape — an inference construct, plus a fold over bulk — and the way to keep a shape from decaying is to make it a node, not a habit. This is the owner-harness's missing piece: the digest answers 'is anything on me?'; this answers 'when something is, here is the considered argument, ready to compare.'",
+      "if_accepted": "What would land on bdo arrives pre-shaped: a glance that folds the bulk and names only what needs him, and behind each row a full argument he can hold beside his own read. The shape is structural — a session cannot regress to dumping a list, because the node is what renders to him. D-4 holds: it recommends and cites, it never stamps; clearing still goes through the one pen (loop.node judge / confirm-arc).",
+      "if_rejected": "The shape stays my discipline, and discipline decays — the next tired session ends with a polite queue again, and bdo is back to receiving load instead of arguments to compare.",
+      "cost_of_wrong_call": "Low and reversible. It is a pure read-only fold that writes nothing and composes existing folds; deleting loop/brief.py reverts it whole. v0's recommendations are deterministic reads over the records (the inference plane enriching them is a named later slot), so there is no opaque generation to mistrust — every recommendation cites a resolvable record or is refused as uncited.",
+      "mechanism": "loop/brief.py: classify_owner_items (the discharged-ask teeth, as a pure filter over orchestrate.next_action — None and loop-owned steps drop); considered_context (briefing + receipts, each a (point, cite) pair); recommendation_for (derived from verdicts + arc state, citing receipt/epic ids); resolvable/uncited (a recommendation grounded in nothing resolvable is refused — the causality/term_economy no-evidence-no-mint grain); group_by_arc (the aggregation — pieces under one epic fold to one group). The surface: default = render_digest (the gesture-first glance), --item = render_brief (the construct, clipped for tightness with the citation carrying the full record), --json = the dataset. tests/test_brief.py pins the three §10 teeth. Done-line 0104.",
+      "reading": [
+        "loop/brief.py",
+        "tests/test_brief.py",
+        ".ai-native/done/0104-bdo-brief-node.md",
+        "loop/node.py",
+        "loop/orchestrate.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/brief.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/brief.py", "tests/test_brief.py"]
+    }
+  },
+  "_note": "Birth record for the bdo-brief node (done-line 0104), authored so the work carries an atom on the log under the atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5). The value gate (value-gate.claude.v1) is real, so this atom parks for an INDEPENDENT judge — the session that authored it does not sign its own line (D-2)."
+}
