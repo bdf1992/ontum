@@ -16,12 +16,24 @@ ok(validate('facet', 'actor').ok, 'a declared facet (actor) validates');
 ok(validate('line', 'feedback').ok, 'a declared line type (feedback) validates');
 ok(validate('anim', 'membrane-breath').ok, 'a declared animation validates');
 ok(validate('interact', 'lasso').ok, 'a declared interaction (lasso) validates');
+ok(validate('build', 'mock').ok, 'a declared construction state (mock) validates');
 
 // THE TEETH: a fabricated primitive is refused, with a reason
 const bogus = validate('facet', 'sparkleblaster');
 ok(!bogus.ok && /not a declared/.test(bogus.reason), 'a fabricated facet is REFUSED with a reason (teeth)');
 ok(!validate('line', 'rainbow-laser').ok, 'a fabricated line type is refused');
+ok(!validate('build', 'shipped').ok, 'a fabricated construction state is refused (teeth)');
 ok(!validate('nonsense', 'x').ok, 'an unknown table is refused');
+
+// the construction-state (game-dev missing-texture) rule is fully specified:
+// `real` is the only un-flagged state; every FLAGGED state carries a glaring
+// color + a tag so it cannot be mistaken for finished (the whole point of the rule)
+ok(TOKENS.BUILD.real && TOKENS.BUILD.real.flag === false, 'BUILD.real is the one un-flagged (renders normally) state');
+let buildFlagsComplete = true;
+for (const [k, b] of Object.entries(TOKENS.BUILD)) {
+  if (b.flag && (!b.color || !b.tag)) { buildFlagsComplete = false; console.log('    flagged build state ' + k + ' lacks a color or tag'); }
+}
+ok(buildFlagsComplete, 'every flagged construction state wears a hazard color + a tag (cannot be mistaken for finished)');
 
 // every facet is fully specified (icon + ascii + role + read) — no half-glyphs
 let facetsComplete = true;
@@ -47,8 +59,8 @@ let asciiComplete = Object.keys(TOKENS.FACET).every(k => ascii(k) && ascii(k) !=
 ok(asciiComplete, 'every facet has an ASCII fallback glyph');
 
 // coverage: the capability list bdo named is all present as tables
-const need = ['color', 'facet', 'shape', 'line', 'ease', 'anim', 'physics', 'interact', 'lens'];
-ok(need.every(t => t in TABLE), 'all named capability tables exist (color/shape/line/anim/easing/physics/interact/lens/facet)');
+const need = ['color', 'facet', 'shape', 'line', 'ease', 'anim', 'physics', 'interact', 'lens', 'build'];
+ok(need.every(t => t in TABLE), 'all named capability tables exist (color/shape/line/anim/easing/physics/interact/lens/facet/build)');
 
 console.log('\n' + (fail === 0 ? 'PASSED' : 'FAILED') + ` — ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

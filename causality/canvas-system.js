@@ -108,10 +108,25 @@ const LENS = {
   membrane: { shows: ['counts', 'ask'], read: 'a phrase cell: glyphs/loops/edges + an inference query' },
 };
 
-const TOKENS = { COLOR, FACET, SHAPE, LINE, EASE, ANIM, PHYSICS, INTERACT, LENS };
+// ── BUILD — construction-state (the game-dev "missing-texture" rule, done-line
+//    0106). The oldest convention in the trade: an unfinished or placeholder asset
+//    renders in a deliberately glaring magenta (the Source-engine purple/black
+//    checker), so it can never be mistaken for finished or silently shipped. It is
+//    ontum's mock-shame made visual on the canvas — a mock that moves fake work
+//    cannot hide behind a clean surface. `real` renders normally; every flagged
+//    state wears the magenta hazard so the state of construction is legible at a
+//    glance. A new construction state ships as an ENTRY here, never bespoke code. ──
+const BUILD = {
+  real: { flag: false, color: null,      hatch: false, tag: null,   read: 'built and backed — renders in its own color' },
+  mock: { flag: true,  color: '#ff2bd6', hatch: true,  tag: 'MOCK', read: 'a placeholder standing in for unbuilt structure — the missing-texture rule' },
+  wip:  { flag: true,  color: '#ff2bd6', hatch: true,  tag: 'WIP',  read: 'declared but not finished — under construction' },
+  todo: { flag: true,  color: '#ff2bd6', hatch: true,  tag: 'TODO', read: 'named, not yet started — a placeholder slot' },
+};
+
+const TOKENS = { COLOR, FACET, SHAPE, LINE, EASE, ANIM, PHYSICS, INTERACT, LENS, BUILD };
 
 // table name → the set of legal keys (EASE holds fns; the rest are data)
-const TABLE = { color: COLOR, facet: FACET, shape: SHAPE, line: LINE, ease: EASE, anim: ANIM, physics: PHYSICS, interact: INTERACT, lens: LENS };
+const TABLE = { color: COLOR, facet: FACET, shape: SHAPE, line: LINE, ease: EASE, anim: ANIM, physics: PHYSICS, interact: INTERACT, lens: LENS, build: BUILD };
 
 // validate(table, key) — the §10 teeth: a primitive/token is legal ONLY if the
 // table declares it. A fabricated or hand-rolled one is refused with a reason.

@@ -1,22 +1,29 @@
 {
   "version": 1,
-  "_note": "Causality phrase portfolio (done-line 0103, iterations 0003-0005). Each phrase: cute-on-the-surface, mechanically-rich underneath. glyphs compose facets (type-by-composition, facets from canvas-system.js FACET); relations connect facet→facet across glyphs (refs are 'word' or 'word.facet'); line is a canvas-system LINE type. links stitch membranes by a shared glyph. Mechanics aim to be CORRECT (bdo: the cat/shadow chain is loss-of-warmth → wakes cat, not shadow → cat).",
+  "_note": "Causality phrase portfolio (done-line 0103, iterations 0003-0005). Each phrase: cute-on-the-surface, mechanically-rich underneath. glyphs compose facets (type-by-composition, facets from canvas-system.js FACET); relations connect facet→facet across glyphs (refs are 'word' or 'word.facet'); line is a canvas-system LINE type. links stitch membranes by a shared glyph. Mechanics aim to be CORRECT (bdo: the cat/shadow chain is loss-of-warmth → wakes cat, not shadow → cat). A phrase with a genuine commission trap also carries surface_trap {type, edge(from/to/label), why}: the tempting-but-WRONG edge a careless reader draws from the surface — the benchmark teeth (done-line 0105, outcome causality-story-benchmark). trap.type is from recovery_scorer.js TRAP_TYPES; trap.edge must NOT be a true relation and its endpoints must still resolve (a plausible misreading, not nonsense). Omission-style difficulty (e.g. owl-stars' implicit prior) needs no trap — relation-recall already scores it.",
   "phrases": [
     {
       "id": "cat-sunbeam", "kind": "moving attractor",
       "text": "The cat naps in the sunbeam until the shadow steals its warmth.",
+      "_demo_note": "stage = the Complexity-slider level at which a glyph appears (0 = the three-word seed 'The cat naps'); stages.texts = the sentence the slider grows. relation.build flags the hand-authored (not yet composition-generated, iterations 0008) edges as mock — the construction flag (done-line 0106). Additive fields: the benchmark mesh (glyphs/facets/relations) is untouched.",
+      "stages": { "texts": ["The cat naps.", "The cat naps in the sunbeam.", "The cat naps in the sunbeam until the shadow steals its warmth."] },
       "glyphs": [
-        { "word": "cat", "icon": "cat", "facets": ["actor", "objective"] },
-        { "word": "sunbeam", "icon": "sun", "facets": ["source", "time"] },
-        { "word": "warmth", "icon": null, "facets": ["state"] },
-        { "word": "shadow", "icon": "cloud", "facets": ["signal", "time"] }
+        { "word": "cat", "icon": "cat", "facets": ["actor", "objective"], "stage": 0 },
+        { "word": "sunbeam", "icon": "sun", "facets": ["source", "time"], "stage": 1 },
+        { "word": "warmth", "icon": null, "facets": ["state"], "stage": 1 },
+        { "word": "shadow", "icon": "cloud", "facets": ["signal", "time"], "stage": 2 }
       ],
       "relations": [
-        { "from": "sunbeam.source", "to": "warmth.state", "label": "emits", "line": "relation" },
-        { "from": "warmth.state", "to": "cat.objective", "label": "satisfies", "line": "relation" },
-        { "from": "shadow.signal", "to": "warmth.state", "label": "blocks", "line": "feedback" },
-        { "from": "warmth.state", "to": "cat.actor", "label": "fades → wakes", "line": "feedback" }
-      ]
+        { "from": "sunbeam.source", "to": "warmth.state", "label": "emits", "line": "relation", "build": "mock" },
+        { "from": "warmth.state", "to": "cat.objective", "label": "satisfies", "line": "relation", "build": "mock" },
+        { "from": "shadow.signal", "to": "warmth.state", "label": "blocks", "line": "feedback", "build": "mock" },
+        { "from": "warmth.state", "to": "cat.actor", "label": "fades → wakes", "line": "feedback", "build": "mock" }
+      ],
+      "surface_trap": {
+        "type": "elided-mediator",
+        "edge": { "from": "shadow.signal", "to": "cat.actor", "label": "steals its warmth" },
+        "why": "the surface 'the shadow steals its warmth' tempts a direct shadow→cat edge; the true mechanism routes through warmth.state — the shadow blocks the warmth, and the fading warmth is what wakes the cat. Recovering the mediator is the test."
+      }
     },
     {
       "id": "robot-plant", "kind": "feedback loop",
@@ -34,7 +41,12 @@
         { "from": "water.source", "to": "plant.state", "label": "feeds", "line": "relation" },
         { "from": "plant.state", "to": "leaves.state", "label": "raises", "line": "relation" },
         { "from": "tomorrow.time", "to": "robot.memory", "label": "checks if helped", "line": "feedback" }
-      ]
+      ],
+      "surface_trap": {
+        "type": "elided-mediator",
+        "edge": { "from": "water.source", "to": "leaves.state", "label": "waters the drooping leaves" },
+        "why": "the surface pairs 'waters' with 'the leaves droop', tempting a direct water→leaves edge; the water actually feeds the plant.state, and it is the plant rising that raises the leaves. The plant is the elided mediator."
+      }
     },
     {
       "id": "mouse-crumbs", "kind": "path / externalized memory",
@@ -50,7 +62,12 @@
         { "from": "dark.state", "to": "mouse.objective", "label": "hides home", "line": "feedback" },
         { "from": "crumb.place", "to": "home.place", "label": "marks the way", "line": "relation" },
         { "from": "crumb.memory", "to": "mouse.objective", "label": "remembers for", "line": "relation" }
-      ]
+      ],
+      "surface_trap": {
+        "type": "misattributed-agency",
+        "edge": { "from": "dark.state", "to": "home.place", "label": "the dark remembers the way" },
+        "why": "the surface 'so the dark can remember the way home' personifies the dark as the rememberer; the memory lives on the crumb (crumb.memory), not the dark. The dark only hides home — the agency is misattributed."
+      }
     },
     {
       "id": "owl-stars", "kind": "observation / alert",
@@ -101,7 +118,12 @@
         { "from": "flower.source", "to": "bee.objective", "label": "offers nectar", "line": "relation" },
         { "from": "bee.actor", "to": "gold.state", "label": "leaves pollen", "line": "relation" },
         { "from": "gold.memory", "to": "flower.source", "label": "becomes more flowers", "line": "feedback" }
-      ]
+      ],
+      "surface_trap": {
+        "type": "reversed-causality",
+        "edge": { "from": "gold.state", "to": "bee.objective", "label": "the bee collects the gold" },
+        "why": "'leaves a little gold behind' reads like the bee's reward (honey), tempting a gold→bee edge; the causality runs the other way — the bee leaves pollen (gold) that becomes more flowers (gold.memory→flower.source). The gain is the flower's, not the bee's."
+      }
     },
     {
       "id": "fox-berry", "kind": "cache / delayed reward",
@@ -117,7 +139,12 @@
         { "from": "winter.objective", "to": "berry.source", "label": "will need", "line": "relation" },
         { "from": "berry.state", "to": "where.place", "label": "is at", "line": "relation" },
         { "from": "where.memory", "to": "fox.memory", "label": "is forgotten by", "line": "feedback" }
-      ]
+      ],
+      "surface_trap": {
+        "type": "reversed-causality",
+        "edge": { "from": "fox.memory", "to": "where.place", "label": "the fox knows where it buried" },
+        "why": "the default assumption is that an actor remembers its own action, tempting a fox→where 'remembers' edge; the story inverts it — 'and forgets where' means the location is forgotten BY the fox (where.memory→fox.memory). The trap is the un-inverted assumption."
+      }
     },
     {
       "id": "moth-light", "kind": "attraction / until-condition",

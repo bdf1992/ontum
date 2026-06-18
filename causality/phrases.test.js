@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { TOKENS } = require('./canvas-system.js');
+const { TRAP_TYPES } = require('./recovery_scorer.js');
 const P = JSON.parse(fs.readFileSync(path.join(__dirname, 'phrases.json'), 'utf8'));
 
 let pass = 0, fail = 0;
@@ -59,6 +60,32 @@ for (const l of P.links) {
   if (!ga.facets.includes(l.via) || !gb.facets.includes(l.via)) { linksValid = false; console.log(`    link ${l.a}↔${l.b}: glyphs do not both share facet "${l.via}"`); }
 }
 ok(linksValid, 'every cross-membrane link joins two real glyphs that share the named facet');
+
+// surface_trap teeth (done-line 0105): a declared trap is a PLAUSIBLE MISREADING,
+// not nonsense and not a true edge — type declared, endpoints resolve, edge absent
+// from the mesh, with a real 'why'. A trap equal to a true edge is no trap.
+const trueEdges = (ph) => new Set(ph.relations.map(r => r.from + '→' + r.to));
+let trapsValid = true, trapsSeen = 0;
+for (const ph of P.phrases) {
+  if (!ph.surface_trap) continue;  // a trap is optional — forcing one is the fake-trap failure
+  trapsSeen++;
+  const t = ph.surface_trap;
+  if (!(t.type in TRAP_TYPES)) { trapsValid = false; console.log(`    ${ph.id}: surface_trap.type "${t.type}" is not a declared TRAP_TYPE`); }
+  if (!t.edge || !t.edge.from || !t.edge.to) { trapsValid = false; console.log(`    ${ph.id}: surface_trap has no from→to edge`); continue; }
+  const a = ref(ph, t.edge.from), b = ref(ph, t.edge.to);
+  if (!a.ok) { trapsValid = false; console.log(`    ${ph.id}: trap from ${t.edge.from} — ${a.why}`); }
+  if (!b.ok) { trapsValid = false; console.log(`    ${ph.id}: trap to ${t.edge.to} — ${b.why}`); }
+  if (trueEdges(ph).has(t.edge.from + '→' + t.edge.to)) { trapsValid = false; console.log(`    ${ph.id}: trap edge is a TRUE relation — not a trap (a trap is the WRONG reading)`); }
+  if (!t.why || t.why.length < 20) { trapsValid = false; console.log(`    ${ph.id}: trap lacks a real 'why'`); }
+}
+ok(trapsValid, `every declared surface_trap is a plausible-but-wrong reading — type, resolvable endpoints, not a true edge (${trapsSeen} traps)`);
+ok(trapsSeen >= 1, 'the portfolio carries at least one calibrated trap (benchmark teeth)');
+
+// TEETH: a negative control — a true relation IS recognized as a true edge, so a
+// "trap" equal to it would be refused by the not-a-true-edge check above.
+const ctrl = P.phrases.find(p => p.surface_trap);
+if (ctrl) ok(trueEdges(ctrl).has(ctrl.relations[0].from + '→' + ctrl.relations[0].to),
+  'negative control: a true relation reads as a true edge (a trap equal to it would be refused)');
 
 // TEETH: a negative control — a deliberately dangling relation must be caught
 const probe = ref({ glyphs: [{ word: 'cat', facets: ['actor'] }] }, 'cat.flying');
