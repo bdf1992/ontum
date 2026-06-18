@@ -256,3 +256,4 @@
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/session-report-0119","id":"rcp.merge.221","kind":"merge","node":"merge-node.claude.v1","pr":221,"ts":"2026-06-18T23:08:16Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/head-intent-guard","id":"rcp.merge.219","kind":"merge","node":"merge-node.claude.v1","pr":219,"ts":"2026-06-18T23:19:24Z","verdict":"landed"}
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/value-gate-eval","id":"rcp.merge.213","kind":"merge","node":"merge-node.claude.v1","pr":213,"ts":"2026-06-18T23:27:42Z","verdict":"landed"}
+{"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/heal-organ","id":"rcp.merge.203","kind":"merge","node":"merge-node.claude.v1","pr":203,"ts":"2026-06-18T23:34:54Z","verdict":"landed"}
