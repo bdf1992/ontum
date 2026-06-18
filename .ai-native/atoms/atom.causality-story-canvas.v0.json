@@ -1,0 +1,66 @@
+{
+  "atom": {
+    "id": "atom.causality-story-canvas.v0",
+    "story": {
+      "from": "I am the line of sessions that built the Causality story-demo on the viewport branch, working a confirmed arc (epic.causality-surface) but never opening a unit the loop could see. Fourteen commits accreted on `claude/canvas-home-reshape` — the canvas became the single served home, a phrase became a rendered membrane of composed glyphs, a coordinate substrate routed glyph-level edges through free cells, and the story-demo turned out to be a generator with known latent structure, so the same files that demo Causality became its own deterministic benchmark. All of it real, tested, and green — and all of it off the log, invisible to every fold, stranded on bdo's reading surface. This atom re-homes that work through the gate it skipped, honestly: the work is already built; what was missing is the seeing.",
+      "framing": "epic.causality-surface is confirmed — Causality is to become the place the system can be seen and steered without gaining a second way to be silently changed. Its surface is the canvas. The work on this branch advances that horizon: the canvas-as-home reshape (one served surface, New/Save, the canvas IS the home document), the story-demo (NL phrase -> highlighted glyphs typed by composition -> a mesh in a membrane), the coordinate substrate (address-based nodes, orthogonal grid routing, no crossings), and — the teeth — two deterministic scorers that make the demo a benchmark: `recovery_scorer.js` (facet-F1 + relation recovery + a surface-trap flag, separating cat-sunbeam's mechanism-reading 1.000 from its grammar-reading 0.143) and `grammar_scorer.js` (structural + lexical well-formedness, refusing nonsense like a source driving an actor directly, unknown verb -> honest gap, never a false verdict). The deterministic spine of outcome `causality-story-benchmark` (G0-G2, all met). It does not double-build epic.the-field's fold or the glyphs/language minted surfaces — it reads them and renders.",
+      "work": "Re-home the fourteen committed increments as one atom on the log so the loop can see and land them, changing no bytes of the work itself. The branch's content is unchanged: canvas.html/canvas.js reshaped to the served home; the story-demo renderer (sentence skin + holons + composed facets + labelled relations + Lens + portfolio switcher) reading the design system; the 8-phrase portfolio with no-dangling validation; the coordinate substrate with its routing teeth (9/9); the two deterministic scorers each with a section-10 test that a constant scorer fails; the consolidated report 0082; the fleet-safe, slug-referenced done-lines 0103/0106/0108/0109. The only new bytes are this atom, its birth event, and the independent value-gate receipt that backs it — the seeing the work skipped.",
+      "need": "Nothing only bdo owns blocks this. epic.causality-surface is confirmed (adm.a675cb9d36fb); the arc's pieces land through the merge-node on his standing confirmation, not a fresh stamp. The honest flag he should know, named here rather than hidden: this work reached the branch off-log, and this atom is the sanctioned re-homing path (pr_audit's own instruction — re-home each orphan's change as a proper atom). The independent value-gate, not the author, decides whether the value is real; the author does not sign this line.",
+      "value": "The seam between bdo's viewport and main closes the right way: confirmed-arc work that was stranded and invisible becomes a unit the loop sees, a value-gate judges, and the merge-node lands — instead of bytes that quietly reached a branch. Causality gains its served story-surface and a deterministic benchmark oracle (the demo grades itself), and the off-log gate's whole point is honored: work that is not an atom on the log is invisible, so this work stops being invisible.",
+      "text": "Re-home fourteen committed, green, off-log increments of the Causality story-demo + canvas-as-home reshape + the two deterministic benchmark scorers as one atom on the log, so the confirmed-arc work the viewport stranded becomes a unit the loop can see, judge, and land.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "cheap",
+      "reversible": true,
+      "persistence": true,
+      "external": true,
+      "rationale": "The work is a served read-only surface (canvas + story-demo) plus deterministic, stdlib scorers and records; it carries no write path back to the log and no network at runtime (the served surface is build-time-published committed bytes, like the welcome mat). External is true because the canvas-as-home reshape changes what GitHub Pages serves; reversible by reverting the branch, with nothing external to tear down. Honest flag: built_at_risk is true — the fourteen increments were built before this atom gated them; this atom is the re-homing of off-log work, not a build done after the stamp. The second set of eyes is the independent value-gate (value-gate.claude.v1) and the merge-node, neither of which is the author (D-2: no one signs their own line).",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "re-home the stranded Causality story-demo: confirmed-arc work the viewport hid, made visible to the loop",
+      "value": "Fourteen green increments of epic.causality-surface — the served story-canvas and the two deterministic benchmark scorers — reached a branch off the log and stranded on your reading surface. This atom re-homes them through the gate they skipped so the merge-node can land them on your standing arc confirmation; no fresh stamp needed, the value-gate judges, and the seam between your viewport and main closes the honest way.",
+      "why_now": "The viewport sat off-trunk on this branch with the work invisible to every fold. Closing the seam means routing it as a unit the loop can see — which the off-log gate requires to be an atom on the log."
+    },
+    "concern_surface": "canvas",
+    "incidence": {
+      "serves": [
+        "epic.causality-surface"
+      ],
+      "touches": [
+        "causality",
+        ".ai-native/atoms",
+        ".ai-native/reports",
+        ".ai-native/done",
+        "outcomes"
+      ],
+      "must_not_collide_with": [
+        "epic.the-field's loop/field.py fold (this surface only reads and renders the field; it does not re-build the fold)",
+        "the glyphs/ and language/ minted surfaces (read, never re-minted here)"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [
+        ".ai-native/nodes/value-gate.claude.v1.md"
+      ],
+      "source_artifacts": [
+        ".ai-native/reports/0082-story-benchmark-and-grammar.md (the consolidated session report for this branch's work)",
+        "claude/canvas-home-reshape: fourteen commits 4c5969f..f745278 (the canvas-as-home reshape, the story-demo renderer, the coordinate substrate, the two deterministic scorers)",
+        "bdo, arc confirmation: epic.causality-surface (adm.a675cb9d36fb) — the standing authorization the merge-node lands on"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Re-homing atom for off-log confirmed-arc work (epic.causality-surface). The work is built and green on the branch; this atom + its birth event + the independent value-gate receipt are the only new bytes. Authored by the work's own session line; judged by an independent value-gate (D-2)."
+}
