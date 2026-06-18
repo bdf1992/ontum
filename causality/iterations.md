@@ -9,6 +9,98 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0011 — The construction flag (game-dev missing-texture rule) + the Complexity slider on one three-word phrase 🟢
+**2026-06-17 · bdo · done-line 0106** — built on `claude/canvas-home-reshape`, screenshot-verified
+
+bdo, at the Story demo: *"I need a rule used in game dev. Anything that is mock or
+not done, get a special flag so I can see the state of construction. I want to
+bring in the slider now, and start with just one phrase, three words. The Cat Naps."*
+
+Three moves, landed together:
+
+1. **The game-dev rule = the missing-texture convention.** The oldest convention
+   in the trade: an unfinished or placeholder asset renders in a deliberately
+   glaring magenta (the Source-engine purple/black checker) so it can never be
+   mistaken for finished or silently ship. It is **ontum's mock-shame made visual
+   on the canvas** — a mock that moves fake work cannot hide behind a clean
+   surface. Now a first-class, schema-driven token: `BUILD` in `canvas-system.js`
+   (`real` / `mock` / `wip` / `todo`); `real` renders in its own color, every
+   flagged state wears the magenta hazard + a tag. §10 teeth in
+   `canvas-system.test.js`: a fabricated build state is refused; every flagged
+   state must carry a color + a tag (it cannot be mistaken for finished).
+
+2. **The Complexity slider, live, on one three-word phrase.** The demo reduces to
+   the single cat seed (no phrase-picker) and opens at the three words **"The cat
+   naps"** — one glyph. The **Complexity** slider grows the sentence *and* the
+   mesh together (3 words → `+ sunbeam, warmth` → the full
+   cat·sunbeam·shadow·warmth mesh): glyphs carry a `stage`, the slider filters by
+   level, the sentence comes from `stages.texts`. This is the first of bdo's five
+   reference sliders (0005) made real — and the perturbation axis the
+   story-benchmark wants (matched pairs by complexity).
+
+3. **The flag, applied honestly.** The four not-yet-built sliders (Length, Twists,
+   Weirdness, Colors) wear the magenta hatch + a `MOCK` tag — so the construction
+   state of the *slider feature itself* is legible. And every relation edge renders
+   magenta with a `MOCK` tag, because relations are still **hand-authored, not yet
+   composition-generated** (iterations 0008): the glyphs read as built (their own
+   colors), the wiring reads as mock. A legend names the rule on the surface.
+
+Engineering: the staging/build fields are **additive** on the cat phrase in
+`phrases.json` — the benchmark mesh (glyphs/facets/relations) is untouched, so the
+recovery-scorer corpus still round-trips. `?c=<n>` deep-links a level (verification
++ sharing). All causality node tests green (canvas-system 16, phrases 11, scorer 11).
+
+Lands in: `causality/canvas-system.js` (+ test), `causality/phrases.json` (cat
+phrase, additive), `causality/story.html`. To reach the live URL it must land to
+`main` (only `main` deploys via `pages.yml`); branch work is screenshot-verified.
+
+---
+
+## 0010 — The canvas is a chunked coordinate volume (API-first spatial substrate) 🟡
+**2026-06-17 · bdo**
+
+bdo: *"the nodes, canvas position and such should be API first, chunked,
+coordinate based — think like Minecraft. A 100×100×100 volume of subcubes, each
+with an xyz grid projected to the surface… almost like a game-engine screen but
+capable of being subdivided (might also be 10×10×10). The seams could be left to
+editor/dev mode."*
+
+**Why:** the "connections are subpar" problem is a *substrate* problem — free
+`x,y` floats give edges nothing to route through. A discrete, chunked coordinate
+space makes routing a **solved grid problem** (lanes through free cells, no
+crossings), makes nodes more interesting (volume, cells, subdivision), and gives a
+better canvas.
+
+**The model:**
+- A coordinate **volume** — `N×N×N` subcubes (start `10³`, can grow to `100³`),
+  each carrying an xyz grid, **recursively subdividable** (chunk → subcubes, like
+  Minecraft chunks).
+- **Nodes have an address, not a float** — a coordinate (+ chunk path). This is
+  ontum's *fundamental stratum = address* made literal; positions become
+  serializable, API-first (the spatial contract lives in `canvas-system.js`, the
+  renderer only *projects* it).
+- **Edges route through free cells** — orthogonal/lane pathfinding between occupied
+  cubes → deterministic, crossing-free, controllable routing.
+- **Chunks = holons / membranes** — a phrase is a chunk; its glyphs are subcubes;
+  a glyph's facets are sub-subcubes. The recursion (0004) gets a spatial home.
+- **Seams in dev mode** — grid/chunk lines show in editor/dev view; the normal
+  reading view is clean (the "seams to dev mode" rule).
+
+This **supersedes the float-overlap polish** (0007's "remaining") — don't hack
+overlap avoidance on floats; build the substrate and routing falls out.
+
+**Open fork (bdo to pick):** the default *projection*. (a) clean **2D top-down
+grid** for the reading view + a **3D/iso dev view** that shows the volume + seams
+(recommended — matches "seams to dev mode", keeps nodes legible); or (b) full
+**isometric Minecraft view** as the default. Start size: `10³` (subdivide as
+needed). API-first regardless.
+
+Lands in: _(next — the coordinate/chunk contract in `canvas-system.js`, an
+address→surface projection, grid-cell edge routing; then re-home the Story-demo
+on it.)_
+
+---
+
 ## 0009 — The hero comes alive: the four idle ANIM tokens wired, motion folded from the mesh 🟡
 **2026-06-17 · bdo (animations & polish pass)** — built on `claude/canvas-home-reshape`, screenshot-verified, eyeball-pending
 
