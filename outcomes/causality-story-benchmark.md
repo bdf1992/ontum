@@ -34,8 +34,9 @@ Legend — class: **cap** (capability, resolves against the artifact) · **out**
 
 | Probe | Class | Check / evidence | Depends | Today |
 | --- | --- | --- | --- | --- |
-| **G1 · the recovery-scorer exists** | cap | `node causality/recovery_scorer.test.js` green: a pure function scores a recovered mesh vs a true mesh (facet-F1 + relation from→to recovery) and flags the trap edge; the §10 test **separates** the mechanism-reading from the grammar-reading of `cat-sunbeam`, and a constant/fabricated scorer fails the separation | — | **unmet** (done-line 0105 builds it) |
-| **G2 · phrases carry calibrated traps** | cap | every phrase that has one declares `surface_trap` (type + tempting-but-wrong edge + why); `phrases.test.js` refuses a trap that is a subset of the true mesh (a non-trap) and an undeclared `trap_type`, and requires the trap's endpoints to resolve to real glyphs | — | **unmet** (only `cat-sunbeam` has an implicit trap today; done-line 0105) |
+| **G0 · the well-formedness gate exists** | cap | `node causality/grammar_scorer.test.js` green: a pure grammar scorer flags facet-nonsense — **structural** (an unlicensed facet edge, e.g. `source→actor` with no mediating state) and **lexical** (a verb whose subject lacks the required facet), an unknown verb returns `unknown` not a verdict — refusing bdo's "sunlight napped… shadow ate the plant" while every real phrase is well-formed; a constant scorer fails | — | **met** (the story-grammar-wellformedness done-line; the nonsense-refusal floor under the coherence-judge) |
+| **G1 · the recovery-scorer exists** | cap | `node causality/recovery_scorer.test.js` green: a pure function scores a recovered mesh vs a true mesh (facet-F1 + relation from→to recovery) and flags the trap edge; the §10 test **separates** the mechanism-reading from the grammar-reading of `cat-sunbeam`, and a constant/fabricated scorer fails the separation | — | **met** (the story-benchmark-scorer done-line; mechanism 1.000 vs grammar 0.143) |
+| **G2 · phrases carry calibrated traps** | cap | every phrase that has one declares `surface_trap` (type + tempting-but-wrong edge + why); `phrases.test.js` refuses a trap that is a subset of the true mesh (a non-trap) and an undeclared `trap_type`, and requires the trap's endpoints to resolve to real glyphs | — | **met** (the story-benchmark-scorer done-line; 5 of 8 phrases carry a genuine trap) |
 
 ### The generative + grading seam (the agent and inference nodes)
 
@@ -68,7 +69,7 @@ information, not omission.
 ## Milestones (probe groupings that span sessions)
 
 - **M1 · The deterministic spine** — G1 + G2. *The scorer has teeth and the corpus
-  carries calibrated traps.* (Done-line 0105 starts and aims to complete this.)
+  carries calibrated traps.* (The story-benchmark-scorer + story-grammar-wellformedness done-lines complete this.)
 - **M2 · The generative + grading seam** — G3, G4, B1, B2. *Items are generated,
   rendered with their trap, recovered by a measured subject, and self-calibrated
   between floor and ceiling; D-2 independence (generator ≠ grader) enforced by the
@@ -89,9 +90,13 @@ Typed by **what is trusted vs what is measured** — the load-bearing distinctio
   recovered mesh; run per model family; its score is the benchmark output.
 - **`recovery-scorer`** *(deterministic code — the spine, G1)* — recovered vs true
   → structural score + the trap boolean; `term_economy.py` grain, §10 teeth.
-- **`coherence-judge`** *(inference — quarantined)* — the only fuzzy axis (is the
-  story cute/coherent; does the skin realize the mesh). If it carries most of the
-  signal, the benchmark has degraded.
+- **`grammar-scorer` / well-formedness gate** *(deterministic code, G0)* — refuses
+  facet-nonsense (structural + lexical) at generation and scores it at grading; the
+  deterministic floor that shrinks the coherence-judge to its irreducible residue.
+- **`coherence-judge`** *(inference — quarantined, now narrow)* — only the
+  *lexical/aesthetic residue* the grammar gate can't reach (an unknown verb's
+  sense; is the story actually cute). If it carries most of the signal, the
+  benchmark has degraded — most of "does it make sense" is now deterministic.
 
 The **trap taxonomy** the seed-author generates from (the `trap_type` vocabulary):
 *elided-mediator* (A→M→B collapsed to A→B — the canonical `shadow/warmth` case),
@@ -102,7 +107,7 @@ surface, two payoffs.
 
 ## First session-sized move (the first done-line)
 
-`.ai-native/done/0105-story-benchmark-scorer.md` builds **M1** — G1 (the scorer +
+The `story-benchmark-scorer` done-line builds **M1** — G1 (the scorer +
 its §10 separation test) and G2 (calibrated traps on the portfolio). It is
 *deterministic on purpose*: it proves the grader can tell mechanism from grammar
 before any inference node is written, so the seam (M2) plugs into a spine already
