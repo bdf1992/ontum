@@ -33,3 +33,7 @@ exports/*
 
 __pycache__/
 *.pyc
+
+# Jekyll/Pages build output — rebuilt from source on every `jekyll build`
+# and by the Pages workflow; never truth, never tracked.
+_site/

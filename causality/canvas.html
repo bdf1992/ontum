@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Causality — a typed pulse machine you draw</title>
+<title>Causality</title>
 <script>window.__pageErr = null; addEventListener('error', e => { if (!window.__pageErr) window.__pageErr = (e.error && e.error.stack) || e.message; });</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -14,36 +14,21 @@
   body { font-family:"Space Grotesk",system-ui,sans-serif; color:var(--ink); }
   canvas#cv { position:fixed; inset:0; width:100%; height:100%; display:block; cursor:crosshair; touch-action:none; }
 
-  header { position:fixed; top:0; left:0; right:0; z-index:10; display:flex; align-items:baseline; gap:16px; padding:22px 28px 0; pointer-events:none; }
-  header h1 { font-family:"Fraunces",serif; font-size:25px; font-weight:300; }
-  header h1 b { color:var(--think); font-weight:600; } header h1 i { font-style:italic; }
-  header .sub { font:300 9.5px "IBM Plex Mono",monospace; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; }
+  /* the wordmark — quiet, the only permanent ink besides the canvas */
+  .mark { position:fixed; top:20px; left:26px; z-index:10; font-family:"Fraunces",serif; font-size:22px; font-weight:300; pointer-events:none; opacity:.9; }
+  .mark b { color:var(--think); font-weight:600; }
 
-  .bar { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:12; display:flex; gap:8px; align-items:center;
-         background:rgba(255,252,245,.94); border:1.5px solid var(--ink); border-radius:14px; padding:9px 11px; box-shadow:3px 4px 0 rgba(43,42,51,.16); flex-wrap:wrap; max-width:94vw; }
-  .bar select, .bar button, .bar input { font:500 11px "IBM Plex Mono",monospace; color:var(--ink); background:none; border:1.5px solid var(--ink); border-radius:9px; padding:7px 11px; cursor:pointer; }
-  .bar input { cursor:text; min-width:200px; }
-  .bar button:hover, .bar select:hover { background:rgba(122,91,166,.12); }
-  .bar .run { border-color:var(--think); color:var(--think); font-weight:700; }
-  .bar label { font:300 9px "IBM Plex Mono",monospace; color:var(--dim); text-transform:uppercase; letter-spacing:.1em; }
-  .bar .sep { width:1px; height:24px; background:rgba(43,42,51,.2); margin:0 2px; }
-  .bar .saved { font:300 9px "IBM Plex Mono",monospace; color:var(--plus); }
+  /* controls — minimal, faint until the corner is hovered (hover-to-reveal) */
+  .ctl { position:fixed; top:18px; right:22px; z-index:12; display:flex; gap:6px; align-items:center; opacity:.28; transition:opacity .3s ease; }
+  .ctl:hover { opacity:1; }
+  .ctl button { font:500 11px "IBM Plex Mono",monospace; color:var(--ink); background:rgba(255,252,245,.82);
+    border:1.4px solid var(--ink); border-radius:9px; padding:6px 11px; cursor:pointer; transition:background .2s ease; }
+  .ctl button:hover { background:rgba(122,91,166,.14); }
+  .ctl .icon { padding:6px 9px; font-size:13px; line-height:1; }
+  .ctl .saved { font:300 9px "IBM Plex Mono",monospace; color:var(--plus); min-width:46px; }
 
-  .legend { position:fixed; left:24px; bottom:22px; z-index:10; font:400 10.5px "IBM Plex Mono",monospace; color:var(--dim); line-height:1.85; pointer-events:none; }
-  .legend b { color:var(--ink); font-weight:500; }
-  .help { position:fixed; right:24px; top:64px; z-index:10; text-align:right; font:300 10px "IBM Plex Mono",monospace; color:var(--dim); line-height:1.95; pointer-events:none; }
-  .help b { color:#6b6456; font-weight:500; }
-
-  .stats { position:fixed; right:24px; bottom:22px; z-index:11; width:248px; background:rgba(255,252,245,.92); border:1.5px solid rgba(43,42,51,.4); border-radius:12px; padding:13px 15px;
-           font:400 10px "IBM Plex Mono",monospace; color:var(--ink); line-height:1.7; }
-  .stats h4 { font:500 9px "IBM Plex Mono",monospace; letter-spacing:.22em; color:var(--dim); text-transform:uppercase; margin-bottom:7px; }
-  .stats .row { display:flex; justify-content:space-between; }
-  .stats .lat { margin-top:8px; padding-top:8px; border-top:1px solid rgba(43,42,51,.18); }
-  .stats .lat .row .d { color:var(--minus); }
-  .stats .lat .row .ok { color:var(--plus); }
-
-  /* the inspector — per-element config panel (done-line 0082) */
-  .insp { position:fixed; right:24px; top:96px; z-index:13; width:300px; max-height:62vh; overflow:auto;
+  /* the inspector — per-element config, shown only when something is selected */
+  .insp { position:fixed; right:24px; top:64px; z-index:13; width:300px; max-height:74vh; overflow:auto;
           background:rgba(255,252,245,.97); border:1.5px solid var(--think); border-radius:12px; padding:14px 16px;
           box-shadow:3px 4px 0 rgba(122,91,166,.14); display:none; }
   .insp.on { display:block; }
@@ -60,152 +45,56 @@
   .insp .acts button { flex:1; font:600 10px "IBM Plex Mono",monospace; color:var(--think); background:none; border:1.4px solid var(--think); border-radius:8px; padding:6px; cursor:pointer; }
   .insp .acts button:hover { background:rgba(122,91,166,.12); }
   .insp .acts button.del { color:var(--minus); border-color:var(--minus); }
-
-  .out { position:fixed; left:24px; bottom:96px; z-index:11; max-width:430px; width:38vw;
-         background:rgba(255,252,245,.96); border:1.5px solid var(--think); border-radius:12px; padding:14px 18px; font:400 13px "Space Grotesk"; color:var(--ink); line-height:1.55;
-         display:none; box-shadow:3px 4px 0 rgba(122,91,166,.14); }
-  .out.on { display:block; } .out h5 { font:500 9px "IBM Plex Mono",monospace; letter-spacing:.2em; color:var(--think); text-transform:uppercase; margin-bottom:6px; }
-  .out .close { float:right; cursor:pointer; color:var(--dim); }
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 
-<header>
-  <h1>Causa<b>lity</b></h1>
-  <div class="sub">a typed pulse machine · nodes &amp; routes are IO channels · pulses carry data</div>
-</header>
+<div class="mark" title="a typed pulse machine — nodes &amp; routes are IO channels; pulses carry data">Causa<b>lity</b></div>
 
-<div class="help">
-  <b>double-click paper</b> · new node<br>
-  <b>click the ○ badge</b> · cycle its type<br>
-  <b>drag rim → node</b> · wire (typed)<br>
-  <b>click a node / wire</b> · inspect &amp; edit<br>
-  <b>right-click</b> · erase
+<div class="ctl">
+  <span class="saved" id="saved"></span>
+  <button id="new" title="clear the canvas — a fresh home to compose">+ New</button>
+  <button id="save" title="save this canvas to the browser">Save</button>
+  <button id="export" class="icon" title="download as a file">↧</button>
+  <button id="import" class="icon" title="load from a file">↥</button>
+  <input id="importFile" type="file" accept="application/json" style="display:none">
 </div>
-
-<div class="legend" id="legend"></div>
-
-<div class="stats" id="stats"><h4>system</h4><div id="statsBody">—</div></div>
 
 <div class="insp" id="insp"></div>
 
-<div class="out" id="out"><span class="close" onclick="document.getElementById('out').classList.remove('on')">✕</span><h5 id="outH">result</h5><div id="outB"></div></div>
-
-<div class="bar" style="bottom:auto;top:64px">
-  <label>describe</label>
-  <input id="describe" placeholder="describe a node / site / graph in words…" style="min-width:340px">
-  <button class="run" id="generate">✦ generate</button>
-  <span class="saved" id="genState"></span>
-</div>
-
-<div class="bar">
-  <label>template</label>
-  <select id="tpl"></select>
-  <label>poke</label>
-  <select id="poke"><option>tap</option><option>hold</option><option>burst</option></select>
-  <input id="inject" placeholder="type input for the first source node…">
-  <button class="run" id="run">▷ inject &amp; fire</button>
-  <span class="sep"></span>
-  <button id="save" title="save to this browser">save</button>
-  <button id="export" title="download as a file">export</button>
-  <button id="import" title="load from a file">import</button>
-  <input id="importFile" type="file" accept="application/json" style="display:none">
-  <span class="saved" id="saved"></span>
-</div>
-
 <script src="canvas.js"></script>
 <script src="inspector.js"></script>
-<script src="authoring.js"></script>
 <script>
 (() => {
   const C = window.Causality;
   const STORE = 'causality.graph.v1';
-  const out = document.getElementById('out');
-  const showOut = (title, body) => { document.getElementById('outH').textContent = title; document.getElementById('outB').textContent = body; out.classList.add('on'); };
   const savedTag = document.getElementById('saved');
   let saveTimer = null;
 
-  const S = C.canvas(document.getElementById('cv'), {
-    onevent: (k, o) => {
-      if (k === 'inference') showOut('inference · ' + (o.model || 'local') + ' · ' + (o.ms/1000).toFixed(1) + 's', lastResult());
-      if (k === 'pen') showOut('✎ ' + o.node + ' — receipt', typeof o.data === 'object' ? JSON.stringify(o.data, null, 1) : String(o.data));
-      if (k === 'refused-link') showOut('route refused', 'incompatible types — the seam contract held.');
-    },
-    onchange: () => { persistSoon(); },
-  });
+  const S = C.canvas(document.getElementById('cv'), { onchange: () => persistSoon() });
   window.__cz = S;
-  window.CausalityInspector.mount(S, document.getElementById('insp'));   // the shared schema-driven inspector
-  function lastResult() { const lm = S.nodes.find(n => n.type === 'inference' && n.lastOut); return lm ? lm.lastOut : ''; }
+  window.CausalityInspector.mount(S, document.getElementById('insp'));   // schema-driven, on-demand
 
-  // ───────────── persistence: auto-save to localStorage, export/import file ─────────────
+  // ── persistence: auto-save to the browser, export/import a file ──
   function persistSoon() { if (saveTimer) clearTimeout(saveTimer); saveTimer = setTimeout(persistNow, 350); }
   function persistNow() { try { localStorage.setItem(STORE, JSON.stringify(S.toJSON())); savedTag.textContent = 'saved ✓'; setTimeout(() => savedTag.textContent = '', 1400); } catch (e) {} }
   function tryRestore() { try { const raw = localStorage.getItem(STORE); if (!raw) return false; return S.fromJSON(JSON.parse(raw)); } catch (e) { return false; } }
+
   document.getElementById('save').onclick = persistNow;
+  document.getElementById('new').onclick = () => { S.clear(); persistNow(); };
   document.getElementById('export').onclick = () => {
     const blob = new Blob([JSON.stringify(S.toJSON(), null, 1)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'causality-graph.json'; a.click(); URL.revokeObjectURL(a.href);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'causality-canvas.json'; a.click(); URL.revokeObjectURL(a.href);
   };
   document.getElementById('import').onclick = () => document.getElementById('importFile').click();
   document.getElementById('importFile').onchange = e => { const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = () => { try { S.fromJSON(JSON.parse(r.result)); persistNow(); } catch (err) { showOut('import failed', String(err)); } }; r.readAsText(f); };
+    const r = new FileReader(); r.onload = () => { try { S.fromJSON(JSON.parse(r.result)); persistNow(); } catch (err) {} }; r.readAsText(f); };
 
-  // the inspector is the shared module (inspector.js), mounted above — one source
-  // for the full tool and the component demos.
-
-  // legend of node types
-  document.getElementById('legend').innerHTML =
-    Object.entries(C.GLYPH).map(([t, g]) => `<b>${g}</b> ${t}`).join('&nbsp; ');
-
-  // templates
-  const tpl = document.getElementById('tpl');
-  Object.keys(C.templates).forEach(name => { const o = document.createElement('option'); o.textContent = name; tpl.appendChild(o); });
-  tpl.value = 'search agent';
-  tpl.onchange = () => { C.templates[tpl.value](S); persistNow(); };
-  document.getElementById('poke').onchange = e => S.poke = e.target.value;
-
-  const fire = () => {
-    const txt = document.getElementById('inject').value.trim();
-    const src = S.nodes.find(n => n.type === 'source');
-    if (!src) return showOut('no source', 'add a source node (cycle a node’s type to ▷) to inject input.');
-    if (txt) src.data = txt;
-    S.inject(src, src.data);
-  };
-  document.getElementById('run').onclick = fire;
-  document.getElementById('inject').addEventListener('keydown', e => { if (e.key === 'Enter') fire(); });
-
-  // ── Interface as AI: describe → local inference generates a schema-valid graph (done-line 0083) ──
-  const genState = document.getElementById('genState');
-  async function generate() {
-    const desc = document.getElementById('describe').value.trim();
-    if (!desc) return;
-    genState.style.color = 'var(--think)'; genState.textContent = 'generating…';
-    const res = await window.CausalityAuthoring.generate(S, desc);
-    if (res.ok) { genState.style.color = 'var(--plus)'; genState.textContent = 'generated ✓'; persistNow(); setTimeout(() => genState.textContent = '', 1800); }
-    else { genState.style.color = 'var(--minus)'; genState.textContent = 'refused'; showOut('generation refused — nothing rendered', res.errors.join('\n')); }
-  }
-  document.getElementById('generate').onclick = generate;
-  document.getElementById('describe').addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
-
-  setInterval(() => {
-    const st = S.stats();
-    const types = Object.entries(st.byType).map(([t, c]) => `${C.GLYPH[t]}${c}`).join(' ');
-    let h = `<div class="row"><span>nodes</span><span>${st.nodes} &nbsp;${types}</span></div>`;
-    h += `<div class="row"><span>routes</span><span>${st.links}</span></div>`;
-    h += `<div class="row"><span>pulses in flight</span><span>${st.inflight}</span></div>`;
-    h += `<div class="row"><span>thinking</span><span>${st.thinking}</span></div>`;
-    h += `<div class="row"><span>receipts</span><span>${st.receipts}</span></div>`;
-    if (st.latency.length) { h += '<div class="lat"><h4>latency · actual vs expected</h4>';
-      for (const l of st.latency) { const cls = l.drift > 0 ? 'd' : 'ok'; const ms = l.avgMs < 1000 ? l.avgMs + 'ms' : (l.avgMs/1000).toFixed(1)+'s';
-        h += `<div class="row"><span>${l.node}</span><span class="${cls}">${ms} <span style="color:var(--dim)">/${l.expectedMs<1000?l.expectedMs+'ms':(l.expectedMs/1000).toFixed(0)+'s'}</span></span></div>`; } h += '</div>'; }
-    document.getElementById('statsBody').innerHTML = h;
-  }, 400);
-
+  // first paint: restore the saved canvas, else the default home document
   requestAnimationFrame(() => requestAnimationFrame(() => {
     dispatchEvent(new Event('resize'));
-    if (!tryRestore()) { C.templates[tpl.value](S); }   // restore what was saved, else the default template
-    document.getElementById('inject').value = 'recursive feedback loops in biology';
+    if (!tryRestore()) C.templates.home(S);
   }));
 })();
 </script>
