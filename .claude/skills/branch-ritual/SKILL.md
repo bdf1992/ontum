@@ -83,6 +83,13 @@ changelog:
       shared-tree fleet: `add` refuses a sweep (`add .` / `-A` / `-u`)
       and stages only named paths; `commit` refuses `-a`/`--all`,
       requires a real step-shaped message, and never commits the trunk.
+      `commit --on <branch>` is the HEAD-intent guard (done-line 0118):
+      assert the branch you believe you are on and the pen refuses if live
+      HEAD differs — a parallel session can move the shared worktree's
+      branch under you between reading HEAD and committing; the assertion
+      turns that collision into a clean deny. Omitting `--on` skips the
+      check (backward compatible); pass it whenever you commit in a shared
+      tree.
       Raw `git add` / `git commit` join the command_guard deny-list,
       routed to the pen; everything else git add/commit take is
       forwarded for parity. The watcher now sees standalone local
