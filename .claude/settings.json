@@ -38,6 +38,11 @@
             "type": "command",
             "command": "python .claude/hooks/freeze_guard.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/change_guard.py",
+            "timeout": 10
           }
         ]
       },
@@ -47,6 +52,11 @@
           {
             "type": "command",
             "command": "python .claude/hooks/freeze_guard.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/change_guard.py",
             "timeout": 10
           }
         ]

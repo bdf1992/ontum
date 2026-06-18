@@ -10,14 +10,23 @@
 'use strict';
 
 // the DON'T-REGRESS feature set (aim-exemplars.md) — each present iff ALL its markers
-// appear in the surface text. Greppable signatures, not prose: the grip rule.
-const REQUIRED = [
+// appear in the surface text. Greppable signatures, not prose: the grip rule. Loaded
+// from the shared registry so the JS judge and the Python guard never drift (one table,
+// two surfaces — the fence-registry pattern). Inline fallback keeps it browser-safe.
+const FALLBACK = [
   { id: 'complexity-slider', markers: ['Complexity'], why: 'the one live growth dial — cute nucleus -> real loop' },
   { id: 'phrase-skin',       markers: ['drawSentence'], why: 'the sentence-as-skin (its loss was a prior regression — never again)' },
   { id: 'hover-unfold',      markers: ['_facetLayout'], why: 'hover-to-unfold the facets' },
   { id: 'gestures',          markers: ['lasso', 'COMMAND'], why: 'gesture-native interaction (lasso/GATHER, hold/COMMAND)' },
   { id: 'honest-magenta',    markers: ['admissions.jsonl', 'composeRel'], why: 'realness read from the log + relations generated (AIM I1/F5)' },
 ];
+let REQUIRED = FALLBACK;
+try {
+  if (typeof require !== 'undefined') {
+    const reg = require('./change-policy.invariants.json');
+    if (reg && Array.isArray(reg.required) && reg.required.length) REQUIRED = reg.required;
+  }
+} catch (e) { /* registry absent — fall back to the inline set */ }
 
 // checkSurface(text) -> which required features are present / missing in this surface.
 function checkSurface(text, required) {
