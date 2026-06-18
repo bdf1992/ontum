@@ -39,8 +39,12 @@ python causality/term_economy.py audit                # gap findings + census (m
 python causality/term_economy.py mermaid              # text-first graph render of terms -> evidence
 python causality/term_economy.py project --seed <path> # run over an alternate seed
 
+# atom search fold — pure, read-only, first atom-search-request-node slice
+python causality/atom_search.py causality welcome     # typed JSON over real atom records + folded state
+
 # the §10 test (joins the main suite)
 python -m unittest tests.test_term_economy -v
+python -m unittest tests.test_atom_search -v
 
 # the canvas — the agnostic graph surface (done-line 0082)
 python -m http.server 8080      # then open http://localhost:8080/causality/canvas.html
