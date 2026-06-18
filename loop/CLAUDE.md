@@ -55,6 +55,9 @@ python -m loop.retro --json                 # the raw dataset (machine-readable)
 python -m loop.gate_eval                    # the value-gate eval corpus (charades: matched-variant atoms), read-only
 python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") verdict transcript
 
+python -m loop.phrasing check --path <p> --before <f> --after <f>   # the phrasing door: is an edit prose-only? read-only proof
+python .claude/skills/branch-ritual/pr.py phrasing --files <p>... --why "<note>" --by <who>   # mark a proven prose-only edit so it lands without an atom (the route)
+
 python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
 python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
 python -m loop.disposer dispose            # self-admit one in-fence proposal (else escalate)
@@ -257,6 +260,27 @@ so a prompt edit can't reopen a settled verdict (I-2).
   an absence, not a field of mock stages. `loop.summon --hook` hands the
   single top gap to every session that blinks in — the idle default is
   "work the backlog the harness generated", never "wait for direction".
+- [phrasing.py](phrasing.py) — the phrasing backdoor's pure checker
+  (done-line 0117): bdo's low-ceremony door for pedantic prose edits.
+  A wording fix the machine never branches on ("on his phone" ->
+  "wherever he is") should not cost an atom, a judge, and a branch — the
+  full work-particle mantra (§15/D-5) — so a phrasing edit is exempt from
+  it. The teeth (the whiteout shape, done-line 0064): the door PROVES an
+  edit is prose-only rather than trusting a label — `.md` body free but
+  frontmatter keys/`name`/`version` protected; `.py` tokenized so only
+  comment/string CONTENT may differ; `.json` structure + non-prose values
+  byte-identical, only `PROSE_KEYS` string values may change — and names
+  what disqualified any other change. Stdlib, no git (loop/'s law). The
+  off-log gate gains a SECOND way to be backed
+  (`pr_audit.orphan_reason(..., phrasing_clean)`): a branch every non-log
+  change of which this proves prose-only needs no atom — the fact gathered
+  AND re-verified by the reach (`pr.py audit`, the git side) with this
+  same checker, so the client pen and the server CI inherit the door
+  together and neither can be lied to. The route (the git-bearing half) is
+  `pr.py phrasing`, which marks the edit with one `phrasing` admission on
+  the log (provenance) after the proof passes; it refuses anything this
+  checker rejects. The cut between "phrasing" and "work" stays bright: the
+  door is for prose only — syntax or schema is routed back to the pipeline.
 
 ### Invariants the code is built around (firm)
 

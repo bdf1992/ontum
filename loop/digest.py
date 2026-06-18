@@ -182,6 +182,15 @@ def digest(root, since=None, until=None):
     superseded = _superseded([p for a in arcs for p in a["pieces"]] + loose)
     divergences = _divergences(fold, arcs, ticks, since, until, superseded)
 
+    # the prose stream — phrasing-lane edits in span, so the light lane (done-line
+    # 0117) is visible here and bdo is never blind to it (his correction, 2026-06-18)
+    phrasing_in_span = [
+        {"id": a.get("id"), "by": a.get("by"), "reason": a.get("reason"),
+         "files": [f.get("path") for f in a.get("files", [])]}
+        for a in fold.admissions
+        if a.get("type") == "phrasing" and in_span(a.get("ts"), since, until)
+    ]
+
     return {
         "span": {"since": since, "until": until},
         "setpoint": setpoint,
@@ -191,6 +200,7 @@ def digest(root, since=None, until=None):
         "landings": len(landings),
         "refusals": len(refusals),
         "divergences": divergences,
+        "phrasing": phrasing_in_span,
     }
 
 
@@ -415,7 +425,17 @@ def render(d):
         for p in d["loose"]:
             if p.get("standing") not in ("landed", "unbuilt"):
                 lines.append(f"    - `{p['atom']}` — {p.get('standing')}")
-    lines.append("")
+    # 5. the prose stream — the light lane's edits, so you are never blind to it
+    ph = d.get("phrasing", [])
+    if ph:
+        lines.append(f"## Prose edits ({len(ph)}) — the light lane (no atom, "
+                     "still on the log)")
+        for e in ph:
+            files = ", ".join(f"`{p}`" for p in e["files"])
+            lines.append(f"- {_glance(e.get('reason'))} — by {e.get('by')} "
+                         f"({files})")
+        lines.append("")
+
     lines.append(f"_{d['landings']} landing(s), {d['refusals']} refusal(s) "
                  f"in span._")
     return "\n".join(lines)
