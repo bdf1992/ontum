@@ -459,14 +459,22 @@ unless an authoritative system grants escalation** (the mesh's `sudo`, the one
 exception to one-way narrowing).
 
 **13.6 The observation fiber — the afferent floor (bdo; landing diagnosis Claude).**
-A **read-only sensor** running through every surface: it stamps every crossing,
-derives the queues and the pressure, surfaces them compressed up to a threshold —
-and **never acts** (I-3; the surfacer sees, the actuator is downstream — a pen,
-the disposer, `heal.py`). It maintains **multi-channel competing-setpoint
-homeostasis** — "hold 5 tickets / 5 issues / 10 arcs" — thresholds **derived from
-system files, then tuned with the user**; the setpoints **contend for one bounded
-resource** (step-budget / inflight / attention), which is what forces
-prioritization instead of unbounded WIP.
+*Status: PROPOSED — and here the seed is real but the fiber is not, so the line
+is drawn explicitly.* What **exists today**: `orchestrate.py` senses pressure and
+holds **one** admitted setpoint (`max_inflight_atoms` / `human_queue_cap` /
+`step_budget_per_tick`); the summon hook and `digest` already surface that
+pressure **read-only**; `disposer.py` and `heal.py` are real downstream
+actuators. What is **proposed**: the *fiber* generalizes that single seed — a
+read-only sensor that **would** run through every surface, stamping each crossing,
+deriving the queues and pressure, surfacing them compressed to a threshold, and
+**never acting** (I-3; the surfacer sees, the actuator stays downstream). Where
+today's control is **one** channel, the fiber proposes **multi-channel
+competing-setpoint homeostasis** — "hold 5 tickets / 5 issues / 10 arcs",
+thresholds derived from system files then tuned with the user, the channels
+**contending for one bounded resource** (step-budget / inflight / attention) so
+prioritization is forced instead of unbounded WIP. `orchestrate`'s single
+setpoint is the proof the shape works at n=1; the n-channel fiber is still to
+build.
 
 **The landing diagnosis (Claude).** This names why *work grows but doesn't land*:
 the loop today has **drain pressure (gates that refuse) without pull**.
