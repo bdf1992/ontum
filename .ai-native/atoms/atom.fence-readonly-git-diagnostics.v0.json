@@ -1,0 +1,43 @@
+{
+  "atom": {
+    "id": "atom.fence-readonly-git-diagnostics.v0",
+    "story": {
+      "text": "As a session — and as Codex especially — I need read-only git introspection (git branch --show-current, git branch --list, git worktree list) to pass without a human-approval prompt, because orienting to where I am is the single most common opening move a session makes (a fold over the last 50 sessions found 30 of 50 probe git branch / git status in their first three shell calls), and the fence prompting on that read-only step puts friction on the one thing every session does first. Branch/worktree topology (create/delete/move) still prompts; only the read-only forms are freed. Part 1 of bdo's session-routing hotfix.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "fence read-only git diagnostics: introspection passes, only topology prompts",
+      "value": "The fence registry's single git-branch-topology rule (which matched the whole git branch / git worktree argv prefix) is split into two mutating-only rules — git-branch-mutate (-d/-D/-m/-M/-c/-C/--delete/--move/--copy) and git-worktree-mutate (add/remove/prune/repair/move), both decision:prompt. The fence is a prompt/deny list, so read-only forms now match no rule and fall through to allowed. .codex/rules/ontum.rules is re-rendered deterministically from the registry.",
+      "why_now": "bdo's session-routing hotfix, part 1: the immediate break was wrong branch/environment routing, and a session cannot cheaply orient (its most common first move) when read-only git introspection is gated behind a Codex approval prompt. Restoring it is the low-risk half of the hotfix; it loosens nothing mutating.",
+      "if_accepted": "A Codex session runs git branch --show-current / git worktree list without a prompt; every topology op (and all mutating git) still prompts and is still watched by the Claude command_guard. The fence stays one table, two surfaces, structurally in parity.",
+      "if_rejected": "The fence keeps prompting on read-only introspection under Codex; the friction stays on the most common session-opening move, and the orient step a dedicated-space route depends on remains gated.",
+      "cost_of_wrong_call": "Low and reversible: the change narrows what prompts (it never widens deny), is covered by tests.test_fence (example-fit + fresh-render), and reverts by restoring the single rule and re-rendering. No mutating git becomes un-gated; the Claude guard watches everything regardless.",
+      "mechanism": "fence/policy.py replaces git-branch-topology with git-branch-mutate + git-worktree-mutate (argv narrowed to mutating verbs/flags, read-only forms in not_match); fence/render_codex.py regenerates .codex/rules/ontum.rules (17->18 rules); tests/test_fence.py covers the new rules and read-only not_match forms; the live matcher proof shows read-only allowed / mutating prompted. Done-line 0120.",
+      "reading": [
+        "fence/policy.py",
+        ".codex/rules/ontum.rules",
+        "tests/test_fence.py",
+        ".ai-native/done/0120-fence-readonly-git-diagnostics.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["fence/policy.py", ".codex/rules/ontum.rules"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["fence/policy.py", "fence/render_codex.py", ".codex/rules/ontum.rules"]
+    }
+  },
+  "_note": "Birth record for the fence read-only git diagnostics fix (done-line 0120, hotfix part 1), authored so the off-log work carries an atom under the live atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/. A chapter of the proposed session-gateway anthology, attributed to epic.substrate (the arc 0118's head-intent sheath served), riding its confirmation for landing."
+}
