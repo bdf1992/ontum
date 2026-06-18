@@ -121,16 +121,24 @@ class TestFold(unittest.TestCase):
 class TestLivePenWiring(unittest.TestCase):
     """Drive the git pen as a subprocess to prove `--claim` reaches the check."""
 
-    def test_unbound_branch_with_claim_refuses(self):
-        # this repo's branches are not bound to 'atom.nonexistent', so a commit
-        # claiming it must refuse for the binding (before anything is staged)
+    def test_claim_for_unowned_work_refuses(self):
+        """A commit asserting a `--claim` the current branch is not bound to is
+        refused — whether the branch is UNBOUND ("not bound") or bound to OTHER
+        work ("bound to ..., not ...", the collision). Which message fires
+        depends on the live repo's binding state (this very branch is bound to
+        its own atom when the dogfood ran), so the wiring proof is the stable
+        part: `--claim` reaches `binding_refusal`, names the asserted claim,
+        and denies cleanly."""
         p = subprocess.run(
             [sys.executable, str(PEN), "commit",
              "--claim", "atom.definitely-not-bound", "-m", "x"],
             cwd=REPO, capture_output=True, text=True)
         out = p.stdout + p.stderr
-        self.assertNotEqual(p.returncode, 0, "a commit on an unbound branch must refuse")
-        self.assertIn("not bound", out)
+        self.assertNotEqual(p.returncode, 0,
+                            "a --claim the branch is not bound to must refuse")
+        self.assertIn("atom.definitely-not-bound", out)  # the asserted claim is named
+        self.assertTrue("not bound" in out or "bound to" in out,
+                        f"expected a binding refusal, got: {out}")
 
     def test_omitted_claim_does_not_trip_the_binding(self):
         p = subprocess.run(
