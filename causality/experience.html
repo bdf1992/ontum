@@ -688,12 +688,16 @@
       '', '# COMMAND: what is the latent mechanism of this story, and which edge\n#          is the surface most likely to misread?',
     ].join('\n');
     return [
-      '# CONTEXT — assembled live from causality/phrases.json (corpus, not authored)',
+      '# CONTEXT — this is the HELD-OUT benchmark seed (the answer key), NOT inferred.',
+      '#           the generative layer (text-to-system.md + text_to_system.js) designs',
+      '#           this mesh from the raw text alone; the seed is only the scorer. When',
+      '#           the bridge (:8378) is up, this panel shows the INFERRED mesh + its score.',
       '# phrase:  ' + c.phrase + '   →   "' + c.text + '"',
-      '# glyph:   ' + c.word + '   typed-by-composition: ' + (c.facets.join(' + ') || '—'),
-      '# edges this glyph carries:',
+      '# seed glyph:   ' + c.word + '   typed-by-composition: ' + (c.facets.join(' + ') || '—') + '   [seed, not inferred]',
+      '# seed edges this glyph carries:',
       ...(c.rels.length ? c.rels.map(r => '#   ' + r) : ['#   (none yet at this complexity)']),
-      '', '# COMMAND: what role does ' + c.word + ' play in the mechanism, and which edge\n#          is the surface most likely to misread?',
+      '', '# the live task: GENERATE this mesh from the text, then score it against this',
+      '#                seed (recovery_scorer). The seed is the oracle, never the input.',
     ].join('\n');
   }
   // a deterministic FLOOR answer (real, immediate) — folded from what is on disk; the
