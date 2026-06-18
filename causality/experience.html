@@ -13,7 +13,7 @@
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;overflow:hidden;background:var(--paper);}
   body{font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);}
-  /* two stacked canvases: the engine draws the living graph; ov captures the lasso (BLEND) */
+  /* two stacked canvases: the engine draws the living graph; ov captures the lasso (GATHER) */
   canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
   canvas#cv{z-index:1;}
   canvas#ov{z-index:2;pointer-events:none;}
@@ -59,6 +59,9 @@
   .tools button.on{color:#fff;background:var(--inference);}
   .tools button:not(.on):hover{color:var(--inference);background:rgba(122,91,166,.1);}
 
+  /* the lasso purpose hint — only while the lasso is armed; makes GATHER's purpose legible at a glance */
+  .lassohint{position:fixed;left:50%;bottom:158px;transform:translateX(-50%);z-index:11;font:300 10px "IBM Plex Mono",monospace;color:var(--inference);background:rgba(255,252,245,.92);border:1px solid rgba(122,91,166,.42);border-radius:8px;padding:4px 13px;opacity:0;transition:opacity .3s ease;pointer-events:none;max-width:90vw;text-align:center;}
+  .lassohint.on{opacity:1;}
   .legend{position:fixed;left:22px;bottom:22px;z-index:12;display:flex;flex-direction:column;gap:5px;font:400 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.85);border:1.2px solid rgba(43,42,51,.25);border-radius:9px;padding:8px 11px;max-width:248px;}
   .legend .ln{display:flex;align-items:center;gap:7px;}
   .legend .sw{width:11px;height:11px;border-radius:3px;flex:none;}
@@ -87,11 +90,12 @@
   <button class="btn" id="new">+ New</button>
   <button class="btn" id="save">Save</button>
 </div>
-<div class="hint" id="hint">tap a node to fire it · <b>hold</b> a node to COMMAND it (its real context blooms → ✦) · drag from a rim to wire · grow the Complexity slider — at its far end it points at the real ontum loop</div>
+<div class="hint" id="hint">the sentence up top is the <b>skin</b> — each key word wears its node’s colour, rooted by a tendril · <b>hover</b> a glyph to unfold its facets · <b>hold</b> a node to COMMAND it (→ ✦) · grow Complexity — its far end is the real ontum loop</div>
 <div class="tools" id="tools">
   <button data-m="point" class="on">● Point — hold to COMMAND</button>
-  <button data-m="lasso">⬚ Lasso — BLEND a region</button>
+  <button data-m="lasso">⬚ Lasso — GATHER context</button>
 </div>
+<div class="lassohint" id="lassohint">lasso some nodes → gather them into a real, cited context package you can ask your AI about</div>
 <div class="gestures" id="gestures"></div>
 <div class="sliders" id="sliders"></div>
 <div class="legend" id="legend"></div>
@@ -120,6 +124,9 @@
   const PIG = (COL && COL.pigment) || window.Causality.PIGMENT;
   const SCORER = window.CausalityScorer || null;
   const NAT = window.Naturalist || null;                  // the grafted creature library (defensive — may be absent)
+  const FACET = (SYS && SYS.FACET) || {};                 // facet vocabulary (icon + role) for the hover-to-unfold petals
+  const EASE = (SYS && SYS.EASE) || { easeOut: t => 1 - Math.pow(1 - t, 3) };
+  const roleColor = r => r === 'pigment' ? null : ((COL && COL[r]) || (COL && COL.ink) || '#2b2a33');
   const TAU = Math.PI * 2;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const snippet = (v, n) => { const s = (v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v))).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
@@ -169,6 +176,8 @@
   let MESH = blankMesh(0);
   function blankMesh(lvl) { return { byWord:{}, edges:[], stitches:[], trap:null, membranes:[], level:lvl,
     truth:null, glyphsMeta:[], regime:'cat', dirOk:false, dirStages:0, dirMock:0, cmd:{}, command:null }; }
+  let sentT0 = 0;          // the sentence-skin reveal clock (reset on every build so the phrase re-grows)
+  let openNodeId = null;   // the glyph a COMMAND unfolded (hover unfolds independently of this)
 
   // ── the ONE-grammar ladder (naturalist's legible spine, circuitry's biting end):
   //      0 word    "The cat naps."                (the cute nucleus, phrases.json)
@@ -199,6 +208,28 @@
     return Object.values(m);
   }
 
+  // ── THE FRAME (bdo's framing note): a stage rect inset from the chrome — masthead +
+  //    sentence skin above, the tools/sliders below, legend/bench in the corners.
+  //    Layouts are sized to fill it; fitToFrame() then centres the built mesh and
+  //    shrinks-to-fit so nothing sits half-off-screen and the dead space at higher
+  //    complexity is gone (level 0 nucleus centred · level 4 the loop framed). ──
+  function stageRect() {
+    const top = 152, bot = 176, side = 58;
+    const w = Math.max(160, C.W - 2 * side), h = Math.max(160, C.H - top - bot);
+    return { x: side, y: top, w, h, cx: side + w / 2, cy: top + h / 2 };
+  }
+  function fitToFrame() {
+    const ns = C.nodes.filter(n => n !== ASK);          // the ✦ companion is placed by gesture, not framed
+    if (!ns.length) return;
+    let mnX = 1e9, mnY = 1e9, mxX = -1e9, mxY = -1e9;
+    ns.forEach(n => { mnX = Math.min(mnX, n.x); mnY = Math.min(mnY, n.y); mxX = Math.max(mxX, n.x); mxY = Math.max(mxY, n.y); });
+    const pad = C.NODE_R + 34; mnX -= pad; mnY -= pad; mxX += pad; mxY += pad;
+    const bw = Math.max(1, mxX - mnX), bh = Math.max(1, mxY - mnY);
+    const R = stageRect(), s = Math.min(1, R.w / bw, R.h / bh);   // shrink to fit; never blow a tiny mesh up
+    const bcx = (mnX + mxX) / 2, bcy = (mnY + mxY) / 2;
+    ns.forEach(n => { n.x = R.cx + (n.x - bcx) * s; n.y = R.cy + (n.y - bcy) * s; });
+  }
+
   // ── the cute build: cat-sunbeam grown by the slider (the beloved backbone) ──
   function buildCat(lvl) {
     lvl = clamp(lvl, 0, 2);
@@ -206,7 +237,8 @@
     const W = C.W, H = C.H, truthRels = [];
     const glyphs = visibleGlyphs(NUCLEUS, stageMax(lvl));
     const present = new Set(glyphs.map(g => g.word));
-    const cx = W / 2, cy = H * 0.5, rad = Math.min(W * 0.20, H * 0.24);
+    const RECT = stageRect(); const cx = RECT.cx, cy = RECT.cy, rad = Math.min(RECT.w * 0.30, RECT.h * 0.40);
+    sentT0 = C.t;   // re-reveal the sentence skin as the phrase grows
     const cluster = [];
     glyphs.forEach((g, i) => {
       let x, y;
@@ -216,6 +248,13 @@
       const node = C.node(x, y, g.word, { type, hue, level: type === 'source' ? 0.55 : 0.34, data: g.word,
         autorun: type === 'source', every: 0.85 + (i % 4) * 0.28, rate: 0.17 });
       node._creature = creatureFor(g.word, g.icon);
+      // hover-to-unfold: the facet petals' resting offsets, eased out of the glyph on hover
+      node._facets = g.facets || [];
+      node._facetLayout = (g.facets || []).map((k, j, arr) => {
+        const a = -Math.PI / 2 + (arr.length === 1 ? 0 : (j / (arr.length - 1) - 0.5)) * 1.7;
+        return { key: k, dx: Math.cos(a) * (C.NODE_R + 46), dy: Math.sin(a) * (C.NODE_R + 46) };
+      });
+      node._openA = 0;
       MESH.byWord[g.word.toLowerCase()] = node;
       MESH.glyphsMeta.push({ word: g.word.toLowerCase(), facets: g.facets || [] });
       MESH.cmd[node.id] = { kind: 'glyph', title: g.word + ' · ' + (g.facets || []).join('+'),
@@ -244,6 +283,7 @@
     }
     MESH.truth = { glyphs: MESH.glyphsMeta, relations: truthRels,
       surface_trap: MESH.trap ? { type: MESH.trap.type, edge: { from: MESH.trap.a.label.toLowerCase(), to: MESH.trap.b.label.toLowerCase() } } : null };
+    fitToFrame();
     scoreLive();
   }
 
@@ -252,7 +292,7 @@
   //    compression IS the joy — one slider notch and the whole calibration set blooms. ──
   function buildCorpus() {
     C.clear(); MESH = blankMesh(CORPUS); MESH.regime = 'corpus';
-    const W = C.W, H = C.H, cx = W / 2, cy = H * 0.52, RAD = Math.min(W * 0.36, H * 0.34);
+    const RECT = stageRect(); const cx = RECT.cx, cy = RECT.cy, RAD = Math.min(RECT.w * 0.40, RECT.h * 0.46);
     const n = PHRASES.length, byId = {};
     PHRASES.forEach((p, i) => {
       const a = -Math.PI / 2 + i / n * TAU;
@@ -270,6 +310,7 @@
     (DATA.links || []).forEach(l => { const A = byId[l.a], B = byId[l.b]; if (!A || !B) return;
       const link = C.link(A.id, B.id, { sign: 1, kind: 'delayed', delay: 1.4 });
       if (link) MESH.stitches.push({ link, via: l.via }); });
+    fitToFrame();
     drawBench();
   }
 
@@ -302,14 +343,14 @@
     } catch (e) {}
     MESH.dirOk = stages.length >= 2; MESH.dirStages = stages.length; MESH.dirMock = stages.filter(s => s.mock).length;
 
-    const W = C.W, H = C.H, y = H * 0.5;
+    const RECT = stageRect(); const W = C.W, H = C.H, y = RECT.cy;
     if (!MESH.dirOk) {
       const n = C.node(W / 2, y, 'reconcile.py', { type: 'gate', hue: MOCKCOL, level: 0.3, data: 'unreachable' });
       n._creature = NAT ? 'gate' : null;
       MESH.edges.push({ node: n, dir: true, mock: true, label: 'parse unreachable' });
-      drawBench(); return;
+      fitToFrame(); drawBench(); return;
     }
-    const x0 = W * 0.10, xN = W * 0.90, span = (xN - x0);
+    const x0 = RECT.x, xN = RECT.x + RECT.w, span = (xN - x0);
     const seed = C.node(x0, y, 'atom', { type: 'source', hue: COL.amber, level: 0.6, data: 'atom.created', autorun: true, every: 1.5, rate: 0.22 });
     seed._creature = NAT ? 'drop' : null;
     let prev = seed;
@@ -322,7 +363,7 @@
       const short = st.node.split('.')[0];
       const isLast = i === stages.length - 1;
       const hue = st.mock ? MOCKCOL : PIG[i % PIG.length];
-      const n = C.node(x, y + (i % 2 ? 1 : -1) * 40, short, { type: isLast ? 'sink' : 'gate', hue, level: 0.32, data: st.verdict });
+      const n = C.node(x, y + (i % 2 ? 1 : -1) * Math.min(140, RECT.h * 0.26), short, { type: isLast ? 'sink' : 'gate', hue, level: 0.32, data: st.verdict });
       n._creature = NAT ? (isLast ? 'star' : 'gate') : null;
       const link = C.link(prev.id, n.id, { sign: 1, kind: 'impulse', gain: 1 });
       if (link) MESH.edges.push({ link, label: st.seam.replace(/-/g, ' '), feedback: false, mock: false, seam: true });
@@ -333,6 +374,7 @@
     });
     if (prev !== seed) { const fb = C.link(prev.id, seed.id, { sign: -1, kind: 'leak', gain: 1 });
       if (fb) MESH.stitches.push({ link: fb, via: 'orchestrate.py · refuse → re-derive' }); }
+    fitToFrame();
     drawBench();
   }
 
@@ -356,6 +398,29 @@
       ctx.strokeStyle = 'rgba(43,42,51,.24)'; ctx.lineWidth = 1.3; ctx.setLineDash([6, 7]); ctx.beginPath();
       for (let i = 0; i <= 48; i++) { const a = i / 48 * TAU; const k = 1 + Math.sin(a * 3 + C.t * 0.4) * 0.03; const px = cxp + Math.cos(a) * rx * k, py = cyp + Math.sin(a) * ry * k; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
       ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+    });
+    // ── hover-to-unfold (iterations 0007 progressive discovery; story.html’s eased facets):
+    //    the default surface is glyph-only; hovering a glyph eases its facet sub-nodes OUT of
+    //    it (the holon zoom). Drawn in the overlay — not engine nodes — so the clean surface
+    //    is kept until you touch a glyph. ──
+    C.nodes.forEach(n => {
+      if (!n._facetLayout || !n._facetLayout.length) return;
+      const tgt = (n === C.hoverNode || n.id === openNodeId) ? 1 : 0;
+      n._openA = (n._openA || 0) + (tgt - (n._openA || 0)) * 0.2;
+      const oa = n._openA; if (oa < 0.02) return;
+      const eo = EASE.easeOut(Math.min(1, oa));
+      n._facetLayout.forEach(f => {
+        const fx = n.x + f.dx * eo, fy = n.y + f.dy * eo, fr = 15 * eo;
+        const fc = FACET[f.key] || { icon: '·', role: 'dim' }; const col = roleColor(fc.role) || n.hue;
+        ctx.save(); ctx.globalAlpha = oa;
+        ctx.setLineDash([3, 3]); ctx.strokeStyle = 'rgba(43,42,51,.25)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(fx, fy); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = col + '22'; ctx.beginPath(); ctx.arc(fx, fy, fr, 0, TAU); ctx.fill();
+        ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(fx, fy, fr, 0, TAU); ctx.stroke();
+        ctx.fillStyle = col; ctx.font = '600 12px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(fc.icon, fx, fy + 1);
+        ctx.fillStyle = COL.dim; ctx.font = '400 8px "IBM Plex Mono", monospace'; ctx.fillText(f.key, fx, fy + fr + 9);
+        ctx.restore();
+      });
     });
     // the creatures — a hand-drawn ink figure blooms above every glyph (the joy).
     if (NAT) C.nodes.forEach(n => { if (!n._creature) return;
@@ -381,15 +446,14 @@
     // dir mode: name each parsed stage; flag the .mock stages magenta
     if (MESH.regime === 'dir' && MESH.dirNodes) MESH.dirNodes.forEach(dn => {
       const n = dn.node; if (!C.byId(n.id)) return;
-      ctx.font = '300 9px "IBM Plex Mono", monospace'; ctx.textAlign = 'center';
-      ctx.fillStyle = COL.dim; ctx.fillText(dn.sub || '', n.x, n.y + C.NODE_R + 14);
-      if (dn.mock) mockChip(ctx, n.x, n.y + C.NODE_R + 30, dn.label);
-      else { ctx.fillStyle = COL.faint || '#b8b1a2'; ctx.fillText(dn.label, n.x, n.y + C.NODE_R + 30); }
+      if (dn.sub) plate(ctx, dn.sub, n.x, n.y + C.NODE_R + 26, COL.dim, '300 9px "IBM Plex Mono", monospace');
+      if (dn.mock) mockChip(ctx, n.x, n.y + C.NODE_R + 42, dn.label);
+      else if (dn.label) plate(ctx, dn.label, n.x, n.y + C.NODE_R + 42, COL.faint || '#8d8678', '400 9px "IBM Plex Mono", monospace');
     });
     // corpus mode: a faint "teeth" mark on the phrases that carry a surface_trap
     if (MESH.regime === 'corpus') C.nodes.forEach(n => { const c = MESH.cmd[n.id];
       if (c && c.teeth) { ctx.fillStyle = COL.amber; ctx.font = '600 10px "Caveat", cursive'; ctx.textAlign = 'center';
-        ctx.fillText('teeth', n.x, n.y + C.NODE_R + 16); } });
+        ctx.fillText('teeth', n.x, n.y + C.NODE_R + 24); } });
     // the trap ghost — drawn, never auto-wired; DRAW it (drop the score) or SLASH it (restore)
     if (MESH.trap) {
       const a = MESH.trap.a, b = MESH.trap.b; if (C.byId(a.id) && C.byId(b.id)) {
@@ -407,6 +471,7 @@
     // gesture assembled, drawn ON-CANVAS (the RepoPrompt grail: point/lasso → the
     // narrative is generated FROM it). A deterministic FLOOR reply lands immediately;
     // the bridge enriches it when up — so the loop closes visibly on the static floor.
+    drawSentence(ctx);
     if (MESH.command && ASK && C.byId(ASK.id)) {
       const sp = MESH.command.srcPt;
       if (sp) {
@@ -425,7 +490,7 @@
       roundRect(ctx, px, py, w, h, 9); ctx.fill(); ctx.stroke();
       const answered = ASK._answered && ASK.lastOut != null;
       ctx.fillStyle = COL.inference; ctx.font = '500 9px "IBM Plex Mono", monospace';
-      ctx.fillText((MESH.command.verb === 'blend' ? '⬚ ' : '⌘ ') + snippet(MESH.command.title, 36), px + padX, py + 13);
+      ctx.fillText((MESH.command.verb === 'gather' ? '⬚ ' : '⌘ ') + snippet(MESH.command.title, 36), px + padX, py + 13);
       if (answered) { ctx.fillStyle = COL.positive; ctx.fillText('✦ answered', px + w - 66, py + 13); }
       else mockChip(ctx, px + w - 52, py + 9, 'bridge ← :8378');
       ctx.fillStyle = COL.ink; ctx.font = '300 9.5px "IBM Plex Mono", monospace';
@@ -445,6 +510,38 @@
     const w = ctx.measureText(label).width; ctx.fillStyle = MOCKCOL;
     ctx.beginPath(); ctx.rect(x - w / 2 - 4, y - 7, w + 8, 14); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x, y); ctx.restore();
+  }
+  // a paper-backed label plate — keeps every on-canvas caption legible even where it sits
+  // near the engine's hover metadata (the 'stocm ohs' garble was overlapping labels at the
+  // same baseline; a plate + a clear offset fixes it).
+  function plate(ctx, txt, x, y, col, font) {
+    ctx.save(); ctx.font = font; const w = ctx.measureText(txt).width;
+    ctx.fillStyle = 'rgba(246,241,231,.9)'; ctx.fillRect(x - w / 2 - 3, y - 8, w + 6, 15);
+    ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(txt, x, y); ctx.restore();
+  }
+  // ── THE PHRASE, AS SKIN (editorial’s signature fused with story.html’s inked words):
+  //    the sentence grows with the Complexity slider, each key word inked in its glyph’s
+  //    colour and rooted to its node by a faint tendril (mortar stays dim). The soul of the
+  //    story-demo, brought back. Cat regime only — corpus/loop are not one phrase. ──
+  function drawSentence(ctx) {
+    if (MESH.regime !== 'cat') return;
+    const text = stageText(level); if (!text) return;
+    const clean = w => w.replace(/[.,;:!?]/g, '').toLowerCase();
+    const wordHue = {}; for (const k in MESH.byWord) wordHue[k] = MESH.byWord[k].hue;
+    const words = text.split(/(\s+)/);
+    ctx.textBaseline = 'alphabetic';
+    let total = 0; words.forEach(w => { ctx.font = (wordHue[clean(w)] ? '600 ' : '300 ') + '28px "Fraunces", serif'; total += ctx.measureText(w).width; });
+    const y = 110; let x = Math.max(28, C.W / 2 - total / 2); const placed = [];
+    words.forEach(w => { const c = clean(w), h = wordHue[c]; ctx.font = (h ? '600 ' : '300 ') + '28px "Fraunces", serif'; const ww = ctx.measureText(w).width; placed.push({ w, c, h, x, ww }); x += ww; });
+    placed.forEach((p, wi) => { if (!p.h || !MESH.byWord[p.c]) return; const n = MESH.byWord[p.c]; if (!C.byId(n.id)) return;
+      const rev = clamp((C.t - sentT0 - wi * 0.04) / 0.5, 0, 1); if (rev <= 0) return;
+      const sx = p.x + p.ww / 2, sy = y + 8, ex = n.x, ey = n.y - C.NODE_R - 3, mx = (sx + ex) / 2, my = (sy + ey) / 2 - 24;
+      ctx.save(); ctx.globalAlpha = 0.18 * rev; ctx.strokeStyle = p.h; ctx.lineWidth = 1.1; ctx.setLineDash([2, 4]);
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(mx, my, ex, ey); ctx.stroke(); ctx.setLineDash([]); ctx.restore(); });
+    ctx.textAlign = 'left';
+    placed.forEach((p, wi) => { const rev = clamp((C.t - sentT0 - wi * 0.04) / 0.5, 0, 1);
+      ctx.save(); ctx.globalAlpha = rev; ctx.font = (p.h ? '600 ' : '300 ') + '28px "Fraunces", serif';
+      ctx.fillStyle = p.h || 'rgba(43,42,51,.46)'; ctx.fillText(p.w, p.x, y + (1 - rev) * 4); ctx.restore(); });
   }
 
   // ── gesture floor (COMMAND, gesture-native — no typed verbs). The engine already
@@ -591,6 +688,7 @@
     const c = MESH.cmd[node.id]; if (!c) { toast('nothing to command here'); return; }
     const pkg = assembleContext(c);
     placeAsk(node.x, node.y);
+    openNodeId = node.id;   // keep its facets unfolded while commanded
     MESH.command = { pkg, title: c.title, floor: floorAnswer(c), verb: 'command', at: Date.now(), srcPt: { x: node.x, y: node.y } };
     C.inject(ASK, pkg);     // the engine's OWN inference node POSTs to the bridge (real reply when up)
     toast('⌘ commanded ' + c.title + ' — its real context →✦');
@@ -610,15 +708,15 @@
     const rels = C.links.filter(l => ids.has(l.a) && ids.has(l.b));
     if (rels.length) { lines.push(''); lines.push('# relations inside the region:');
       rels.forEach(l => { const A = C.byId(l.a), B = C.byId(l.b); if (A && B) lines.push('#   ' + A.label + ' → ' + B.label); }); }
-    lines.push(''); lines.push('# BLEND: act over this region — what holds it together, and where does it break?');
+    lines.push(''); lines.push('# GATHER: a real cited context package — what holds this region together, and where does it break?');
     const pkg = lines.join('\n');
     placeAsk(cx, cy);
     const dirRegion = nodes.some(n => (MESH.cmd[n.id] || {}).kind === 'stage');
-    MESH.command = { pkg, title: nodes.length + (dirRegion ? ' loop stages' : ' nodes') + ' blended', verb: 'blend',
-      floor: nodes.length + ' nodes, ' + rels.length + ' relation' + (rels.length === 1 ? '' : 's') + ' — a real cited region package, ready to act over.',
+    MESH.command = { pkg, title: nodes.length + (dirRegion ? ' loop stages' : ' nodes') + ' gathered', verb: 'gather',
+      floor: nodes.length + ' nodes, ' + rels.length + ' relation' + (rels.length === 1 ? '' : 's') + ' — a real cited context package, ready to ask your AI about.',
       at: Date.now(), srcPt: { x: cx, y: cy } };
     C.inject(ASK, pkg);
-    toast('⬚ blended ' + nodes.length + ' nodes — region context →✦');
+    toast('⬚ gathered ' + nodes.length + ' nodes into a cited context →✦');
     drawBench();
   }
 
@@ -653,14 +751,14 @@
   $('gestures').innerHTML =
     '<span class="g"><b>tap</b> — fire a pulse</span>' +
     '<span class="g g-cmd"><b>hold</b> — COMMAND a node (real context → ✦)</span>' +
-    '<span class="g g-blend"><b>lasso</b> — BLEND a region → ✦</span>' +
+    '<span class="g g-blend"><b>lasso</b> — GATHER nodes into a cited context → ✦</span>' +
     '<span class="g"><b>drag a rim</b> — wire</span>' +
     '<span class="g"><b>slash</b> — cut a wire / reject the trap</span>';
 
   function cmdLine() {
-    if (!MESH.command || !ASK) return '<div class="cmd">⌘ <b>hold</b> a node, or ⬚ <b>lasso</b> a region — its real context → ✦ ask</div>';
+    if (!MESH.command || !ASK) return '<div class="cmd">⌘ <b>hold</b> a node, or ⬚ <b>lasso</b> a region to GATHER — its real context → ✦ ask</div>';
     const answered = ASK._answered && ASK.lastOut != null;
-    return '<div class="cmd"><span class="live i"></span> ' + (MESH.command.verb === 'blend' ? '⬚ ' : '⌘ ') + snippet(MESH.command.title, 26) + ' → ✦<br>' +
+    return '<div class="cmd"><span class="live i"></span> ' + (MESH.command.verb === 'gather' ? '⬚ ' : '⌘ ') + snippet(MESH.command.title, 26) + ' → ✦<br>' +
       (answered ? '<span class="inf">✦ real answer landed over the bridge</span>'
                 : 'the <b>context is real</b> & on-canvas, with a <b>floor reply</b>; <span class="m">the bridge enriches it ← :8378</span>') + '</div>';
   }
@@ -697,18 +795,22 @@
     MODE = b.dataset.m;
     document.querySelectorAll('#tools button').forEach(z => z.classList.toggle('on', z === b));
     ov.classList.toggle('lasso', MODE === 'lasso');
+    const lh = $('lassohint'); if (lh) lh.classList.toggle('on', MODE === 'lasso');
     document.querySelectorAll('.gestures .g').forEach(g => g.classList.remove('on'));
     const hl = MODE === 'lasso' ? '.g-blend' : '.g-cmd'; const e = document.querySelector(hl); if (e) e.classList.add('on');
-    toast(MODE === 'lasso' ? '⬚ Lasso — draw a loop around nodes to BLEND them' : '● Point — tap to fire, hold to COMMAND');
+    toast(MODE === 'lasso' ? '⬚ Lasso — draw a loop around nodes to GATHER them into a cited context' : '● Point — tap to fire, hold to COMMAND');
   });
 
   $('kind').textContent = 'the living graph is the context';
-  $('new').onclick = () => { level = 0; if (ASK) { ASK = null; } buildLevel(0); setSlider(0); toast('new — back to “The cat naps.”'); };
+  $('new').onclick = () => { level = 0; if (ASK) { ASK = null; } openNodeId = null; buildLevel(0); setSlider(0); toast('new — back to “The cat naps.”'); };
   $('save').onclick = () => { try { localStorage.setItem('causality.experience', JSON.stringify({ level, graph: C.toJSON() })); toast('saved this canvas'); } catch (e) { toast('save failed'); } };
   setTimeout(() => { const h = $('hint'); if (h) h.style.opacity = 0; }, 7000);
 
   buildSliders(); buildCrumb();
   requestAnimationFrame(() => { buildLevel(level); setSlider(level); });
+  // re-lay-out (and re-fit the frame) on viewport change so nothing strands off-screen
+  let __relayoutT = null;
+  addEventListener('resize', () => { clearTimeout(__relayoutT); __relayoutT = setTimeout(() => { buildLevel(level); setSlider(level); }, 200); });
 })();
 </script>
 </body>
