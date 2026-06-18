@@ -124,6 +124,15 @@ class TermEconomyProjection(unittest.TestCase):
         for sid, terms in expected.items():
             self.assertEqual(sites[sid]["inbound_term_count"], len(terms))
 
+    def test_mermaid_renders_shared_sites_once(self):
+        graph = te.mermaid(self.projection)
+        reconcile_site = te._nid(te.site_id("loop/reconcile.py"))
+        self.assertEqual(
+            graph.count(f'{reconcile_site}["loop/reconcile.py :: code"]'), 1)
+        self.assertIn(f"term_arc -->|code/arc-as-confirmed-admission| {reconcile_site}", graph)
+        self.assertIn(f"term_atom -->|code| {reconcile_site}", graph)
+        self.assertIn(f"term_receipt -->|code| {reconcile_site}", graph)
+
     def test_every_term_carries_a_must_not_mean_guard(self):
         for t in self.projection["terms"]:
             self.assertTrue(t["must_not_mean"],
