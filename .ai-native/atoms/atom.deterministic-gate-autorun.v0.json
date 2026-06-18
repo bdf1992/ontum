@@ -1,0 +1,53 @@
+{
+  "atom": {
+    "id": "atom.deterministic-gate-autorun.v0",
+    "story": {
+      "from": "I am the session bdo asked, after we cleared a midnight clog by hand, how to fix it going forward. The clog: the merge-node lands a PR once the value gate passes, but the atom's own pipeline never finishes — it sits at the placement and handoff gates 'awaiting a summoned node' that never comes, because those gates are deterministic and no human is going to run a pure function. Landed work piled up inflight until the cap jammed every new birth, and I had to hand-run the gates for thirteen atoms across two main passes tonight. bdo chose 'we bother' over 'merged is enough' — the checks stay real. This atom fixes the mechanical root so I never hand-run a deterministic gate again.",
+      "framing": "The pipeline's five stages were all treated alike: a real stage parks the atom and waits for a summoned judge (D-2, D-10). That is right for an inference gate — value-gate and value-confirm carry a real judgment only a model should make. But placement-gate.det.v1 and handoff-gate.det.v1 are deterministic: `placement_gate`/`handoff_gate` compute their verdict as a pure fold over the field, no inference. Parking on them strands the atom forever — nobody is coming to run a function. The owner-stamp already had the right shape: on a confirmed arc, the loop satisfies the stamp itself rather than parking for bdo (done-line 0028). The same escape hatch is the fix for deterministic gates.",
+      "work": "A single registry `DETERMINISTIC_GATE_NODES` in reconcile.py names the deterministic real gates (placement-gate.det.v1, handoff-gate.det.v1; lazy imports, since the gate modules import reconcile). In `pass_once`, a real stage whose node is in the registry is run by the loop: it computes the verdict from the pure fold and writes the receipt itself, carrying the law's prompt_hash exactly as the pen would. The orchestrator's read-only mirror `next_action` is updated in lockstep to classify these as `judge` (the loop's own step) not `await`, so the scheduler actually advances them. Inference gates stay excluded — they still park. The check still bites: a computed collision/send_back is written verbatim, so a real divergence fires precisely as a summoned node's refusal would (next_suggested_event is None for a refusal, so the atom parks at the divergence, not advances). Done-line 0107; the full suite is green and the placement/handoff seam tests were updated to the new contract (the loop auto-writes the receipt, no human; a collision/send_back still refuses).",
+      "need": "Nothing only bdo owns blocks this — epic.substrate is confirmed (adm.476af874f9e4), so the merge-node lands it on his standing confirmation. One honest flag, named not hidden: this fixes the clog at the two deterministic gates; the final value-confirm (delivery) gate is INFERENCE and still parks for a genuine judge — by design, because 'we bother' means delivery is really checked (it is what caught the field-topology dud that claimed loop/field.py without building it). Closing that last stage so landed work fully self-settles without rubber-stamping is the named next piece (a deterministic delivery check that can say 'missed', or the merge-node confirming genuinely at land), not this atom.",
+      "value": "bdo never again finds a jammed loop he or a session has to hand-drain, and no session hand-runs a deterministic gate. Landed confirmed-arc work flows through placement and handoff on its own — the way the owner-stamp already flows on a confirmed arc — while every check stays real and every refusal still fires. The clog that silently ate the inflight cap is closed at its mechanical root.",
+      "text": "Make the loop run admitted-real DETERMINISTIC gates (placement, handoff) itself — a pure-fold escape hatch like the owner-stamp on a confirmed arc — instead of parking the atom for a summoned node that never comes, so landed work stops piling up inflight and jamming new births; inference gates still park, and a collision/send_back still refuses.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "cheap",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "A contained change to the loop's own reconcile/orchestrate fold (stdlib, no network, no external surface): one registry + one self-write branch in pass_once + the matching classification in next_action's read-only mirror. Reversible by reverting; nothing external is touched. The risk is a behavior change to a critical path (the pipeline), so it is gated by the full suite (880 green) and updated seam tests that prove the new contract AND that refusals still bite. Honest flag: the placement/handoff seam tests' old 'park then revert' realness scenario is now impossible by design — they were reframed to the new contract, and the realness guard remains covered (no real verdict without admission). The second set of eyes is the independent value-gate and the merge-node, neither of which is the author (D-2).",
+      "built_at_risk": false
+    },
+    "briefing": {
+      "headline": "the loop runs its deterministic gates itself — no more hand-draining a jammed pipeline",
+      "value": "You asked how to fix the clog going forward and chose to keep the checks real. The fix: deterministic gates (placement, handoff) are pure folds, so the loop runs them itself instead of parking for a human who never comes — exactly how the owner-stamp already self-satisfies on a confirmed arc. Landed work stops piling up inflight; every check still bites; only the genuine inference gates still wait for a judge.",
+      "why_now": "Tonight the inflight cap jammed at 12/8 and a session had to hand-run the deterministic gates for thirteen atoms across two passes. This closes that at the root."
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["loop/reconcile.py", "loop/orchestrate.py", "tests/test_placement_gate.py", "tests/test_handoff_gate.py", ".ai-native/done"],
+      "must_not_collide_with": [
+        "the inference gates (value-gate.claude.v1, value-confirm.claude.v1) — they carry real judgment and MUST keep parking; the registry deliberately excludes them"
+      ],
+      "hands_off_to": ["seam.value-to-placement"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        ".ai-native/done/0107-deterministic-gate-autorun.md",
+        "bdo, chat 2026-06-18: 'how do we fix that going forward?' and 'yes we bother' (keep the checks real, not merged-is-enough)",
+        "done-line 0028 (the owner-stamp self-satisfy on a confirmed arc — the escape-hatch shape reused here)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Backing atom for done-line 0107 (deterministic-gate auto-run). The loop runs deterministic real gates itself instead of parking; inference gates still park. Authored by the session that built it, so an independent value-gate judges it (D-2)."
+}
