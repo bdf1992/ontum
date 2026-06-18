@@ -68,6 +68,46 @@ class Classifier(unittest.TestCase):
         self.assertIsNone(tags.classify("git wibble"))
         self.assertIsNone(tags.classify(""))
 
+    def test_shell_reads(self):
+        # the watcher's unclassified tail, now named: observe-only verbs
+        for cmd in ("ls -la", "cat foo", "grep x f", "uniq -c f", "cut -d: -f1 f",
+                    "tr a b", "sort f", "wc -l f", "which gh", "stat f",
+                    "sed -n 1p f", "awk '{print}' f", "echo hi", "printf %s x",
+                    "sleep 5", "seq 1 10", "sha256sum f", "diff a b"):
+            with self.subTest(cmd=cmd):
+                self.assertEqual(tags.classify(cmd), "read")
+
+    def test_shell_mutations(self):
+        # filesystem-changing verbs — told apart from their read cousins
+        for cmd in ("cp a b", "mv a b", "rm -rf x", "mkdir y", "rmdir y",
+                    "touch f", "ln -s a b", "chmod +x f", "tee out.txt",
+                    "dd if=a of=b", "truncate -s 0 f", "rsync a b", "patch < d"):
+            with self.subTest(cmd=cmd):
+                self.assertEqual(tags.classify(cmd), "mutate")
+
+    def test_read_and_mutate_cousins_are_distinguished(self):
+        # §10 teeth: a classifier that lumped these would be doing nothing.
+        self.assertEqual(tags.classify("cat f"), "read")     # observe
+        self.assertEqual(tags.classify("cp a b"), "mutate")  # change
+        self.assertEqual(tags.classify("ls"), "read")
+        self.assertEqual(tags.classify("rm x"), "mutate")
+
+    def test_interpreters_and_control_stay_none(self):
+        # running arbitrary code is neither cleanly read nor mutate; guessing
+        # there is the silent default this module refuses. None is honest.
+        for cmd in ("python x.py", "python3 -m loop.tags", "node a.js",
+                    "bash run.sh", "sh -c 'x'", "for i in 1 2 3", "until done",
+                    "command -v gh", "make build", "npm install", "xargs rm"):
+            with self.subTest(cmd=cmd):
+                self.assertIsNone(tags.classify(cmd))
+
+    def test_gh_api_get_vs_write(self):
+        self.assertEqual(tags.classify("gh api user"), "read")
+        self.assertEqual(tags.classify("gh api repos/o/r"), "read")
+        self.assertEqual(tags.classify("gh api -X POST repos/o/r/issues"), "mutate")
+        self.assertEqual(tags.classify("gh api -X DELETE repos/o/r/i/1"), "mutate")
+        self.assertEqual(tags.classify("gh api repos/o/r/issues -f title=x"), "mutate")
+
 
 class Pool(unittest.TestCase):
     def setUp(self):

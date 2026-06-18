@@ -77,6 +77,41 @@ _GH_MUTATE = {
 _GH_READ = {"list", "view", "status", "diff", "checks", "get"}
 _CURL_MUTATE_METHODS = {"POST", "PUT", "DELETE", "PATCH"}
 
+# The general shell vocabulary, keyed on the command head (the verb is the
+# tool itself, not a subcommand). The organ census caught the watcher's
+# unclassified tail — `uniq`, `cut`, `tr`, `sleep`, `cp` … read as nothing —
+# and the fix is the same as for git/gh: name what the verb does so the
+# report carries signal, not a blob. Coarse and head-first by design (like
+# `git reset`→mutate regardless of flags): a stream tool's common case is to
+# observe (write to stdout), so `sed`/`awk` read here; the rare `sed -i` is
+# an accepted imprecision, not an enforcement seam. What stays OUT of both
+# sets is honest None: interpreters and control words (`python`, `node`,
+# `bash`, `for`, `until`, `command`) run arbitrary work that is neither
+# cleanly read nor mutate — guessing there would be the silent default this
+# module exists to refuse.
+_SHELL_READ = {
+    # inspect / observe — change no state
+    "ls", "dir", "cat", "bat", "head", "tail", "less", "more",
+    "grep", "egrep", "fgrep", "rg", "ag", "ack",
+    "find", "fd", "locate", "which", "where", "whereis", "type",
+    "wc", "sort", "uniq", "cut", "tr", "nl", "tac", "rev", "column",
+    "fold", "paste", "join", "comm", "diff", "cmp",
+    "sed", "awk", "jq", "yq", "xmllint",
+    "stat", "file", "du", "df",
+    "basename", "dirname", "realpath", "readlink", "pwd", "whoami",
+    "hostname", "uname", "id", "date", "cal", "uptime",
+    "echo", "printf", "yes", "seq", "sleep", "true", "false", "test",
+    "expr", "printenv",
+    "md5sum", "sha1sum", "sha256sum", "shasum", "cksum", "base64",
+    "od", "xxd", "hexdump", "strings",
+}
+_SHELL_MUTATE = {
+    # change the filesystem / on-disk state
+    "cp", "mv", "rm", "rmdir", "mkdir", "touch", "ln", "link", "unlink",
+    "chmod", "chown", "chgrp", "tee", "dd", "truncate", "shred",
+    "install", "mktemp", "rsync", "patch",
+}
+
 
 def _first_verb(tokens):
     """The first non-flag token after the head — a tool's subcommand."""
@@ -105,6 +140,16 @@ def classify(command):
     if head == "gh":
         # gh nests: `gh pr list` — the action verb is the last known word.
         verbs = [t for t in rest if not t.startswith("-")]
+        if "api" in verbs:
+            # `gh api` is a raw GitHub call: GET by default (a read), a write
+            # when a method or a field flag is present (gh's curl-shaped seam).
+            upper = command.upper()
+            if any(f"-X {m}" in upper or f"-X{m}" in upper or f"--METHOD {m}" in upper
+                   for m in _CURL_MUTATE_METHODS):
+                return MUTATE
+            if re.search(r"(?<!\S)(-f|-F|--field|--raw-field|--input)\b", command):
+                return MUTATE
+            return READ
         for v in reversed(verbs):
             if v in _GH_MUTATE:
                 return MUTATE
@@ -119,6 +164,10 @@ def classify(command):
         if re.search(r"(?<!-)\B(-d|--data|-F|--form|-T|--upload-file)\b", command) \
                 and " -G" not in command and " --get" not in command:
             return MUTATE
+        return READ
+    if head in _SHELL_MUTATE:
+        return MUTATE
+    if head in _SHELL_READ:
         return READ
     return None
 
