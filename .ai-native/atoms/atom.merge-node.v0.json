@@ -1,0 +1,62 @@
+{
+  "atom": {
+    "id": "atom.merge-node.v0",
+    "story": {
+      "from": "epic.owner-harness's fifth declared piece (epic.owner-harness.json), and bdo's standing amendment of the 'bdo merges' hard rule (chat stamp, 2026-06-11, his words: he named PR-merging performative, twice). The organ was then built and admitted real — merge-node.claude.v1, node_real adm.852e04202b05 (bdo, 2026-06-12, 'fix the root cause and ship') — and has since landed ~78 PRs to main. Every one of those landings happened off this atom: the piece was declared, the organ was built and stamped, but atom.merge-node.v0 was never authored or run through the pipeline.",
+      "framing": "The merge-node is the hand that lets bdo step out of the merge seat: an independent agent that lands a confirmed-arc PR it did not author, once the suite is green, executing bdo's confirm-arc rather than authorizing the merge itself (D-4, the same shape as the disposer executing the auto-admit fence). Its eyes are loop/merge.py (land-readiness per arc, a read-only fold over the digest); its hand is the PR pen's land verb (.claude/skills/branch-ritual/pr.py land). The divergence this atom closes is sharp and self-referential: the organ whose whole law is 'no one signs their own line' was itself the one writer with no atom drawn for it and — at first — no admission either (the 22 unadmitted landings mock-shame caught were exactly this self-asserted identity). The lander never landed itself. This atom is the retrospective backing that draws its line: it brings an already-real, already-running organ onto the log under the arc that declared it, so owner-harness reads true instead of reading 'unbuilt' over a node that has merged most of main.",
+      "work": "Nothing is built here — the organ exists and is real. The work is the recording itself, honestly flagged: (1) this atom file as the merge-node's birth-on-the-log, citing the live organ (loop/merge.py + the PR pen land verb), its node_real admission (adm.852e04202b05), and the amended hard rule; (2) the §10 divergence it resolves — a confirmed arc (adm.728a87a9ca48) harbouring a piece that read 'not-yet-present' over a node that landed ~78 PRs — named, not papered over; (3) the stale epic glue surfaced for bdo: epic.owner-harness.json still says 'Until bdo admits the node real (--by bdo)... it merges nothing and he still merges', which his 2026-06-11/06-12 stamps already overtook — a needs-you note, never a silent edit of his steering surface.",
+      "need": "No new owner stamp for the organ: bdo already admitted it real (adm.852e04202b05) and already amended the hard rule. The owner-stamp on this atom is satisfied by the confirmed arc (adm.728a87a9ca48). What remains is an independent value-gate judge that did not author this atom (no one signs their own line), and bdo's eventual call on whether the stale epic glue should be re-steered.",
+      "value": "epic.owner-harness completes truthfully: the four pieces that read landed are joined by the fifth, and the piece that read 'unbuilt' stops contradicting a node that has merged most of main. The organ that enforces 'no one signs their own line' stops being the one writer that never had its own line drawn — the lander is on the log like everything it lands.",
+      "text": "From owner-harness's fifth piece and bdo's stamp retiring his own merge seat, I need the live, already-real merge-node recorded on the log as the atom the arc declared — because an organ that lands most of main while its own piece reads 'unbuilt' is the exact off-log divergence the system exists to refuse, and the lander must hold its own line like every line it lands.",
+      "value_confidence": "high",
+      "owner_stamp": "satisfied-by-arc (adm.728a87a9ca48)"
+    },
+    "risk": {
+      "class": "routine",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "The atom writes one record onto the log (append-only, superseding never erasing) and touches nothing the organ does not already touch — the merge-node itself is built, tested, and admitted real outside this atom. built_at_risk is honestly true: the work this atom records was built and stamped before the atom was authored (the off-log fact it exists to correct). It declares no new capability and asks for no new stamp; it draws a line that was owed.",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "the lander gets landed",
+      "value": "Your owner-harness arc reads 4 of 5 landed with the fifth piece 'unbuilt' — over the merge-node, the very organ you stamped to merge in your place, which has since landed ~78 PRs. This draws its line on the log so the arc completes truthfully and the node that enforces 'no one signs their own line' finally has its own.",
+      "why_now": "You confirmed owner-harness (adm.728a87a9ca48) and admitted the merge-node real (adm.852e04202b05); the only thing missing was the piece on the log. Carrying the arc all the way through means closing this last gap rather than leaving the lander self-asserted.",
+      "if_accepted": "owner-harness's pieces all resolve (four landed, the mirror superseded-forward into surface-registry, this fifth recorded); the merge-node stops being the off-log organ mock-shame flags.",
+      "if_rejected": "The merge-node keeps landing main while its own piece reads 'unbuilt' — the arc you confirmed never reads true, and the one organ whose law is self-restraint stays the one with no line of its own.",
+      "cost_of_wrong_call": "Routine and reversible: one record, superseded by admission if wrong, the log never depending on it. The organ is unaffected either way — this only decides whether its line is drawn.",
+      "mechanism": "loop/merge.py (the eyes: land-readiness per arc, a read-only fold over loop/digest.py) + .claude/skills/branch-ritual/pr.py land (the hand: the hard-gated epic→main land an independent merge-node runs after bdo confirms the arc); node_real adm.852e04202b05 (merge-node.claude.v1); the amended 'merge-node lands; bdo confirms arcs' hard rule (CLAUDE.md, 2026-06-11). This atom appends one birth record; it writes no new merge path.",
+      "reading": [
+        "loop/merge.py",
+        ".claude/skills/branch-ritual/pr.py",
+        ".ai-native/epics/epic.owner-harness.json",
+        "CLAUDE.md (the 'merge-node lands; bdo confirms arcs' hard rule)"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/merge.py", ".claude/skills/branch-ritual/pr.py", ".ai-native/log"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "epic.owner-harness.json (the fifth declared piece, glue stale on realness)",
+        "adm.852e04202b05 (node_real: merge-node.claude.v1, by bdo 2026-06-12)",
+        "adm.728a87a9ca48 (arc_confirmed: epic.owner-harness, by bdo)",
+        "loop/merge.py (the eyes); .claude/skills/branch-ritual/pr.py (the hand)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated (D-5). It is a retrospective backing: the merge-node organ it records was built and admitted real (adm.852e04202b05) before this atom existed — built_at_risk is honestly true — and this draws the line owner-harness's fifth piece declared but never received. Story fields follow the v2 form bdo reviewed on issue #7."
+}
