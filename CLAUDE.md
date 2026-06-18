@@ -59,7 +59,8 @@ records the correction; don't repeat it.
 
 Current direction lives in `.ai-native/epics/` — each epic carries an
 `arc` and a `horizon` (what done looks like at epic scale). As of
-mid-2026 the horizons are: all five gates real (only L0 is today), the
+mid-2026 the horizons are: all five gates real (reached — mock
+temperature 0/5, done-line 0047), the
 slow loop re-admitting its own dials from outcomes, corpus-to-system (a
 corpus pointed at the machine becomes *proposed* atoms), and a served,
 authenticated phone inbox where bdo steers arcs — not tickets — with
