@@ -4,7 +4,7 @@ description: >
   Read bdo's realness confirmations from GitHub and act on them. A mock pipeline
   stage with a built, tested real backing waits on one decision — bdo trusting it
   to judge for real — and bdo makes that decision the way he makes every
-  decision: from GitHub on his phone, by closing the stage's realness-confirm
+  decision: from GitHub, wherever he is, by closing the stage's realness-confirm
   issue with a plain-language comment. This skill reads that comment, judges his
   intent (confirm / decline / unclear), and on a clear confirm runs the realness
   admission on his authorization (loop.node admit-real --by bdo) — always
@@ -18,7 +18,7 @@ version: 0.1.0
 # realness-intake — bdo's GitHub realness stamps, read and acted on
 
 bdo will not run a CLI and will not open a custom UI. His surface is GitHub,
-which he already carries on his phone. Sibling to arc-intake (done-line 0038):
+which he can reach from any device. Sibling to arc-intake (done-line 0038):
 that skill lets him confirm an *arc*; this one lets him make a *gate real*.
 Making a stage real is a real authority act — it changes what the loop trusts
 to judge — and it stays bdo's (done-line 0028 scopes arc-confirmation to the
