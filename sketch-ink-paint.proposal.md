@@ -134,6 +134,26 @@ The reason the loop feels like a contractor today is that it throws the
 sauce out and re-buys ingredients every morning. The pentimento organ is
 **the pot you never wash.**
 
+**A note on the word, because it is already overloaded (bdo, this
+session).** "Experience" carries *three* incompatible senses here, and the
+honest move is to name all three rather than fight over the word —
+causality would flag exactly this split:
+
+- **lived experience** — the *maker's* encounter, first-person, ending in
+  an authored story (the writer / artist / architect): this is
+  `epic.experience-layer`.
+- **craft / the sauce** — *memory made comparable*, reduced and kept: the
+  pentimento organ above, `epic.pentimento`.
+- **felt experience** — the **felt feel of the work and its media**, the
+  quality of *encountering* the made thing (the *anima*), not the maker's
+  process.
+
+These are not rivals: they are the maker's experience, the system's
+experience, and the work's experience. bdo's lens — *experience as the
+felt feel of the art, not the artist* — is the third, and it is what tells
+the **paint** stage that its job is not only legibility but **feeling**:
+the colorist gives the page its mood, not just its caption.
+
 **Why this is the organ ontum is most missing.** Every fold today reads
 the log down to *current state* — `gaps`, `census`, `term_economy`,
 `reconcile` all ask *"what is true now?"* and throw the **journey** away.
@@ -162,7 +182,7 @@ shape (and its gaps) become legible:
 | **Medium** *(what holds the mark)* | **the log — the sketchbook leaf**: a mark you may erase, but the erasure stays as a trace (supersede / whiteout, never deletion) | **the log — the committed board**: frozen, no erase (bytes are identity; the done-dir freeze) | **the log — the finished page, then carried to the reader's wall** (the digest, the GitHub mirror, the projection, the summon line) |
 | **Media** *(the instrument + pigment)* | draft atoms, **mocks**, the erase primitive (whiteout) — provisional pigment **on the book** | **the pens** (`pen.py`, `node.py`, `git.py`, `pr.py`) — carbon-copy, one committed line at a time | the **folds + the additive pens** (`reflect.py`, `digest.py`, `term_economy.py`, `supersede-done`) — a wash over many lines |
 | **Method** *(the discipline)* | explore freely; fail cheap; **erase freely — but every erasure is a logged trace** (supersede / whiteout), because the abandoned line is how we get better | **carbon-copy determinism · receipt-or-it-didn't-happen · idempotent · no-self-sign · freeze** | **additive only — never erase** (you can still see the line under it); re-derivable fold; *surface to the reader* |
-| **Muse** *(what the mark serves)* | curiosity, the open arc, the question (broad) | the **L0 story** — `As an AI I need X, because bdo wants V` (the committed claim) | **outcome-pressure + the owner's gaze** (making the truth legible to the one who must act) |
+| **Muse** *(what the mark serves)* | curiosity, the open arc, the question (broad) | the **L0 story** — `As an AI I need X, because bdo wants V` (the committed claim) | **outcome-pressure + the owner's gaze + the *felt feel*** — not only making truth legible to the one who must act, but giving it *mood* (the work's anima, how it lands on whoever meets it) |
 | **Mode** *(the temperature of the moment)* | **hot — explore** | **decisive — measured** | **cool — consolidate** |
 
 The spine: the medium does **not** change — it is the one book throughout
@@ -324,61 +344,35 @@ The owner inherits the same, colored for him: *the un-inked is the
 agents' work; the unreadable paint is mine to receive; one fence-stroke
 unblocks the colorist.*
 
-## Open questions (for bdo)
+## Resolved — the decided path (bdo, 2026-06-19)
 
-1. **Is "mark" a doctrine concept or a fold label?** *My lean:* start as a
-   fold label (step 1 above) and a one-sentence doctrine extension —
-   "every record is in one of three marks: sketch, ink, paint" — promoted
-   only after the label proves it reads true against the live backlog.
-   (Marks here are proposed, not minted — language/CLAUDE.md grain.)
-2. **Sketch promotion.** Does sketch→ink stay where it is (atom + gate
-   verdict), or does naming the sketch surface change *who* may ink? *My
-   lean:* unchanged — the inker is still the gate (D-2); we only make
+The five questions are closed; the calls are recorded here so the build
+inherits them from the record, not from chat. They are carried into
+`epic.three-marks` (this proposal's arc).
+
+1. **"Mark" status → a *fold label* first, not doctrine.** The folds attach
+   the mark; the one-sentence doctrine extension is promoted only after the
+   label proves it reads true against the live backlog. (Marks are proposed,
+   not minted — language/CLAUDE.md grain.)
+2. **Sketch governance → unchanged.** Naming the sketch surface does not
+   change *who* may ink: the inker is still the gate (D-2). We only make
    un-inked sketch *countable*, not differently-governed.
-3. **Un-admitted writes: accept-and-stamp, or refuse?** Step 3 proposes
-   *accept-but-mark-sketch* (never lose the work, fold it as pressure).
-   The alternative is hard refusal at the seam. *My lean:* accept-and-stamp
-   — refusal at the seam would have stranded the 22 landings instead of
-   making them visible, repeating the off-log failure.
-4. **First build scope.** Smallest real version: steps 1–2 (relabel +
-   the un-inked fold + one summon line). Does that become an epic with a
-   done-line series, or a single done-line?
-5. **The pentimento organ — its own arc?** The palimpsest fold (step 6) is
-   bigger than this proposal and arguably the system's deepest gap (no
-   *experience*, only state). *My lean:* it earns its own epic/outcome
-   once the sketchbook (steps 1–2) gives it something comparable to read —
-   you cannot fold a journey the book never recorded.
-
-## Decisions — the short version (so it is easy to act on)
-
-If you want to move this with the least thought, here is the **recommended
-default path** — accept it wholesale, or override only the forks below:
-
-- **Adopt the framing as a *fold label*, not doctrine yet** (Q1). Prove it
-  reads true against the live backlog first; promote the one sentence
-  later.
-- **Build steps 1–2 as the first increment** (Q4): the mark-label on
-  `loop.gaps` + the sketch primitive on the log + the `un_inked()` fold +
-  one summon line. That is the smallest thing that puts the sketchbook back
-  in the book. Scope it as **one done-line under a small epic**, so steps
-  3–6 have a home.
-- **Defer the pentimento/sauce organ to its own arc** (Q5) — it is the
-  deepest gap, but you cannot keep a sauce the kitchen never let simmer;
-  steps 1–2 must feed it first.
-
-Only **two forks genuinely need your judgement** (the rest have safe
-defaults above):
-
-- **Q3 — un-admitted writes: accept-and-stamp-sketch, or refuse at the
-  seam?** My strong lean is **accept-and-stamp** — refusal would have
-  stranded the merge-node's 22 landings instead of making them visible
-  (the exact off-book failure this proposal exists to end). This is the one
-  call that changes the system's character; everything else is mechanics.
-- **Sketch governance** (Q2) — I believe *unchanged* (the inker is still
-  the gate, D-2); flag it only if you disagree.
-
-To start the build when you are back, one line is enough: *"take the
-default path, build steps 1–2."* To change course, name the fork.
+3. **Un-admitted writes → accept-and-stamp sketch.** A write by an
+   un-admitted actor is accepted, stamped `mark: sketch`, and folded as
+   un-inked pressure until an `admit-real` inks the actor — never refused at
+   the seam (refusal would strand work the way the merge-node's 22 landings
+   were stranded). *This is the call that sets the system's character.*
+4. **First build scope → a full epic with a done-line series** (`epic.three-marks`),
+   wave-ordered, so all five build steps have a home. (bdo chose the fuller
+   frame over a single done-line — the whole frontier visible.)
+5. **The pentimento/sauce organ → its own arc, after waves 1–2.** It
+   graduates out of this epic into `epic.pentimento` (the palimpsest fold →
+   craft) once the sketchbook gives it something comparable to read. *Naming
+   note:* the existing `epic.experience-layer` already binds the word
+   **"experience"** to a different sense (a launched, bounded encounter that
+   ends in an authored story). This organ's "experience" (memory made
+   comparable) is a genuine **overload** to reconcile — which is why its arc
+   is named for its mechanism (*pentimento / palimpsest*), not "experience."
 
 ## What this touches, and what it does not
 
@@ -403,9 +397,12 @@ default path, build steps 1–2."* To change course, name the fork.
 
 ---
 
-*Next, if you take it: the recommended default path above, whose first
-build is the mark-label on `loop.gaps` plus a sketch primitive on the log
-and an `un_inked()` fold with one summon line — the smallest thing that
-puts the sketchbook back in the book, so a waking session sees the 50
-stranded commits as comparable sketch instead of a silent strand. The
-pentimento organ that keeps the sauce is its own arc, after.*
+*The decisions are closed (above) and carried into `epic.three-marks`. The
+line is primed: wave 1 is the mark-label on `loop.gaps` plus a sketch
+primitive on the log and an `un_inked()` fold with one summon line — the
+smallest thing that puts the sketchbook back in the book, so a waking
+session sees the 50 stranded commits as comparable sketch instead of a
+silent strand. The session that picks up wave 1 writes its done-line and
+builds; bdo confirms the arc (`confirm-arc`) to authorize landing. The
+pentimento organ that keeps the sauce graduates to `epic.pentimento`,
+after.*
