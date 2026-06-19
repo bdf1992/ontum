@@ -161,6 +161,21 @@ class MergeReceiptReachesTheLog(unittest.TestCase):
         self.assertEqual(r["authorized_by"], "adm.728a87a9ca48")
         self.assertEqual(r["pr"], 45)
 
+    def test_receipt_carries_the_landed_atoms_sorted(self):
+        # D-13: the write-through carbon copy — the merge reflects *which* atoms
+        # reached main, so the per-atom↔per-PR namespace can join (done-line 0124).
+        r = pr._merge_receipt(7, "e", "n", "adm.x", "h",
+                              landed_atoms=["atom.b.v0", "atom.a.v0"])
+        self.assertEqual(r["landed_atoms"], ["atom.a.v0", "atom.b.v0"])
+
+    def test_receipt_without_atoms_is_honest_empty_not_missing(self):
+        # an empty list (a PR that landed no atom file) is distinct from the
+        # missing field on the 90 pre-D-13 receipts ('never computed'); the field
+        # is always present going forward so the reader can trust it.
+        r = pr._merge_receipt(8, "e", "n", "adm.x", "h")
+        self.assertEqual(r["landed_atoms"], [])
+        self.assertIn("landed_atoms", r)
+
     def test_append_is_torn_tail_tolerant(self):
         import json as _json
         import tempfile

@@ -846,11 +846,21 @@ def land_refusal(info, confirmation, by, by_admitted=False):
     return None
 
 
-def _merge_receipt(pr, epic, by, authorized_by, head):
-    """The merge receipt (D-5): the land as an act on the record, citing the
-    arc confirmation that authorized it. Built here; pushed to the trunk by
+def _merge_receipt(pr, epic, by, authorized_by, head, landed_atoms=None):
+    """The merge receipt (D-5, D-13): the land as an act on the record, citing
+    the arc confirmation that authorized it. Built here; pushed to the trunk by
     _push_receipt_to_trunk — never left in a worktree (the bug that left every
-    real merge unrecorded: a receipt in a throwaway worktree is no receipt)."""
+    real merge unrecorded: a receipt in a throwaway worktree is no receipt).
+
+    `landed_atoms` is the write-through carbon copy (D-13): the artifact_ids the
+    PR's range actually added under .ai-native/atoms/, so this GitHub surface act
+    reflects *which* local atoms reached main, not only *that* a PR did. Without
+    it the pipeline namespace (per-atom) and the git namespace (per-PR) cannot
+    join, and the loop can never confirm a piece is on main (the per-atom↔per-PR
+    gap, done-line 0123). An empty list is honest — a PR that added no atom file
+    (a phrasing-only branch) — and distinct from a missing field on the 90
+    historical receipts, which means 'never computed' (those stand as lossy
+    history; the gap closes forward, D-13)."""
     return {
         "id": f"rcp.merge.{pr}",
         "kind": "merge",
@@ -859,6 +869,7 @@ def _merge_receipt(pr, epic, by, authorized_by, head):
         "epic": epic,
         "head": head,
         "verdict": "landed",
+        "landed_atoms": sorted(landed_atoms or []),
         "authorized_by": authorized_by,
         "ts": _now(),
     }
@@ -923,10 +934,19 @@ def cmd_land(ns):
     if reason:
         _refuse(reason)
     head = info.get("headRefName")
+    base = info.get("baseRefName") or "main"
+    # The write-through join (D-13): compute which atoms this PR lands BEFORE the
+    # merge, while origin/{head} still exists (GitHub deletes it on merge). Same
+    # reach the off-log gate uses (_range_atom_facts → loop.pr_audit), so the
+    # receipt's `landed_atoms` cannot disagree with what the gate counted. If the
+    # reach fails we do not land a lossy receipt — the land raises and retries,
+    # never records a merge it cannot describe.
+    _run(["git", "fetch", "origin", base, head])
+    landed_atoms, _ = _range_atom_facts(f"origin/{base}", f"origin/{head}")
     if ns.dry_run:
         print(f"result: report — DRY RUN: would land PR #{ns.number} "
               f"({head} -> main) on arc {ns.epic} confirmed by bdo "
-              f"({confirmation}); nothing merged")
+              f"({confirmation}); atoms {landed_atoms or '(none)'}; nothing merged")
         return
     # Merge only — never --delete-branch. Across the fleet the head branch is
     # checked out in a worktree, and `gh pr merge --delete-branch` fails on the
@@ -935,7 +955,8 @@ def cmd_land(ns):
     # merges. The SessionStart gardener (done-line 0037) prunes the merged
     # worktree and branch; GitHub's delete_branch_on_merge clears the remote head.
     _run(["gh", "pr", "merge", str(ns.number), "--squash"])
-    receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head)
+    receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head,
+                             landed_atoms=landed_atoms)
     if _push_receipt_to_trunk(receipt):
         print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
               f"on bdo's confirmed arc {ns.epic}; receipt {receipt['id']} on the trunk. "
