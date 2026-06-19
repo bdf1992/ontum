@@ -1,0 +1,76 @@
+{
+  "family": {
+    "id": "living",
+    "name": "Living Data Maps",
+    "pin": "data as inhabitable weather",
+    "ai_native_pin": "weather you can trust: every drop sources itself, and the pencil never passes for ink"
+  },
+  "patterns": [
+    {
+      "id": "particle-globe",
+      "name": "Particle Globe",
+      "current_intent": "A planet-scale feed becomes weather you can watch — volume reads as atmosphere, anomaly as a flare.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Gains a register by rendering settled RECORD motes (ink) distinctly from live RUNTIME flux and pencil SIMULATION flares, each flare clickable to its backing log record — i.e. the de-mocked surface becomes the new 'provenance-field' sibling below; as written it is gorgeous craft whose own pin ('individual records matter less than the field') is the negation of provenance.",
+      "non_example": "NOT a sourced map — it is explicitly the field over the record; a flare here names nothing and clicks to nothing.",
+      "exemplars": ["https://cybermap.kaspersky.com/", "foundry:01-living-loop"]
+    },
+    {
+      "id": "flow-field",
+      "name": "Flow Field",
+      "current_intent": "Continuous data rendered as a wind you stand inside; direction and speed carry the number.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Stays decoration, honestly: its pin is that the individual element is illegible and 'local arrows lie' — the exact opposite of a traceable route to source. Provenance cannot be bolted onto a pattern whose thesis is that no single element carries truth. Keep it for craft (earth.nullschool.net grade), label it decoration.",
+      "non_example": "NOT an inspectable vector store — it is motion-as-truth; clicking a streamline yields a feeling, not a record.",
+      "exemplars": ["https://earth.nullschool.net/", "foundry:03-flow"]
+    },
+    {
+      "id": "feed-choreo",
+      "name": "Live Feed Choreography",
+      "current_intent": "Events arrive as staged motion — entrance, travel, consequence — so the stream reads as story, not log.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "The closest of the four to earning it: give the choreography a register so a WITNESSED event (ink, a receipt on the log) and a PROPOSED one (pencil, an unstamped request/simulation) arrive with unconfusable motion-grammars, and let any staged event be clicked back to its log substring. That single move (register + provenance) flips it to ai-native — it is the living-family expression of causality's witnessed-vs-proposed distinction.",
+      "non_example": "NOT a register-bearing stream today — every event is staged identically; a proposal and a fact dance the same dance, which is the confusion the AI-native axis refuses.",
+      "exemplars": ["https://cybermap.kaspersky.com/", "foundry:01-living-loop"]
+    },
+    {
+      "id": "ambient-telemetry",
+      "name": "Ambient Telemetry",
+      "current_intent": "The system's vital signs live at the edge of attention — legible in a glance, silent until they matter.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Inherently a RUNTIME surface, but showing only 'now' is not distinguishing the four registers — it is one register with the others absent. Earns truth-capable if a vital can be clicked to the fold/record it summarizes (provenance), and earns more if it co-displays a pencil SIMULATION projection ('this gauge, if the trend holds') unconfusable from the live RUNTIME reading. Until then it is ambient craft, labeled decoration.",
+      "non_example": "NOT a provenance surface — a gauge that summarizes but cannot be opened to its source fold is a mood, not a witness.",
+      "exemplars": ["https://earth.nullschool.net/"]
+    }
+  ],
+  "new_patterns": [
+    {
+      "id": "provenance-field",
+      "name": "Provenanced Field",
+      "current_intent": "The living field keeps its weather, but every mote carries a route home: click any particle and it resolves to the record that emitted it — and the field refuses to draw a drop it cannot source. The de-mocked particle-globe — atmosphere you can interrogate.",
+      "axis": { "register": "partial", "provenance": "full", "agent_drivable": "partial" },
+      "verdict": "ai-native",
+      "evolution": "Authored as the AI-native answer to particle-globe and flow-field: it proves a living surface can stay ambient AND hold the holographic rule (no projection without a path home). Register is partial — witnessed motes (ink) read distinctly from unsettled ones (pencil) — and earns full when it co-renders RUNTIME flux against RECORD settle unconfusably. Provenance is full: this is causality's inspector ('click a node/route -> its backing record / file:line / log substring') applied to a weather field. Agent-drivable is partial: the field is fed by a typed seed the schema validates, with a toJSON/fromJSON spec equivalent, render only after validation.",
+      "non_example": "NOT a heatmap of uninspectable aggregates, and NOT particle-globe with tooltips bolted on: if a mote cannot name its source record, it is not drawn at all. The refusal is the pattern.",
+      "exemplars": ["causality:canvas", "causality:term_economy", "foundry:01-living-loop"]
+    },
+    {
+      "id": "pencil-forecast",
+      "name": "Pencil Forecast",
+      "current_intent": "A simulation layer drawn in pencil over the live field: 'what might happen' rendered in the same weather grammar as 'what is happening', but unconfusably provisional and co-resident, so an operator never mistakes a projection for a record.",
+      "axis": { "register": "full", "provenance": "partial", "agent_drivable": "full" },
+      "verdict": "ai-native",
+      "evolution": "Authored, not evolved — the living family's first true pencil register. It exists because a weather map that cannot mark a drop as 'might' lies about its own certainty. Register is full: RECORD (settled ink), RUNTIME (live flux), and REQUEST/SIMULATION (the pencil overlay) made visible in one field, the ink/pencil boundary being the whole pattern. Agent-drivable is full: the forecast is authored by a typed sim-spec validated against the schema before it renders (causality's describe -> validate -> render front door), driven by a model, never hand-painted. Provenance is partial: a forecast mote traces to the sim-spec/seed that generated it (a route to its generating request), though not to a settled record — it hasn't happened yet.",
+      "non_example": "NOT a styled 'preview mode' screen-toggle: the pencil register is per-element and co-resident with ink, never a separate view — and a forecast mote that cannot name its generating spec is refused.",
+      "exemplars": ["causality:authoring", "causality:canvas"]
+    }
+  ],
+  "open_questions": [
+    "The family pin ('the field matters more than the record') is in genuine tension with the provenance axis ('no projection without a path home'). Provenanced Field claims you can hold both at scale; it is unproven whether per-mote sourcing survives the ambient, inhabitable quality, or whether legibility quietly kills the weather.",
+    "Register-bearing at field scale vs mote scale: is a continuous weather field even the right substrate to distinguish four registers, or does the distinction only live at the individual mote — making 'register-bearing living map' a contradiction the family should admit rather than engineer around?"
+  ]
+}

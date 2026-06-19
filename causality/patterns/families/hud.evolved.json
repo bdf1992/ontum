@@ -1,0 +1,67 @@
+{
+  "family": {
+    "id": "hud",
+    "name": "Ambient HUD Craft",
+    "pin": "the chrome that whispers",
+    "ai_native_pin": "the chrome that whispers which truths are ink and which are pencil, renders a route home behind every glyph (register's, not its own), and stays quiet enough for a glance yet typed enough for a model to read"
+  },
+  "patterns": [
+    {
+      "id": "glass-panel",
+      "name": "Glass Panel HUD",
+      "current_intent": "Chrome floats above the world on frosted glass — present when read, invisible when the world moves.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "The glass declares its COMMITMENT through its frame's line-treatment — a solid, ink-weighted edge for an admitted RECORD (ink: it happened), a dashed/pencil border for a REQUEST or SIMULATION (pencil: only a maybe) — so a panel's frame tells you whether it holds ink or pencil before you read a word. It RENDERS the one canonical commitment vocabulary owned by the register family on register's channel (line-treatment + badge); colour stays strata's, size and motion stay anima's (RECONCILIATION.md's three-facet cut). A live pulse on the rim is the panel's RUNTIME — but 'happening now' is anima-tempo / process, not a register, so the pulse rides the motion channel, never the frame. (lifts register none -> partial, becoming commitment-capable)",
+      "non_example": "A frosted panel whose blur radius is the whole point — opacity tuned for beauty while an admitted RECORD and a what-might-happen SIMULATION wear the exact same glass. It whispers, but never says which marks are ink and which are pencil. Honest decoration; do not inflate it."
+    },
+    {
+      "id": "ticker-feed",
+      "name": "Ticker Feed",
+      "current_intent": "The raw stream scrolls at the edge like a stock tape: ignorable, but proof the pulse is real — show actual records, in motion, unsummarized.",
+      "axis": { "register": "none", "provenance": "partial", "agent_drivable": "none" },
+      "verdict": "truth-capable",
+      "evolution": "Each scrolling line keeps its route home — click a row and it resolves to its backing log line / file:line — but route-home is register:provenance-trace's owned primitive (the term_economy.py resolve-citation-to-committed-bytes move); the ticker RENDERS it in motion, it does not re-own it (cite-as-kin). Each line also wears its commitment: solid/ink for an admitted RECORD, dashed/pencil for a proposed-but-unsettled row — the register family's canonical ink/pencil, cited not re-declared. A now-happening row pulses on the motion channel (anima-tempo; RUNTIME = process, not a register). Proof-of-pulse becomes proof-with-provenance (provenance partial -> full, register none -> partial: crosses into ai-native).",
+      "non_example": "A curated highlight reel or a summarized 'top events' band scrolling by: the moment it editorializes the stream it stops being evidence and becomes another opinion. Equally a tape of fabricated demo rows — motion with nothing real behind it is the lie this pattern exists to refuse."
+    },
+    {
+      "id": "legend-story",
+      "name": "Legend as Story",
+      "current_intent": "The legend doesn't define symbols, it narrates stakes: 'red is a refusal' teaches the world in one line.",
+      "axis": { "register": "partial", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "truth-capable",
+      "evolution": "The same narrate-the-stakes craft, pointed at COMMITMENT: a register legend that RENDERS the one canonical ink/pencil vocabulary owned by the register family (it does not invent its own) — 'ink already happened: an admitted RECORD; pencil is only a maybe: a proposed REQUEST or a SIMULATION' — and shows the register-badge beside each, making ink vs pencil impossible to confuse in one read (register partial -> full; ai-native-capable). RUNTIME is deliberately absent from this legend: 'happening now' is process (anima-tempo), not a commitment, so it is narrated on its own channel, never as a register (RECONCILIATION.md). The legend is a renderer of register's schema, never a second declaration of it — which answers this family's old Q1: one canonical commitment vocabulary, owned by register, rendered here.",
+      "non_example": "A glossary table ('● = node, ■ = edge') that defines symbols without naming stakes — and, on the other side, a legend that re-declares its OWN ink/pencil meanings instead of rendering register's canonical one (the overloaded failure: two legends, two drifting definitions of the same word). Vibe without the commitment distinction, or a private redefinition of it, is craft, not truth."
+    }
+  ],
+  "new_patterns": [
+    {
+      "id": "provenance-tooltip",
+      "name": "Provenance Tooltip",
+      "current_intent": "Hover any element on the ambient chrome — a node, a ticker row, a gauge value — and the HUD whispers its source at the edge of attention without taking you anywhere: the backing record id, file:line, or log substring it was folded from. The route-home primitive is register:provenance-trace (register OWNS route-home); this pattern is its HUD-chrome SURFACING — the ambient hover affordance, distinct only in that it renders the route as a glance-level whisper rather than a click that navigates away.",
+      "use_when": "Use when an ambient surface must let a human or an agent confirm any glanced value's source without leaving the surface — the whisper-level expression of route-home, for when a full click-to-navigate would break the glance.",
+      "axis": { "register": "partial", "provenance": "full", "agent_drivable": "partial" },
+      "verdict": "ai-native",
+      "evolution": "Surfaces ai-native, does not author it: every rendered element carries a resolvable route to source, refused at render if the citation dead-ends (term_economy's ghost refusal) — but that resolve-and-refuse lives in register:provenance-trace, which this tooltip CITES as kin and renders, never re-implements (the dedup this narrowing settles: HUD surfaces register's primitive, it does not ship a second route-home). Distinct HUD contribution: the route arrives as an ambient whisper (hover, no navigation), and the same hover names the element's COMMITMENT (ink/pencil) inline. Next reach: the route resolves through register's typed API so an agent gets the backing without the hover.",
+      "non_example": "A tooltip that re-declares its own route-home mechanism instead of citing register:provenance-trace — a second, drifting copy of the one primitive (the dup this narrowing refuses). Also a hover card that shows a prettified label or a derived score with no way back to the bytes, or that invents a plausible-looking source it never resolved (the fabricated citation term_economy.py sends back).",
+      "kin": ["register:provenance-trace"],
+      "exemplars": ["register:provenance-trace", "causality:term_economy.py", "causality:canvas.js", "foundry:01-living-loop"]
+    },
+    {
+      "id": "speakable-hud",
+      "name": "Speakable HUD",
+      "current_intent": "The ambient gauge a human reads at the edge of attention has a typed-spec equal a model can poll: the 73% the operator glances at is the same value an agent reads through an API, not a number trapped in pixels. The chrome whispers to the model too.",
+      "use_when": "Use when a human-glance gauge must also be machine-pollable — when the same ambient value an operator reads at the edge of attention has to be readable and drivable by an agent through a typed spec, not trapped in rendered pixels.",
+      "axis": { "register": "partial", "provenance": "partial", "agent_drivable": "full" },
+      "verdict": "ai-native",
+      "evolution": "Authored ai-native: the HUD's state serializes to and rehydrates from a typed spec (canvas.js toJSON/fromJSON), so reading and driving the surface is browser-optional. Next reach: every ambient value names the fold it came from (provenance partial -> full, route-home via register:provenance-trace, cited not re-owned) and tags its COMMITMENT — pencil for a proposed/simulated value, ink for a settled RECORD — rendering the register family's canonical ink/pencil (register partial -> full). A now-updating value is marked on the process/anima side, not as a register (RUNTIME is not a commitment; RECONCILIATION.md).",
+      "non_example": "A gauge whose only output is rendered pixels — screenshot-only, so the human sees a dial and the model sees an image with no value behind it. And the canonical 30-day anti-pattern: a chat box bolted beside a static dashboard, calling the bolt-on 'AI-native' while the HUD itself stays unreadable to any agent.",
+      "kin": ["register:provenance-trace"],
+      "exemplars": ["causality:canvas.js", "causality:authoring.js", "foundry:01-living-loop"]
+    }
+  ],
+  "open_questions": [
+    "Whisper vs load (the family's live tension): can an ambient HUD render the full ink/pencil commitment distinction and still whisper — does 'edge of attention, silent until it matters' survive carrying register's canonical vocabulary on the line + badge channel, or does commitment-full pull the HUD toward a dashboard?",
+    "Now that route-home is register:provenance-trace's owned primitive and BOTH ticker-feed (row-click) and provenance-tooltip (hover) only RENDER it, does the HUD need two surfacings of one primitive, or do they collapse into one 'route-home in chrome' affordance with two gestures (click to navigate / hover to whisper)?"
+  ]
+}

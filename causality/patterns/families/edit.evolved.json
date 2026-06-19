@@ -1,0 +1,49 @@
+{
+  "family": {
+    "id": "edit",
+    "name": "Editorial Craft",
+    "pin": "the difference between demo and portfolio",
+    "ai_native_pin": "Editorial Craft bears no commitment register of its own — on the AI-native axis its v0 patterns are honest decoration, and that is the finding, not a failure. Its role is the inverse of the truth-bearing families: where they carry commitment (propose->admit), strata, and anima, this family makes whatever they carry look authored rather than machine-emitted. It answers the aesthetic half of the 'You're Not AI Native' critique — generated surfaces look generated — by being the discipline that refuses slop. Decoration that protects truth from reading as noise. Its validation teeth are not its own: where a finish must be checked before it renders, that gate lives in interface-ai:schema-gate-before-draw, and this family rides it as kin."
+  },
+  "patterns": [
+    {
+      "id": "typography-leads",
+      "name": "Typography Leads",
+      "current_intent": "Type is the art direction: display serif for moments, tracked micro-labels for chrome, tabular numerals for indices.",
+      "axis": { "commitment": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "As written it ranks importance, not commitment — but the RUBRIC's own ink/pencil metaphor is typographic: a later upgrade could promote register to a required type-role (ink = an admitted RECORD set in the display face, pencil = a proposed/simulated draft set lighter/dashed) so the type system renders the commitment axis unconfusably. That single move would carry it from decoration toward commitment-bearing. Held as decoration today — the honest v0 verdict — not claimed upgraded.",
+      "non_example": "A default utility type scale applied uniformly — hierarchy by font-size alone, every register in the same ink. Legible, but unauthored and commitment-blind."
+    },
+    {
+      "id": "the-arrival",
+      "name": "The Arrival",
+      "current_intent": "The piece opens with a held breath: a counter, a title moment, then the world assembles on cue.",
+      "axis": { "commitment": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "The latent AI-native seed is its own honesty rule — 'never fake the wait, choreograph it'. A later upgrade could bind the counter to a real load/build signal (atoms resolved, citations checked) so the held breath becomes an honest readout of work happening instead of theater — but that is the process/anima side (runtime is not the commitment axis, per RECONCILIATION.md), so it would lift on agent-drivable/provenance, not commitment. Held as decoration today.",
+      "non_example": "A fixed-duration splash that animates a fake progress bar to 90% and stalls — choreography divorced from any real work. The arrival must time something true, not perform a wait that isn't happening."
+    }
+  ],
+  "new_patterns": [
+    {
+      "id": "authored-finish",
+      "name": "Authored Finish (Earned, Not Generated)",
+      "current_intent": "Every model-generated surface element is finished through a typed editorial spec — a type-role, a declared register (ink for an admitted RECORD, pencil for a PROPOSED/SIMULATED draft), and a spacing scale — and each rendered element retains the spec clause that shaped it. The authored look is earned by the discipline of the spec, not sprayed on after: type leads, the arrival is choreographed, chrome whispers, and the ink/pencil register is set typographically so commitment is unconfusable on the surface. The spec is what makes AI-authored output read as authored craft instead of slop. Validating that a spec is well-formed BEFORE it renders is deliberately NOT this pattern's mechanism — that gate is interface-ai:schema-gate-before-draw (authoring.js#validateSpec + authoring.test.js, the actually-built validator), which this finish rides as kin. This pattern owns the editorial contract; the gate owns the refusal.",
+      "axis": { "commitment": "partial", "provenance": "none", "agent_drivable": "partial" },
+      "verdict": "ai-native",
+      "evolution": "The validation teeth moved to their grounded home (interface-ai:schema-gate-before-draw); what stays here is the editorial discipline, scored on its own legs. commitment=partial because the spec renders the ink/pencil distinction typographically but does not itself move a unit propose->admit (the lifecycle lives in the log + interface-ai). agent_drivable=partial because the typed editorial spec is model-fillable and authoring runs through a validated spec — but the validator is kin, not owned. provenance=none honestly: retaining the spec clause routes back to a style decision, not to a backing record/file:line/log substring (the holographic rule wants a path to a SOURCE, which the finish does not carry). To strengthen: make the register type-role required everywhere so commitment is always rendered, and share the ink/pencil treatment with the register family's commitment facet so the editorial finish and the truth layer cannot drift apart.",
+      "non_example": "Pointing a brand font, drop-shadows, and a gradient at raw model output as a post-hoc 'polish pass' — no spec, no register type-role, no route back to what authored each element. That decoration-sprayed-on-top is precisely the slop this pattern refuses; nice fonts are not an authored finish.",
+      "use_when": "Any surface whose elements are model-generated and must read as portfolio-grade — where the risk is not ugliness but slop: output that is competent and characterless because nothing made it earn its look.",
+      "kin": ["interface-ai:schema-gate-before-draw"],
+      "exemplars": ["interface-ai:schema-gate-before-draw", "causality:canvas.js#SCHEMA", "foundry:06-card-sphere", "https://www.phantom.land/"]
+    }
+  ],
+  "open_questions": [
+    "Should the ink/pencil register become a first-class display field in causality/canvas.js SCHEMA (so the inspector, persistence, and this editorial finish move together), or does that overreach into the register family's commitment-facet territory? RECONCILIATION.md proposes exactly this as C19 RegisterFacet (commitment on the line channel: solid=ink / dashed=pencil) — PROPOSED, awaiting bdo's bless of his spec (D-4). Until he blesses C19, authored-finish renders the register as a type-role convention, not a schema-enforced field."
+  ],
+  "resolved_questions": [
+    "Boundary cut (round-1 dedup): 'Authored Finish' stays a citizen of edit — its essence is editorial craft (the discipline that makes AI-authored output read as authored, not slop). The schema-validate-before-render TEETH it formerly claimed are re-owned by interface-ai:schema-gate-before-draw (the grounded validator); authored-finish cites it as kin and no longer re-derives the gate. Re-scored under the commitment model: commitment=partial / provenance=none / agent_drivable=partial -> ai-native on its own editorial legs, not on borrowed teeth.",
+    "v0 upgrades: typography-leads and the-arrival stay honest decoration (bdo's framing kept). Upgrading craft patterns to chase a register score would dilute their craft pin; the truth-bearing families carry commitment, this family makes it read as authored. The upgrade sketches are kept as forward notes only — the verdict stays decoration."
+  ]
+}

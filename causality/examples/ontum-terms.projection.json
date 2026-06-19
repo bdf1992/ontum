@@ -18,7 +18,7 @@
       "resolved": true,
       "sense": "arc-as-confirmed-admission",
       "stratum": "code",
-      "to": "evidence:loop/reconcile.py"
+      "to": "site:loop-reconcile-py"
     },
     {
       "claim": "arc_confirmed is a real, load-bearing admission kind on the log",
@@ -33,7 +33,7 @@
       "resolved": true,
       "sense": "arc-as-confirmed-admission",
       "stratum": "log",
-      "to": "evidence:.ai-native/log/admissions.jsonl"
+      "to": "site:ai-native-log-admissions-jsonl"
     },
     {
       "claim": "every epic JSON carries a prose 'arc' field — documentary intent, with no enforcement path on the log",
@@ -48,7 +48,7 @@
       "resolved": true,
       "sense": "arc-as-prose-narrative",
       "stratum": "workflow",
-      "to": "evidence:.ai-native/epics/epic.causality-surface.json"
+      "to": "site:ai-native-epics-epic-causality-surface-json"
     },
     {
       "claim": "the doctrine defines the atom's shape: story, concern_surface, incidence, verdicts, lineage",
@@ -64,7 +64,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "doctrine",
-      "to": "evidence:ai-native-loop-substrate.md"
+      "to": "site:ai-native-loop-substrate-md"
     },
     {
       "claim": "code loads atoms from .ai-native/atoms/ and folds them through the pipeline",
@@ -80,7 +80,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "code",
-      "to": "evidence:loop/reconcile.py"
+      "to": "site:loop-reconcile-py"
     },
     {
       "claim": "atom.created is a real event kind on the append-only log",
@@ -95,7 +95,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "log",
-      "to": "evidence:.ai-native/log/events.jsonl"
+      "to": "site:ai-native-log-events-jsonl"
     },
     {
       "claim": "the doctrine's D-10 defines the node as a summoned standing offer",
@@ -111,7 +111,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "doctrine",
-      "to": "evidence:ai-native-loop-substrate.md"
+      "to": "site:ai-native-loop-substrate-md"
     },
     {
       "claim": "the one pen by which a summoned node writes its verdict",
@@ -127,7 +127,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "code",
-      "to": "evidence:loop/node.py"
+      "to": "site:loop-node-py"
     },
     {
       "claim": "node_real admissions are how a mock node becomes real, read from the log at runtime",
@@ -142,7 +142,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "log",
-      "to": "evidence:.ai-native/log/admissions.jsonl"
+      "to": "site:ai-native-log-admissions-jsonl"
     },
     {
       "claim": "the doctrine specifies the receipt's fields (event_id, node, artifact_hash, verdict, ...)",
@@ -158,7 +158,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "doctrine",
-      "to": "evidence:ai-native-loop-substrate.md"
+      "to": "site:ai-native-loop-substrate-md"
     },
     {
       "claim": "code constructs receipts with the content-hashed idempotence key",
@@ -174,7 +174,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "code",
-      "to": "evidence:loop/reconcile.py"
+      "to": "site:loop-reconcile-py"
     },
     {
       "claim": "rcp.* records are real on the receipts log",
@@ -189,7 +189,7 @@
       "resolved": true,
       "sense": null,
       "stratum": "log",
-      "to": "evidence:.ai-native/log/receipts.jsonl"
+      "to": "site:ai-native-log-receipts-jsonl"
     },
     {
       "claim": "the doctrine defines seam as the loop's event surface",
@@ -205,7 +205,7 @@
       "resolved": true,
       "sense": "loop-event-surface",
       "stratum": "doctrine",
-      "to": "evidence:ai-native-loop-substrate.md"
+      "to": "site:ai-native-loop-substrate-md"
     },
     {
       "claim": "the PIPELINE names seams between stages",
@@ -221,7 +221,7 @@
       "resolved": true,
       "sense": "loop-event-surface",
       "stratum": "code",
-      "to": "evidence:loop/reconcile.py"
+      "to": "site:loop-reconcile-py"
     },
     {
       "claim": "events on the log carry a seam field",
@@ -236,7 +236,7 @@
       "resolved": true,
       "sense": "loop-event-surface",
       "stratum": "log",
-      "to": "evidence:.ai-native/log/events.jsonl"
+      "to": "site:ai-native-log-events-jsonl"
     },
     {
       "claim": "in the phase-2 vocabulary Seam is a geometric Site primitive (a transition-cocycle), SETTLED — a DIFFERENT object from the loop's event surface",
@@ -252,7 +252,7 @@
       "resolved": true,
       "sense": "phase2-site-primitive",
       "stratum": "doctrine",
-      "to": "evidence:glyphs/knolling.md"
+      "to": "site:glyphs-knolling-md"
     }
   ],
   "gaps": [
@@ -270,6 +270,73 @@
     }
   ],
   "generator": "causality.term_economy",
+  "site_count": 8,
+  "sites": [
+    {
+      "address": ".ai-native/epics/epic.causality-surface.json",
+      "exists": true,
+      "id": "site:ai-native-epics-epic-causality-surface-json",
+      "inbound_term_count": 1,
+      "kind": "workflow",
+      "record_kind": "projected"
+    },
+    {
+      "address": ".ai-native/log/admissions.jsonl",
+      "exists": true,
+      "id": "site:ai-native-log-admissions-jsonl",
+      "inbound_term_count": 2,
+      "kind": "log",
+      "record_kind": "projected"
+    },
+    {
+      "address": ".ai-native/log/events.jsonl",
+      "exists": true,
+      "id": "site:ai-native-log-events-jsonl",
+      "inbound_term_count": 2,
+      "kind": "log",
+      "record_kind": "projected"
+    },
+    {
+      "address": ".ai-native/log/receipts.jsonl",
+      "exists": true,
+      "id": "site:ai-native-log-receipts-jsonl",
+      "inbound_term_count": 1,
+      "kind": "log",
+      "record_kind": "projected"
+    },
+    {
+      "address": "ai-native-loop-substrate.md",
+      "exists": true,
+      "id": "site:ai-native-loop-substrate-md",
+      "inbound_term_count": 4,
+      "kind": "doctrine",
+      "record_kind": "projected"
+    },
+    {
+      "address": "glyphs/knolling.md",
+      "exists": true,
+      "id": "site:glyphs-knolling-md",
+      "inbound_term_count": 1,
+      "kind": "doctrine",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/node.py",
+      "exists": true,
+      "id": "site:loop-node-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/reconcile.py",
+      "exists": true,
+      "id": "site:loop-reconcile-py",
+      "inbound_term_count": 4,
+      "kind": "code",
+      "record_kind": "projected"
+    }
+  ],
   "source": "the repo is truth; this is a fold, not a record",
   "term_count": 5,
   "terms": [
