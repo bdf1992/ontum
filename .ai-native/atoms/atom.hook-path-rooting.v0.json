@@ -1,0 +1,52 @@
+{
+  "atom": {
+    "id": "atom.hook-path-rooting.v0",
+    "story": {
+      "text": "As a session working in a git worktree, I need every .claude hook script path in settings.json rooted at $CLAUDE_PROJECT_DIR, because the cwd-relative form 'python .claude/hooks/X.py' makes a session whose cwd is a worktree lacking that (newer) script exit python with code 2 — which Claude Code reads as a PreToolUse BLOCK, hard-blocking every Edit/Write/Bash in that worktree (issue #235, the 100%-worktree-break). I want safe worktree isolation, the prerequisite for paying down the coordination tax.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "hook-path-rooting — root every .claude hook path at $CLAUDE_PROJECT_DIR so worktree sessions stop hard-blocking (fix #235)",
+      "value": "The hooks in .claude/settings.json were wired as 'python .claude/hooks/X.py' — a cwd-relative path. A session whose cwd is a worktree missing that script makes python exit 2 (file-not-found), which Claude Code treats as a PreToolUse deny, so every Edit/Write/Bash in the worktree is hard-blocked. Rooting each script path at $CLAUDE_PROJECT_DIR (the primary tree, always present, cwd-independent — the documented CC idiom) removes the break. The 'python -m loop.*' module calls are left as-is: loop/ exists in every worktree, so they never hard-block.",
+      "why_now": "Issue #235 is open and live; the break hit three times in one session and blocks ALL worktree isolation — the exact mechanism the session-gateway arc needs to pay down the coordination tax. This is the bootstrap: landing it unblocks every future worktree session immediately, rather than waiting for the larger terminal-pull-gateway stack (PR #226) that carries the full fix on top.",
+      "if_accepted": "Worktree sessions stop hard-blocking on missing newer hook scripts; safe isolation becomes usable; the coordination tax starts being paid down.",
+      "if_rejected": "Worktree isolation stays a session-breaker; sessions keep colliding on the shared viewport tree (the poison this very fix had to route around to land).",
+      "cost_of_wrong_call": "Low and reversible: a one-file settings.json change rooting paths at a documented, always-present variable; reverting is one revert. No code logic changes.",
+      "mechanism": "Rewrite each hook command in .claude/settings.json from 'python .claude/<path>.py <args>' to 'python \"$CLAUDE_PROJECT_DIR/.claude/<path>.py\" <args>'. Applied to main's current hook set (17 commands); the not-yet-on-main hooks (change_guard, ask_guard) arrive already rooted with their introducing stack, so this is forward-compatible. Mirrors the intent of the stranded commit 9bd1cfd, which could not cherry-pick cleanly because main's settings.json lacks those hooks.",
+      "reading": [
+        ".claude/settings.json",
+        ".ai-native/done/0128-hook-path-rooting.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        ".claude/settings.json"
+      ],
+      "must_not_collide_with": [
+        ".claude/hooks/command_guard.py",
+        ".claude/hooks/spawn_guard.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/settings.json"
+      ]
+    }
+  },
+  "_note": "Birth record for hook-path-rooting — fix #235, root every .claude hook path at $CLAUDE_PROJECT_DIR (done-line 0128). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
