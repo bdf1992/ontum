@@ -213,7 +213,10 @@ section), don't work around it.
   over the generic brand: raw use that isn't denied gets called out
   in-context (once per tool per session, with the audit count) so it
   surfaces naturally — surfaced it's a judgment call, unsurfaced it stays
-  silent. One pen per seam, the `loop/node.py` pattern.
+  silent. One pen per seam, the `loop/node.py` pattern. PR mutations refuse
+  when `pr.py` is invoked from a different git toplevel than the worktree it
+  lives in; a PR pen is local law for its checkout, not a remote control for
+  another branch.
 - **Stage and commit through the git pen.** `git.py` (beside `pr.py`) is
   the only path to `git add`/`git commit`: it stages **named paths only**
   (`add .` / `-A` / `-u` are refused — a sweep would pull another
