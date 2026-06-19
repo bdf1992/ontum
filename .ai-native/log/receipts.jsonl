@@ -264,3 +264,4 @@
 {"authorized_by":"adm.a675cb9d36fb","epic":"epic.causality-surface","head":"claude/home-patterns","id":"rcp.merge.174","kind":"merge","node":"merge-node.claude.v1","pr":174,"ts":"2026-06-19T03:11:26Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/dephone-via-lane","id":"rcp.merge.215","kind":"merge","node":"merge-node.claude.v1","pr":215,"ts":"2026-06-19T03:15:15Z","verdict":"landed"}
 {"authorized_by":"adm.a675cb9d36fb","epic":"epic.causality-surface","head":"codex/overnight-causality-relations","id":"rcp.merge.202","kind":"merge","node":"merge-node.claude.v1","pr":202,"ts":"2026-06-19T03:23:05Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"worktree-intent-landed-reviewed","id":"rcp.merge.232","kind":"merge","node":"merge-node.claude.v1","pr":232,"ts":"2026-06-19T07:34:31Z","verdict":"landed"}
