@@ -1,0 +1,51 @@
+{
+  "atom": {
+    "id": "atom.home-pattern-commons.v0",
+    "story": {
+      "text": "As bdo, the experience director's Pattern Commons — the governed vocabulary of UX patterns I praise and refuse into existence — had evolved off in the foundry and needed a real home in the repo, governed, with a portfolio I can actually look at. This atom re-homes that work: the evolved Pattern Commons v1 landed at causality/patterns/ as governed vocabulary (families, rubric, deposits, reconciliation) plus a playable portfolio, with a merge.py that reproduces v1 byte-identical so the commons is a fold, not a hand-kept file. It advances epic.causality-surface (the report reads it that way) and stays PROPOSED — promoting the Commons past proposed is mine (D-4).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Home the evolved Pattern Commons v1 at causality/patterns/: governed vocabulary + a reproducible merge + a playable portfolio",
+      "value": "claude/home-patterns homes the evolved Pattern Commons (v1) into causality/patterns/ (23 files): the commons itself (pattern-commons.v1.json, current-commons.json, ten evolved family files under families/), its governance (CLAUDE.md, RUBRIC.md, DEPOSITS.md, ISSUES.md, RECONCILIATION.md, LOOP.md, PORTFOLIO-DONE.md, LAB-PARKED.md), a merge.py that reproduces v1 byte-identical (the commons is a fold over its families, not a hand-kept artifact), and portfolio.html — a playable portfolio of the patterns. The handoff report 0071 reads it as epic.causality-surface and records v1 as PROPOSED (promotion is bdo's), the C19·RegisterFacet candidate held out of display-system.md until stamped, and the parked Theme-A / variation-lab threads.",
+      "why_now": "The experience work kept being hard to judge because the Commons lived in the foundry, ungoverned and unviewable. Homing it at causality/patterns/ with a reproducing merge and a playable portfolio makes it a governed, inspectable surface — the Pattern Commons is what the experience skill consults first, so it has to be real in the repo, not a session's memory.",
+      "if_accepted": "The evolved Pattern Commons is governed and homed in the repo, reproducible byte-identical by merge.py, with a portfolio bdo can open and judge — the experience skill consults a real commons, not foundry state. v1 stays PROPOSED until bdo promotes it.",
+      "if_rejected": "The Commons stays in the foundry, off the log and ungoverned; the portfolio is unviewable, the family vocabulary undeposited, and the experience work keeps being judged against a commons that isn't in the repo.",
+      "cost_of_wrong_call": "Low and reversible: the content is governed vocabulary (markdown + JSON), a deterministic merge.py fold, and a static portfolio.html (no runtime network, nothing written to the truth log); merge.py reproduces v1 byte-identical so the commons cannot silently drift, and reverting is reverting one PR. It mints nothing — v1 is PROPOSED (D-4).",
+      "mechanism": "causality/patterns/: pattern-commons.v1.json + families/*.evolved.json (the vocabulary), merge.py (reproduces v1 byte-identical from the families — the commons as a fold), the governance markdowns (RUBRIC/DEPOSITS/ISSUES/RECONCILIATION/LOOP/PORTFOLIO-DONE/LAB-PARKED + CLAUDE.md), and portfolio.html (the playable portfolio). 803 green at the report. Report 0071 carries the handoff and the parked threads.",
+      "reading": [
+        "causality/patterns/CLAUDE.md",
+        "causality/patterns/merge.py",
+        "causality/patterns/pattern-commons.v1.json",
+        "causality/patterns/portfolio.html",
+        ".ai-native/reports/0071-handoff-commons-landing-and-parked-threads.md"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": ["causality/patterns"],
+      "must_not_collide_with": [
+        "causality/display-system.md (the C19·RegisterFacet candidate is held out until bdo stamps; this homes the commons, it does not write the new facet into the display system)"
+      ],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "causality/patterns/pattern-commons.v1.json",
+        "causality/patterns/merge.py",
+        ".ai-native/reports/0071-handoff-commons-landing-and-parked-threads.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Re-homing atom for claude/home-patterns (the evolved Pattern Commons v1), authored so the off-log work carries an atom on the log under the atom-invariant gate. v1 is PROPOSED — homing it mints nothing; promotion is bdo's (D-4). Judged by an independent value-gate (D-2). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

@@ -63,8 +63,8 @@ mid-2026 the horizons are: all five gates real (reached — mock
 temperature 0/5, done-line 0047), the
 slow loop re-admitting its own dials from outcomes, corpus-to-system (a
 corpus pointed at the machine becomes *proposed* atoms), and a served,
-authenticated phone inbox where bdo steers arcs — not tickets — with
-one stamp. Making a node real is not just de-mocking: each real node is
+authenticated inbox where bdo steers arcs — not tickets — with one
+stamp, from whatever device he happens to be on. Making a node real is not just de-mocking: each real node is
 the system's first sensor of a given kind of meaning (report 0004 §3).
 
 Orientation reading order for a fresh session (report 0004 §5): the
@@ -108,6 +108,22 @@ between them) → the most recent reports.
   arc digest**. The merge-node lands through the PR pen's `land` verb
   (`.claude/skills/branch-ritual/pr.py land --epic <id> --by <node>`);
   its eyes are `loop/merge.py`.
+- **Work is not landed until an independent review is requisitioned and
+  processed (bdo, 2026-06-18).** A session never treats its own work as
+  done at "built" or even "ready": *landed* means an **independent** check
+  has run on it — never the author's own line (no one signs their own line,
+  D-2). The session *requisitions* the review and drives every gate it may:
+  it signs the work (announces the atom), submits it (parks it on the
+  summon queue), requisitions the independent judge through the branded
+  spawn rail (`ontum-node:<id>`, which pins the §7 prompt and checks the
+  rung before the node acts), and readies the PR for the merge-node — which
+  it requisitions but cannot *be*. A session that stops at "I built it" has
+  landed nothing. The structural teeth — a **code-review gate** in the
+  pipeline whose receipt the merge-node requires before landing, reviewed
+  by an independent spawn-rail node escalating to cloud `/code-review ultra`
+  for high-blast-radius changes — are the in-flight increment of the
+  session-gateway anthology; until that gate is real, requisition the
+  review via the `code-review` skill.
 
 ## Working method (doctrine §9)
 

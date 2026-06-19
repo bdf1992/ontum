@@ -1,0 +1,58 @@
+{
+  "atom": {
+    "id": "atom.causality-site-search.v0",
+    "story": {
+      "text": "As bdo, Causality is to become the place the system can be seen and steered, and seeing means being able to find a term's real evidence and follow it to where it lives. This atom re-homes codex's overnight causality work onto the log: an atom-search fold over the repo's atoms, site-nodes that carry where a term is grounded, and the term-economy projection + mermaid render extended to show them. It advances epic.causality-surface (confirmed) without building a second source of truth — the search and projection stay read-only folds over committed bytes, the causality hard rule.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Causality gains atom-search + site-nodes: find a term's evidence and follow it to where it lives, all as read-only folds",
+      "value": "codex/overnight-causality-relations adds causality/atom_search.py (a stdlib read-only fold that searches the repo's atoms, with tests/test_atom_search.py, 64 lines of teeth), a site-node schema (contracts/schemas/site-node.schema.json) and the projection-view/evidence-edge schema updates that carry it, and extends causality/term_economy.py (+77) so the projection and mermaid render surface site-nodes and the search results. Done-lines 0111 (site-nodes), 0112 (site-mermaid), 0113 (atom-search-fold); report 0084; tests/test_term_economy.py grows 35 lines. It is a vertical slice of epic.causality-surface's search-and-witness horizon — the managing session and bdo can search real atoms and see where a term is grounded.",
+      "why_now": "epic.causality-surface is confirmed and its charter is exactly a place to search real atoms, watch the log, and tell fact from request at a glance. The term economy already classifies terms by resolvable evidence; this makes that evidence searchable and the site where it lives a first-class projected node — the next increment of the witness surface.",
+      "if_accepted": "Causality can search the repo's atoms and project the site where a term's evidence lives, advancing the witness surface; the projection stays a deterministic, reproducible read-only fold (no second truth, no mint).",
+      "if_rejected": "The atom-search fold and site-nodes stay off the log and invisible to the loop; the term-economy surface keeps classifying terms without a way to search or follow their evidence to its site.",
+      "cost_of_wrong_call": "Low and reversible: all of it is read-only stdlib folds over committed bytes (atom_search.py, term_economy.py) plus schema/projection records; no runtime network, nothing written back to the truth log, and the §10 tests (a fabricated/constant classifier fails) hold. Reverting is reverting one PR.",
+      "mechanism": "causality/atom_search.py: a pure fold over .ai-native/atoms resolving query to atoms with evidence; site-node.schema.json + projection-view/evidence-edge schema updates declare the site node; term_economy.py resolves and projects site-nodes and renders them in mermaid. Tests: test_atom_search.py and the test_term_economy.py additions carry the teeth (a constant result fails). Done-lines 0111/0112/0113; report 0084.",
+      "reading": [
+        "causality/atom_search.py",
+        "causality/term_economy.py",
+        "tests/test_atom_search.py",
+        "tests/test_term_economy.py",
+        ".ai-native/reports/0084-overnight-causality-sites-search.md"
+      ]
+    },
+    "concern_surface": "canvas",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": [
+        "causality/atom_search.py",
+        "causality/term_economy.py",
+        "causality/contracts/schemas",
+        "tests/test_atom_search.py",
+        "tests/test_term_economy.py"
+      ],
+      "must_not_collide_with": [
+        "epic.the-field's fold (this surface only reads and renders evidence; it does not re-build the field fold)",
+        "the glyphs/ and language/ minted surfaces (read, never re-minted here)"
+      ],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "causality/atom_search.py",
+        "causality/term_economy.py",
+        ".ai-native/reports/0084-overnight-causality-sites-search.md (codex's session report)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Re-homing atom for codex/overnight-causality-relations (done-lines 0111/0112/0113), authored so the off-log work carries an atom on the log under the atom-invariant gate. The work is codex's; this atom is authored by an independent Claude session and judged by an independent value-gate (D-2). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — a storybook that grows (naturalist)</title>
+<script>window.__pageErr=null;addEventListener('error',e=>{if(!window.__pageErr)window.__pageErr=(e.error&&e.error.stack)||e.message;});</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* CREAM ONLY — the established Causality look-and-feel. No dark mode. */
+  :root{--paper:#f6f1e7;--ink:#2b2a33;--dim:#8d8678;--faint:#b8b1a2;
+        --positive:#0e8a7b;--strain:#d4543f;--inference:#7a5ba6;--amber:#b8742c;--blue:#3f7cb6;--mock:#ff2bd6;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--paper);}
+  body{font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);}
+  canvas#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+  /* minimal chrome — a quiet Fraunces wordmark, a faint seed switch, faint New/Save */
+  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:12px;padding:18px 24px;pointer-events:none;}
+  .top .mark{font-family:"Fraunces",serif;font-size:22px;font-weight:300;}
+  .top .mark b{color:var(--inference);font-weight:600;}
+  .top .tag{font:300 9.5px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;}
+  .top .sp{flex:1;}
+  .seed{pointer-events:auto;display:flex;gap:2px;align-items:baseline;font-family:"Caveat",cursive;}
+  .seed a{cursor:pointer;font-size:19px;color:var(--faint);padding:0 5px;border-bottom:2px solid transparent;}
+  .seed a.on{color:var(--ink);border-bottom-color:var(--inference);}
+  .seed .slash{color:var(--faint);font-size:15px;}
+  .top .btn{pointer-events:auto;font:500 11px "IBM Plex Mono",monospace;color:var(--ink);background:rgba(255,252,245,.85);border:1.4px solid var(--ink);border-radius:9px;padding:6px 12px;cursor:pointer;}
+  .top .btn:hover{background:rgba(122,91,166,.12);}
+  .hint{position:fixed;top:58px;left:0;right:0;text-align:center;z-index:9;font:300 10px "IBM Plex Mono",monospace;color:var(--faint);letter-spacing:.12em;pointer-events:none;transition:opacity .4s ease;}
+  /* the Complexity slider strip — the BACKBONE (cute nucleus -> living system) */
+  .sliders{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:12;display:flex;gap:13px;align-items:flex-end;background:rgba(255,252,245,.94);border:1.5px solid var(--ink);border-radius:13px;padding:9px 16px;box-shadow:3px 4px 0 rgba(43,42,51,.14);}
+  .sliders .sl{display:flex;flex-direction:column;gap:4px;width:104px;}
+  .sliders .sl .lab{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:5px;}
+  .sliders .sl input[type=range]{width:100%;accent-color:var(--positive);cursor:pointer;height:14px;}
+  .sliders .sl .val{font:500 8px "IBM Plex Mono",monospace;color:var(--positive);}
+  /* the game-dev missing-texture rule (canvas-system BUILD token): unbuilt sliders wear the magenta hazard hatch */
+  .sliders .sl.mock{background:repeating-linear-gradient(45deg,rgba(255,43,214,.10),rgba(255,43,214,.10) 4px,transparent 4px,transparent 9px);border-radius:7px;padding:3px 5px 4px;}
+  .sliders .sl.mock .lab{color:var(--mock);}
+  .sliders .sl.mock input[type=range]{accent-color:var(--mock);cursor:not-allowed;}
+  .sliders .sl .tag{font:600 7px "IBM Plex Mono",monospace;color:#fff;background:var(--mock);border-radius:3px;padding:1px 4px;letter-spacing:.06em;}
+  .legend{position:fixed;left:22px;bottom:24px;z-index:12;display:flex;flex-direction:column;gap:5px;font:400 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.85);border:1.2px solid rgba(43,42,51,.25);border-radius:9px;padding:7px 11px;max-width:230px;}
+  .legend .r{display:flex;align-items:center;gap:7px;}
+  .legend .sw{width:11px;height:11px;border-radius:3px;flex:none;}
+  .legend b{color:var(--ink);font-weight:500;}
+  /* CONVERSE — the NL zone ANCHORED ON the selected glyph (an on-canvas speech
+     bubble blooming from the creature), never a fixed sidebar. */
+  .zone{position:fixed;left:0;top:0;z-index:13;width:268px;background:rgba(255,252,245,.98);border:1.5px solid var(--inference);border-radius:14px;padding:13px 15px;box-shadow:3px 5px 0 rgba(122,91,166,.18);display:none;opacity:0;transform:scale(.96);transform-origin:left top;transition:opacity .2s ease,transform .22s cubic-bezier(.2,.9,.3,1.3);}
+  .zone.on{display:block;}.zone.show{opacity:1;transform:scale(1);}
+  .zone h4{font:600 9px "IBM Plex Mono",monospace;letter-spacing:.2em;color:var(--inference);text-transform:uppercase;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center;}
+  .zone h4 .x{cursor:pointer;color:var(--dim);font-size:13px;line-height:1;}
+  .zone .ttl{font:400 23px "Fraunces",serif;margin:1px 0 7px;line-height:1;}
+  .zone .ttl small{font:400 11px "IBM Plex Mono",monospace;color:var(--dim);}
+  .zone .chips{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 9px;}
+  .zone .chip{font:400 9px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.32);border-radius:20px;padding:3px 8px;}
+  .zone .says{font:400 13.5px/1.5 "Fraunces",serif;color:#4a4740;border-left:2px solid var(--inference);padding-left:10px;margin:3px 0 10px;}
+  .zone .sub{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:9px 0 5px;}
+  .zone .conn{font:400 10.5px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.8;}
+  .zone .conn b{color:var(--ink);font-weight:500;}
+  .zone .ask{width:100%;margin-top:9px;font:400 13px "Caveat",cursive;border:1.3px solid rgba(122,91,166,.5);border-radius:9px;padding:7px 10px;background:rgba(122,91,166,.04);color:var(--ink);}
+  .zone .ask::placeholder{color:var(--faint);}
+  .zone .reply{margin-top:8px;font:400 11px/1.5 "IBM Plex Mono",monospace;min-height:0;}
+  .zone .reply.mock{color:var(--mock);background:repeating-linear-gradient(45deg,rgba(255,43,214,.08),rgba(255,43,214,.08) 4px,transparent 4px,transparent 9px);border-radius:7px;padding:6px 8px;}
+  .zone .reply .mtag{font:600 7px "IBM Plex Mono",monospace;color:#fff;background:var(--mock);border-radius:3px;padding:1px 5px;letter-spacing:.06em;margin-right:5px;}
+  .zone .src{font:400 8.5px "IBM Plex Mono",monospace;color:var(--positive);margin-top:8px;letter-spacing:.04em;}
+  /* the recovery meter — the BENCHMARK with teeth: a real score the gesture moves. */
+  #recov{width:262px;border-color:var(--amber);box-shadow:3px 5px 0 rgba(184,116,44,.16);}
+  #recov h4{color:var(--amber);}
+  #recov .toggle{display:flex;gap:6px;margin:4px 0 8px;}
+  #recov .toggle a{flex:1;text-align:center;cursor:pointer;font:500 10px "IBM Plex Mono",monospace;border:1.3px solid rgba(43,42,51,.3);border-radius:8px;padding:5px 4px;color:var(--dim);}
+  #recov .toggle a.on{color:#fff;background:var(--ink);border-color:var(--ink);}
+  #recov .bigscore{font:400 30px "Fraunces",serif;line-height:1;}
+  #recov .bigscore .v{font-weight:600;}
+  #recov .verdict{font:600 10px "IBM Plex Mono",monospace;letter-spacing:.04em;margin:3px 0 6px;}
+  #recov .met{font:400 10px/1.7 "IBM Plex Mono",monospace;color:#6b6456;}
+  #recov .met b{color:var(--ink);font-weight:500;}
+  #recov .bar{height:7px;background:rgba(43,42,51,.1);border-radius:4px;overflow:hidden;margin:5px 0 9px;}
+  #recov .bar > i{display:block;height:100%;border-radius:4px;transition:width .35s cubic-bezier(.3,.9,.3,1.1);}
+  #recov .narr{font:400 13px/1.45 "Caveat",cursive;color:#4a4740;margin:7px 0 4px;}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="top">
+  <span class="mark">Causa<b>lity</b></span>
+  <span class="tag" id="kind">a storybook that grows</span>
+  <span class="seed" id="scale">
+    <a data-lv="0" class="on">word</a><span class="slash">·</span><a data-lv="2">phrase</a><span class="slash">·</span><a data-lv="3">corpus</a><span class="slash">·</span><a data-lv="4">repo</a><span class="slash">·</span><a data-lv="5">files</a>
+  </span>
+  <span class="sp"></span>
+  <button class="btn" id="newb">+ New</button>
+  <button class="btn" id="saveb">Save</button>
+</div>
+<div class="hint" id="hint">drag Complexity — one slider, word → phrase → corpus → the live repo · tap a creature to talk to it</div>
+<div class="sliders" id="sliders"></div>
+<div class="legend" id="legend"></div>
+<div class="zone" id="zone"></div>
+<div class="zone" id="recov"></div>
+
+<!-- REUSE the real engine: water discs, wobble, pulses, the 10 types, GLYPH, ink. No reimplemented drawing. -->
+<script src="canvas-system.js"></script>
+<script src="canvas.js"></script>
+<!-- the REAL benchmark scorer (done-line 0105) — imported, never reimplemented. -->
+<script src="recovery_scorer.js"></script>
+<script src="exp-naturalist.js"></script>
+<script>
+(async () => {
+  const C = window.Causality, SYS = window.CausalitySystem, NAT = window.Naturalist, SCORER = window.CausalityScorer;
+  if (!C || !SYS || !NAT) { document.getElementById('hint').textContent = 'engine missing — serve from the repo root'; return; }
+  const FACET = SYS.TOKENS.FACET, BUILD = SYS.TOKENS.BUILD, COL = SYS.TOKENS.COLOR;
+  const MOCK = BUILD.mock.color, TAU = Math.PI * 2;
+  const cv = document.getElementById('cv');
+
+  // ── the engine controller. gesture-native canvas (move/select/tap); we lead with
+  //    the slider + the anchored conversation. The engine renders. ──
+  let sel = null, zoneAnchor = null;
+  const S = C.canvas(cv, {
+    perms: { create:false, link:true, flip:true, move:true, rename:false, erase:false, tap:true, type:false, setline:false },
+    onselect: (s) => { sel = s; closeRecov(); openZone(); },
+  });
+  S.regen = false; S.baseline = 0.5;
+
+  // ── ONE CONTINUOUS LADDER, ONE GRAMMAR — no toggle. The Complexity slider
+  //    slides 0→5 through four regimes, each the SAME growth at a larger scale:
+  //      0  word     "The cat naps."              (the cute nucleus, phrases.json)
+  //      1  +detail  "...in the sunbeam."         (the slider blooms the phrase)
+  //      2  phrase   full sentence + the SCORE     (the benchmark teeth, real recovery_scorer)
+  //      3  corpus   8 stories, networked          (phrase → corpus, the calibration set)
+  //      4  repo     ontum + 9 module theses        (the directory, parsed LIVE from CLAUDE.md)
+  //      5  files    + the units each module defines (the same grammar at file scale)
+  //    Story relations are hand-authored → flagged MOCK; repo edges are PARSED → real. ──
+  let DATA; try { DATA = await (await fetch('phrases.json')).json(); } catch (e) { DATA = { phrases: [] }; }
+  const PHRASES = DATA.phrases || [];
+  const PH = PHRASES.find(p => p.id === 'cat-sunbeam') || PHRASES[0] || null;
+  const N_PHRASES = PHRASES.length;
+  const N_TEETH = PHRASES.filter(p => p.surface_trap).length;
+
+  // the repo is parsed lazily in the background; the slider extends to 5 when it lands.
+  let REPO = null, repoPromise = null, repoTried = false;
+  function ensureRepo() { if (!repoPromise) repoPromise = NAT.parseRepo()
+      .then(r => { REPO = r; return r; }).catch(() => { REPO = { ok:false }; return REPO; }); return repoPromise; }
+  function repoMax() { return (REPO && REPO.ok) ? 5 : 3; }
+
+  const HUE = { cat:'#0e8a7b', sunbeam:'#b8742c', warmth:'#d4543f', shadow:'#7a5ba6' };
+  const PIG = COL.pigment;
+  const typeOf = facets => { const f = facets || [];
+    if (f.includes('source')) return 'source'; if (f.includes('signal')) return 'gate';
+    if (f.includes('action')) return 'code'; return 'stock'; };
+  const regime = (L) => L <= 2 ? 'story' : L === 3 ? 'corpus' : 'repo';
+
+  let META = [];   // [{word, icon, hue, id, kind, ...}] for every visible glyph
+  let EDGES = [];  // aligned with S.links: {label, mock, feedback, corpus}
+  let complexity = 0, recovery = null, trapPill = null;   // recovery = the live benchmark score at the phrase regime
+
+  // ── grow / shrink to the slider level — reversible, deterministic, WITNESSING
+  //    its source (rebuilt from the corpus or the parsed repo each time). ──
+  function grow(level) {
+    complexity = Math.max(0, Math.min(repoMax(), level));
+    S.clear(); META = []; EDGES = []; recovery = null; trapPill = null;
+    const reg = regime(complexity);
+    if (reg === 'story') buildCat();
+    else if (reg === 'corpus') buildCorpus();
+    else { if (!REPO) { ensureRepo().then(() => { rebuildSliders(); if (regime(complexity) === 'repo') grow(complexity); }); }
+           else buildOntum(complexity - 3); }
+    foldWater(); refreshChrome(); markScale();
+    if (sel) { sel = null; openZone(); }
+  }
+  function addEdge(aId, bId, o) { o = o || {}; const l = S.link(aId, bId, { sign: o.feedback ? -1 : 1, kind: o.feedback ? 'delayed' : 'impulse', gain: 1 });
+    if (l) EDGES.push({ label: o.label || '', mock: !!o.mock, corpus: !!o.corpus, feedback: !!o.feedback, fromWord: o.fromWord, toWord: o.toWord }); }
+  function foldWater() { // the felt field emerges from structure: degree → water level
+    const deg = {}; S.links.forEach(l => { deg[l.a] = (deg[l.a]||0)+1; deg[l.b] = (deg[l.b]||0)+1; });
+    const maxd = Math.max(1, ...S.nodes.map(nn => deg[nn.id] || 0));
+    S.nodes.forEach(nn => { const lv = 0.42 + 0.45 * ((deg[nn.id]||0) / maxd); nn.level = lv; nn.target = lv; }); }
+
+  function buildCat() {
+    if (!PH) return;
+    const vis = PH.glyphs.filter(g => (typeof g.stage === 'number' ? g.stage : 0) <= complexity);
+    const present = new Set(vis.map(g => g.word));
+    const W = cv.clientWidth || innerWidth, H = cv.clientHeight || innerHeight;
+    const n = vis.length, cyc = H * 0.52, spanX = Math.min(W - 260, 120 + n * 150);
+    const byWord = {};
+    vis.forEach((g, i) => {
+      const fx = n === 1 ? W / 2 : (W / 2 - spanX / 2) + i * (spanX / (n - 1));
+      const fy = cyc + (i % 2 ? 1 : -1) * (n > 1 ? 42 : 0);
+      const node = S.node(fx, fy, g.word, { type: typeOf(g.facets), hue: HUE[g.word] || PIG[i % PIG.length] });
+      byWord[g.word] = node.id;
+      META.push({ word: g.word, icon: NAT.wordCreature(g.word, g.icon), hue: node.hue, id: node.id, kind: 'cat', facets: g.facets });
+    });
+    PH.relations.filter(r => present.has(r.from.split('.')[0]) && present.has(r.to.split('.')[0]))
+      .forEach(r => { const fw = r.from.split('.')[0], tw = r.to.split('.')[0];
+        addEdge(byWord[fw], byWord[tw], { label: r.label, mock: r.build === 'mock', feedback: r.line === 'feedback', fromWord: r.from, toWord: r.to }); });
+    // the BENCHMARK teeth — at the full phrase, the recovery is SCORED for real.
+    if (complexity === 2 && PH.surface_trap && SCORER) {
+      const R = NAT.recoverReadings(PH);
+      recovery = { readings: R, mech: SCORER.score(R.mechanism, PH), careless: SCORER.score(R.careless, PH) };
+    }
+  }
+
+  // ── CORPUS: phrase → corpus. Each of the N phrases is one membrane (its lead
+  //    creature); the cross-membrane LINKS are real declared structure from
+  //    phrases.json (stitched by a shared glyph). The compression IS the joy. ──
+  function buildCorpus() {
+    if (!PHRASES.length) return;
+    const W = cv.clientWidth || innerWidth, H = cv.clientHeight || innerHeight;
+    const cx0 = W / 2, cy0 = H * 0.55, RAD = Math.min(W * 0.40, H * 0.36);
+    const n = PHRASES.length, byId = {};
+    PHRASES.forEach((p, i) => {
+      const a = -Math.PI / 2 + i / n * TAU;
+      const fx = cx0 + Math.cos(a) * RAD, fy = cy0 + Math.sin(a) * RAD * 0.82;
+      const lead = NAT.phraseCreature(p), isCat = p.id === 'cat-sunbeam';
+      const hue = isCat ? '#0e8a7b' : PIG[i % PIG.length];
+      const node = S.node(fx, fy, lead.word, { type: 'stock', hue });
+      byId[p.id] = node.id;
+      META.push({ word: lead.word, icon: lead.key, hue, id: node.id, kind: 'membrane', phrase: p, teeth: !!p.surface_trap });
+    });
+    NAT.corpusLinks(DATA).forEach(l => { if (byId[l.a] && byId[l.b])
+      addEdge(byId[l.a], byId[l.b], { label: 'shares ' + l.via, corpus: true, fromWord: l.a, toWord: l.b }); });
+  }
+
+  function buildOntum(rl) {
+    if (!REPO || !REPO.ok) return;
+    const W = cv.clientWidth || innerWidth, H = cv.clientHeight || innerHeight;
+    const cx0 = W / 2, cy0 = H * 0.54, RAD = Math.min(W, H) * 0.30;
+    // the nucleus — the whole repo, one radiant glyph.
+    const root = S.node(cx0, cy0, REPO.rootLabel, { type: 'stock', hue: '#7a5ba6' });
+    META.push({ word: REPO.rootLabel, icon: 'sun', hue: root.hue, id: root.id, kind: 'root', thesis: REPO.rootThesis, count: REPO.modules.length });
+    const mods = REPO.modules, n = mods.length;
+    mods.forEach((mod, i) => {
+      const a = -Math.PI / 2 + i / n * TAU;
+      const fx = cx0 + Math.cos(a) * RAD, fy = cy0 + Math.sin(a) * RAD * 0.84;
+      const hue = mod.ok ? PIG[i % PIG.length] : MOCK;
+      const node = S.node(fx, fy, mod.label, { type: 'stock', hue });
+      META.push({ word: mod.label, icon: NAT.MOD_ICON[mod.dir] || 'rune', hue, id: node.id, kind: 'module',
+                  dir: mod.dir, thesis: mod.thesis, desc: mod.desc, units: mod.units, ok: mod.ok });
+      // edge root → module: REAL, parsed from the @-imports (not hand-authored).
+      addEdge(root.id, node.id, { label: '@imports', mock: !mod.ok, fromWord: REPO.rootLabel, toWord: mod.label });
+      if (rl >= 2 && mod.ok) mod.units.slice(0, 2).forEach((u, j) => {
+        const a2 = a + (j ? 0.16 : -0.16), fr = RAD * 1.46;
+        const ux = cx0 + Math.cos(a2) * fr, uy = cy0 + Math.sin(a2) * fr * 0.84;
+        const un = S.node(ux, uy, u, { type: 'stock', hue });
+        META.push({ word: u, icon: NAT.fileIcon(u), hue, id: un.id, kind: 'file', parent: mod.label });
+        addEdge(node.id, un.id, { label: 'defines', mock: false, fromWord: mod.label, toWord: u });
+      });
+    });
+  }
+
+  // ── the storybook overlay — the engine draws the living graph; we add the layer. ──
+  function tag(cx, x, y, label, col) {
+    cx.save(); cx.font = '600 8px "IBM Plex Mono",monospace';
+    const w = cx.measureText(label).width;
+    cx.fillStyle = col; cx.beginPath(); cx.rect(x - w/2 - 4, y - 7, w + 8, 14); cx.fill();
+    cx.fillStyle = '#fff'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(label, x, y); cx.restore();
+  }
+  S.draw = (cx) => {
+    try {
+      const R = S.NODE_R || 40, reg = regime(complexity), W = cv.clientWidth || innerWidth;
+      // 1) the skin — text leads. story: the phrase, glyph words glowing in hue.
+      //    corpus: the calibration set's own sentence. repo: the directory's thesis.
+      if (reg === 'story' && PH && PH.stages) {
+        const text = PH.stages.texts[complexity] || PH.text || '';
+        const hueOf = {}; META.forEach(m => hueOf[m.word.toLowerCase()] = m.hue);
+        const words = text.split(/(\s+)/); let total = 0;
+        for (const w of words) { const c = w.replace(/[.,;]/g,'').toLowerCase(); cx.font = (hueOf[c]?'600 ':'300 ')+'19px "Fraunces",serif'; total += cx.measureText(w).width; }
+        let x = Math.max(36, W/2 - total/2);
+        for (const w of words) { const c = w.replace(/[.,;]/g,'').toLowerCase(); const hue = hueOf[c];
+          cx.font = (hue?'600 ':'300 ')+'19px "Fraunces",serif'; cx.fillStyle = hue || 'rgba(43,42,51,.45)'; cx.textAlign='left'; cx.textBaseline='alphabetic'; cx.fillText(w, x, 92); x += cx.measureText(w).width; }
+      } else if (reg === 'corpus') {
+        cx.font = '300 18px "Fraunces",serif'; cx.fillStyle = 'rgba(43,42,51,.5)'; cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';
+        cx.fillText(N_PHRASES + ' cute stories — one mesh, known structure (the calibration corpus)', W/2, 92);
+      } else if (reg === 'repo' && REPO && REPO.ok) {
+        let t = REPO.rootThesis || ''; if (t.length > 96) t = t.slice(0, 93).replace(/\s+\S*$/, '') + '…';
+        cx.font = '300 17px "Fraunces",serif'; cx.fillStyle = 'rgba(43,42,51,.5)'; cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';
+        cx.fillText('ontum — ' + t, W/2, 92);
+      } else if (reg === 'repo') {
+        cx.font = '300 16px "Fraunces",serif'; cx.fillStyle = MOCK; cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';
+        cx.fillText('reading the repo — serve from the repo root (python -m http.server)', W/2, 92);
+      }
+      // 2) a figurative creature blooms above every glyph (the round's joy — every one kept).
+      META.forEach(m => { const nd = S.byId(m.id); if (!nd) return; NAT.creature(cx, m.icon, nd.x, nd.y - R - 15, 12, nd.hue);
+        if (m.kind === 'membrane' && m.teeth) tag(cx, nd.x + R - 4, nd.y - R + 6, 'teeth', COL.dim); });
+      // 3) edge labels + the construction flag. story relations: hand-authored → MOCK
+      //    magenta. corpus links: declared seed data → dim ink "shares". repo edges:
+      //    PARSED from real files → quiet ink (the teeth: structure generated).
+      S.links.forEach((l, i) => { const g = S.geom(l); if (!g || !g.q) return; const m = g.q(0.5); const e = EDGES[i] || {};
+        if (e.mock) { tag(cx, m[0], m[1] - 15, 'MOCK', MOCK); if (e.label) { cx.font = '400 9px "IBM Plex Mono",monospace'; cx.fillStyle = MOCK; cx.textAlign = 'center'; cx.fillText(e.label, m[0], m[1] + 18); } }
+        else if (e.label) { cx.font = '400 9px "IBM Plex Mono",monospace'; cx.fillStyle = e.corpus ? COL.faint : COL.dim; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(e.label, m[0], m[1] - 12); } });
+      // 4a) the BENCHMARK with TEETH — at the full phrase the trap is a MEASURED
+      //     recovery: the crossed-out careless edge + a live score readout (recovery_scorer).
+      if (reg === 'story' && complexity === 2 && PH && PH.surface_trap && recovery) {
+        const tr = PH.surface_trap.edge;
+        const a = S.byId((META.find(m => m.word === tr.from.split('.')[0])||{}).id);
+        const b = S.byId((META.find(m => m.word === tr.to.split('.')[0])||{}).id);
+        if (a && b) {
+          cx.save(); cx.strokeStyle = MOCK; cx.lineWidth = 1.4; cx.setLineDash([3,5]); cx.globalAlpha = .8;
+          const mx = (a.x+b.x)/2, my = (a.y+b.y)/2 - 84;
+          cx.beginPath(); cx.moveTo(a.x, a.y); cx.quadraticCurveTo(mx, my, b.x, b.y); cx.stroke();
+          cx.setLineDash([]); cx.beginPath(); cx.moveTo(mx-6, my-6); cx.lineTo(mx+6, my+6); cx.moveTo(mx+6, my-6); cx.lineTo(mx-6, my+6); cx.stroke();
+          cx.globalAlpha = 1; cx.fillStyle = MOCK; cx.font = '600 11px "Caveat",cursive'; cx.textAlign = 'center';
+          cx.fillText('“' + tr.label + '” — the careless reading', mx, my - 12); cx.restore();
+          // the live score pill (clickable → CONVERSE about the recovery).
+          const mc = recovery.mech.composite, cc = recovery.careless.composite;
+          const txt = `recovery · mechanism ${mc.toFixed(2)} ✓  vs  careless ${cc.toFixed(2)} ✗ — tap`;
+          cx.save(); cx.font = '500 10.5px "IBM Plex Mono",monospace';
+          const pw = cx.measureText(txt).width + 22, ph = 24, px = mx - pw/2, py = my + 14;
+          cx.fillStyle = 'rgba(255,252,245,.96)'; cx.strokeStyle = COL.amber || '#b8742c'; cx.lineWidth = 1.4;
+          cx.beginPath(); cx.rect(px, py, pw, ph); cx.fill(); cx.stroke();
+          cx.fillStyle = '#6b6456'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(txt, mx, py + ph/2); cx.restore();
+          trapPill = { x: px, y: py, w: pw, h: ph };
+        }
+      }
+      // 4b) corpus TEETH — the benchmark as a benchmark: how many phrases carry a trap.
+      if (reg === 'corpus') { cx.save(); cx.font = '400 10px "IBM Plex Mono",monospace'; cx.fillStyle = COL.dim; cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';
+        cx.fillText(N_TEETH + ' of ' + N_PHRASES + ' carry a surface_trap — the fluent-but-wrong edge the score must refuse', W/2, (cv.clientHeight||innerHeight) - 70); cx.restore(); }
+      // 4c) repo TEETH — modules the root NAMES but does NOT @-import (tests/, pivot/ —
+      //     "left to nested loading"). Faint ghosts; REAL structure, just not on the surface.
+      if (reg === 'repo' && REPO && REPO.ok && (complexity - 3) >= 1 && (REPO.unimported||[]).length) {
+        const root = S.byId((META.find(m => m.kind === 'root')||{}).id);
+        if (root) { cx.save(); cx.globalAlpha = .55;
+          REPO.unimported.forEach((d, k) => { const a = Math.PI * (0.62 + k * 0.16); const gx = root.x + Math.cos(a) * 96, gy = root.y + Math.sin(a) * 70;
+            cx.strokeStyle = COL.dim; cx.lineWidth = 1.2; cx.setLineDash([2,4]);
+            cx.beginPath(); cx.moveTo(root.x, root.y); cx.lineTo(gx, gy); cx.stroke();
+            cx.beginPath(); cx.arc(gx, gy, 13, 0, TAU); cx.stroke(); cx.setLineDash([]);
+            cx.fillStyle = COL.dim; cx.font = '500 10px "Caveat",cursive'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(d + '/', gx, gy); });
+          cx.font = '400 9px "IBM Plex Mono",monospace'; cx.fillStyle = COL.dim; cx.textAlign = 'left';
+          cx.fillText('not on the surface · left to nested loading', root.x + 60, root.y - 84); cx.restore(); }
+      }
+      // 5) the anchor — a faint ink thread from the selected creature to its bubble.
+      if (zoneAnchor && sel) { cx.save(); cx.strokeStyle = 'rgba(122,91,166,.45)'; cx.lineWidth = 1.2; cx.setLineDash([2,4]);
+        cx.beginPath(); cx.moveTo(zoneAnchor.nx, zoneAnchor.ny); cx.quadraticCurveTo((zoneAnchor.nx+zoneAnchor.bx)/2, zoneAnchor.ny, zoneAnchor.bx, zoneAnchor.by); cx.stroke(); cx.restore(); }
+    } catch (e) { /* never break the engine loop */ }
+  };
+
+  // a click on the score pill opens the recovery conversation (the gesture moves the score).
+  cv.addEventListener('click', (ev) => { if (!trapPill) return;
+    const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+    if (x >= trapPill.x && x <= trapPill.x + trapPill.w && y >= trapPill.y && y <= trapPill.y + trapPill.h) openRecov(); });
+
+  // ── a gentle heartbeat — the story breathes along its wires. ──
+  let beat = 0;
+  setInterval(() => { if (!S.nodes.length) return; const nd = S.nodes[beat++ % S.nodes.length]; S.ring(nd); if (S.links.length) S.firePulse(nd.id, 0, nd.label); }, 1500);
+
+  // ── CONVERSE (this chef's gesture→AI stance): a selection opens an NL zone
+  //    ANCHORED ON the glyph — a conversation THROUGH the graph. The deterministic
+  //    FLOOR reply is REAL, folded from the glyph + its wiring (story: facets;
+  //    repo: the parsed thesis). The looser SPOKEN answer needs the local mind and
+  //    is flagged mock until the bridge is up (the missing-texture rule). ──
+  const zone = document.getElementById('zone');
+  function closeZone() { sel = null; zoneAnchor = null; S.select && S.select(null); openZone(); }
+  function relsTouching(word) { return EDGES.filter(e => (e.fromWord||'').split('.')[0] === word || (e.toWord||'').split('.')[0] === word); }
+
+  function positionZone() {
+    if (!sel) return;
+    let nx, ny;
+    if (sel.kind === 'node') { const nd = sel.ref; nx = nd.x; ny = nd.y; }
+    else { const g = S.geom(sel.ref); if (!g || !g.q) return; const mid = g.q(0.5); nx = mid[0]; ny = mid[1]; }
+    const R = S.NODE_R || 40, W = cv.clientWidth || innerWidth, H = cv.clientHeight || innerHeight;
+    const zw = zone.offsetWidth || 268, zh = zone.offsetHeight || 200;
+    let left = nx + R + 22; if (left + zw > W - 12) left = nx - R - 22 - zw; left = Math.max(12, left);
+    let top = Math.max(64, Math.min(H - zh - 14, ny - 36));
+    zone.style.left = left + 'px'; zone.style.top = top + 'px';
+    zoneAnchor = { nx, ny, bx: left < nx ? left + zw : left, by: top + 26 };
+  }
+
+  function openZone() {
+    if (!sel) { zone.classList.remove('show'); setTimeout(() => { if (!sel) zone.classList.remove('on'); }, 220); return; }
+    zone.classList.add('on');
+    if (sel.kind === 'node') {
+      const nd = sel.ref, meta = META.find(m => m.id === nd.id);
+      if (!meta) { zone.innerHTML = `<h4>Converse <span class="x">✕</span></h4><div class="says">this thing isn't part of the story yet.</div>`; }
+      else if (meta.kind === 'cat') {
+        const chips = meta.facets.map(f => `<span class="chip">${(FACET[f]||{}).icon||'·'} ${f}</span>`).join('');
+        const reads = meta.facets.map(f => (FACET[f]||{}).read || f).join('; ');
+        const touch = relsTouching(meta.word);
+        const conns = touch.map(r => `<div><b>${r.fromWord}</b> ${r.label} <b>${r.toWord}</b></div>`).join('') || '<div>— it stands alone, for now</div>';
+        const says = `I'm <b>${meta.word}</b> — ${reads}. ` + (touch.length ? `In this story I'm wired ${touch.length} way${touch.length>1?'s':''}.` : `Nothing touches me yet — grow the story.`);
+        zone.innerHTML =
+          `<h4>Converse <span class="x">✕</span></h4>
+           <div class="ttl">${meta.word}</div><div class="chips">${chips}</div>
+           <div class="says">${says}</div>
+           <div class="sub">connected through</div><div class="conn">${conns}</div>
+           <input class="ask" id="ask" placeholder="talk to ${meta.word} — e.g. what wakes you?">
+           <div class="reply" id="reply"></div>
+           <div class="src">floor · folded from facets + ${touch.length} wire${touch.length===1?'':'s'}</div>`;
+      }
+      else if (meta.kind === 'root') {
+        zone.innerHTML =
+          `<h4>Converse · the nucleus <span class="x">✕</span></h4>
+           <div class="ttl">ontum</div>
+           <div class="says">I'm the <b>composition surface</b>. ${meta.thesis}</div>
+           <div class="sub">I @-import</div>
+           <div class="conn">${meta.count} module environments — drag Complexity to bloom them.</div>
+           <input class="ask" id="ask" placeholder="ask the repo — e.g. what is this for?">
+           <div class="reply" id="reply"></div>
+           <div class="src">floor · parsed from CLAUDE.md (live)</div>`;
+      }
+      else if (meta.kind === 'module') {
+        const thesisLine = meta.thesis ? `My thesis: <b>${meta.thesis}</b>.` : `<span style="color:var(--mock)">— its CLAUDE.md didn't resolve.</span>`;
+        const units = (meta.units && meta.units.length) ? meta.units.map(u => `<div>· ${u}</div>`).join('') : '<div>— no named units</div>';
+        const firstSent = (meta.desc || '').split(/(?<=[.!?])\s/)[0] || '';
+        zone.innerHTML =
+          `<h4>Converse · a module <span class="x">✕</span></h4>
+           <div class="ttl">${meta.word}<small> /</small></div>
+           <div class="says">${thesisLine} ${firstSent}</div>
+           <div class="sub">I define</div><div class="conn">${units}</div>
+           <input class="ask" id="ask" placeholder="talk to ${meta.word} — e.g. what's your hard rule?">
+           <div class="reply" id="reply"></div>
+           <div class="src">floor · folded from ${meta.dir}/CLAUDE.md (live)</div>`;
+      }
+      else if (meta.kind === 'membrane') {
+        const p = meta.phrase, touch = relsTouching(p.id);
+        const links = touch.map(r => { const other = (r.fromWord === p.id) ? r.toWord : r.fromWord; return `<div>${r.label} → <b>${other}</b></div>`; }).join('') || '<div>— a lone membrane</div>';
+        const teeth = meta.teeth
+          ? `<div class="says">My trap: <b>${(p.surface_trap||{}).type}</b> — the fluent-but-wrong edge a careless reader draws. Grow back to the phrase to score the recovery.</div>`
+          : `<div class="says" style="color:var(--dim)">No commission trap — recall alone scores me (an omission story).</div>`;
+        zone.innerHTML =
+          `<h4>Converse · a story <span class="x">✕</span></h4>
+           <div class="ttl" style="font-size:18px;line-height:1.25">${p.text}</div>
+           <div class="chips" style="margin-top:6px"><span class="chip">${p.kind}</span>${meta.teeth?'<span class="chip" style="border-color:var(--amber);color:var(--amber)">teeth</span>':''}</div>
+           ${teeth}
+           <div class="sub">stitched to</div><div class="conn">${links}</div>
+           <input class="ask" id="ask" placeholder="ask this story — e.g. what's the latent structure?">
+           <div class="reply" id="reply"></div>
+           <div class="src">floor · ${p.glyphs.length} glyphs · ${p.relations.length} relations (the label mesh)</div>`;
+      }
+      else { // file
+        zone.innerHTML =
+          `<h4>Converse · a unit <span class="x">✕</span></h4>
+           <div class="ttl"><small>${meta.parent}/</small> ${meta.word}</div>
+           <div class="says">A named unit of <b>${meta.parent}</b>, parsed from its CLAUDE.md links.</div>
+           <input class="ask" id="ask" placeholder="open ${meta.word}…">
+           <div class="reply" id="reply"></div>
+           <div class="src">floor · real reference (defines edge)</div>`;
+      }
+    } else if (sel.kind === 'edge') {
+      const idx = S.links.indexOf(sel.ref), e = EDGES[idx] || {};
+      const A = S.byId(sel.ref.a), B = S.byId(sel.ref.b);
+      const body = e.mock
+        ? `<div class="reply mock"><span class="mtag">MOCK</span>this relation is hand-authored, not yet generated from the glyphs it joins (iterations 0008). The magenta says so.</div>`
+        : e.corpus
+        ? `<div class="says"><b>${A?A.label:'?'}</b> and <b>${B?B.label:'?'}</b> ${e.label||'share a glyph'}</div><div class="src">declared · a corpus link from phrases.json (stitches two membranes)</div>`
+        : `<div class="says"><b>${A?A.label:'?'}</b> ${e.label||'→'} <b>${B?B.label:'?'}</b></div><div class="src">real · parsed from the files (an @-import / a defines link)</div>`;
+      zone.innerHTML = `<h4>Converse · a wire <span class="x">✕</span></h4><div class="ttl">${e.label||'a wire'}</div>${body}`;
+    }
+    const xb = zone.querySelector('.x'); if (xb) xb.onclick = closeZone;
+    const ask = zone.querySelector('#ask'), reply = zone.querySelector('#reply');
+    if (ask) ask.onkeydown = (ev) => { if (ev.key !== 'Enter' || !ask.value.trim()) return;
+      reply.className = 'reply mock';
+      reply.innerHTML = `<span class="mtag">MOCK</span>a spoken answer routes through the local mind (gateway). Bridge is down — the floor above already gave you the real context.`;
+      ask.blur(); };
+    requestAnimationFrame(() => { positionZone(); zone.classList.add('show'); });
+  }
+  // keep the bubble glued to its creature as the ink wobbles / a node is moved.
+  setInterval(() => { if (sel) positionZone(); }, 120);
+
+  // ── RECOVERY (the benchmark teeth, conversational) — a selection-shaped NL zone
+  //    on the trap: two readings, and the gesture (the toggle) MOVES a real score
+  //    computed by recovery_scorer.js. Not a drawing — a measured recovery. ──
+  const recov = document.getElementById('recov');
+  let recovReading = 'careless';
+  function closeRecov() { recov.classList.remove('show'); setTimeout(() => recov.classList.remove('on'), 200); }
+  function openRecov() { if (!recovery) return; recovReading = 'careless'; recov.classList.add('on'); renderRecov();
+    const px = Math.max(12, Math.min(innerWidth - 274, (trapPill ? trapPill.x : innerWidth/2))), py = Math.max(64, (trapPill ? trapPill.y : 200) - 196);
+    recov.style.left = px + 'px'; recov.style.top = py + 'px';
+    requestAnimationFrame(() => recov.classList.add('show')); }
+  function renderRecov() {
+    const s = recovReading === 'mechanism' ? recovery.mech : recovery.careless;
+    const col = s.composite >= 0.75 ? 'var(--positive)' : s.composite >= 0.4 ? 'var(--amber)' : 'var(--strain)';
+    const verdict = s.reads_mechanism ? '✓ reads the mechanism' : (s.trap.hit ? '✗ took the trap' : '✗ missed the mechanism');
+    const narr = recovReading === 'mechanism'
+      ? 'the careful read: the shadow blocks the warmth, and the <b>fading warmth</b> wakes the cat — the mediator kept.'
+      : 'the careless read: “the shadow steals its warmth” drawn straight to the cat — the <b>mediator collapsed</b>.';
+    recov.innerHTML =
+      `<h4>The recovery · benchmark teeth <span class="x">✕</span></h4>
+       <div class="toggle"><a data-r="careless" class="${recovReading==='careless'?'on':''}">careless reading</a><a data-r="mechanism" class="${recovReading==='mechanism'?'on':''}">the mechanism</a></div>
+       <div class="bigscore">composite <span class="v" style="color:${col}">${s.composite.toFixed(2)}</span></div>
+       <div class="bar"><i style="width:${Math.round(s.composite*100)}%;background:${col}"></i></div>
+       <div class="verdict" style="color:${col}">${verdict}</div>
+       <div class="met">relation recall <b>${s.relation.recall.toFixed(2)}</b> · facet F1 <b>${s.facet.f1.toFixed(2)}</b><br>
+         trap (${(recovery.readings.hasTrap && PH.surface_trap.type)||'none'}) ${s.trap.hit?'<b style="color:var(--strain)">drawn</b>':'avoided'}${s.trap.hit?` · −${SCORER.TRAP_PENALTY} penalty`:''}</div>
+       <div class="narr">${narr}</div>
+       <div class="src">computed by recovery_scorer.js — real, not a drawing · toggle = the gesture that moves the score</div>`;
+    const xb = recov.querySelector('.x'); if (xb) xb.onclick = closeRecov;
+    recov.querySelectorAll('.toggle a').forEach(a => a.onclick = () => { recovReading = a.dataset.r; renderRecov(); });
+  }
+
+  // ── the slider strip: ONE Complexity slider is the backbone (0 → repoMax). The
+  //    four companion dials are named-but-unbuilt and wear the construction flag. ──
+  function rebuildSliders() {
+    const box = document.getElementById('sliders'); box.innerHTML = '';
+    const c = document.createElement('div'); c.className = 'sl'; c.style.width = '150px';
+    c.innerHTML = `<div class="lab"><span>Complexity</span><span class="val" id="cval"></span></div>`;
+    const r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = repoMax(); r.step = 1; r.value = complexity;
+    r.oninput = () => grow(+r.value);
+    c.appendChild(r); box.appendChild(c);
+    ['Length','Twists','Weirdness','Colors'].forEach(name => { const d = document.createElement('div'); d.className = 'sl mock';
+      d.innerHTML = `<div class="lab"><span>${name}</span><span class="tag">${BUILD.mock.tag}</span></div><input type="range" min="0" max="4" value="0" disabled>`;
+      box.appendChild(d); });
+    refreshChrome();
+  }
+  const SCALE_NAME = ['the cute nucleus','a growing phrase','the full phrase + score','the corpus','ontum, parsed live','+ the files'];
+  function refreshChrome() {
+    const v = document.getElementById('cval'); if (v) v.textContent = (S.nodes.length || 0) + (regime(complexity) === 'story' ? ' glyph' + (S.nodes.length===1?'':'s') : regime(complexity) === 'corpus' ? ' stories' : ' nodes');
+    document.getElementById('kind').textContent = SCALE_NAME[complexity] || 'a storybook that grows';
+    setLegend();
+  }
+  function markScale() {   // highlight the nearest milestone at/below the slider.
+    const stops = [...document.querySelectorAll('#scale a')].map(a => +a.dataset.lv);
+    let cur = stops[0]; stops.forEach(lv => { if (complexity >= lv) cur = lv; });
+    document.querySelectorAll('#scale a').forEach(a => a.classList.toggle('on', +a.dataset.lv === cur));
+  }
+  function setLegend() {
+    const L = document.getElementById('legend'), reg = regime(complexity);
+    if (reg === 'repo') L.innerHTML =
+      `<div class="r"><span class="sw" style="background:var(--inference)"></span><b>parsed live</b> from CLAUDE.md files</div>
+       <div class="r"><span class="sw" style="background:var(--positive)"></span><b>edges</b> = @imports / defines — REAL, generated</div>
+       <div class="r"><span class="sw" style="background:var(--mock)"></span><b>magenta</b> = mock (spoken reply · bridge down)</div>`;
+    else L.innerHTML =
+      `<div class="r"><span class="sw" style="background:var(--positive)"></span><b>creatures</b> — built, in their own ink</div>
+       <div class="r"><span class="sw" style="background:var(--amber)"></span><b>amber</b> = the live recovery score (teeth)</div>
+       <div class="r"><span class="sw" style="background:var(--mock)"></span><b>magenta</b> = mock (hand-authored / bridge down)</div>
+       <div class="r" style="color:var(--faint)">calibration corpus · ${N_PHRASES} phrases · ${N_TEETH} with teeth</div>`;
+  }
+
+  // the scale breadcrumb is a gesture too — tap a milestone to slide there.
+  document.querySelectorAll('#scale a').forEach(a => a.onclick = () => { closeRecov(); grow(+a.dataset.lv); rebuildSliders(); });
+  document.getElementById('newb').onclick = () => { closeRecov(); grow(0); rebuildSliders(); };
+  document.getElementById('saveb').onclick = () => { try { localStorage.setItem('causality.naturalist', JSON.stringify({ complexity })); } catch (e) {} };
+
+  ensureRepo().then(() => rebuildSliders());   // extend the slider to repo scale when it lands.
+  rebuildSliders(); grow(0);
+})();
+</script>
+</body>
+</html>

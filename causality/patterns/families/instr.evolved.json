@@ -1,0 +1,59 @@
+{
+  "family": {
+    "id": "instr",
+    "name": "Generative Instruments",
+    "pin": "creation as play",
+    "ai_native_pin": "A generative instrument earns AI-native only when the machine plays in pencil: every generated take sits on the COMMITMENT register as pencil (proposed/simulated, never admitted ink), carries the provenance of the model/seed that made it, and becomes a RECORD only by an explicit human keep-gesture. Creation-as-play that never launders SIMULATION into the record. The pencil->ink mechanic itself is the register family's (register:pencil-vs-ink + register:settle-on-commit, reconciled 2026-06-16); this family's seam is the keep-gesture in performance, not a re-derivation of the register."
+  },
+  "patterns": [
+    {
+      "id": "instrument-surface",
+      "name": "Instrument Surface",
+      "current_intent": "Input is performance: the surface responds in rhythm, and using it is indistinguishable from playing it.",
+      "axis": { "commitment": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Keep it as pure responsiveness craft, but have the surface emit a typed, timestamped gesture-event stream so a model can play it headlessly — performance an agent can also drive (axis 3 none->partial), without pretending the sub-100ms feel is itself AI. No commitment claim: a responsive control settles nothing.",
+      "non_example": "A form with a Submit button and a 200ms spinner: latency polish is not performance, and a responsive control is not an instrument.",
+      "exemplars": ["https://experiments.withgoogle.com/ai/drum-machine/view/"]
+    },
+    {
+      "id": "ml-duet",
+      "name": "Machine Duet",
+      "current_intent": "The model answers your gesture with a musical reply — call and response, neither side fully in charge.",
+      "axis": { "commitment": "none", "provenance": "none", "agent_drivable": "partial" },
+      "verdict": "truth-capable",
+      "evolution": "Render the machine's reply in PENCIL (proposed on the commitment register) and stamp it with its generating model/seed, so the duet never confuses what you played (ink) with what the model proposed (pencil) — lifts commitment none->full and provenance none->partial. That full discipline is the new Provisional Take; ml-duet stays the distinct two-player interaction shape that carries it.",
+      "non_example": "The model's reply rendered in ink, indistinguishable from your own notes: that silently admits SIMULATION as RECORD, and an oracle that returns one authoritative answer is an answer machine, not a duet.",
+      "exemplars": ["https://experiments.withgoogle.com/ai/drum-machine/view/"]
+    },
+    {
+      "id": "constraint-play",
+      "name": "Constraint as Toy",
+      "current_intent": "A tight rule-set turns infinite possibility into a game with edges you can feel.",
+      "axis": { "commitment": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Express the felt rule-set as a machine-checkable constraint schema so a generated take that breaks the edges is refused, not drawn — the same teeth as F9's schema-validation, applied to live play (axis 3 none->partial); kin to Interface-as-AI, but here the schema validates takes, it does not author a surface. No commitment claim of its own: it gates what may be played, it does not settle pencil->ink.",
+      "non_example": "An unbounded free-draw canvas (infinite possibility, no felt edge — the blank-canvas paralysis the pattern exists to cure); or a constraint enforced only in the UI with no machine-readable schema — a felt edge a model cannot read is not a contract.",
+      "exemplars": ["https://experiments.withgoogle.com/ai/drum-machine/view/"]
+    }
+  ],
+  "new_patterns": [
+    {
+      "id": "provisional-take",
+      "name": "Provisional Take",
+      "current_intent": "The instrument's keep-gesture: a played take stays pencil (proposed/simulated) while you audition it in the loop, and settles to ink only when you KEEP it — the one moment of admission, in performance. Each kept take carries the provenance (model, seed, prompt) of what produced it.",
+      "use_when": "A live generative-performance surface offers machine takes the human must be able to audition and then deliberately keep or drop — and you need the kept-vs-auditioned line to be the commitment register, not a silent auto-accept.",
+      "axis": { "commitment": "full", "provenance": "full", "agent_drivable": "partial" },
+      "verdict": "ai-native",
+      "evolution": "Narrowed (round 1 dedup): this pattern is ONLY the instrument-flavored keep-gesture seam — a played take is pencil until you keep it, then it settles to ink. The pencil->ink mechanic itself is register:pencil-vs-ink, and the settle-on-keep IS register:settle-on-commit's admit step in a performance surface; both are cited as kin and NOT re-derived here. It is also the full form ml-duet's reply-in-pencil points at. Next move is the typed take-spec (axis 3 partial->full) so an external agent can offer a take through the same validated seam a human plays.",
+      "non_example": "The model's beat dropped straight into the committed timeline: auto-accepting generated content admits SIMULATION as RECORD and erases the keep-gesture the pattern is built on. Also not register:settle-on-commit itself (that is the canonical pencil->ink admit, which this rides) and not Interface-as-AI/F9 (which authors a whole surface from a description); this is the keep-gesture located in a live performance seam, citing both as kin rather than re-owning their mechanics.",
+      "exemplars": ["https://experiments.withgoogle.com/ai/drum-machine/view/", "foundry:04-causality"],
+      "kin": ["register:settle-on-commit", "register:pencil-vs-ink", "interface-ai", "ml-duet"]
+    }
+  ],
+  "open_questions": [
+    "ml-duet vs Provisional Take boundary: keep the duet as the distinct interaction shape (call/response, two players) and Provisional Take as the keep-gesture commitment seam it carries, or retire ml-duet into the new pattern? Held separate for now — this is the top remaining open boundary.",
+    "Latency vs provenance: a sub-100ms performance seam may have no room to stamp full provenance per played take — does the route-home get batched onto the keep-gesture (provenance at commit, not at play), since the keep IS the settle-on-commit step register already owns?",
+    "Where does the constraint schema live so a human's felt edges and a model's validated generation read the SAME grammar, without F9 (Interface-as-AI) owning it? Shared-schema vs authoring-schema is the open boundary with F9."
+  ]
+}
