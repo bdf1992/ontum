@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.session-gateway-binding.v0",
+    "story": {
+      "text": "As bdo, I want a branch to belong to its WORK, not to the mortal session that made it — so a session dying never strands a branch, and a session can never quietly commit onto work that isn't its own. A `workspace_claimed` admission binds a branch to the durable claim it serves, signed --by; the git pen refuses a commit that asserts a claim the branch is not bound to. This is the second cut of the session-gateway arc: increment #1 made a session assert WHICH branch it is on; this makes the branch assert WHICH work it serves. Opt-in like the HEAD-intent guard, until provisioning makes it the default; the safe default is unchanged (no --claim, no check).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the claim↔workspace binding — a branch belongs to its work, not the session",
+      "value": "A `workspace_claimed` admission (type:workspace_claimed, branch, claim, --by, superseded to re-claim or release) binds a branch to the durable work it serves. loop/workspace.py folds these admissions into the active binding per branch (supersession-aware, one live binding per branch by construction), exposes a pure binding_refusal(branch, claim, bindings), and writes claim/release through the one pen. The git pen's `commit --claim <work>` refuses a commit whose branch is unbound or bound to a DIFFERENT claim — the branch collision turned into a clean deny.",
+      "why_now": "The session-gateway arc's root cause: a git worktree has one HEAD, so 'the current branch' is a shared mutable global a mortal session treats as private state — the one layer ontum's no-shared-state discipline never reached. Increment #1 (done-line 0118) caught HEAD moving under a session. This is the durability half: a branch tied to a mortal session is born to be orphaned; tied to the claimed work, it survives a session's death and a new session re-claims it. It also makes every code-diff attributable to a claimed unit of work (governance: authority + attribution).",
+      "if_accepted": "A session that claims its workspace is protected against committing under the wrong claim, and the branch carries an attributed record of the work it serves — the seam the provisioning pen and gardener reclaim (increment #4) build the route-home on. D-4 holds: a claim is attributed --by; nothing self-approves; the binding is an admitted record, never a constant.",
+      "if_rejected": "The branch stays a session-private global; a dead session strands its branch with no record of what it was for, and a session can commit onto a branch that belongs to other work with nothing to notice (the exact collision that authored the arc).",
+      "cost_of_wrong_call": "Low and fail-safe: the enforcement is opt-in via --claim (omitted, nothing changes — the backward-compatible default the suite pins); the writers are additive admissions on the append-only log; reverting is a superseding release or removing the pen's check. The binding never gates bdo and never reaches the network.",
+      "mechanism": "loop/workspace.py: active_bindings (the fold over workspace_claimed/workspace_released, supersession-aware), binding_refusal (pure: unbound refused, different-claim refused, matching claim and omitted claim pass), claim/release writers, and a list/claim/release CLI. .claude/skills/branch-ritual/git.py: commit grows --claim, calls binding_refusal after the HEAD-intent guard (composing increment #1's --on). tests/test_workspace.py carries the §10 bite: claiming W on a branch bound to W2 must refuse (a binding that can never refuse is a gauge, not a gate). Done-line 0121.",
+      "reading": [
+        "loop/workspace.py",
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_workspace.py",
+        ".ai-native/done/0121-workspace-binding.md",
+        "session-gateway.proposal.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["loop/workspace.py", ".claude/skills/branch-ritual/git.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/workspace.py", ".claude/skills/branch-ritual/git.py"]
+    }
+  },
+  "_note": "Birth record for the claim↔workspace binding (done-line 0121), increment #2 of the session-gateway arc, authored so the off-log work carries an atom on the log under the atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5). Composes increment #1 (the HEAD-intent guard, atom on claude/head-intent-guard); this branch is itself bound to this atom (dogfood, adm.d54820e46212)."
+}

@@ -37,10 +37,12 @@ class TestHeadIntentRefusal(unittest.TestCase):
     def test_matching_branch_passes(self):
         self.assertIsNone(gitpen.head_intent_refusal("claude/x", "claude/x"))
 
-    def test_omitted_assertion_passes(self):
-        """Backward compatible: no `--on` means no HEAD-intent check."""
-        self.assertIsNone(gitpen.head_intent_refusal("claude/x", None))
-        self.assertIsNone(gitpen.head_intent_refusal("claude/x", ""))
+    def test_omitted_assertion_refuses(self):
+        """No `--on` means no declared branch intent."""
+        for expected in (None, ""):
+            r = gitpen.head_intent_refusal("claude/x", expected)
+            self.assertIsNotNone(r)
+            self.assertIn("HEAD-intent required", r)
 
     def test_detached_head_is_named_when_mismatched(self):
         r = gitpen.head_intent_refusal("", "claude/x")
@@ -62,6 +64,14 @@ class TestLivePenWiring(unittest.TestCase):
         out = p.stdout + p.stderr
         self.assertNotEqual(p.returncode, 0, "a wrong-branch commit must refuse")
         self.assertIn("HEAD-intent", out)
+
+    def test_missing_on_subprocess_refuses_before_git_commit(self):
+        p = subprocess.run(
+            [sys.executable, str(PEN), "commit", "-m", "x"],
+            cwd=REPO, capture_output=True, text=True)
+        out = p.stdout + p.stderr
+        self.assertNotEqual(p.returncode, 0, "a no-intent commit must refuse")
+        self.assertIn("HEAD-intent required", out)
 
     def test_right_branch_does_not_trip_the_guard(self):
         cur = self._current_branch()

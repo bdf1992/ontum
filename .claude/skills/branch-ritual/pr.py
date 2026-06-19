@@ -111,6 +111,47 @@ def _refuse(message):
     sys.exit(1)
 
 
+def _git_toplevel(cwd):
+    proc = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True, encoding="utf-8",
+        errors="replace", cwd=cwd,
+    )
+    if proc.returncode != 0:
+        return None
+    return pathlib.Path(proc.stdout.strip()).resolve()
+
+
+def invocation_root_refusal(pen_root, cwd_root):
+    """Why this PR pen invocation may not mutate, or None.
+
+    The PR pen performs branch and GitHub mutations for the worktree it lives
+    in. A session in worktree A must not invoke worktree B's pen and push,
+    edit, or land B by accident.
+    """
+    if cwd_root is None:
+        return (
+            "not inside a git worktree - run the PR pen from the worktree "
+            "whose branch or PR you are mutating"
+        )
+    pen_root = pathlib.Path(pen_root).resolve()
+    cwd_root = pathlib.Path(cwd_root).resolve()
+    if pen_root != cwd_root:
+        return (
+            f"pen/worktree mismatch: this PR pen belongs to {pen_root}, but "
+            f"the caller is in {cwd_root}. Use the PR pen from that worktree "
+            "(`python .claude/skills/branch-ritual/pr.py ...` from its root) "
+            "so the environment and the tool agree."
+        )
+    return None
+
+
+def _assert_invocation_root():
+    reason = invocation_root_refusal(ROOT, _git_toplevel(pathlib.Path.cwd()))
+    if reason:
+        _refuse(reason)
+
+
 def _run(args):
     proc = subprocess.run(
         args, capture_output=True, text=True, encoding="utf-8",
@@ -152,6 +193,7 @@ def _check_tests(story):
 
 
 def cmd_create(ns):
+    _assert_invocation_root()
     branch = _run(["git", "branch", "--show-current"]).strip()
     if not branch or branch in ("main", "master"):
         _refuse(
@@ -240,6 +282,7 @@ def forward_refusal(tokens):
 
 
 def cmd_push(ns):
+    _assert_invocation_root()
     forward = [t for t in getattr(ns, "forward", []) if t != "--"]
     reason = forward_refusal(forward)
     if reason:
@@ -290,6 +333,7 @@ def cmd_push(ns):
 
 
 def cmd_edit(ns):
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json", "state,headRefName"]))
     if info["state"] != "OPEN":
@@ -311,6 +355,7 @@ def cmd_ready(ns):
     green (or declared red) suite, flip the draft. The flip makes the PR
     eligible for merge-node consideration after arc confirmation; accidental
     owner-merge pings die here."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number),
          "--json", "state,headRefName,isDraft"]))
@@ -339,6 +384,7 @@ def cmd_ready(ns):
 def cmd_unready(ns):
     """Back to a rolling draft — the de-escalation needs no story; it only
     takes the merge button away."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json", "state,isDraft"]))
     if info["state"] != "OPEN":
@@ -399,6 +445,7 @@ def cmd_retire(ns):
     through the one pen, with the reason on the record. Not a land — `land`
     merges a confirmed arc; this retires work that should never merge. The
     reason becomes the closing comment a cold reader reads alone."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json", "state,title"]))
     refusal = retire_refusal(info.get("state"), ns.reason)
@@ -548,6 +595,7 @@ def cmd_phrasing(ns):
     before/after content hashes, the reason, --by); the session then commits the
     prose files (and the admission) with the git pen and opens the PR with
     `pr.py create` — the gate exempts a phrasing-clean branch (no atom needed)."""
+    _assert_invocation_root()
     import hashlib
     sys.path.insert(0, str(ROOT))
     from loop import phrasing
@@ -600,6 +648,7 @@ def cmd_integrate(ns):
     """Merge a piece-PR into its epic branch (done-line 0029). Main stays
     governed by arc confirmation and merge-node land; this lands a piece on a
     non-trunk integration branch."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number),
          "--json", "state,baseRefName,headRefName,mergeable"]))
@@ -882,6 +931,7 @@ def cmd_confirm(ns):
     it to `origin/main` in one command, so one stamp authorizes the node — no
     hand-git. The owner's act (D-4): refused unless `--by bdo`. Done on a fresh
     worktree off origin/main, so a stale or dirty viewport never blocks it."""
+    _assert_invocation_root()
     import shutil
     import tempfile
     if (ns.by or "").strip().lower() != "bdo":
@@ -1038,6 +1088,7 @@ def cmd_land(ns):
     merges — he confirms arcs and reads the digest; this lands what he
     confirmed, refuses by default, and records every land. Run it as a node
     that did not author the PR (the merge-node SKILL is explicit)."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json",
          "state,baseRefName,headRefName,isDraft,mergeable,title,body,statusCheckRollup,author"]))
