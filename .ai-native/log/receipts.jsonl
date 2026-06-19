@@ -260,3 +260,4 @@
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/value-gate-eval","id":"rcp.merge.213","kind":"merge","node":"merge-node.claude.v1","pr":213,"ts":"2026-06-18T23:27:42Z","verdict":"landed"}
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/heal-organ","id":"rcp.merge.203","kind":"merge","node":"merge-node.claude.v1","pr":203,"ts":"2026-06-18T23:34:54Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"codex/digest-readability-fix","id":"rcp.merge.198","kind":"merge","node":"merge-node.claude.v1","pr":198,"ts":"2026-06-19T03:10:54Z","verdict":"landed"}
+{"authorized_by":"adm.a675cb9d36fb","epic":"epic.causality-surface","head":"claude/home-patterns","id":"rcp.merge.174","kind":"merge","node":"merge-node.claude.v1","pr":174,"ts":"2026-06-19T03:11:26Z","verdict":"landed"}
