@@ -1,6 +1,14 @@
 # Anthology (PROPOSED — for bdo's bless): the self-governing loop
 
-**Status:** PROPOSED. An anthology is the **arc-tier fold** — a derived
+**Status:** BLESSED by bdo (chat stamp, 2026-06-19). **Name:**
+`anthology.self-governing-loop`. **Boundary:** all seven chapters below,
+including #224 and #230 (folded in — both are "the loop lands itself safely";
+trimmable additively if bdo narrows). This bless is recorded here and in memory
+(`ontum-session-gateway-governed-folding`); it becomes a foldable log admission
+when `loop/anthology.py` exists. It names and bounds the body and authorizes
+steering it as one unit — it lands nothing and re-confirms no arc.
+
+An anthology is the **arc-tier fold** — a derived
 envelope over several arcs, re-deriving like arcs into one body of work whose
 derived type is its *throughline* (see `session-gateway.proposal.md` and the
 registered memory `ontum-session-gateway-governed-folding`). Naming and
@@ -40,13 +48,14 @@ Candidate names (bdo's to set): `anthology.self-governing-loop`,
 | terminal-pull gateway | #226 | the-field | 0122 | the piece-scale landable-slice requisition |
 | landing-contract intent rule | #232 | owner-harness | — | "landed" = independently reviewed, never self-signed |
 
-**Boundary question (bdo's call):** are these adjacent PRs in or out?
+**Boundary (blessed — folded in):**
 - #224 — *the reconcile verb: brand the land-chain cascade* (substrate) — governance of landing.
 - #230 — *GitHub is a deterministic reflection of local (D-13)* (owner-harness) — the merge receipt carries its landing.
 
-Both touch the same "the loop lands itself safely" surface; they may belong, or
-they may be their own (smaller) governance anthology. The fold dedups overlaps;
-the boundary is yours.
+Both touch the same "the loop lands itself safely" surface, so the bless
+includes them; #230 is the looser fit (it leans toward deterministic
+reflection) and bdo may narrow the boundary additively later. The fold dedups
+overlaps.
 
 ## What bless means
 
