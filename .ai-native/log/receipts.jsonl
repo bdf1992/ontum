@@ -278,3 +278,4 @@
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/hook-path-rooting","id":"rcp.merge.240","kind":"merge","node":"merge-node.claude.v1","pr":240,"ts":"2026-06-19T18:27:57Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/pr-reconcile-verb","id":"rcp.merge.224","kind":"merge","node":"merge-node.claude.v1","pr":224,"ts":"2026-06-19T18:41:04Z","verdict":"landed"}
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"worktree-session-gateway-route","id":"rcp.merge.223","kind":"merge","node":"merge-node.claude.v1","pr":223,"ts":"2026-06-19T18:58:20Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"worktree-code-review-gate","id":"rcp.merge.238","kind":"merge","node":"merge-node.claude.v1","pr":238,"ts":"2026-06-19T19:04:14Z","verdict":"landed"}
