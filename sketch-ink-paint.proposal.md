@@ -224,6 +224,53 @@ leaky varnish.** It over-invested in the ink stage and under-invested in
 medium is reliably the reader's wall.* Fix the stages, not the six flaws
 one at a time.
 
+## The danger: ink and paint are destructive (why the discipline exists)
+
+> **Pen and paint can ruin work if applied incorrectly.** *(bdo, this
+> session.)*
+
+This is the other half of the thesis. The diagnosis above is about marks
+in the *wrong stage* — misplacement. This is about marks made *too early,
+or by the wrong hand, in permanent media* — and because the medium does
+not forgive, the cost is not a gap, it is **damage.**
+
+A pencil is forgiving; that is its entire value — be wrong cheaply, try
+the line three times, erase. **Ink and paint are permanent**, and on an
+append-only log *literally* so: a committed mark can be painted over
+(supersede), but never erased (D-5; history is never retro-invalidated).
+That permanence is both the value (truth that outlives the session that
+wrote it) and the danger — **ink the wrong line and you have not misplaced
+a mark, you have ruined the board, and your only remedy is to paint over
+the scar.**
+
+So ontum's existing discipline is not hygiene — read the analogy backwards
+and the doctrine falls out as a set of **guards against ruining the
+board:**
+
+- **D-2 / no-one-signs-their-own-line** — the penciller is biased to
+  commit their own lines, so a *different* hand inks. The second set of
+  eyes exists *because inking is destructive.*
+- **Write the done-line before starting (§9.4)** — know the line before
+  you commit permanent media to it.
+- **Accept-and-stamp-sketch, not refuse (decision 3)** — a
+  wrong-*looking* mark is kept as *pencil*, never inked by accident and
+  never thrown out; the one thing forbidden is letting it pass *as ink.*
+- **Cooling is the load-bearing direction (I-7)** — **restraint is the
+  craft.** A master inker leaves most of the page in pencil and commits
+  few lines; ontum's pathology is the opposite — **over-inking**: mocks
+  landed as real, 22 premature merges, drafts committed before judgment.
+  Permanent marks made at sketch-stage confidence.
+
+And **overpaint ruins a finished piece** the same way: surfacing to *hide*
+a flaw instead of reveal it (cosmetic green, theater) is paint laid to
+flatter, and it muddies the very wall the reader trusts — the inverse of
+the paint-on-the-wrong-wall flaw, and just as fatal.
+
+The craft, then, is not only *which* mark but **when to withhold it** — to
+leave a line in pencil until it has earned ink. That restraint is the
+discipline the permanent media demand, and it is the capability ontum is
+shortest on.
+
 ## The architecture it implies
 
 Three contracts, one per mark. Two are new; the middle one already exists
