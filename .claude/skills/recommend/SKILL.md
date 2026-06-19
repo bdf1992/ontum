@@ -56,6 +56,38 @@ answer to one **generates** the next.
   description and routes narrated in `preview` (R2). The tree does not
   withhold the pick; it composes a *path* of picks.
 
+## Reach for it only when the situation fits (RC6 — the load-bearing rule)
+
+This is a **tool for certain shapes, not a default** (bdo, 2026-06-18: "it's
+also a tool for those shapes, not if the situation doesn't fit"). Use it when
+the moment genuinely is: a real, mostly-known **decision-space**; a fast
+**survey** to bound a topic before diving in; a **multi-dimension input** to
+collect as data; a **route** to a mode of thinking. Do **not** use it for an
+open problem (that's `/discussion`), a single fork (that's `/ask`), a call you
+can make yourself (just act), or fluid conversation (prose). Forcing it where it
+doesn't fit is the **form-filling prison** — turning talk into data-entry on the
+surface bdo is most likely to abandon. The instrument is governed *down* by this
+rule, never up. See [policy.md](policy.md) RC6.
+
+## One bound that makes the auto-run safe (RC7)
+
+A picked option may auto-run deterministic code **only when it is read-class** (a
+query, a fold). A change/authority act becomes a **proposal -> gate** — a pick is
+evidence of intent, never the command (a pick that writes is self-signing).
+"Other"/NL always proposes, never commits. The bound is code:
+[`compose.py`](compose.py) `autorun_refusals()` refuses any route that claims
+auto-run for a non-read intent. See [policy.md](policy.md) RC7.
+
+## Part of a wider channel (PROPOSED — not built here)
+
+`/recommend` is **one speech-act** (a request-for-decision) of a larger typed,
+two-way, user<->agent **structured-communication channel** — the same primitives
+used for `configure`, `survey`, `report`, `summon`, and more, each a contextual
+tap-form with an NL escape. That channel is **specified, not built**, in
+[`structured-communication-channel.proposal.md`](../../../structured-communication-channel.proposal.md);
+the grammar stays PROPOSED until a second real render exists (it is *derived*
+from instances, never authored top-down). `/recommend` is the first instance.
+
 ```
 gesture
   │  compose (inference, bounded)

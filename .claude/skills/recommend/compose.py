@@ -38,6 +38,20 @@ try:
 except Exception:  # pragma: no cover - the floor is required; surface its loss
     shape_problems = None
 
+# Reuse the verb->intent classifier for the auto-run constraint (I-4, the same
+# tags.py discipline the git pen uses to refuse an intent that lies about its
+# verb). Best-effort: if loop isn't importable, the constraint still holds on the
+# declared intent, it just loses the verb cross-check.
+_ROOT = pathlib.Path(os.environ.get("ONTUM_REPO_ROOT")
+                     or pathlib.Path(__file__).resolve().parents[3])
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+try:
+    from loop.tags import classify as _classify  # noqa: E402
+except Exception:  # pragma: no cover
+    def _classify(_cmd):
+        return None
+
 MAX_TABS = 4        # AskUserQuestion: at most 4 questions per call
 MIN_OPTIONS = 2     # the tool requires at least 2 options
 MAX_OPTIONS = 4     # at most 4 options per question
@@ -71,12 +85,64 @@ def refusal_check(panel):
             refusals.append(
                 f"{where}: {n} options — must be {MIN_OPTIONS}..{MAX_OPTIONS} (RC1)")
     # Then /ask's deterministic per-panel floor (R1/R2), reused not re-derived.
-    if shape_problems is None:
-        refusals.append(
-            "the ask floor (shape_problems) could not be loaded — refuse rather "
-            "than render an unbounded panel (fail-safe, RC3)")
-    else:
+    # /ask is recommend's dependency; when it isn't deployed beside us yet (its
+    # skill not on this ref — recommend and ask are a stack heading to the same
+    # arc), the borrowed floor is simply SKIPPED — fail-OPEN, the same philosophy
+    # ask_guard itself holds ("fail open... never false-deny"). The tree bound
+    # above and autorun_refusals still bite; the floor activates the moment /ask
+    # lands. Re-implementing it here would be the twin I-4 forbids (done-line
+    # 0125 non-example).
+    if shape_problems is not None:
         refusals.extend(shape_problems(panel))
+    return refusals
+
+
+def autorun_refusals(routes):
+    """The ANSWER-side bound (policy RC7): a selection auto-runs deterministic
+    code ONLY when it is read-class. `routes` is a list of dicts describing what
+    each pickable option is wired to:
+
+        {"option": <label>, "command": <str>, "intent": "read"|"change",
+         "autorun": <bool>}
+
+    Returns the refusals; empty means the auto-run wiring is safe.
+
+    The law it enforces — a gesture is evidence, not a command (AIM); a pick that
+    fires a mutating/authority act is self-signing (D-4, no-self-sign):
+      - a route may auto-run only if its intent is "read";
+      - a "change" route must propose -> gate, never auto-run;
+      - a route that DECLARES read but whose verb classifies as mutate is lying
+        about itself (the tags.py / git-pen discipline) -> refused;
+      - "Other"/NL is never a route here -> it always proposes (handled by the
+        skill, never auto-run), so the absence of a route is correct, not a gap.
+    """
+    refusals = []
+    if not isinstance(routes, list):
+        return ["routes must be a list of {option, command, intent, autorun}"]
+    for r in routes:
+        if not isinstance(r, dict):
+            refusals.append("a route is not an object")
+            continue
+        opt = r.get("option", "?")
+        intent = r.get("intent")
+        cmd = (r.get("command") or "").strip()
+        if not r.get("autorun"):
+            continue  # a propose-route is always allowed; only auto-run is bounded
+        if intent != "read":
+            refusals.append(
+                f"route {opt!r}: auto-run is read-class only; this is {intent!r} "
+                "— a change must propose -> gate, never fire on a pick (RC7/AIM)")
+            continue
+        # declared read — cross-check the verb isn't secretly a mutation (I-4)
+        verb_intent = None
+        try:
+            verb_intent = _classify(cmd) or _classify(cmd.split()[0] if cmd else "")
+        except Exception:
+            verb_intent = None
+        if verb_intent == "mutate":
+            refusals.append(
+                f"route {opt!r}: declares read but the command {cmd!r} classifies "
+                "as mutate — the route lies about its verb (RC7)")
     return refusals
 
 
@@ -112,11 +178,23 @@ def _selftest():
     b = refusal_check(bad)
     assert g == [], f"good panel was refused: {g}"
     assert b, "bad panel passed — the bound has no teeth"
-    # the bad panel must trip: over-cap options, long header, no (Recommended)
+    # the bad panel must trip the TREE bound regardless of the floor's presence:
     joined = " ".join(b)
     assert "options" in joined and "header" in joined, joined
-    assert any("Recommended" in r or "recommended" in r for r in b), b
+    # the borrowed /ask floor (R1/R2) only bites when /ask is deployed beside us:
+    if shape_problems is not None:
+        assert any("Recommended" in r or "recommended" in r for r in b), b
+    # the answer-side bound (RC7): read auto-runs, a change auto-run is refused
+    safe = [{"option": "show the gaps", "command": "python -m loop.gaps",
+             "intent": "read", "autorun": True}]
+    unsafe = [{"option": "land it", "command": "pr.py land", "intent": "change",
+               "autorun": True}]
+    assert autorun_refusals(safe) == [], f"safe auto-run was refused: {autorun_refusals(safe)}"
+    ar = autorun_refusals(unsafe)
+    assert ar, "a change route claimed auto-run and the bound let it through"
+    assert any("change" in r or "propose" in r for r in ar), ar
     print("selftest: ok — bound passes the good panel and bites the bad one")
+    print(f"  change-auto-run refused: {autorun_refusals(unsafe)[0]}")
     print(f"  bad-panel refusals ({len(b)}):")
     for r in b:
         print(f"    - {r}")

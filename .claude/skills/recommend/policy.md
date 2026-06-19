@@ -38,7 +38,12 @@ recommend does not weaken any of them.
   deterministic floor of `/ask`'s law — *before* it is shown. A panel
   that fails is refused and recomposed; an unbounded panel never reaches
   bdo. The bound is the settled-safe part; the composition is the fresh
-  part.
+  part. recommend's **own** bounds (the tree cap + RC7 auto-run) always
+  bite; the **borrowed** `/ask` floor (R1/R2 via `shape_problems`)
+  **fails open** when `/ask` is not yet deployed beside recommend (they
+  are a stack heading to the same arc) — it activates the moment `/ask`
+  lands. Fail-open here mirrors `ask_guard`'s own philosophy and avoids
+  the twin I-4 forbids; it does not weaken recommend's own teeth.
   *Refs:* `ontum-inference-as-composition-layer` (bounded inference);
   the gateway-policy-spine fail-mode tier (deterministic floor gets hard
   teeth, judgment gets discipline + audit).
@@ -57,6 +62,33 @@ recommend does not weaken any of them.
   correction matter. If the session can just resolve it, resolve it.
   *Refs:* R4 and the **offloading hard rule** (CLAUDE.md).
 
+- **RC6 — Situational: a tool for the right shapes, not a default.** recommend
+  (and the wider structured-input channel it belongs to) is reached for **only
+  when the moment fits its shapes** — a real, mostly-known decision-space; a fast
+  survey to bound a topic; a multi-dimension input to collect as data; a route to
+  a mode of thinking. When the situation does **not** fit — an open problem, a
+  single fork, a call the session can make, a fluid conversation — it is the
+  wrong tool, and using it anyway is the **form-filling prison**: turning talk
+  into data-entry on the one surface the owner is most likely to abandon. The
+  instrument's expansiveness is governed *down* by this rule, never *up*.
+  *Refs:* bdo, 2026-06-18 — "it's also a tool for those shapes, not if the
+  situation doesn't fit"; R4 (ask only at a genuine fork); the adversarial
+  review's top risk (the expansion-vs-contraction collision with the ask
+  discipline). This is the answer to that risk: the tool stays subordinate to R4.
+
+- **RC7 — A selection auto-runs only read-class; a change proposes -> gates.** A
+  picked option may fire deterministic code **only when that code is read-class**
+  (a query, a fold). A change/mutating/authority act **must** become a proposal
+  with a preview and route through the gate — a pick is evidence of intent, never
+  the command itself, and a pick that writes is self-signing. "Other"/NL is never
+  a deterministic route: it always proposes (inference reads it), never commits.
+  The bound is code: [`compose.py`](compose.py) `autorun_refusals()` refuses any
+  route that claims auto-run for a non-read intent, or whose verb classifies as
+  mutate while declaring read (reusing the tags.py verb->intent classifier, I-4).
+  *Refs:* AIM (`causality/auditable-intent-mesh.md` — a gesture is evidence, not
+  a command; the execution table: only read/annotate auto-run); D-4 and
+  no-self-sign (loop invariants); the fence (no auto-run of a denied command).
+
 ## The refusal check (the teeth)
 
 Before rendering any panel, recommend is **refused** — reshape/recompose,
@@ -73,9 +105,16 @@ or make the call yourself instead — if **any** of these is true:
    faithful consequence of the route taken. → Recompose from the route.
 4. **It is a dump, not a decision-space (violates RC5).** → Make the
    calls yourself, name what you chose, proceed.
+5. **The situation doesn't fit (violates RC6).** The moment is an open
+   problem, a single fork, a call you can make, or a fluid conversation — not a
+   structured-input shape. → Don't raise the instrument; use prose, `/ask`, or
+   just act.
+6. **A pick would auto-run a change (violates RC7).** A routing table wires a
+   non-read option to auto-run. → Recompose so the change proposes -> gates;
+   only read-class auto-runs.
 
-`compose.py` enforces refusal #2 deterministically (it is testable, with
-teeth — §10). Refusals #1, #3, #4 are judgment rules applied by the
+`compose.py` enforces refusals #2 and #6 deterministically (both testable, with
+teeth — `--selftest`; §10). Refusals #1, #3, #4 are judgment rules applied by the
 session and read by the audit fold (the R7 split: bright-line in code,
 judgment in discipline + audit).
 
