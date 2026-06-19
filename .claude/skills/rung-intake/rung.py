@@ -5,7 +5,7 @@ surface, for *trust rungs*.
 Sibling of arc-intake (done-line 0038) and realness-intake (done-line 0042).
 Those let bdo confirm an arc and make a gate real from GitHub; this lets him
 grant a trust-ladder rung (loop/trust.py) the same way — never a CLI, never a
-custom UI (his stated rule: he acts from GitHub on his phone). An agent class
+custom UI (his stated rule: he acts from GitHub, on whatever device he's at). An agent class
 that needs a capability becomes one issue he closes with a plain-language
 comment; this pen is the deterministic gh I/O around that gesture: open the
 issue, find the ones he closed, read his closing comment, reply with what the

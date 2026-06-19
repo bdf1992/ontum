@@ -669,6 +669,120 @@ def cmd_integrate(ns):
           "owner confirmation and merge-node land")
 
 
+# ----------------------------------------------------------- reconcile (land-chain prep)
+# The cascade fix: GitHub's server-side merge does not apply this repo's
+# `.gitattributes` `union` driver, so it reads every append-only log
+# (events/receipts/admissions.jsonl) as CONFLICTING the moment the trunk
+# advances — and each land re-conflicts the next confirmed branch. The
+# merge-node paid this by hand (worktree → `git merge origin/main` → push →
+# land) on every PR of a landing wave. `reconcile` is that step branded into
+# one verb, and structurally isolated: it works in a throwaway worktree, never
+# the viewport (the shared primary worktree a parallel session may hold). It
+# does the *mechanical* half only — a pure-log merge the union driver resolves
+# — and refuses to author the rest: any non-log conflict is surfaced for a
+# session on the branch, exactly the merge-node's "lands work, never authors a
+# resolution" contract.
+
+def reconcile_refusal(state, base):
+    """Why a PR may not be reconciled, or None.
+
+    Reconcile is land-chain prep against the trunk: it touches a branch, never
+    main, and only an open PR has a branch to reconcile. A piece→epic merge is
+    `integrate`, not this."""
+    if state != "OPEN":
+        return f"only an open PR reconciles — this one is {state.lower()}"
+    if base not in ("main", "master"):
+        return (f"reconcile targets the trunk cascade — this PR's base is "
+                f"'{base}', not main; a piece into an epic branch is `integrate`")
+    return None
+
+
+def reconcile_conflict_refusal(conflicted_paths):
+    """The teeth (§10): the `union` driver resolves the append-only logs
+    automatically, so any path STILL in conflict after the merge is a real
+    content conflict the merge-node may not paper over. Returns the refusal, or
+    None to proceed with a clean (logs-only) merge."""
+    paths = sorted(p for p in conflicted_paths if p.strip())
+    if paths:
+        return (f"real (non-log) conflict in {', '.join(paths)} — a session on "
+                "the branch must resolve it (the merge-node lands work, it does "
+                "not author merge resolutions). The append-only logs union "
+                "automatically; these did not")
+    return None
+
+
+def cmd_reconcile(ns):
+    """Merge the advanced trunk into a confirmed PR's branch in an ISOLATED
+    worktree so GitHub stops reading the union'd logs as a conflict, then hand
+    the branch off through the same gate as any push. Pure-log merges go
+    through; a real content conflict is refused (reconcile_conflict_refusal).
+    The merge-node then lands the branch the usual way."""
+    import os
+    import tempfile
+
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number),
+         "--json", "state,baseRefName,headRefName"]))
+    reason = reconcile_refusal(info["state"], info["baseRefName"])
+    if reason:
+        _refuse(reason)
+    base = info["baseRefName"]
+    branch = info["headRefName"]
+
+    # The truth both sides merge from — never a stale local ref.
+    _run(["git", "fetch", "origin", base, branch])
+
+    base_dir = tempfile.mkdtemp(prefix="ontum-reconcile-")
+    wt = os.path.join(base_dir, "wt")
+    added = False
+    try:
+        rc, out, err = _capture(
+            ["git", "worktree", "add", "-B", branch, wt, f"origin/{branch}"])
+        if rc != 0:
+            _refuse(f"could not check out '{branch}' in an isolated worktree "
+                    f"(is it checked out in another worktree?):\n"
+                    f"{(err or out).strip()}")
+        added = True
+
+        msg = (f"merge {base}: union the append-only logs "
+               f"(land-chain reconcile for #{ns.number})")
+        rc, out, err = _capture(
+            ["git", "-C", wt, "merge", f"origin/{base}", "-m", msg])
+        combined = ((out or "") + (err or "")).strip()
+        if "Already up to date" in combined:
+            print(f"result: report — PR #{ns.number} ({branch}) already carries "
+                  f"origin/{base}; nothing to reconcile")
+            return
+        if rc != 0:
+            conflicted = _capture(
+                ["git", "-C", wt, "diff", "--name-only", "--diff-filter=U"])[1]
+            _capture(["git", "-C", wt, "merge", "--abort"])
+            _refuse(reconcile_conflict_refusal(conflicted.split())
+                    or f"merge failed:\n{combined}")
+
+        # Hand off through the worktree's OWN pen copy, so its ROOT, suite, and
+        # branch are the reconciled tree — the same suite + branded push gate as
+        # any session's hand-off.
+        pen_in_wt = os.path.join(
+            wt, ".claude", "skills", "branch-ritual", "pr.py")
+        proc = subprocess.run(
+            [sys.executable, pen_in_wt, "push"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", cwd=wt)
+        if proc.returncode != 0:
+            tail = "\n".join(
+                ((proc.stdout or "") + (proc.stderr or "")).strip().splitlines()[-8:])
+            _refuse("the reconciled branch did not pass hand-off (suite or push "
+                    f"gate); nothing pushed:\n{tail}")
+        print(f"result: done — reconciled PR #{ns.number} ({branch}) against "
+              f"origin/{base} and pushed; the merge-node can land it now")
+    finally:
+        if added:
+            _capture(["git", "worktree", "remove", wt, "--force"])
+        _capture(["git", "worktree", "prune"])
+        shutil.rmtree(base_dir, ignore_errors=True)
+
+
 # ----------------------------------------------------------- land (merge-node)
 # bdo's amendment, 2026-06-11: he no longer merges PRs — that became
 # performative. An independent merge-node lands a *confirmed-arc* PR on main.
@@ -1109,6 +1223,14 @@ def main(argv=None):
                            action="store_true",
                            help="delete the piece branch after integrating")
     integrate.set_defaults(func=cmd_integrate)
+
+    reconcile = verbs.add_parser(
+        "reconcile", help="land-chain prep: in an isolated worktree, merge the "
+                          "advanced trunk into a confirmed PR's branch so "
+                          "GitHub stops reading the union'd logs as a conflict, "
+                          "then push (real conflicts are refused, not authored)")
+    reconcile.add_argument("number", type=int)
+    reconcile.set_defaults(func=cmd_reconcile)
 
     land = verbs.add_parser(
         "land", help="the merge-node lands a confirmed-arc PR on main (bdo's "

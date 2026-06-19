@@ -216,20 +216,33 @@ RULES = (
         "match": ("git rm old.py", "git mv a.py b.py"),
         "not_match": ("git status",),
     },
+    # Branch/worktree topology is split mutating-vs-introspection (done-line
+    # 0120): the old single rule matched the whole `git branch`/`git worktree`
+    # prefix, so read-only introspection (`git branch --show-current`, the
+    # single most common opening move a session makes — 60% of the last 50
+    # sessions probe it) got prompted on Codex. The fence is a prompt/deny
+    # list: anything no rule matches is allowed, so narrowing the argv to the
+    # *mutating* verbs/flags lets read-only forms fall through to allowed while
+    # topology still prompts. The Claude guard watches all of it regardless.
     {
         "id": "git-branch-mutate",
         "argv": ("git", "branch", ("-d", "-D", "-m", "-M", "-c", "-C",
                                    "--delete", "--move", "--copy")),
         "decision": "prompt",
         "justification": (
-            "Deleting, moving, or copying branches is fleet topology. "
-            "Deleting a branch can strand unpushed work; moving one can "
-            "move a session's floor. Approve only for your own worktree."
+            "Deleting, moving, or copying a branch is fleet topology — in the "
+            "shared tree it can strand unpushed work. Sessions branch off main "
+            "into their own worktree (../ontum-wt/<slug>; AGENTS.md); approve "
+            "only for your own worktree. Read-only `git branch`, "
+            "`git branch --show-current`, and `git branch --list` are not "
+            "topology — they pass, the introspection a session needs to know "
+            "where it is."
         ),
-        "match": ("git branch -d old", "git branch --delete old",
-                  "git branch -m old new"),
-        "not_match": ("git status", "git branch --show-current",
-                      "git branch --list"),
+        "match": ("git branch -d old", "git branch -D feature",
+                  "git branch -m old new", "git branch --delete old",
+                  "git branch --move old new", "git branch -C a b"),
+        "not_match": ("git branch", "git branch --show-current",
+                      "git branch --list", "git status"),
     },
     {
         "id": "git-worktree-mutate",
@@ -237,14 +250,15 @@ RULES = (
                                      "move")),
         "decision": "prompt",
         "justification": (
-            "Creating, moving, repairing, pruning, or removing worktrees is "
-            "fleet topology. Sessions branch off main into ../ontum-wt/<slug> "
-            "(AGENTS.md); approve only for your own worktree."
+            "Adding, removing, pruning, repairing, or moving a worktree is "
+            "fleet topology. A session provisions its own worktree off main "
+            "(../ontum-wt/<slug>; AGENTS.md) and approves only for that. "
+            "Read-only `git worktree list [--porcelain]` is introspection — it "
+            "passes, so a session can see the fleet's worktrees."
         ),
         "match": ("git worktree add ../wt/x", "git worktree remove ../wt/x",
-                  "git worktree prune"),
-        "not_match": ("git status", "git worktree list",
-                      "git worktree list --porcelain"),
+                  "git worktree prune", "git worktree move ../a ../b"),
+        "not_match": ("git worktree list", "git worktree list --porcelain"),
     },
     # Raw `gh` mutations beyond `pr` (done-line 0101). `gh` is always
     # watched by the Claude guard (it is external, never local); registering

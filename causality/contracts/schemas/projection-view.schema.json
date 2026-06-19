@@ -2,23 +2,25 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "ontum:causality/projection-view",
   "title": "ProjectionView",
-  "description": "The whole rendered fold the canvas loads: TermNodes + EvidenceEdges + a class summary + gap findings. A pure projection of seed + repo. It must reproduce byte-for-byte from the same committed bytes, so it carries NO timestamp and no non-deterministic field.",
+  "description": "The whole rendered fold the canvas loads: TermNodes + SiteNodes + EvidenceEdges + a class summary + gap findings. A pure projection of seed + repo. It must reproduce byte-for-byte from the same committed bytes, so it carries NO timestamp and no non-deterministic field.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["view", "generator", "term_count", "class_summary", "terms", "evidence_edges", "gaps"],
+  "required": ["view", "generator", "term_count", "site_count", "class_summary", "terms", "sites", "evidence_edges", "gaps"],
   "properties": {
     "view": {"const": "term-economy"},
     "generator": {"const": "causality.term_economy"},
     "source": {"type": "string", "description": "a reminder, in the bytes, that the repo is truth and this is a fold."},
     "term_count": {"type": "integer", "minimum": 0},
+    "site_count": {"type": "integer", "minimum": 0},
     "class_summary": {
       "type": "object",
       "description": "DERIVED: count of terms per class. Must agree with terms[].",
       "additionalProperties": {"type": "integer", "minimum": 0}
     },
     "terms": {"type": "array", "items": {"$ref": "ontum:causality/term-node"}},
+    "sites": {"type": "array", "items": {"$ref": "ontum:causality/site-node"}},
     "evidence_edges": {"type": "array", "items": {"$ref": "ontum:causality/evidence-edge"}},
     "gaps": {"type": "array", "items": {"$ref": "ontum:causality/gap-finding"}}
   },
-  "$comment": "Invalid: any timestamp/random field (breaks reproducibility); class_summary disagreeing with terms; term_count != len(terms). The reproducibility property is the contract: delete it, rebuild it, it is byte-identical."
+  "$comment": "Invalid: any timestamp/random field (breaks reproducibility); class_summary disagreeing with terms; term_count != len(terms); site_count != len(sites). The reproducibility property is the contract: delete it, rebuild it, it is byte-identical."
 }
