@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.value-gate-eval.v0",
+    "story": {
+      "text": "As the loop, I need to prove the L0 value gate can actually say no — not trust a 3.4% refusal rate as if it were calibration. The gate's own prompt names the debt ('semantic evals are owed'). bdo's frame is charades: give each adversarial case three turns (variants escalating toward the fluent-but-wrong edge) and judge each by the reaction of the whole room (a panel of independent judges, not a solo verdict). A gate that bites only obvious junk but folds to a dressed-up story is brittle; a gate that refuses everything is paranoid; both are as broken as a rubber stamp. This is the eval that tells them apart, with teeth that fail all three.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the value-gate eval: does the L0 gate actually bite?",
+      "value": "loop/gate_eval.py — a stdlib, read-only harness + a committed adversarial corpus (loop/gate_eval.cases.json) where each case is a chef with a 3-turn matched-variant axis (plain -> dressed-up -> fluent-but-wrong edge), plus a genuine accept control. Each variant is judged by a panel ('the room') of independent dry judges; the scorer folds the room's reception (majority + spread) and computes catch-rate, bucket-match, and a robustness curve, with a pass/fail that fails a rubber-stamp gate, a paranoid gate, AND a brittle gate.",
+      "why_now": "bdo's direction this session: an /insights crawl showed the gates refuse ~3.4% of the time; by §10 that is no proof the second-set-of-eyes can say no. He chose 'make the gate bite' and named the charades method (3 turns, judged by the whole room).",
+      "if_accepted": "The loop gains a reusable, toothed instrument for whether any gate's prompt actually discriminates. The first live run is recorded: value-gate.claude.v1 bit the no-value case on all three turns INCLUDING the dressed-up surface_trap (unanimous reject_no_value across a panel of 3 per turn) and accepted the genuine control (unanimous) — catch-rate 1.00 over the judged should-reject turns, coverage 2/4 cases. The 3.4% historical rate is not a toothless gate; it is a gate fed only announce-late good work.",
+      "if_rejected": "The gates' refusal rate stays an unexamined number — we never learn whether a low rate means good work or a soft gate, and we cannot tell a brittle gate (fooled by a re-dress) from a robust one.",
+      "cost_of_wrong_call": "Low and fail-safe: read-only and deterministic; the corpus is declared eval input, never minted onto the pipeline or written through loop.node; the live judges are dry (verdict returned as text, no receipt, no log write). Reverting is deleting the module.",
+      "mechanism": "loop/gate_eval.py: load_corpus / reception / score / render, CLI renders the corpus and scores a panel transcript. loop/gate_eval.cases.json is the corpus (4 cases spanning reject_no_value, reject_wrong_value, amend, accept; reject cases carry a 3-turn axis). loop/gate_eval.first-run.json records the live panel verdicts. tests/test_gate_eval.py joins the suite with §10 teeth: an all-accept transcript FAILS (rubber-stamp), an all-reject transcript FAILS the control (paranoid), a turn-1-bites/turn-3-misses transcript is flagged BRITTLE, a discriminating+robust transcript passes, and a case with empty rooms reads as not_run (NOT a soft-gate failure — the false positive the first live run exposed and this fix removes). Done-line 0116.",
+      "reading": [
+        "loop/gate_eval.py",
+        "loop/gate_eval.cases.json",
+        "loop/gate_eval.first-run.json",
+        "tests/test_gate_eval.py",
+        ".ai-native/done/0116-value-gate-eval.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.the-field"],
+      "touches": ["loop/gate_eval.py", "loop/gate_eval.cases.json", "loop/gate_eval.first-run.json", "tests/test_gate_eval.py", "loop/CLAUDE.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/heal.py", "causality/recovery_scorer.py", ".ai-native/nodes/value-gate.claude.v1.md"],
+      "receipts": []
+    }
+  }
+}
