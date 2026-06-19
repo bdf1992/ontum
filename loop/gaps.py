@@ -33,6 +33,13 @@ before the census walks the tree, so the every-prompt hook pays the
 census cost only when everything above it is clean. Read-only (I-3):
 every move named here belongs to an existing pen.
 
+Each gap also carries its **mark** (done-line 0129, epic.three-marks wave
+1): sketch, ink, or paint — the stage its failure lives at. A flaw is a
+mark made in the wrong stage, and the label names which — by stage, never
+by spelling (a `.mock` actor that writes a permanent record is `ink`, not
+`sketch`). It is a fold label, not doctrine (decision 1), until it reads
+true against the live backlog.
+
 Stdlib only. CLI ends with a clear result on stdout (D-6): done | report.
 """
 
@@ -47,6 +54,42 @@ from loop.reflect import drift, registered_surfaces
 
 KIND_ORDER = ("mock-stage", "mock-actor", "unadmitted-actor",
               "parked-piece", "surface-drift", "idle-organ", "dormant-organ")
+
+# done-line 0129 (epic.three-marks, wave 1): a flaw is a mark made in the
+# wrong stage — sketch (provisional), ink (committed/permanent), paint
+# (surfaced). Every gap carries the mark of the stage its failure lives at.
+# The mapping is by STAGE, never by spelling: a `.mock` actor that *writes*
+# a permanent record is an ink-authority leak (`ink`), not a sketch, though
+# its name carries `.mock` (that planted mis-mark is the §10 test's teeth).
+#   sketch — un-inked / provisional work: a fixed-verdict stage that only
+#            pretends to judge (mock-stage), or an atom a gate refused and
+#            holds, still amendable (parked-piece).
+#   ink    — a permanent-mark problem: a record-writer no admission named
+#            (mock-actor, unadmitted-actor — the merge-node's 22), or an
+#            instrument plumbed to mark but never fired / disconnected
+#            (idle-organ, dormant-organ — a pen in hand, no pigment).
+#   paint  — truth the log holds that a reader surface does not show
+#            (surface-drift — paint that never reached the wall).
+# This is a fold label, not doctrine (decision 1): it must read true against
+# the live backlog before any one-sentence doctrine extension is minted.
+MARKS = ("sketch", "ink", "paint")
+KIND_MARK = {
+    "mock-stage": "sketch",
+    "mock-actor": "ink",
+    "unadmitted-actor": "ink",
+    "parked-piece": "sketch",
+    "surface-drift": "paint",
+    "idle-organ": "ink",
+    "dormant-organ": "ink",
+}
+
+
+def mark_for(kind):
+    """The mark (sketch/ink/paint) a gap kind belongs to — which stage the
+    failure lives at (epic.three-marks, wave 1). KeyErrors loudly on an
+    unmapped kind: a new gap kind must declare its mark, never default."""
+    return KIND_MARK[kind]
+
 
 PIPELINE_MOCKS = frozenset(s["node"] for s in PIPELINE if ".mock" in s["node"])
 
@@ -245,7 +288,10 @@ def gaps(root, first_kind_only=False):
              parked_piece_gaps, surface_drift_gaps, organ_gaps)
     out = []
     for fold_fn in folds:
-        out.extend(fold_fn(root))
+        batch = fold_fn(root)
+        for g in batch:
+            g["mark"] = mark_for(g["kind"])  # the stage its failure lives at
+        out.extend(batch)
         if first_kind_only and out:
             break
     return out
@@ -260,6 +306,7 @@ def top_gap(root):
 def render(found):
     for g in found:
         print(f"gap: {g['kind']} — {g['subject']}")
+        print(f"  mark: {g.get('mark', mark_for(g['kind']))}")
         print(f"  why: {g['why']}")
         print(f"  move: {g['move']}")
 
@@ -275,8 +322,10 @@ def main(argv=None):
         print("result: done — no open gaps; the field is clean")
     else:
         kinds = len({g["kind"] for g in found})
+        tally = ", ".join(f"{m}:{sum(1 for g in found if g['mark'] == m)}"
+                          for m in MARKS if any(g["mark"] == m for g in found))
         print(f"result: report — {len(found)} open gap(s) across "
-              f"{kinds} kind(s); the top one is the work")
+              f"{kinds} kind(s) [{tally}]; the top one is the work")
     return 0
 
 
