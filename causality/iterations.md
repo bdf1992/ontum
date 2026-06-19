@@ -9,6 +9,111 @@ Status: 🔴 open · 🟡 in progress · 🟢 landed
 
 ---
 
+## 0013 — The pattern named: Auditable Intent Mesh (AIM) — the gesture→AI→response loop, formalized 🟡
+**2026-06-18 · bdo** — generalize to the *intent of the pattern*, then make it executable
+
+The bake-off climb (a winner → a recipe book → "bake our experience" → *both* →
+the general pattern → its Pattern Commons) bottomed out where bdo named it: the
+move is **not** "a fancier graph." It is **name the actual pattern and make it
+executable.** He handed the full formalization brief and the working name.
+
+**Auditable Intent Mesh (AIM)** — the formal pattern under the surface, the **open
+heart** 0012 left unturned (the gesture→AI→response loop), now specified instead of
+guessed. The load-bearing correction: *a gesture is not the command — it is evidence
+of possible intent*; the system compiles gesture + selected context + source
+evidence into a normalized **intent packet**, then routes it proposal → gate →
+admitted pen → audit event → projection refresh. It is **ontum's own loop**
+(log-is-truth → pen → gate → receipt → fold) pointed at the interaction surface —
+not new machinery. Four registers (**Record / Runtime / Request / Simulation**) and
+the clean law: *infer/simulate/request freely; commit only through an admitted pen.*
+Six sub-graphs (source / witness / request / execution / audit / projection), 15
+primitives (reusing the display-system C1–C18 witness half), 7 failure modes each
+with teeth, 7 invariants + the §10 fit-refusal test.
+
+Recommended name: **AIM** over the native **WIM (Witnessed Intent Mesh)** — *audit*
+and *execution* are the missing requirements; *witness* names only the half already
+built. Status **PROPOSED**; the mint and the home in the Pattern Commons
+(`causality/patterns/`, PR #174) are bdo's (D-4).
+
+Lands in: [`auditable-intent-mesh.md`](auditable-intent-mesh.md) — the formal spec.
+Open holes named there (OH1 gesture→packet compile table, OH2 the gesture-pen, OH3
+virtual request-nodes, OH4 membrane scope, OH5 the mint). Next: bdo blesses the name
++ seeds OH1's compile table, *or* we pressure-test the spec via the diverge-judge
+panel (dogfooding AIM's own §3) before building the smallest executable slice.
+
+---
+
+## 0012 — Causality is a spatial-graph RepoPrompt: the narrative is the directory (defined by negation) 🟡
+**2026-06-17 · bdo** — the frame, set before anyone cooks again
+
+The hunt for the home surface's *shape* converged here. A 4-chef bake-off
+(full-live, on-canvas, both-axes — orchestrated as a workflow) cooked a
+"minimal element zoo," and bdo named the result exactly: *"this is like the
+ingredients… not quite the right shape to even enter the context yet."* A
+**catalog** frame can only ever produce ingredients; the missing things —
+editing, flavor, animation, nuance, usability, **narrative** — are properties
+of an *experience with an arc*, which a specimen sheet structurally cannot
+have. The bake-off's keep: the **decomposition vocabulary** (3-strata: word →
+mortar/glyph → facets → real engine channels, the editorial chef's, judged
+best) and a harvested plating (naturalist's, judged best surface). The four
+candidate pages live in `causality/zoo-*.html` + the synthesis `zoo.html` as
+the **pantry, not the dish** — kept, not landed.
+
+**The reference (bdo): RepoPrompt** (`github.com/repoprompt/repoprompt-ce`) —
+a native **context-engineering** tool: point it at a repo → index → curate
+files / line-ranges / CodeMaps / git-diffs → assemble a dense, reviewable
+**context package** for an AI agent. **We are making the spatial-graph,
+AI-native version: point Causality at a directory and the narrative is
+*generated from the files* you pointed it at.** The living graph *is* the
+curated context; you shape it by gesture, not checkboxes. It dogfoods on day
+one — point it at `ontum`, get ontum's own story.
+
+**Defined by negation first (bdo's framing — non-examples do the heavy
+lifting). What it shouldn't be:**
+1. **Not RepoPrompt's file-tree redrawn as a graph** — folder-nesting-as-edges
+   is a reskin; the narrative is the *relationships and meaning*, not the
+   hierarchy with prettier lines.
+2. **Not a static architecture diagram** — not a dead Mermaid/dependency
+   picture; it moves, it's alive, you edit it by touching it (instrument, not
+   render).
+3. **Not a zoo / catalog of file-nodes** — the exact failure above; ingredients
+   laid out, no arc.
+4. **Not a token-budget spreadsheet** — meaning leads; the budget is a quiet
+   consequence of what you've selected, never the hero.
+5. **Not a chatbot with a graph sidebar** — the conversation happens *through*
+   the graph (selection zones, gestures), not a bolted-on chat panel (the
+   Interface-as-AI anti-pattern named in `display-system.md`).
+6. **Not click-ops** — gesture-native (select-patterns, move, recolor, draw),
+   no checkbox tree or menu-of-buttons.
+7. **Not a second source of truth** — the graph is a *witness* of the directory
+   (Causality's one hard rule), never the authority over the files it reads.
+
+**What it therefore is (the one line):** *a living, gesture-native spatial
+graph that generates a navigable story from a directory, and lets a person
+build AI context and steer their AI by playing it.*
+
+**The experience (bdo, painted):** you open on the canvas; a **simple cut
+story** is alive in nodes / connections / pulses, moving and dynamic; you
+**read it by scrolling and zooming, and that act edits it** (no separate
+mode); zoom a node and you find **its own story** on the same page;
+**interacting is the animation and the authoring**; **NL-collection zones**
+open from your selection/click *patterns*; every gesture — a node moved, a
+color changed, a line drawn — is **collected as interaction data**, so you talk
+to your AI about what you're doing and **steer it by gesture**.
+
+**The open heart (still bdo's to turn):** the **gesture → AI → response
+loop** — does a gesture (a) interpret-and-propose (you draw, the AI guesses
+intent and shows a change you accept/reject), (b) become context for a
+conversation, or (c) act directly (the gesture *is* the command)? That loop is
+the difference between a pretty canvas and the thing described; it is named
+here as the next decision, not guessed.
+
+Lands in: _(the frame only — no build yet. The bake-off's vocabulary + plating
+are the harvested ingredients; the next slice re-aims at the
+narrative-from-a-directory experience once the gesture→AI loop is chosen.)_
+
+---
+
 ## 0011 — The construction flag (game-dev missing-texture rule) + the Complexity slider on one three-word phrase 🟢
 **2026-06-17 · bdo · done-line 0106** — built on `claude/canvas-home-reshape`, screenshot-verified
 
