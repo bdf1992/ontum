@@ -146,3 +146,88 @@ prefix_rule(
         "git branch --list",
     ],
 )
+
+prefix_rule(
+    pattern = ["git", ["merge", "rebase", "cherry-pick", "revert", "am", "apply"]],
+    decision = "prompt",
+    justification = "Integrating or rewriting commits (merge/rebase/cherry-pick/revert/am/apply) reshapes history. In the shared fleet tree that belongs inside your own worktree (../ontum-wt/<slug>; AGENTS.md), never the viewport on main - and trunk integration is the independent merge-node's after bdo confirms the arc (D-4), never a session's. Approve only inside your worktree.",
+    match = [
+        "git merge origin/main",
+        "git rebase main",
+        "git cherry-pick abc123",
+    ],
+    not_match = [
+        "git status",
+        "git log --oneline",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["reset", "restore", "clean", "stash"]],
+    decision = "prompt",
+    justification = "Discarding or shelving working state (reset/restore/clean/stash) can destroy uncommitted work. The doctrine asks for a reversible alternative before a destructive git op - commit, or stash with intent, first - and approve only with the loss in view.",
+    match = [
+        "git reset --hard HEAD",
+        "git restore .",
+        "git clean -fd",
+        "git stash",
+    ],
+    not_match = [
+        "git status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["rm", "mv"]],
+    decision = "prompt",
+    justification = "`git rm` / `git mv` stage a delete or rename. Staging goes through the git pen, named paths only (python .claude/skills/branch-ritual/git.py add <path>); approve a raw rm/mv only inside your worktree.",
+    match = [
+        "git rm old.py",
+        "git mv a.py b.py",
+    ],
+    not_match = [
+        "git status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["branch", "worktree"]],
+    decision = "prompt",
+    justification = "Creating or deleting branches and worktrees is fleet topology. Sessions branch off main into ../ontum-wt/<slug> (AGENTS.md); deleting a branch can strand unpushed work. Approve only for your own worktree.",
+    match = [
+        "git branch -d old",
+        "git worktree add ../wt/x",
+    ],
+    not_match = [
+        "git status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", ["create", "edit", "close", "reopen", "comment", "delete", "lock", "unlock", "pin", "unpin", "transfer", "develop"]],
+    decision = "prompt",
+    justification = "Issues are bdo's surface. The reflector pen mirrors the owner's stamp queue onto GitHub automatically (.claude/skills/reflect/reflect.py) and the gate opens its own run-issue through its pen - a session does not open, close, or comment on issues raw. Surface the intent to bdo instead.",
+    match = [
+        "gh issue close 3",
+        "gh issue comment 5 --body x",
+        "gh issue create --title t --body b",
+    ],
+    not_match = [
+        "gh issue view 3",
+        "gh issue list",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "api", "-X", ["POST", "PUT", "PATCH", "DELETE", "post", "put", "patch", "delete"]],
+    decision = "prompt",
+    justification = "`gh api -X POST|PUT|PATCH|DELETE` writes straight to GitHub's API - bdo's surface, reached raw. A GET (the default) is a read and is fine; a write goes through a pen or is surfaced to bdo. (The watcher's classifier also tags `-f`/`--field` writes that omit `-X`, so the report sees them even when this prefix does not.)",
+    match = [
+        "gh api -X POST repos/o/r/issues",
+        "gh api -X DELETE repos/o/r/issues/1",
+    ],
+    not_match = [
+        "gh api user",
+        "gh api -X GET repos/o/r",
+    ],
+)

@@ -167,6 +167,108 @@ RULES = (
         "match": ("git switch main",),
         "not_match": ("git branch --list",),
     },
+    # The rest of the mutating git surface (done-line 0101). The Claude
+    # guard already *watches* every one of these (command_guard.GIT_MUTATING)
+    # — registering them here is what hardens the Codex surface (it prompts)
+    # and completes the fence: a session reading only a refusal learns the
+    # paved path. Grouped by what the verbs do to the tree, one story each.
+    {
+        "id": "git-history-integrate",
+        "argv": ("git", ("merge", "rebase", "cherry-pick", "revert",
+                          "am", "apply")),
+        "decision": "prompt",
+        "justification": (
+            "Integrating or rewriting commits (merge/rebase/cherry-pick/"
+            "revert/am/apply) reshapes history. In the shared fleet tree "
+            "that belongs inside your own worktree (../ontum-wt/<slug>; "
+            "AGENTS.md), never the viewport on main - and trunk integration "
+            "is the independent merge-node's after bdo confirms the arc "
+            "(D-4), never a session's. Approve only inside your worktree."
+        ),
+        "match": ("git merge origin/main", "git rebase main",
+                  "git cherry-pick abc123"),
+        "not_match": ("git status", "git log --oneline"),
+    },
+    {
+        "id": "git-reset-discard",
+        "argv": ("git", ("reset", "restore", "clean", "stash")),
+        "decision": "prompt",
+        "justification": (
+            "Discarding or shelving working state (reset/restore/clean/"
+            "stash) can destroy uncommitted work. The doctrine asks for a "
+            "reversible alternative before a destructive git op - commit, "
+            "or stash with intent, first - and approve only with the loss "
+            "in view."
+        ),
+        "match": ("git reset --hard HEAD", "git restore .",
+                  "git clean -fd", "git stash"),
+        "not_match": ("git status",),
+    },
+    {
+        "id": "git-tree-edit",
+        "argv": ("git", ("rm", "mv")),
+        "decision": "prompt",
+        "justification": (
+            "`git rm` / `git mv` stage a delete or rename. Staging goes "
+            f"through the git pen, named paths only ({GIT_PEN} add <path>); "
+            "approve a raw rm/mv only inside your worktree."
+        ),
+        "match": ("git rm old.py", "git mv a.py b.py"),
+        "not_match": ("git status",),
+    },
+    {
+        "id": "git-branch-topology",
+        "argv": ("git", ("branch", "worktree")),
+        "decision": "prompt",
+        "justification": (
+            "Creating or deleting branches and worktrees is fleet topology. "
+            "Sessions branch off main into ../ontum-wt/<slug> (AGENTS.md); "
+            "deleting a branch can strand unpushed work. Approve only for "
+            "your own worktree."
+        ),
+        "match": ("git branch -d old", "git worktree add ../wt/x"),
+        "not_match": ("git status",),
+    },
+    # Raw `gh` mutations beyond `pr` (done-line 0101). `gh` is always
+    # watched by the Claude guard (it is external, never local); registering
+    # the write surfaces here makes Codex prompt on them and the fence speak
+    # to them. The reflector and gate pens reach GitHub through subprocess,
+    # invisible to this guard - so these rules govern only what a session
+    # types raw, which is exactly the reach to surface.
+    {
+        "id": "gh-issue-mutate",
+        "argv": ("gh", "issue", ("create", "edit", "close", "reopen",
+                                 "comment", "delete", "lock", "unlock",
+                                 "pin", "unpin", "transfer", "develop")),
+        "decision": "prompt",
+        "justification": (
+            "Issues are bdo's surface. The reflector pen mirrors the owner's "
+            "stamp queue onto GitHub automatically "
+            "(.claude/skills/reflect/reflect.py) and the gate opens its own "
+            "run-issue through its pen - a session does not open, close, or "
+            "comment on issues raw. Surface the intent to bdo instead."
+        ),
+        "match": ("gh issue close 3", "gh issue comment 5 --body x",
+                  "gh issue create --title t --body b"),
+        "not_match": ("gh issue view 3", "gh issue list"),
+    },
+    {
+        "id": "gh-api-write",
+        "argv": ("gh", "api", "-X", ("POST", "PUT", "PATCH", "DELETE",
+                                     "post", "put", "patch", "delete")),
+        "decision": "prompt",
+        "justification": (
+            "`gh api -X POST|PUT|PATCH|DELETE` writes straight to GitHub's "
+            "API - bdo's surface, reached raw. A GET (the default) is a read "
+            "and is fine; a write goes through a pen or is surfaced to bdo. "
+            "(The watcher's classifier also tags `-f`/`--field` writes that "
+            "omit `-X`, so the report sees them even when this prefix does "
+            "not.)"
+        ),
+        "match": ("gh api -X POST repos/o/r/issues",
+                  "gh api -X DELETE repos/o/r/issues/1"),
+        "not_match": ("gh api user", "gh api -X GET repos/o/r"),
+    },
 )
 
 

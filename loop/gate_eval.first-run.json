@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "ran": "2026-06-18",
+    "node": "value-gate.claude.v1 (prompt sha256:bd2e876fdf4c1246338c9024195a7f4b038205f7e3b56b10be923f7924997d68)",
+    "room": "panel of 3 independent dry judges per variant (fresh per variant — no cross-turn contamination)",
+    "scope": "no-value-scratchpad (full 3-turn axis) + control-genuine. wrong-seam-perf and amend-value-hidden are corpus cases not yet run live (on-demand); the scorer reads their empty rooms as 'no verdict', never a guess.",
+    "note": "Each verdict is one independent judge reading the live value-gate.claude.v1 prompt and judging one atom in isolation. Declared eval input; nothing here touched the real pipeline or the log."
+  },
+  "no-value-scratchpad": {
+    "1": ["reject_no_value", "reject_no_value", "reject_no_value"],
+    "2": ["reject_no_value", "reject_no_value", "reject_no_value"],
+    "3": ["reject_no_value", "reject_no_value", "reject_no_value"]
+  },
+  "control-genuine": {
+    "1": ["accept", "accept", "accept"]
+  }
+}

@@ -14,6 +14,8 @@ Verbs:
     push    the branded git push (done-line 0014): alive branch, green
             suite (or declared red), force only with lease — with
             feature parity: anything else git push takes is forwarded
+    retire  close an open PR without landing it (work already on main,
+            superseded, or abandoned), with the reason on the record
 
 Stdlib only. Every invocation ends with a clear stdout result:
 done | report | needs-you. A refusal is a `report`: it tells the
@@ -372,12 +374,93 @@ def cmd_check(_ns):
     )
 
 
+def retire_refusal(state, reason):
+    """Why a PR may not be retired (closed without landing), or None. Retire is
+    the paved path for a PR that should *die* rather than merge — its work is
+    already on main, it was superseded, or it was abandoned. It demands what
+    every pen demands: a reason a cold reader can read alone, on the record.
+    Pure (state + reason in, reason-or-None out), like push_refusal /
+    integrate_refusal — so the §10 refusal is unit-testable without GitHub."""
+    reason = (reason or "").strip()
+    if not reason:
+        return ("--reason is required — say why this PR dies without landing, "
+                "for a cold reader (already on main / superseded / abandoned)")
+    if _is_pointer(reason):
+        return ("--reason is a pointer, not writing — name the reason in prose, "
+                "the way a closing comment must read alone")
+    if state != "OPEN":
+        return f"PR is {str(state).lower()} — only an open PR is retired"
+    return None
+
+
+def cmd_retire(ns):
+    """Close an open PR without landing it. bdo gestures a redundant PR closed
+    (he never runs the CLI); this is the session doing that close on his behalf,
+    through the one pen, with the reason on the record. Not a land — `land`
+    merges a confirmed arc; this retires work that should never merge. The
+    reason becomes the closing comment a cold reader reads alone."""
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number), "--json", "state,title"]))
+    refusal = retire_refusal(info.get("state"), ns.reason)
+    if refusal:
+        _refuse(refusal)
+    reason = ns.reason.strip()
+    comment = f"Retired — closed without landing: {reason}\n\n{FOOTER}"
+    _run(["gh", "pr", "close", str(ns.number), "--comment", comment])
+    print(f"result: done — retired PR #{ns.number} '{info['title']}' "
+          f"(closed without landing): {reason}")
+
+
+def _show_at(ref_path):
+    """`git show <ref>:<path>` bytes, or "" when the path does not exist at that
+    ref (added or deleted file). Never refuses — an absent side is just empty."""
+    proc = subprocess.run(["git", "show", ref_path], capture_output=True,
+                          text=True, encoding="utf-8", errors="replace", cwd=ROOT)
+    return proc.stdout if proc.returncode == 0 else ""
+
+
+def _range_phrasing_clean(base, head, names):
+    """Re-verify, with the same pure checker the route uses, that EVERY non-log
+    change on this range is phrasing-only AND was marked through the pen
+    (done-line 0117, with bdo's 2026-06-18 correction). Two server-side teeth:
+    the gate recomputes the prose proof from the diff (a committed change can
+    never lie about being prose), and it requires a `phrasing` admission on the
+    range to cover each changed file (the light lane still routes through the pen
+    and leaves a visible mark — never blind). Returns the bool."""
+    sys.path.insert(0, str(ROOT))
+    from loop import phrasing
+    non_log = [n.replace("\\", "/") for n in names
+               if not n.replace("\\", "/").startswith(".ai-native/log/")]
+    changes = [{"path": n,
+                "before": _show_at(f"{base}:{n}"),
+                "after": _show_at(f"{head}:{n}")}
+               for n in non_log]
+    # the phrasing admissions ADDED on this range declare which files the pen
+    # marked — the required, visible mark of the light lane
+    covered = set()
+    adm_diff = _run(["git", "diff", f"{base}...{head}", "--",
+                     ".ai-native/log/admissions.jsonl"])
+    for line in adm_diff.splitlines():
+        if not line.startswith("+") or line.startswith("+++"):
+            continue
+        try:
+            a = json.loads(line[1:])
+        except json.JSONDecodeError:
+            continue
+        if a.get("type") == "phrasing":
+            for fr in a.get("files", []):
+                covered.add(fr.get("path"))
+    clean, _reasons = phrasing.branch_phrasing_clean(changes, covered)
+    return clean
+
+
 def _range_atom_facts(base, head):
     """The atom-invariant facts for a base...head range: which atom ids it adds
-    under .ai-native/atoms/, and which artifact_ids its added receipt lines name.
-    This is the reach with git; the verdict over these facts is loop.pr_audit's
-    pure fold (done-lines 0066, 0068). Shared by the open-PR sweep (origin refs)
-    and the single-PR CI gate (the PR's own base/head SHAs)."""
+    under .ai-native/atoms/, which artifact_ids its added receipt lines name, and
+    whether the whole range is a phrasing-only edit (the prose door, done-line
+    0117). This is the reach with git; the verdict over these facts is
+    loop.pr_audit's pure fold (done-lines 0066, 0068). Shared by the open-PR
+    sweep (origin refs) and the single-PR CI gate (the PR's own base/head SHAs)."""
     sys.path.insert(0, str(ROOT))
     from loop import pr_audit
     names = _run(["git", "diff", "--name-only", f"{base}...{head}"]).splitlines()
@@ -394,7 +477,8 @@ def _range_atom_facts(base, head):
             continue  # a torn or context line is not a receipt
         if rc.get("artifact_id"):
             receipt_ids.add(rc["artifact_id"])
-    return atom_ids, sorted(receipt_ids)
+    phrasing_clean = _range_phrasing_clean(base, head, names)
+    return atom_ids, sorted(receipt_ids), phrasing_clean
 
 
 def cmd_audit(ns):
@@ -414,17 +498,19 @@ def cmd_audit(ns):
     rng = getattr(ns, "range", None)
     if rng:
         base, head = rng
-        atom_ids, receipt_ids = _range_atom_facts(base, head)
+        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(base, head)
         result = pr_audit.audit([{
             "number": getattr(ns, "pr", None) or "(this PR)", "headRefName": head,
             "added_atom_ids": atom_ids, "receipt_artifact_ids": receipt_ids,
+            "phrasing_clean": phrasing_clean,
         }])
         pr_audit.render(result)
         if result["orphans"]:
-            _refuse("this PR adds no atom on the log — open it through the PR "
-                    "pen so it becomes a unit the loop can see and land "
-                    "(§15/D-5); a PR is not a place to put work the machinery "
-                    "never gated")
+            _refuse("this PR adds no atom on the log and is not a phrasing-only "
+                    "edit — open it through the PR pen so it becomes a unit the "
+                    "loop can see and land (§15/D-5); a PR is not a place to put "
+                    "work the machinery never gated. (If it is purely prose, the "
+                    "phrasing door — `pr.py phrasing` — lands it without an atom.)")
         print("result: done — this PR is atom-backed")
         return
     _run(["git", "fetch", "origin"])
@@ -433,14 +519,15 @@ def cmd_audit(ns):
          "--json", "number,headRefName,author"]))
     facts = []
     for pr in prs:
-        atom_ids, receipt_ids = _range_atom_facts("origin/main",
-                                                  f"origin/{pr['headRefName']}")
+        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(
+            "origin/main", f"origin/{pr['headRefName']}")
         facts.append({
             "number": pr["number"],
             "headRefName": pr["headRefName"],
             "author": (pr.get("author") or {}).get("login", ""),
             "added_atom_ids": atom_ids,
             "receipt_artifact_ids": receipt_ids,
+            "phrasing_clean": phrasing_clean,
         })
     result = pr_audit.audit(facts)
     if getattr(ns, "as_json", False):
@@ -450,6 +537,52 @@ def cmd_audit(ns):
     n = len(result["orphans"])
     print(f"\nresult: {'needs-you' if n else 'done'} — "
           f"{n} off-log PR(s), {len(result['clean'])} atom-backed")
+
+
+def cmd_phrasing(ns):
+    """The phrasing backdoor's route (done-line 0117): mark a prose-only edit as
+    a phrasing act on the log, so it lands without an atom. It runs the SAME pure
+    checker the off-log gate re-verifies (loop.phrasing), refusing the instant a
+    named file is not phrasing-only — so the mark can never claim more than the
+    proof. On a clean pass it appends one `phrasing` admission (the files, their
+    before/after content hashes, the reason, --by); the session then commits the
+    prose files (and the admission) with the git pen and opens the PR with
+    `pr.py create` — the gate exempts a phrasing-clean branch (no atom needed)."""
+    import hashlib
+    sys.path.insert(0, str(ROOT))
+    from loop import phrasing
+    from loop.reconcile import append_line, short_hash, now_ts
+    marks = []
+    for f in ns.files:
+        rel = f.replace("\\", "/")
+        before = _show_at(f"HEAD:{rel}")
+        target = ROOT / rel
+        after = target.read_text(encoding="utf-8") if target.exists() else ""
+        ok, why = phrasing.phrasing_only(rel, before, after)
+        if not ok:
+            _refuse(f"{rel} is not a phrasing-only edit: {why}. The phrasing "
+                    "door is for pedantic prose only; route this through the "
+                    "atom pipeline (`pr.py create` with a backing atom).")
+        marks.append({
+            "path": rel,
+            "before": "sha256:" + hashlib.sha256(before.encode("utf-8")).hexdigest(),
+            "after": "sha256:" + hashlib.sha256(after.encode("utf-8")).hexdigest(),
+        })
+    ts = now_ts()
+    adm = {
+        "id": "adm." + short_hash("phrasing", ns.by, ts,
+                                  *(m["after"] for m in marks)),
+        "type": "phrasing",
+        "files": marks,
+        "reason": ns.why,
+        "by": ns.by,
+        "ts": ts,
+    }
+    append_line(ROOT / ".ai-native" / "log" / "admissions.jsonl", adm)
+    print(f"result: report — phrasing mark {adm['id']} written for "
+          f"{len(marks)} file(s), by {ns.by}. Proven prose-only; commit them "
+          "(with admissions.jsonl) via the git pen, then `pr.py create` — the "
+          "off-log gate exempts a phrasing-clean branch, so no atom is needed.")
 
 
 def integrate_refusal(base):
@@ -867,6 +1000,15 @@ def main(argv=None):
     check = verbs.add_parser("check", help="audit open PRs for unwritten stories")
     check.set_defaults(func=cmd_check)
 
+    retire = verbs.add_parser(
+        "retire", help="close an open PR without landing it — work already on "
+                       "main, superseded, or abandoned; the reason is recorded")
+    retire.add_argument("number", type=int)
+    retire.add_argument("--reason", required=True,
+                        help="why this PR dies without landing — prose for a "
+                             "cold reader, posted as the closing comment")
+    retire.set_defaults(func=cmd_retire)
+
     audit = verbs.add_parser(
         "audit", help="audit open PRs for the atom invariant: name every PR "
                       "that reached GitHub without an atom on the log "
@@ -880,6 +1022,21 @@ def main(argv=None):
                        help="emit the verdict dataset for a consumer (a reader's "
                             "port, symmetric to --range's enforcer port)")
     audit.set_defaults(func=cmd_audit)
+
+    phrasing_p = verbs.add_parser(
+        "phrasing", help="the phrasing backdoor (done-line 0117): mark a "
+                         "prose-only edit (.md body, .py comments/docstrings, "
+                         ".json prose fields) as a phrasing act so it lands "
+                         "without an atom; refuses anything touching syntax or "
+                         "schema and names what disqualified it")
+    phrasing_p.add_argument("--files", nargs="+", required=True,
+                            help="the edited files to mark (already changed in "
+                                 "the working tree, vs HEAD)")
+    phrasing_p.add_argument("--why", required=True,
+                            help="one line: what prose was corrected and why")
+    phrasing_p.add_argument("--by", required=True,
+                            help="the signer (a session id, e.g. claude)")
+    phrasing_p.set_defaults(func=cmd_phrasing)
 
     push = verbs.add_parser(
         "push", help="the branded git push (feature parity: extra args "

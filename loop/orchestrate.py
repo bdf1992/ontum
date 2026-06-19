@@ -26,11 +26,11 @@ import json
 import sys
 from pathlib import Path
 
-from loop.reconcile import (DEFAULT_ROOT, PIPELINE, SEED_EVENT, STAMP_NODE,
-                            TERMINAL_EVENT, Fold, append_line, arc_confirmation,
-                            atom_state, canon, epic_of, load_atoms, load_epics,
-                            now_ts, pass_once, real_nodes, receipt_for_stage,
-                            short_hash)
+from loop.reconcile import (DEFAULT_ROOT, DETERMINISTIC_GATE_NODES, PIPELINE,
+                            SEED_EVENT, STAMP_NODE, TERMINAL_EVENT, Fold,
+                            append_line, arc_confirmation, atom_state, canon,
+                            epic_of, load_atoms, load_epics, now_ts, pass_once,
+                            real_nodes, receipt_for_stage, short_hash)
 
 SETPOINT_DIAL = "orchestration.temperature"
 SETPOINT_KEYS = ("step_budget_per_tick", "max_inflight_atoms", "human_queue_cap")
@@ -60,9 +60,18 @@ def read_setpoint(admissions):
     return setpoint
 
 
-def admit_setpoint(root, value, by, supersedes=None):
+def admit_setpoint(root, value, by, supersedes=None, authorized_by=None,
+                   because=None):
     """Append a setpoint admission. `by` is whoever stamps it (D-4: a node
-    never admits its own dial)."""
+    never admits its own dial).
+
+    `authorized_by` cites a standing authorization the stamper is *executing*
+    rather than originating — bdo's auto-admit fence (done-line 0091), the same
+    way a merge-node landing cites the confirm-arc it did not author. When set,
+    `by` is the loop's disposer identity and `authorized_by` is the fence id, so
+    the record reads honestly: the loop moved the dial, bdo's fence authorized
+    it. `because` carries the proposer's attribution (the outcomes that caused
+    the change), keeping an auto-admitted dial move auditable to its cause."""
     adm = {
         "id": "adm." + short_hash(SETPOINT_DIAL, canon(value), str(by), now_ts()),
         "type": "setpoint",
@@ -72,6 +81,10 @@ def admit_setpoint(root, value, by, supersedes=None):
         "supersedes": supersedes,
         "ts": now_ts(),
     }
+    if authorized_by is not None:
+        adm["authorized_by"] = authorized_by
+    if because is not None:
+        adm["because"] = because
     append_line(root / "log" / "admissions.jsonl", adm)
     return adm
 
@@ -101,11 +114,17 @@ def next_action(fold, atom, ahash, real_map=None, epics=None):
             break
         if receipt_for_stage(fold, stage, ahash, real_map) is None:
             if stage["node"] in real_map:
+                real_node = real_map[stage["node"]]
                 if epics is not None and stage["node"] == STAMP_NODE:
                     epic = epic_of(atom, epics)
                     if epic is not None and arc_confirmation(fold, epic["id"]) is not None:
-                        return ("judge", real_map[stage["node"]])
-                return ("await", real_map[stage["node"]])
+                        return ("judge", real_node)
+                # a deterministic real gate is a pure fold the loop runs itself
+                # (done-line 0107) — never a summoned-node await, the same way a
+                # confirmed arc's owner-stamp is the loop's to take.
+                if real_node in DETERMINISTIC_GATE_NODES:
+                    return ("judge", real_node)
+                return ("await", real_node)
             return ("judge", stage["node"])
     if atom_state(fold, ahash) == atom["desired_state"] and fold.event(TERMINAL_EVENT, ahash):
         return None

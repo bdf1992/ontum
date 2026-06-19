@@ -1,0 +1,50 @@
+{
+  "atom": {
+    "id": "atom.phrasing-backdoor.v0",
+    "story": {
+      "text": "bdo, 2026-06-18, watching me spend a branch, an atom, a value-gate summons and a spawned judge to change ten English phrases ('on his phone' -> 'wherever he is'): 'The fact you're doing all this, to just edit the semantic of it so it's less pedantic, is poor. I want a backdoor route for quick edit ... to edit semantic and pedantic phrases, not syntax or schema' — packaged like whiteout and policy. As the loop, I want a proven low-impact door so a pedantic prose edit lands without the full work-particle mantra, while a change that touches real syntax or schema is refused at the door and routed back to the pipeline. The door is safe because it PROVES the edit is prose-only (the whiteout/carbon-copy shape) and the off-log gate re-runs the same proof server-side, so code can never slip through the prose door.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the phrasing backdoor: pedantic prose edits land without the atom mantra",
+      "value": "A session edits prose (a skill's wording, a docstring, an epic horizon), runs one route command, and it lands with no atom, no judge, no ceremony — because the change is PROVEN prose-only. The full pipeline (atom + second-set-of-eyes) is reserved for work that changes what the machine does; a phrase it never branches on is not a work-particle. bdo's exact ask, packaged like whiteout (done-line 0064): a session-usable move with computable teeth that refuses the instant it leaves its low-impact bounds.",
+      "why_now": "bdo named it directly after watching the over-ceremony: 'a backdoor route for quick edit ... semantic and pedantic phrases, not syntax or schema.' The over-ceremony was real (a wording fix cost a branch + atom + summons + spawned judge), and the off-log gate (done-line 0068) forces an atom on every PR with no exemption for prose.",
+      "if_accepted": "loop/phrasing.py proves any .md/.py/.json edit prose-only or names why not; pr.py phrasing marks a proven edit with one log admission; the off-log gate (client pen + server CI, one shared check) exempts a phrasing-clean branch from needing an atom. The next pedantic fix is: edit, `pr.py phrasing`, commit, `pr.py create` — and it sails.",
+      "if_rejected": "Every prose correction keeps paying the full work-particle cost — a branch, an atom, a second pair of eyes — for a change the machine never reads as logic, and sessions keep over-engineering wording fixes (or avoid making them).",
+      "cost_of_wrong_call": "Fail-safe and bounded: the door only ever WIDENS what lands without an atom, and only for changes proven not to touch code or schema; the same proof is re-run server-side, so a mislabelled change cannot pass. The default (no proof) is still the atom path. Reverting is deleting loop/phrasing.py and the orphan_reason branch; nothing depends on it. The teeth are tested (a code token, a renamed key, a changed verdict each refuse).",
+      "mechanism": "loop/phrasing.py (pure, stdlib): phrasing_only(path, before, after) per kind — .md (body free; frontmatter keys + name/version protected), .py (tokenized; only COMMENT/STRING content may differ), .json (identical structure + non-prose values; only PROSE_KEYS string values may change) — and branch_phrasing_clean over a branch's non-log changes. loop/pr_audit.orphan_reason gains phrasing_clean as a SECOND way to be backed. pr.py: _range_atom_facts gathers+re-verifies phrasing_clean (the git reach), cmd_audit passes it, cmd_phrasing is the route (mark with a `phrasing` admission, refuse non-prose). tests/test_phrasing.py is the §10 teeth: prose across all three kinds passes and the gate calls the branch backed with no atom; a code token / renamed key / changed verdict each refuse and the gate still orphans the branch. Done-line 0117; full suite green.",
+      "reading": [
+        "loop/phrasing.py",
+        "tests/test_phrasing.py",
+        "loop/pr_audit.py",
+        ".claude/skills/branch-ritual/pr.py",
+        ".ai-native/done/0117-phrasing-backdoor.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [
+        "loop/phrasing.py",
+        "loop/pr_audit.py",
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_phrasing.py",
+        "loop/CLAUDE.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/pen.py", "loop/pr_audit.py", ".github/workflows/atom-invariant.yml"],
+      "receipts": []
+    }
+  }
+}

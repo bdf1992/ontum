@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.harden-govern-seam.v0",
+    "story": {
+      "text": "As bdo, I asked what in the system is currently not branded, wrapped, curatable, or registered in a way I'd be happy with. The folds that watch the inside read clean, but the two folds that watch RAW behaviour name real escapees: the watcher's intent classifier could not name most of the shell vocabulary (its `unclassified` tail), and the fence registry — the one home of the firm denials both harness surfaces render from — was silent on every mutating git verb beyond add/commit/push and on raw `gh` mutations beyond `pr`. I want those blind spots closed at the one seam they share, without breaking a workflow.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The watcher classifier learns the shell verbs; the fence registers the rest of the mutating git and gh surface",
+      "value": "loop/tags.py classify() gains the general shell vocabulary — observe-only verbs (ls, cat, grep, uniq, cut, tr, sed, awk, echo, sha256sum, ...) tag `read`; filesystem-changing verbs (cp, mv, rm, mkdir, touch, ln, chmod, tee, dd, truncate, ...) tag `mutate`; interpreters and control words (python, node, bash, for, until, command, xargs) stay honestly `None`, never guessed. It also reads `gh api`'s write methods (-X POST|PUT|PATCH|DELETE and -f/--field) as mutate, GET as read. fence/policy.py gains six prompt-tier rules covering the remaining mutating git surface (merge/rebase/cherry-pick/revert/am/apply; reset/restore/clean/stash; rm/mv; branch/worktree) and the raw gh write surfaces (gh issue mutations; gh api writes), each a cold-reader story naming its paved path. The .codex layer is re-rendered (11 -> 17 rules) so both surfaces move together.",
+      "why_now": "Least-permissions is the standing direction (bdo, 2026-06-10): wrappers and denials are how the hand is forced, and the watcher's --report decides which wrapper is next. git ranked as the heaviest unwrapped mutation surface and the unclassified tail read noise as signal. Closing the classifier's blindness makes that report carry accurate intent; registering the git/gh mutation surface in the fence makes the Codex surface prompt on it and the registry speak to it.",
+      "if_accepted": "The watcher report's unclassified tail shrinks to genuine ambiguity (interpreters), git/gh mutation counts carry true intent, and the fence — the family-neutral home both surfaces render from — is complete over the mutation surface it had only partially covered. Non-breaking: prompt rules are not compiled into the Claude guard's deny-list (only `forbidden` is), and the guard already WATCHES every git mutation via GIT_MUTATING — so there is zero new Claude-side denial; the hardening is on the Codex surface (it prompts) and in the registry record.",
+      "if_rejected": "The classifier keeps reading half the shell vocabulary as nothing, the watcher report keeps over- and under-counting, and the fence stays silent on merge/rebase/reset and raw gh writes — governed only by a session's discretion, exactly the gap the least-permissions direction targets.",
+      "cost_of_wrong_call": "Low and reversible. The classifier change is additive and coarse-by-design (a stream tool's common case is read; the rare `sed -i` is an accepted imprecision in a report-feeding sensor, not an enforcement seam). The fence rules are prompt-tier — they deny nothing on Claude; reverting is deleting a registry row and re-rendering. No pen breaks: the reflector and gate reach GitHub through subprocess, invisible to the Bash-level guard.",
+      "mechanism": "loop/tags.py: _SHELL_READ / _SHELL_MUTATE keyed on the command head, consulted after the git/gh/curl branches; the gh branch special-cases `api` to read its method/field flags. fence/policy.py: four grouped git prompt rules + gh-issue-mutate + gh-api-write, argv prefixes with tuple alternatives, each carrying match/not_match examples. fence/render_codex.py re-run -> .codex/rules/ontum.rules (17 rules). tests/test_tags.py pins the new read/mutate classifications, the honest None cases (the §10 teeth: cat vs cp told apart, python stays None), and gh api GET vs write. tests/test_fence.py validates every new rule's examples against the live guard and prefix semantics; its prompt-rule invariant is widened from git-only to the real rule — a prompt rule's surface is at least WATCHED by the guard (git verbs via GIT_MUTATING, or a non-local external head like gh). Done-line 0101.",
+      "reading": [
+        "loop/tags.py",
+        "fence/policy.py",
+        "tests/test_tags.py",
+        "tests/test_fence.py",
+        ".ai-native/done/0101-harden-govern-seam.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["loop/tags.py", "fence/policy.py", ".codex/rules/ontum.rules"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/tags.py", "fence/policy.py", ".codex/rules/ontum.rules"]
+    }
+  },
+  "_note": "Birth record for the govern-seam hardening (done-line 0101), authored so the work carries an atom on the log under the now-live atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5). The value gate (value-gate.claude.v1) is real, so this atom parks for an INDEPENDENT judge — the session that authored it does not sign its own line (D-2)."
+}

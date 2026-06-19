@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.head-intent-guard.v0",
+    "story": {
+      "text": "As the loop, I need a commit to refuse when live HEAD is not the branch the session believes it is on — because in the shared-tree fleet a parallel session can move the worktree's branch between a session reading HEAD and committing, and the work lands on the wrong branch (this session's own collision). The repo's law is that the fix is structural, not 'verify by hand': a session's self-discipline is the unreliable component. The git pen already computes the current branch and refuses detached/trunk commits; this adds one assertion — `--on <branch>` — and refuses when it disagrees with live HEAD. The cheapest structural closer: the sheath, not the whole session gateway.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the HEAD-intent guard: a commit refuses when HEAD moved under the session",
+      "value": ".claude/skills/branch-ritual/git.py's commit verb gains --on <branch>: the session asserts the branch it believes it is on, and the pen refuses (a `report`, reason named) if live HEAD differs. Stateless and per-invocation — explicit intent, nothing another session can race. Omitting --on is unchanged (backward compatible). Turns the exact branch collision this session hit into a clean deny.",
+      "why_now": "This session committed eval work onto a parallel session's branch because the shared worktree's HEAD switched under it. Root cause (session-gateway.proposal.md §2): one HEAD per tree makes 'the current branch' shared mutable global state a session treats as private. This is proposal increment #1 — the cheapest structural fix.",
+      "if_accepted": "A session can assert its branch and be protected from the shared-tree race; the collision becomes a refusal with the fix named. Built and committed in an isolated worktree, dogfooding the insulation principle the proposal names — and the guard is used for its own landing commit (--on claude/head-intent-guard).",
+      "if_rejected": "The shared-tree HEAD race stays open; sessions keep relying on hand-verifying their branch (the unreliable component), and the collision recurs.",
+      "cost_of_wrong_call": "Low and fail-safe: --on is opt-in (omitting it preserves every existing caller), the check is a pure comparison, and reverting is deleting one function + one flag. It refuses only on a genuine mismatch.",
+      "mechanism": "git.py: head_intent_refusal(branch, expected) returns a reason when expected is given and != live branch (naming detached HEAD too); cmd_commit calls it before commit_refusal; the commit verb gains --on. tests/test_git_pen_head_intent.py: unit-tests the pure function (wrong refuses + is named, matching passes, omitted passes, detached named) and drives the live pen as a subprocess (wrong-branch refuses with a HEAD-intent reason; right-branch does not trip the guard) — the §10 teeth being that a constant-pass guard fails the wrong-branch case and a constant-refuse guard fails the right-branch case. SKILL.md documents the flag. Done-line 0118.",
+      "reading": [
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_git_pen_head_intent.py",
+        ".claude/skills/branch-ritual/SKILL.md",
+        ".ai-native/done/0118-head-intent-guard.md",
+        "session-gateway.proposal.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": [".claude/skills/branch-ritual/git.py", ".claude/skills/branch-ritual/SKILL.md", "tests/test_git_pen_head_intent.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/branch-ritual/git.py", "session-gateway.proposal.md"],
+      "receipts": []
+    }
+  }
+}

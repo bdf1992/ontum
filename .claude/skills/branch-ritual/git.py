@@ -191,6 +191,31 @@ def commit_refusal(branch, message, forwarded):
     return None
 
 
+def head_intent_refusal(branch, expected):
+    """Why this commit may not run because HEAD is not where the session
+    thinks it is, or None (done-line 0118).
+
+    `expected` is the branch the session ASSERTS it is on (`--on`); `branch`
+    is live HEAD. In the shared-tree fleet a parallel session can move the
+    worktree's branch between a session reading HEAD and committing — so a
+    commit that names its branch is refused when the names disagree (the
+    collision that authored this guard). The assertion is per-invocation and
+    explicit: nothing stored, nothing another session can race. Omitting
+    `--on` skips the check (backward compatible) — the protection is opt-in
+    until it is made the default (a later chapter of the session-gateway arc)."""
+    if not expected:
+        return None
+    if branch != expected:
+        return (
+            f"HEAD-intent mismatch: you declared --on '{expected}', but live HEAD "
+            f"is '{branch or 'detached'}'. A parallel session may have moved the "
+            f"shared worktree's branch under you. Check out '{expected}' (or work "
+            f"from its own worktree) before committing — this is the branch "
+            f"collision turned into a clean deny (done-line 0118)."
+        )
+    return None
+
+
 # Numbered records whose id must be fleet-unique: a new done-line or report
 # minted against a stale local fold collides with one already on a sibling
 # branch — the four 0020 done-lines are the incident, tonight's 0050 the
@@ -296,6 +321,164 @@ def garden_verdict(uncommitted, has_open_pr, has_merged_pr):
     return ("surface", "committed but no PR — stranded; PR it (the merge-node lands) or delete the branch")
 
 
+# ------------------------------------------------- the inference-verified cut
+# Done-line 0100. A branch deletion is irreversible and was once taken on a
+# branch-state signal alone — a concurrent gardener cut a branch that still
+# carried novel, unlanded code. bdo's fix: the CUT is verified by *habitual
+# inference*, and that verification is a GOVERNED act, AuthN + AuthZ across the
+# three as-code layers:
+#   config-as-code  the bdo-signed gateway policy (default-deny) authorizes the
+#                   call AND stands as the cut-authorization (loop/inference.py).
+#   infra-as-code   the garden→gateway wiring; the gateway is the one sanctioned
+#                   inference egress (loop's no-network rule holds — the HTTP
+#                   POST lives only in the gateway pen, never here).
+#   prompt-as-code  CUT_VERIFIER_PROMPT below — versioned source, and its sha256
+#                   rides the filled prompt so it lands on the inference receipt
+#                   (every cut attributable to the prompt that judged it, §7).
+# The cut FAILS SAFE: anything short of (clean content floor AND an explicit
+# inference affirmation) holds the branch — while the garden hook stays
+# fail-open. Default-deny means: until bdo stamps the policy, every cut is held.
+
+CUT_VERIFIER_CALLER = "branch-ritual.garden"   # AuthN: the named caller, never anonymous
+CUT_VERIFIER_SURFACE = "branch-cut"            # the surface the policy authorizes
+
+CUT_VERIFIER_PROMPT = """\
+You are the cut-verifier for an automated git branch gardener. A branch is about
+to be DELETED. Deleting a branch that still holds work not yet on the main line
+loses that work irreversibly; a stale branch costs nothing. Decide whether
+deleting this branch is SAFE.
+
+SAFE means every change on this branch is already present on origin/main —
+nothing novel would be lost. If the branch carries ANY work not yet on main, or
+you cannot tell from the evidence, it is NOT safe.
+
+Evidence — the branch's commits not reachable from origin/main, with their
+summary (an empty list means the content is already upstream):
+
+{evidence}
+
+Answer with exactly ONE line and nothing else:
+  SAFE: <short reason>   — every change is already on main; deleting loses nothing
+  HOLD: <short reason>   — novel/unlanded work, or you cannot be sure
+Default to HOLD when uncertain. Losing work is worse than keeping a stale branch.
+"""
+
+
+def cut_prompt_sha():
+    """The prompt-as-code artifact's identity (done-line 0100, §7)."""
+    import hashlib
+    return hashlib.sha256(CUT_VERIFIER_PROMPT.encode("utf-8")).hexdigest()
+
+
+def cut_verdict(unlanded_count, inference_verdict):
+    """Whether one branch may be deleted — pure, and the whole safety of the
+    inference-verified prune lives here. Two gates, in strict order:
+
+      1. the deterministic content floor — a branch with ANY commit unreachable
+         from origin/main carries unlanded work and is HELD, and no inference
+         verdict can override it (the spawn-rail loss: a cut on a branch state
+         while novel code sat on the branch);
+      2. the habitual inference affirmation — only an explicit `safe` cuts;
+         every other verdict (hold, uncertain, unavailable) holds the branch.
+
+    Returns ("cut" | "hold", reason). The §10 bite: cut_verdict(2, "safe")
+    holds — two locally-fine signals (merged-looking, model says safe) still
+    refuse to fit against the hard truth that unlanded commits exist."""
+    if unlanded_count > 0:
+        return ("hold", f"{unlanded_count} commit(s) not on origin/main — "
+                "unlanded work; the content floor is absolute, no inference "
+                "verdict overrides it")
+    if inference_verdict == "safe":
+        return ("cut", "content-clean (no unlanded commits) and habitual "
+                "inference affirmed the cut safe")
+    return ("hold", "habitual inference did not affirm safe "
+            f"(verdict: {inference_verdict}) — the cut fails safe")
+
+
+def parse_inference_verdict(raw):
+    """Map a cut-verifier reply (or None) to safe | hold | uncertain |
+    unavailable. None is the gateway returning no answer — refused by policy
+    (default-deny AuthZ), down, or unregistered — and maps to `unavailable`,
+    which cut_verdict treats exactly like hold (fail-safe)."""
+    if raw is None:
+        return "unavailable"
+    head = raw.strip().upper()
+    # the token must stand alone — `\b` so an off-script "SAFEGUARD" is not read
+    # as SAFE (inert today, since the content floor already protects every cut,
+    # but the parser should not lie). Affirmation is narrow on purpose.
+    if re.match(r"SAFE\b", head):
+        return "safe"
+    if re.match(r"HOLD\b", head):
+        return "hold"
+    return "uncertain"
+
+
+def branch_cut_evidence(branch, git_fn):
+    """(unlanded_count, evidence_text) for one branch vs origin/main, via the
+    injected `git_fn(args) -> stdout`. unlanded_count counts commits not already
+    equivalent upstream (`git cherry`, the deterministic floor); evidence_text
+    is those commits' subjects + a bounded diffstat — the material the verifier
+    reasons over."""
+    cherry = git_fn(["cherry", "origin/main", branch]).splitlines()
+    unlanded = len([ln for ln in cherry if ln.strip().startswith("+")])
+    if unlanded == 0:
+        return 0, "(no commits unreachable from origin/main — content is already upstream)"
+    subjects = git_fn(["log", "--oneline", "--no-decorate",
+                       f"origin/main..{branch}"]).strip()
+    stat = git_fn(["diff", "--stat", f"origin/main...{branch}"]).strip()
+    stat_lines = stat.splitlines()
+    if len(stat_lines) > 40:  # bound the evidence — a giant branch can't blow the prompt
+        stat = "\n".join(stat_lines[:40] + [f"... (+{len(stat_lines) - 40} more)"])
+    return unlanded, f"commits:\n{subjects}\n\ndiffstat:\n{stat}"
+
+
+def _gateway_complete(prompt, *, timeout, by, root):
+    """Route one cut-verification through the governed gateway pen — the single
+    sanctioned inference path (done-line 0062). Returns the reply content, or
+    None when the plane gives no answer (refused by policy / down / no mind):
+    AuthZ said no, or no mind could think, and the cut must fail safe. The
+    outward reach lives here, never in the pure functions above."""
+    import importlib.util
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    gw_path = ROOT / ".claude" / "skills" / "gateway" / "gateway.py"
+    spec = importlib.util.spec_from_file_location("ontum_gateway", gw_path)
+    gw = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gw)
+    out = gw.complete(prompt, caller=CUT_VERIFIER_CALLER,
+                      surface=CUT_VERIFIER_SURFACE, route="default",
+                      by=by, timeout=timeout, root=str(root / ".ai-native"))
+    return out.get("content") if out.get("ok") else None
+
+
+def verify_cut(branch, git_fn, complete_fn=None, *, timeout=45):
+    """Decide whether `branch` may be deleted — the inference-verified cut
+    (done-line 0100). Gathers the content evidence, applies the deterministic
+    floor, and — only when the floor passes, i.e. a cut is actually possible —
+    consults the governed gateway *habitually* before affirming. Returns
+    ("cut" | "hold", reason). `complete_fn(prompt) -> reply|None` is injected
+    for tests; production routes through the gateway pen.
+
+    Fail-safe and fail-soft: any error gathering evidence or thinking holds the
+    branch (never an accidental cut) without raising, so the garden hook stays
+    fail-open."""
+    try:
+        unlanded, evidence = branch_cut_evidence(branch, git_fn)
+    except Exception as error:  # noqa: BLE001 — a sensor failure holds, never cuts
+        return ("hold", f"could not gather cut evidence ({error}) — held, not cut")
+    if unlanded > 0:
+        return cut_verdict(unlanded, "floor-hold")  # no thought can override the floor
+    fn = complete_fn or (lambda prompt: _gateway_complete(
+        prompt, timeout=timeout, by=CUT_VERIFIER_CALLER, root=ROOT))
+    filled = (f"[cut-verifier prompt-as-code sha256:{cut_prompt_sha()}]\n\n"
+              + CUT_VERIFIER_PROMPT.format(evidence=evidence))
+    try:
+        raw = fn(filled)
+    except Exception:  # noqa: BLE001 — thinking failed → unavailable → hold
+        raw = None
+    return cut_verdict(unlanded, parse_inference_verdict(raw))
+
+
 # ------------------------------------------------------------------- runtime
 
 def _refuse(message):
@@ -359,6 +542,9 @@ def _ref_record_listing(staged_new):
 
 def cmd_commit(ns):
     branch = _run(["git", "branch", "--show-current"]).strip()
+    reason = head_intent_refusal(branch, ns.on)
+    if reason:
+        _refuse(reason)
     reason = commit_refusal(branch, ns.message, ns.forward)
     if reason:
         _refuse(reason)
@@ -534,13 +720,21 @@ def cmd_garden(ns):
                 if not gh_ok:
                     chores.append(f"{slug}: looks merged but gh is unreachable — left in place")
                     continue
+                # A merged PR is necessary but NOT sufficient (done-line 0100):
+                # before the irreversible cut, the content floor + habitual
+                # inference must agree. Default-deny holds the cut until bdo
+                # stamps the policy — the aggressive prune stops here, safely.
+                decision, why = (verify_cut(branch, lambda a: git(a, ROOT).stdout)
+                                 if branch else ("hold", "detached — no branch to verify"))
+                if decision != "cut":
+                    chores.append(f"{slug}: merged PR, but the cut is held — {why}")
+                    continue
                 rm = git(["worktree", "remove", wpath], ROOT)
                 if rm.returncode != 0:
                     tail = (rm.stderr or rm.stdout).strip().splitlines()
                     chores.append(f"{slug}: merged but remove refused — {tail[-1] if tail else 'no detail'}")
                     continue
-                if branch:
-                    git(["branch", "-D", branch], ROOT)
+                git(["branch", "-D", branch], ROOT)
                 pruned.append(slug)
             elif verdict == "surface":
                 chores.append(f"{slug}: {reason}")
@@ -571,7 +765,12 @@ def cmd_garden(ns):
         if loose_stranded:
             head_bits.append(f"{len(loose_stranded)} stranded branch(es): {', '.join(loose_stranded)}")
         if loose_merged:
-            head_bits.append(f"{loose_merged} merged branch(es) with no worktree (git branch -D)")
+            # Never a blanket `git branch -D` invitation (done-line 0100): that
+            # recommendation is how a branch carrying unlanded work gets swept
+            # by hand. The garden is the one pruner and it verifies every cut.
+            head_bits.append(f"{loose_merged} merged branch(es) with no worktree "
+                             "— left in place; pruning is the garden's, and each "
+                             "cut is verified (no blind delete)")
         lines.append("; ".join(head_bits))
         lines.extend(chores)
         finish("report" if (chores or loose_stranded) else "done")
@@ -607,6 +806,10 @@ def main(argv=None):
     commit.add_argument("--intent", metavar="VALUE",
                         help="optional intent tag; a known value that lies about "
                              "the verb is refused, a new one rides as proposed")
+    commit.add_argument("--on", metavar="BRANCH",
+                        help="the branch you believe you are on; the pen refuses "
+                             "if live HEAD differs — the HEAD-intent guard "
+                             "(done-line 0118), for the shared-tree fleet")
     commit.set_defaults(func=cmd_commit)
 
     sync = verbs.add_parser(

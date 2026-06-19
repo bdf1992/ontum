@@ -2,6 +2,8 @@
 .ai-native/queues/
 .ai-native/offsets/
 .ai-native/inbox.html
+causality/welcome.html
+causality/welcome-preview.png
 
 # sensor trace, not truth: the command watcher's log (done-line 0011) — deletable
 .ai-native/log/tool-use.jsonl
@@ -31,3 +33,7 @@ exports/*
 
 __pycache__/
 *.pyc
+
+# Jekyll/Pages build output — rebuilt from source on every `jekyll build`
+# and by the Pages workflow; never truth, never tracked.
+_site/

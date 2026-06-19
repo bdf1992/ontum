@@ -21,7 +21,9 @@ can vary; the owner does not.
 | Path | What it is |
 |---|---|
 | `ai-native-loop-substrate.md` | **The doctrine.** The working harness: decisions, invariants, seams, the build rule. Start here. |
-| `loop/` | The loop substrate — pure stdlib. The fold (`reconcile`), ambient control (`orchestrate`), the one pen for verdicts (`node`), the summons (`summon`), reflection onto external surfaces (`reflect`), the owner inbox (`web`), the organ census (`census`), the owner digest (`digest`), the merge-node's land-readiness eyes (`merge`). |
+| `loop/` | The loop substrate — pure stdlib. The fold (`reconcile`), ambient control (`orchestrate`), the one pen for verdicts (`node`), the summons (`summon`), reflection onto external surfaces (`reflect`), the owner inbox (`web`), the organ census (`census`), the owner digest (`digest`), the merge-node's land-readiness eyes (`merge`), and the folds the loop runs on itself — gaps, retro, pressure, energy, impact, the slow loop (`slowloop`/`disposer`), and more. |
+| `causality/` | The Causality surface (epic.causality-surface, served live): the term-economy witness (`term_economy.py`, a read-only fold that classifies ontum's own vocabulary against committed bytes) and the agnostic graph canvas (`canvas.html`). A projection, never a second source of truth. |
+| `outcomes/` | Durable desired-realities carried across mortal sessions — the desired-reality pole of the outcome-pressure fold (`loop/pressure.py`). Each outcome is an evidence-bearing probe-set the fold reads met/partial/unmet; aspiration is refused at the door. |
 | `.ai-native/` | The loop's own ground: `log/` (the append-only truth), `atoms/` (units of work, identity = content hash), `nodes/` (versioned node prompts), `epics/` (the arcs), `done/` (done-lines, written before code), `reports/` (session reports). |
 | `fence/` | The family-neutral fence registry (done-line 0027): one home for the firm denials every engineering family meets; each harness (Claude, Codex) renders the rules into its native enforcement shape. |
 | `pivot/` | The recoverability instrument (epic.pivot): does deliberately-hidden structure, encoded as a placement on the glyph cube, survive recovery by model inference — and how much? A deterministic harness, cold-agent inference, a calibrated random↔ceiling scale. |
@@ -86,10 +88,11 @@ fold over `log/` — deletable and rebuilt at any time (`--rebuild-cache-only`).
 
 ## Status
 
-The skeleton is built and the substrate is real and running. The value gate
-(L0) and the owner stamp judge real work; the remaining pipeline stages
-(placement, handoff, confirm) are still mocks awaiting their real nodes — the
-discipline is no second real node until the first has a passing receipt. Around
+The skeleton is built and the substrate is real and running. All five pipeline
+gates (value, owner stamp, placement, handoff, confirm) judge for real and have
+each refused a piece on `main` — mock temperature 0/5 (done-line 0047) — the
+discipline that got there was no second real node until the first had a passing
+receipt. Around
 the core, the ambient control loop, the summons, the one pen, reflection onto
 GitHub Issues, the served owner inbox, arc confirmation, the merge-node (the
 hand that lands confirmed-arc work so bdo steps out of the merge seat), the
@@ -97,12 +100,13 @@ organ census, the owner digest, the family-neutral fence, the glyph knoller and
 3D viewer, the language strata, the envoy export surface, and the pivot
 recoverability instrument all exist.
 
-Direction lives in `.ai-native/epics/` — five arcs, each with a horizon for
-what done looks like at epic scale (`python -m loop.node arcs`): the substrate
-trustworthy enough to point disposable sessions at, the experience layer where
-agents launch and refuse on their own, the owner harness that keeps one stamp
-as leverage, the ontabet language harness with machine-verified laws, and the
-pivot instrument measuring how much structure an encoding carries.
+Direction lives in `.ai-native/epics/` — ten arcs, each with a horizon for what
+done looks like at epic scale (`python -m loop.node arcs`) — among them: the
+substrate trustworthy enough to point disposable sessions at, the experience
+layer where agents launch and refuse on their own, the owner harness that keeps
+one stamp as leverage, the Causality surface, the inference gateway, the field
+fold, the ontabet language harness with machine-verified laws, and the pivot
+instrument measuring how much structure an encoding carries.
 
 ## Working method
 
