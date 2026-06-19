@@ -1056,7 +1056,8 @@ def cmd_land(ns):
     # reach fails we do not land a lossy receipt — the land raises and retries,
     # never records a merge it cannot describe.
     _run(["git", "fetch", "origin", base, head])
-    landed_atoms, _ = _range_atom_facts(f"origin/{base}", f"origin/{head}")
+    landed_atoms, _receipt_ids, _phrasing_clean = _range_atom_facts(
+        f"origin/{base}", f"origin/{head}")
     if ns.dry_run:
         print(f"result: report — DRY RUN: would land PR #{ns.number} "
               f"({head} -> main) on arc {ns.epic} confirmed by bdo "
