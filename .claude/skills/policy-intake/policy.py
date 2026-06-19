@@ -7,7 +7,7 @@ rung-intake (0051). Those let bdo confirm an arc, make a gate real, and grant a
 trust rung from GitHub; this lets him set a gateway *policy* — the default-deny
 RBAC that authorizes a (caller, surface, mind) inference (loop/inference.py) —
 the same way: never a CLI, never a custom UI (his stated rule: he acts from
-GitHub on his phone). A gateway caller held for want of a policy becomes one
+GitHub, on whatever device he's at). A gateway caller held for want of a policy becomes one
 issue he closes with a plain-language comment; this pen is the deterministic gh
 I/O around that gesture: open the issue, find the ones he closed, read his
 closing comment, reply with what the system did.

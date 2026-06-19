@@ -38,17 +38,27 @@ def atom_id_of(path):
     return name[:-5] if name.endswith(".json") else name
 
 
-def orphan_reason(added_atom_ids, receipt_artifact_ids):
-    """Why a PR's branch is off-log, or None when it is atom-backed. Pure:
-    given the atom ids the branch adds under `.ai-native/atoms/` and the
-    `artifact_id`s the branch's added receipt lines name, a branch is backed
-    when at least one atom it adds also carries a receipt it adds — the
-    invariant `atom_backed_refusal` enforces at open time, read from the
-    branch side so a PR opened by any path (pen or not) is held to it.
+def orphan_reason(added_atom_ids, receipt_artifact_ids, phrasing_clean=False):
+    """Why a PR's branch is off-log, or None when it is backed. Pure: given the
+    atom ids the branch adds under `.ai-native/atoms/` and the `artifact_id`s
+    the branch's added receipt lines name, a branch is atom-backed when at least
+    one atom it adds also carries a receipt it adds — the invariant
+    `atom_backed_refusal` enforces at open time, read from the branch side so a
+    PR opened by any path (pen or not) is held to it.
 
-    Two ways to be an orphan, in the order the pen states them: no atom at
-    all (the #107 case), or an atom that never entered the pipeline (a file
-    with no receipt naming it)."""
+    The SECOND way to be backed (done-line 0117, bdo's phrasing backdoor): a
+    branch whose every non-log change `loop.phrasing` proves PHRASING-ONLY needs
+    no atom — a pedantic prose edit the machine never branches on is not a
+    work-particle. `phrasing_clean` is that proof, gathered AND re-verified by
+    the reach (`pr.py audit`) with the same pure checker, so the prose door
+    cannot be lied to: a code or schema change makes it False and the branch
+    falls back to needing an atom.
+
+    Otherwise, two ways to be an orphan, in the order the pen states them: no
+    atom at all (the #107 case), or an atom that never entered the pipeline (a
+    file with no receipt naming it)."""
+    if phrasing_clean:
+        return None  # backed through the phrasing door (low-impact, proven)
     added = set(added_atom_ids)
     named = set(receipt_artifact_ids)
     if not added:
@@ -73,14 +83,19 @@ def audit(pr_facts):
     fold's to compute, the disposition bdo's to make."""
     orphans, clean = [], []
     for f in pr_facts:
+        phrasing_clean = bool(f.get("phrasing_clean", False))
         reason = orphan_reason(f.get("added_atom_ids", []),
-                               f.get("receipt_artifact_ids", []))
+                               f.get("receipt_artifact_ids", []),
+                               phrasing_clean)
         row = {k: f[k] for k in ("number", "headRefName", "author") if k in f}
         if reason:
             orphans.append({**row, "reason": reason})
         else:
-            row["backed_by"] = sorted(set(f.get("added_atom_ids", []))
-                                      & set(f.get("receipt_artifact_ids", [])))
+            if phrasing_clean:
+                row["backed_by"] = ["phrasing-door"]  # proven prose-only, no atom
+            else:
+                row["backed_by"] = sorted(set(f.get("added_atom_ids", []))
+                                          & set(f.get("receipt_artifact_ids", [])))
             clean.append(row)
     return {"orphans": orphans, "clean": clean}
 

@@ -1,0 +1,99 @@
+{
+  "family": {
+    "id": "spatial",
+    "name": "Spatial Navigation",
+    "pin": "the camera is the narrator",
+    "ai_native_pin": "the camera descends the record — altitude is a fold over source, not a cached thumbnail, and descent is the provenance path home"
+  },
+  "patterns": [
+    {
+      "id": "semantic-zoom",
+      "name": "Semantic Zoom",
+      "current_intent": "Zoom changes meaning, not just scale: galaxy to cluster to object, each altitude its own honest summary.",
+      "axis": { "register": "none", "provenance": "partial", "agent_drivable": "none" },
+      "verdict": "truth-capable",
+      "evolution": "Each altitude becomes a fold over the backing record rather than a hand-authored summary — zoom-out re-derives the level from source so a higher view can never silently drift from the data it claims to summarize.",
+      "non_example": "Showing the same dots bigger at every level (scale without a change of meaning), or a per-altitude summary cached at build time that the underlying record can contradict without the view ever knowing.",
+      "exemplars": ["https://stars.chromeexperiments.com/", "foundry:02-constellation"]
+    },
+    {
+      "id": "dive-scale",
+      "name": "Dive Through Scale",
+      "current_intent": "A continuous camera fall from the whole to the one — scale itself becomes the story's arc.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Gate the fall on real nesting depth — the camera descends only as far as the record actually nests, so the awe of the dive never outruns the evidence underneath it.",
+      "non_example": "A scale-fall staged where no real hierarchy exists — spectacle that implies a depth the data does not have, the fall as set-dressing.",
+      "exemplars": ["https://stars.chromeexperiments.com/"]
+    },
+    {
+      "id": "cinematic-easing",
+      "name": "Cinematic Easing",
+      "current_intent": "The camera never teleports and never lags: every transit is eased, oriented, and interruptible.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Stays pure craft (there is no AI axis to earn here, and it should not pretend otherwise) — its evolved job is to serve the register-bearing patterns above it: never cut between a RECORD view and a SIMULATION view without a felt transit, so the user always feels which kind of truth they moved into.",
+      "non_example": "A teleport dressed as a transition, or an easing that cannot be interrupted — the camera holding the user hostage to its own animation.",
+      "exemplars": ["https://www.phantom.land/", "foundry:02-constellation"]
+    },
+    {
+      "id": "altitude-breadcrumb",
+      "name": "Altitude Breadcrumb",
+      "current_intent": "You always know how high you are and how to get back down — the zoom level is named, visible, reversible.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "partial" },
+      "verdict": "truth-capable",
+      "evolution": "Today the crumb is a route back to a viewport state, not yet a route home to the record that gives the level meaning — so provenance is shaped, not grounded (axis honest at none). The lift that earns provenance: make each crumb cite the record that defines its level, so clicking a crumb resolves to its backing file:line / log substring exactly as the term-economy fold resolves a citation. The agent-drivable half is real now — altitude is a named, addressable level a model can set without a mouse — but a breadcrumb scoring on one axis is truth-capable, not ai-native, until the citation lands.",
+      "non_example": "A breadcrumb that names a screen but not a source — a path back to a camera position with no route home to the record that makes that level mean anything.",
+      "exemplars": ["foundry:02-constellation", "causality:canvas.js"]
+    },
+    {
+      "id": "interior-card-sphere",
+      "name": "Interior Card Sphere",
+      "current_intent": "The collection wraps around you: the gallery is a place you stand inside, and browsing is looking around — no end, no fold, no scroll.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Stays craft and is labeled so honestly; it earns a half-axis only if each card carries its provenance route (click-through to backing record) — until then the sphere is inhabitable spectacle, not a truth surface.",
+      "non_example": "A flat grid bent onto a sphere for the effect — geometry that adds motion and motion-sickness without adding any adjacency or provenance meaning.",
+      "exemplars": ["https://www.phantom.land/", "foundry:06-card-sphere"]
+    },
+    {
+      "id": "fixed-camera-moving-world",
+      "name": "Fixed Camera, Moving World",
+      "current_intent": "The viewer never tilts: the world rotates and flows past a level, planted camera, so cards stay upright and the horizon never lies.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Stays craft; the level horizon can be loaned to the register axis (ink-world of RECORD below the line, pencil-world of REQUEST/SIMULATION above) but that is a tint serving a register-bearing pattern, not a truth claim this pattern makes on its own.",
+      "non_example": "A tilting camera that lets the horizon lie, or world-motion that carries no semantic axis — parallax for its own sake, movement with no data inside it.",
+      "exemplars": ["https://www.phantom.land/", "foundry:06-card-sphere"]
+    }
+  ],
+  "new_patterns": [
+    {
+      "id": "derived-altitude",
+      "name": "Re-Derived Altitude",
+      "current_intent": "Semantic zoom where every altitude is a live fold over the backing record, not a cached thumbnail: descending re-resolves the level from source, so the summary at any height can never disagree with the truth beneath it.",
+      "use_when": "A view summarizes data at more than one altitude and a higher level must never be allowed to drift from the record it claims to summarize — reach for it instead of caching per-altitude thumbnails.",
+      "axis": { "register": "none", "provenance": "full", "agent_drivable": "full" },
+      "verdict": "ai-native",
+      "evolution": "New pattern — the AI-native lift of semantic-zoom: the holographic rule applied to altitude (no level without a path home), in the grain of term_economy.py's resolve-then-classify fold. Its earned axes are provenance (the fold home) and agent-drivable (resolve-then-classify is a typed spec, not a browser gesture). Commitment is NOT its claim: a level can loan its line-channel to the register facet (ink for an admitted level, pencil for a proposed/simulated one), but the pattern derives altitude from source, it does not decide propose-vs-admit — so the commitment axis is none, not a borrowed full.",
+      "non_example": "A pre-rendered overview image baked at build time — a summary that cannot be re-derived from the current record, so it drifts from truth and never knows it; a beautiful zoom-out that is a screenshot, not a fold.",
+      "exemplars": ["causality:canvas.js", "causality:term_economy.py", "foundry:02-constellation"]
+    },
+    {
+      "id": "recursion-as-inspection",
+      "name": "Recursive Interior",
+      "current_intent": "Opening a node IS descending into it: a node is itself a graph of nodes (a holon), the inspector and the canvas are the same surface at two altitudes, and the camera-fall into a node is the act of reading its record — schema-driven, so the interior is data the model can compose and drive, not a bespoke panel.",
+      "use_when": "A node has internal structure worth reading and you want 'inspect' and 'zoom in' to be the same act — reach for it instead of pasting a modal inspector panel with its own chrome over the canvas.",
+      "axis": { "register": "none", "provenance": "full", "agent_drivable": "full" },
+      "verdict": "ai-native",
+      "evolution": "New pattern — born from the canvas recursion prototype (a node made of nodes; inspector as zoom/recursion). The zoom path and the provenance path are the same path: to look inside is to follow the route home — so provenance is full. It is agent-drivable because the interior is schema-driven data (canvas.js SCHEMA), not a hand-built form. Commitment is not its claim: descending into a node reads structure, it does not move that node propose→admit, so the register axis is none — the strength is provenance + agent-drivable.",
+      "non_example": "A modal inspector panel pasted over the canvas — opening a node as a separate form with its own chrome instead of descending into it as the same graph one altitude deeper; an 'interior' that is a different surface rather than the node itself.",
+      "exemplars": ["causality:mock-recursion.html", "causality:inspector.js", "causality:canvas.js"]
+    }
+  ],
+  "open_questions": [
+    "The re-derived altitude render is spatial (camera) but its derivation is the fold (term_economy). Is the pattern actually the seam between camera and fold — and if so, does it belong to spatial at all, or is spatial only its lens?",
+    "How is the commitment boundary drawn spatially (register reconciled to ink=admitted / pencil=proposed-or-simulated, RECONCILIATION.md): is pencil a different altitude, a different tint at the same altitude (line-channel), or a different camera entirely? The patterns above can carry the boundary but none of them decide where it lives — and none of them bear commitment themselves, they only loan a channel to it.",
+    "Recursion-as-inspection makes zoom-path == provenance-path. Does that hold at every depth, or is there a floor where descent stops being 'open the record' and becomes raw bytes with no deeper interior to narrate?"
+  ]
+}

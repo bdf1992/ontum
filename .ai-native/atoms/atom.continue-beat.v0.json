@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.continue-beat.v0",
+    "story": {
+      "text": "As bdo, I am sometimes here but AFK, and I want a session to just keep working — stopping if and when it actually needs me, and going silent the moment it escalates — so I do not have to prompt and prompt to keep it moving. Every ambient beat this repo has (summon, mock-shame, owner-ask-shame, reflect-auto) fires on a NEW prompt or surfaces drift; none of them makes a session CONTINUE on its own when a turn ends. This is that beat: a Stop-hook patrol that, when a turn ends, nudges the session to carry the next gap unless it has escalated, hit a safety ceiling, or the only work left is the owner's stamp. It is the session-level instance of the landing-throughput principle 'the patrol stays silent, no bureaucracy' — it senses and nudges, it never judges, and it adds no approval layer.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the continue-beat: ambient auto-continuation that goes silent on escalation",
+      "value": "loop/patrol.py (a pure decide() fold + a write-once escalate verb) and .claude/hooks/continue_beat.py (a Stop hook). When a session's turn ends, the beat composes loop.gaps.top_gap and loop.summon.owner_backlog (it imports them, never re-derives — I-4) and decides: CONTINUE (block the stop, feed back the next gap) when there is self-serviceable work and no escalation; SILENT (let the session stop) when the session armed the escalate marker, the per-session beat ceiling is reached, or the only work left is bdo's stamp. The escalate marker is gitignored nag-state (.ai-native/continue-beat.json, the mock-shame.json precedent), never the truth log.",
+      "why_now": "bdo asked for it directly (2026-06-18): 'an ambient trigger which reminds agents to continue working… stopping if and when they need me, and if the request is escalate then they stop the reminders. Otherwise I don't need to prompt and prompt.' Confirmed the shape via the /ask panel: in-session beat now, silence on needs-you / parked-at-stamp / escalate plus a ceiling, and an empty backlog does NOT silence (the idle default is to find the next work).",
+      "if_accepted": "A live session keeps working the backlog with no prompting from bdo, and stands itself down the instant it genuinely needs him. The honest limit is named: a Stop hook continues a RUNNING session; it cannot wake a process that already exited — true AFK 'wake it later' is a separate timed layer (a scheduled cloud routine), deferred to its own done-line.",
+      "if_rejected": "Keeping a session moving stays a manual chore — bdo prompts 'continue' again and again while AFK, and a session that finishes a turn just stops even when the harness-generated backlog is full.",
+      "cost_of_wrong_call": "Low and fail-SAFE-to-STOP: the hook continues only on an explicit derived decision and lets the session stop on ANY internal error or malformed payload (the opposite of the other beats' fail-open) — so a bug can never trap an AFK session burning tokens. The CEILING is a hard per-session backstop. It writes only gitignored nag-state. Reverting is removing one Stop-hook line and deleting two files.",
+      "mechanism": "loop/patrol.py: decide(state, session_id, gap, owner_present) is pure (no IO) so the teeth can hold it to derived behaviour; decide_from_root gathers the live folds and persists; arm_escalate writes the marker. .claude/hooks/continue_beat.py prints {\"decision\":\"block\",\"reason\":<the next move>} to continue, or nothing to stop, and fail-safe-to-stop on any error. tests/test_patrol.py joins the suite with the §10 teeth: a constant decider FAILS (has-work must continue AND escalated must go silent — both outcomes proven reachable; the ceiling, parked-at-stamp, and new-session-reset each pinned; the hook's fail-safe proven by subprocess on malformed stdin and an unimportable root). Done-line 0127; full suite green at 918.",
+      "reading": [
+        "loop/patrol.py",
+        ".claude/hooks/continue_beat.py",
+        "tests/test_patrol.py",
+        ".claude/settings.json",
+        ".ai-native/done/0127-continue-beat-patrol.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/patrol.py", ".claude/hooks/continue_beat.py", "tests/test_patrol.py", ".claude/settings.json", ".gitignore"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/hooks/reflect_auto.py", ".claude/hooks/mock_shame.py", "loop/gaps.py", "loop/summon.py"],
+      "receipts": []
+    }
+  }
+}

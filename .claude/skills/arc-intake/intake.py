@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """arc-intake pen (done-line 0038): the inbound half of bdo's GitHub surface.
 
-bdo steers from GitHub on his phone — never a CLI, never a custom UI. An arc
+bdo steers from GitHub, wherever he is — never a CLI, never a custom UI. An arc
 with PRs waiting becomes one issue he closes with a plain-language comment;
 this pen is the deterministic gh I/O around that gesture: open the issue, find
 the ones he closed, read his closing comment, reply with what the system did.

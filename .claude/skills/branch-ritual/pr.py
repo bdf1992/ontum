@@ -411,12 +411,56 @@ def cmd_retire(ns):
           f"(closed without landing): {reason}")
 
 
+def _show_at(ref_path):
+    """`git show <ref>:<path>` bytes, or "" when the path does not exist at that
+    ref (added or deleted file). Never refuses — an absent side is just empty."""
+    proc = subprocess.run(["git", "show", ref_path], capture_output=True,
+                          text=True, encoding="utf-8", errors="replace", cwd=ROOT)
+    return proc.stdout if proc.returncode == 0 else ""
+
+
+def _range_phrasing_clean(base, head, names):
+    """Re-verify, with the same pure checker the route uses, that EVERY non-log
+    change on this range is phrasing-only AND was marked through the pen
+    (done-line 0117, with bdo's 2026-06-18 correction). Two server-side teeth:
+    the gate recomputes the prose proof from the diff (a committed change can
+    never lie about being prose), and it requires a `phrasing` admission on the
+    range to cover each changed file (the light lane still routes through the pen
+    and leaves a visible mark — never blind). Returns the bool."""
+    sys.path.insert(0, str(ROOT))
+    from loop import phrasing
+    non_log = [n.replace("\\", "/") for n in names
+               if not n.replace("\\", "/").startswith(".ai-native/log/")]
+    changes = [{"path": n,
+                "before": _show_at(f"{base}:{n}"),
+                "after": _show_at(f"{head}:{n}")}
+               for n in non_log]
+    # the phrasing admissions ADDED on this range declare which files the pen
+    # marked — the required, visible mark of the light lane
+    covered = set()
+    adm_diff = _run(["git", "diff", f"{base}...{head}", "--",
+                     ".ai-native/log/admissions.jsonl"])
+    for line in adm_diff.splitlines():
+        if not line.startswith("+") or line.startswith("+++"):
+            continue
+        try:
+            a = json.loads(line[1:])
+        except json.JSONDecodeError:
+            continue
+        if a.get("type") == "phrasing":
+            for fr in a.get("files", []):
+                covered.add(fr.get("path"))
+    clean, _reasons = phrasing.branch_phrasing_clean(changes, covered)
+    return clean
+
+
 def _range_atom_facts(base, head):
     """The atom-invariant facts for a base...head range: which atom ids it adds
-    under .ai-native/atoms/, and which artifact_ids its added receipt lines name.
-    This is the reach with git; the verdict over these facts is loop.pr_audit's
-    pure fold (done-lines 0066, 0068). Shared by the open-PR sweep (origin refs)
-    and the single-PR CI gate (the PR's own base/head SHAs)."""
+    under .ai-native/atoms/, which artifact_ids its added receipt lines name, and
+    whether the whole range is a phrasing-only edit (the prose door, done-line
+    0117). This is the reach with git; the verdict over these facts is
+    loop.pr_audit's pure fold (done-lines 0066, 0068). Shared by the open-PR
+    sweep (origin refs) and the single-PR CI gate (the PR's own base/head SHAs)."""
     sys.path.insert(0, str(ROOT))
     from loop import pr_audit
     names = _run(["git", "diff", "--name-only", f"{base}...{head}"]).splitlines()
@@ -433,7 +477,8 @@ def _range_atom_facts(base, head):
             continue  # a torn or context line is not a receipt
         if rc.get("artifact_id"):
             receipt_ids.add(rc["artifact_id"])
-    return atom_ids, sorted(receipt_ids)
+    phrasing_clean = _range_phrasing_clean(base, head, names)
+    return atom_ids, sorted(receipt_ids), phrasing_clean
 
 
 def cmd_audit(ns):
@@ -453,17 +498,19 @@ def cmd_audit(ns):
     rng = getattr(ns, "range", None)
     if rng:
         base, head = rng
-        atom_ids, receipt_ids = _range_atom_facts(base, head)
+        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(base, head)
         result = pr_audit.audit([{
             "number": getattr(ns, "pr", None) or "(this PR)", "headRefName": head,
             "added_atom_ids": atom_ids, "receipt_artifact_ids": receipt_ids,
+            "phrasing_clean": phrasing_clean,
         }])
         pr_audit.render(result)
         if result["orphans"]:
-            _refuse("this PR adds no atom on the log — open it through the PR "
-                    "pen so it becomes a unit the loop can see and land "
-                    "(§15/D-5); a PR is not a place to put work the machinery "
-                    "never gated")
+            _refuse("this PR adds no atom on the log and is not a phrasing-only "
+                    "edit — open it through the PR pen so it becomes a unit the "
+                    "loop can see and land (§15/D-5); a PR is not a place to put "
+                    "work the machinery never gated. (If it is purely prose, the "
+                    "phrasing door — `pr.py phrasing` — lands it without an atom.)")
         print("result: done — this PR is atom-backed")
         return
     _run(["git", "fetch", "origin"])
@@ -472,14 +519,15 @@ def cmd_audit(ns):
          "--json", "number,headRefName,author"]))
     facts = []
     for pr in prs:
-        atom_ids, receipt_ids = _range_atom_facts("origin/main",
-                                                  f"origin/{pr['headRefName']}")
+        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(
+            "origin/main", f"origin/{pr['headRefName']}")
         facts.append({
             "number": pr["number"],
             "headRefName": pr["headRefName"],
             "author": (pr.get("author") or {}).get("login", ""),
             "added_atom_ids": atom_ids,
             "receipt_artifact_ids": receipt_ids,
+            "phrasing_clean": phrasing_clean,
         })
     result = pr_audit.audit(facts)
     if getattr(ns, "as_json", False):
@@ -489,6 +537,52 @@ def cmd_audit(ns):
     n = len(result["orphans"])
     print(f"\nresult: {'needs-you' if n else 'done'} — "
           f"{n} off-log PR(s), {len(result['clean'])} atom-backed")
+
+
+def cmd_phrasing(ns):
+    """The phrasing backdoor's route (done-line 0117): mark a prose-only edit as
+    a phrasing act on the log, so it lands without an atom. It runs the SAME pure
+    checker the off-log gate re-verifies (loop.phrasing), refusing the instant a
+    named file is not phrasing-only — so the mark can never claim more than the
+    proof. On a clean pass it appends one `phrasing` admission (the files, their
+    before/after content hashes, the reason, --by); the session then commits the
+    prose files (and the admission) with the git pen and opens the PR with
+    `pr.py create` — the gate exempts a phrasing-clean branch (no atom needed)."""
+    import hashlib
+    sys.path.insert(0, str(ROOT))
+    from loop import phrasing
+    from loop.reconcile import append_line, short_hash, now_ts
+    marks = []
+    for f in ns.files:
+        rel = f.replace("\\", "/")
+        before = _show_at(f"HEAD:{rel}")
+        target = ROOT / rel
+        after = target.read_text(encoding="utf-8") if target.exists() else ""
+        ok, why = phrasing.phrasing_only(rel, before, after)
+        if not ok:
+            _refuse(f"{rel} is not a phrasing-only edit: {why}. The phrasing "
+                    "door is for pedantic prose only; route this through the "
+                    "atom pipeline (`pr.py create` with a backing atom).")
+        marks.append({
+            "path": rel,
+            "before": "sha256:" + hashlib.sha256(before.encode("utf-8")).hexdigest(),
+            "after": "sha256:" + hashlib.sha256(after.encode("utf-8")).hexdigest(),
+        })
+    ts = now_ts()
+    adm = {
+        "id": "adm." + short_hash("phrasing", ns.by, ts,
+                                  *(m["after"] for m in marks)),
+        "type": "phrasing",
+        "files": marks,
+        "reason": ns.why,
+        "by": ns.by,
+        "ts": ts,
+    }
+    append_line(ROOT / ".ai-native" / "log" / "admissions.jsonl", adm)
+    print(f"result: report — phrasing mark {adm['id']} written for "
+          f"{len(marks)} file(s), by {ns.by}. Proven prose-only; commit them "
+          "(with admissions.jsonl) via the git pen, then `pr.py create` — the "
+          "off-log gate exempts a phrasing-clean branch, so no atom is needed.")
 
 
 def integrate_refusal(base):
@@ -524,6 +618,120 @@ def cmd_integrate(ns):
     print(f"result: done — integrated PR #{ns.number} "
           f"({info['headRefName']} -> {info['baseRefName']}); main waits for "
           "owner confirmation and merge-node land")
+
+
+# ----------------------------------------------------------- reconcile (land-chain prep)
+# The cascade fix: GitHub's server-side merge does not apply this repo's
+# `.gitattributes` `union` driver, so it reads every append-only log
+# (events/receipts/admissions.jsonl) as CONFLICTING the moment the trunk
+# advances — and each land re-conflicts the next confirmed branch. The
+# merge-node paid this by hand (worktree → `git merge origin/main` → push →
+# land) on every PR of a landing wave. `reconcile` is that step branded into
+# one verb, and structurally isolated: it works in a throwaway worktree, never
+# the viewport (the shared primary worktree a parallel session may hold). It
+# does the *mechanical* half only — a pure-log merge the union driver resolves
+# — and refuses to author the rest: any non-log conflict is surfaced for a
+# session on the branch, exactly the merge-node's "lands work, never authors a
+# resolution" contract.
+
+def reconcile_refusal(state, base):
+    """Why a PR may not be reconciled, or None.
+
+    Reconcile is land-chain prep against the trunk: it touches a branch, never
+    main, and only an open PR has a branch to reconcile. A piece→epic merge is
+    `integrate`, not this."""
+    if state != "OPEN":
+        return f"only an open PR reconciles — this one is {state.lower()}"
+    if base not in ("main", "master"):
+        return (f"reconcile targets the trunk cascade — this PR's base is "
+                f"'{base}', not main; a piece into an epic branch is `integrate`")
+    return None
+
+
+def reconcile_conflict_refusal(conflicted_paths):
+    """The teeth (§10): the `union` driver resolves the append-only logs
+    automatically, so any path STILL in conflict after the merge is a real
+    content conflict the merge-node may not paper over. Returns the refusal, or
+    None to proceed with a clean (logs-only) merge."""
+    paths = sorted(p for p in conflicted_paths if p.strip())
+    if paths:
+        return (f"real (non-log) conflict in {', '.join(paths)} — a session on "
+                "the branch must resolve it (the merge-node lands work, it does "
+                "not author merge resolutions). The append-only logs union "
+                "automatically; these did not")
+    return None
+
+
+def cmd_reconcile(ns):
+    """Merge the advanced trunk into a confirmed PR's branch in an ISOLATED
+    worktree so GitHub stops reading the union'd logs as a conflict, then hand
+    the branch off through the same gate as any push. Pure-log merges go
+    through; a real content conflict is refused (reconcile_conflict_refusal).
+    The merge-node then lands the branch the usual way."""
+    import os
+    import tempfile
+
+    info = json.loads(_run(
+        ["gh", "pr", "view", str(ns.number),
+         "--json", "state,baseRefName,headRefName"]))
+    reason = reconcile_refusal(info["state"], info["baseRefName"])
+    if reason:
+        _refuse(reason)
+    base = info["baseRefName"]
+    branch = info["headRefName"]
+
+    # The truth both sides merge from — never a stale local ref.
+    _run(["git", "fetch", "origin", base, branch])
+
+    base_dir = tempfile.mkdtemp(prefix="ontum-reconcile-")
+    wt = os.path.join(base_dir, "wt")
+    added = False
+    try:
+        rc, out, err = _capture(
+            ["git", "worktree", "add", "-B", branch, wt, f"origin/{branch}"])
+        if rc != 0:
+            _refuse(f"could not check out '{branch}' in an isolated worktree "
+                    f"(is it checked out in another worktree?):\n"
+                    f"{(err or out).strip()}")
+        added = True
+
+        msg = (f"merge {base}: union the append-only logs "
+               f"(land-chain reconcile for #{ns.number})")
+        rc, out, err = _capture(
+            ["git", "-C", wt, "merge", f"origin/{base}", "-m", msg])
+        combined = ((out or "") + (err or "")).strip()
+        if "Already up to date" in combined:
+            print(f"result: report — PR #{ns.number} ({branch}) already carries "
+                  f"origin/{base}; nothing to reconcile")
+            return
+        if rc != 0:
+            conflicted = _capture(
+                ["git", "-C", wt, "diff", "--name-only", "--diff-filter=U"])[1]
+            _capture(["git", "-C", wt, "merge", "--abort"])
+            _refuse(reconcile_conflict_refusal(conflicted.split())
+                    or f"merge failed:\n{combined}")
+
+        # Hand off through the worktree's OWN pen copy, so its ROOT, suite, and
+        # branch are the reconciled tree — the same suite + branded push gate as
+        # any session's hand-off.
+        pen_in_wt = os.path.join(
+            wt, ".claude", "skills", "branch-ritual", "pr.py")
+        proc = subprocess.run(
+            [sys.executable, pen_in_wt, "push"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", cwd=wt)
+        if proc.returncode != 0:
+            tail = "\n".join(
+                ((proc.stdout or "") + (proc.stderr or "")).strip().splitlines()[-8:])
+            _refuse("the reconciled branch did not pass hand-off (suite or push "
+                    f"gate); nothing pushed:\n{tail}")
+        print(f"result: done — reconciled PR #{ns.number} ({branch}) against "
+              f"origin/{base} and pushed; the merge-node can land it now")
+    finally:
+        if added:
+            _capture(["git", "worktree", "remove", wt, "--force"])
+        _capture(["git", "worktree", "prune"])
+        shutil.rmtree(base_dir, ignore_errors=True)
 
 
 # ----------------------------------------------------------- land (merge-node)
@@ -752,11 +960,21 @@ def land_refusal(info, confirmation, by, by_admitted=False):
     return None
 
 
-def _merge_receipt(pr, epic, by, authorized_by, head):
-    """The merge receipt (D-5): the land as an act on the record, citing the
-    arc confirmation that authorized it. Built here; pushed to the trunk by
+def _merge_receipt(pr, epic, by, authorized_by, head, landed_atoms=None):
+    """The merge receipt (D-5, D-13): the land as an act on the record, citing
+    the arc confirmation that authorized it. Built here; pushed to the trunk by
     _push_receipt_to_trunk — never left in a worktree (the bug that left every
-    real merge unrecorded: a receipt in a throwaway worktree is no receipt)."""
+    real merge unrecorded: a receipt in a throwaway worktree is no receipt).
+
+    `landed_atoms` is the write-through carbon copy (D-13): the artifact_ids the
+    PR's range actually added under .ai-native/atoms/, so this GitHub surface act
+    reflects *which* local atoms reached main, not only *that* a PR did. Without
+    it the pipeline namespace (per-atom) and the git namespace (per-PR) cannot
+    join, and the loop can never confirm a piece is on main (the per-atom↔per-PR
+    gap, done-line 0123). An empty list is honest — a PR that added no atom file
+    (a phrasing-only branch) — and distinct from a missing field on the 90
+    historical receipts, which means 'never computed' (those stand as lossy
+    history; the gap closes forward, D-13)."""
     return {
         "id": f"rcp.merge.{pr}",
         "kind": "merge",
@@ -765,6 +983,7 @@ def _merge_receipt(pr, epic, by, authorized_by, head):
         "epic": epic,
         "head": head,
         "verdict": "landed",
+        "landed_atoms": sorted(landed_atoms or []),
         "authorized_by": authorized_by,
         "ts": _now(),
     }
@@ -829,10 +1048,20 @@ def cmd_land(ns):
     if reason:
         _refuse(reason)
     head = info.get("headRefName")
+    base = info.get("baseRefName") or "main"
+    # The write-through join (D-13): compute which atoms this PR lands BEFORE the
+    # merge, while origin/{head} still exists (GitHub deletes it on merge). Same
+    # reach the off-log gate uses (_range_atom_facts → loop.pr_audit), so the
+    # receipt's `landed_atoms` cannot disagree with what the gate counted. If the
+    # reach fails we do not land a lossy receipt — the land raises and retries,
+    # never records a merge it cannot describe.
+    _run(["git", "fetch", "origin", base, head])
+    landed_atoms, _receipt_ids, _phrasing_clean = _range_atom_facts(
+        f"origin/{base}", f"origin/{head}")
     if ns.dry_run:
         print(f"result: report — DRY RUN: would land PR #{ns.number} "
               f"({head} -> main) on arc {ns.epic} confirmed by bdo "
-              f"({confirmation}); nothing merged")
+              f"({confirmation}); atoms {landed_atoms or '(none)'}; nothing merged")
         return
     # Merge only — never --delete-branch. Across the fleet the head branch is
     # checked out in a worktree, and `gh pr merge --delete-branch` fails on the
@@ -841,7 +1070,8 @@ def cmd_land(ns):
     # merges. The SessionStart gardener (done-line 0037) prunes the merged
     # worktree and branch; GitHub's delete_branch_on_merge clears the remote head.
     _run(["gh", "pr", "merge", str(ns.number), "--squash"])
-    receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head)
+    receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head,
+                             landed_atoms=landed_atoms)
     if _push_receipt_to_trunk(receipt):
         print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
               f"on bdo's confirmed arc {ns.epic}; receipt {receipt['id']} on the trunk. "
@@ -929,6 +1159,21 @@ def main(argv=None):
                             "port, symmetric to --range's enforcer port)")
     audit.set_defaults(func=cmd_audit)
 
+    phrasing_p = verbs.add_parser(
+        "phrasing", help="the phrasing backdoor (done-line 0117): mark a "
+                         "prose-only edit (.md body, .py comments/docstrings, "
+                         ".json prose fields) as a phrasing act so it lands "
+                         "without an atom; refuses anything touching syntax or "
+                         "schema and names what disqualified it")
+    phrasing_p.add_argument("--files", nargs="+", required=True,
+                            help="the edited files to mark (already changed in "
+                                 "the working tree, vs HEAD)")
+    phrasing_p.add_argument("--why", required=True,
+                            help="one line: what prose was corrected and why")
+    phrasing_p.add_argument("--by", required=True,
+                            help="the signer (a session id, e.g. claude)")
+    phrasing_p.set_defaults(func=cmd_phrasing)
+
     push = verbs.add_parser(
         "push", help="the branded git push (feature parity: extra args "
                      "are forwarded to git push after the checks)")
@@ -949,6 +1194,14 @@ def main(argv=None):
                            action="store_true",
                            help="delete the piece branch after integrating")
     integrate.set_defaults(func=cmd_integrate)
+
+    reconcile = verbs.add_parser(
+        "reconcile", help="land-chain prep: in an isolated worktree, merge the "
+                          "advanced trunk into a confirmed PR's branch so "
+                          "GitHub stops reading the union'd logs as a conflict, "
+                          "then push (real conflicts are refused, not authored)")
+    reconcile.add_argument("number", type=int)
+    reconcile.set_defaults(func=cmd_reconcile)
 
     land = verbs.add_parser(
         "land", help="the merge-node lands a confirmed-arc PR on main (bdo's "
