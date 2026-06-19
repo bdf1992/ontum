@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — editorial</title>
+<script>window.__pageErr=null;addEventListener('error',e=>{if(!window.__pageErr)window.__pageErr=(e.error&&e.error.stack)||e.message;});</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f6f1e7;--ink:#2b2a33;--dim:#8d8678;--faint:#b8b1a2;--positive:#0e8a7b;--strain:#d4543f;--inference:#7a5ba6;--amber:#b8742c;--blue:#3f7cb6;--mock:#ff2bd6;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--paper);}
+  body{font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);}
+  canvas#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+
+  /* ── chrome: quiet, Fraunces-forward, editorial restraint ── */
+  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:baseline;gap:13px;padding:20px 26px;pointer-events:none;}
+  .top .mark{font-family:"Fraunces",serif;font-size:23px;font-weight:300;letter-spacing:.01em;}
+  .top .mark b{color:var(--inference);font-weight:600;}
+  .top .tag{font:300 9.5px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.22em;text-transform:uppercase;align-self:center;}
+  .top .sp{flex:1;}
+  .top .btn{pointer-events:auto;font:400 11px "IBM Plex Mono",monospace;color:var(--dim);background:none;border:none;border-bottom:1.4px solid transparent;padding:2px 2px;cursor:pointer;transition:color .2s ease,border-color .2s ease;}
+  .top .btn:hover{color:var(--ink);border-color:var(--ink);}
+
+  /* ── the one slider — the backbone (Complexity), spanning phrase → directory ── */
+  .sliders{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:12;display:flex;gap:16px;align-items:flex-end;background:rgba(255,252,245,.92);border:1.4px solid rgba(43,42,51,.5);border-radius:14px;padding:11px 20px;box-shadow:3px 4px 0 rgba(43,42,51,.10);}
+  .sliders .sl{display:flex;flex-direction:column;gap:5px;width:118px;}
+  .sliders .sl.spine{width:236px;}
+  .sliders .sl .lab{font:400 9px "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:6px;}
+  .sliders .sl.spine .lab span:first-child{font-family:"Fraunces",serif;font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--ink);}
+  .sliders .sl input[type=range]{width:100%;accent-color:var(--inference);cursor:pointer;height:15px;}
+  .sliders .sl .val{font:500 9px "IBM Plex Mono",monospace;color:var(--inference);}
+  /* the phase ribbon under the spine: where the cute nucleus ends and ontum/ begins */
+  .sliders .sl.spine .phase{display:flex;justify-content:space-between;font:400 8px "IBM Plex Mono",monospace;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;margin-top:-1px;}
+  .sliders .sl.spine .phase b{font-weight:500;}
+  .sliders .sl.spine .phase .on{color:var(--inference);}
+  .sliders .sl.mock{background:repeating-linear-gradient(45deg,rgba(255,43,214,.10),rgba(255,43,214,.10) 4px,transparent 4px,transparent 9px);border-radius:8px;padding:3px 6px 5px;width:96px;}
+  .sliders .sl.mock .lab{color:var(--mock);}
+  .sliders .sl.mock input[type=range]{accent-color:var(--mock);cursor:not-allowed;}
+  .sliders .sl .mtag{font:600 7px "IBM Plex Mono",monospace;color:#fff;background:var(--mock);border-radius:3px;padding:1px 4px;letter-spacing:.06em;}
+
+  /* ── the PROPOSE card — gesture→AI, accept/reject; editorial marginalia ── */
+  .prop{position:fixed;z-index:14;width:248px;background:rgba(255,252,245,.98);border:1.5px solid var(--mock);border-radius:12px;padding:12px 14px 11px;box-shadow:3px 4px 0 rgba(255,43,214,.13);display:none;opacity:0;transform:translateY(-5px);transition:opacity .26s ease,transform .26s cubic-bezier(.2,.9,.3,1.2);}
+  .prop.show{opacity:1;transform:translateY(0);}
+  .prop .pk{font:600 8px "IBM Plex Mono",monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--mock);display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+  .prop .pk .dot{width:6px;height:6px;border-radius:50%;background:var(--mock);}
+  .prop .pq{font:300 17px "Fraunces",serif;line-height:1.3;margin-bottom:5px;}
+  .prop .pq b{font-weight:600;}
+  .prop .pw{font:400 10.5px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.55;margin-bottom:9px;}
+  .prop .phint{font:500 12px "Caveat",cursive;color:var(--ink);line-height:1.3;margin-bottom:9px;}
+  .prop .phint b{color:var(--inference);}
+  .prop .pacts{display:flex;gap:7px;justify-content:flex-end;}
+  .prop .pacts button{flex:none;width:34px;font:500 12px "IBM Plex Mono",monospace;border-radius:8px;padding:5px 4px;cursor:pointer;border:1.3px solid;background:none;opacity:.7;transition:background .18s ease,color .18s ease,opacity .18s ease;}
+  .prop .pacts button:hover{opacity:1;}
+  .prop .yes{color:var(--positive);border-color:var(--positive);}
+  .prop .yes:hover{background:rgba(14,138,123,.12);}
+  .prop .no{color:var(--dim);border-color:rgba(43,42,51,.35);}
+  .prop .no:hover{background:rgba(43,42,51,.07);color:var(--ink);}
+
+  /* ── the Lens — selection-anchored, conversation THROUGH the graph (not a sidebar) ── */
+  .lens{position:fixed;z-index:13;width:268px;background:rgba(255,252,245,.98);border:1.5px solid var(--inference);border-radius:13px;padding:14px 16px;box-shadow:3px 4px 0 rgba(122,91,166,.14);display:none;opacity:0;transform:translateY(-5px);transition:opacity .24s ease,transform .24s cubic-bezier(.2,.9,.3,1.2);}
+  .lens.show{opacity:1;transform:translateY(0);}
+  .lens h4{font:600 9px "IBM Plex Mono",monospace;letter-spacing:.2em;color:var(--inference);text-transform:uppercase;margin-bottom:9px;}
+  .lens .row{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+  .lens .ico{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.4px solid;font:600 15px "Caveat",cursive;flex:none;}
+  .lens .ttl{font:300 21px "Fraunces",serif;}
+  .lens .note{font:400 11px "Fraunces",serif;font-style:italic;color:#6b6456;line-height:1.4;margin:-3px 0 9px;}
+  .lens .chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 11px;}
+  .lens .chip{font:400 9.5px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.35);border-radius:20px;padding:4px 9px;color:var(--ink);display:flex;gap:5px;align-items:center;}
+  .lens .sub{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:9px 0 6px;}
+  .lens .conn{font:400 11px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.75;}
+  .lens .conn b{color:var(--ink);font-weight:500;}
+  .lens .nl{display:flex;gap:6px;margin-top:11px;}
+  .lens .nl input{flex:1;font:400 11px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.32);border-radius:8px;padding:7px 9px;background:rgba(255,255,255,.4);color:var(--ink);outline:none;}
+  .lens .nl input:focus{border-color:var(--inference);}
+  .lens .nlnote{font:400 8px "IBM Plex Mono",monospace;color:var(--mock);letter-spacing:.08em;margin-top:7px;display:flex;align-items:center;gap:5px;}
+  .lens .nlnote .d{width:5px;height:5px;border-radius:50%;background:var(--mock);}
+
+  /* ── legend + the live calibration readout: faint footer, editorial ── */
+  .legend{position:fixed;left:24px;bottom:30px;z-index:11;display:flex;align-items:center;gap:8px;font:400 9px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.8);border:1.2px solid rgba(43,42,51,.2);border-radius:9px;padding:7px 11px;max-width:236px;line-height:1.5;}
+  .legend .sw{width:11px;height:11px;border-radius:3px;background:var(--mock);flex:none;}
+  .recov{position:fixed;right:26px;bottom:30px;z-index:11;text-align:right;font:400 9px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.04em;line-height:1.7;background:rgba(255,252,245,.82);border:1.2px solid rgba(43,42,51,.2);border-radius:9px;padding:9px 13px;min-width:188px;}
+  .recov .big{font-family:"Fraunces",serif;font-size:25px;font-weight:300;color:var(--ink);line-height:1;}
+  .recov .big small{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--dim);}
+  .recov .ok{color:var(--positive);}
+  .recov .bad{color:var(--mock);}
+  .recov .src{font-size:8px;color:var(--faint);letter-spacing:.08em;}
+  .recov .fold{font-size:8px;color:var(--mock);letter-spacing:.06em;display:flex;align-items:center;gap:4px;justify-content:flex-end;}
+  .recov .fold .d{width:5px;height:5px;border-radius:50%;background:var(--mock);}
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);z-index:15;max-width:460px;text-align:center;font:300 14px "Fraunces",serif;color:var(--ink);background:rgba(255,252,245,.96);border:1.4px solid var(--positive);border-radius:11px;padding:10px 18px;box-shadow:2px 3px 0 rgba(14,138,123,.12);opacity:0;transition:opacity .4s ease;pointer-events:none;}
+  .toast.show{opacity:1;}
+  .toast.trap{border-color:var(--mock);box-shadow:2px 3px 0 rgba(255,43,214,.12);}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="top">
+  <span class="mark">Causa<b>lity</b></span>
+  <span class="tag" id="kind">editorial</span>
+  <span class="sp"></span>
+  <button class="btn" id="new">New</button>
+  <button class="btn" id="save">Save</button>
+</div>
+
+<div class="prop" id="prop">
+  <div class="pk"><span class="dot"></span><span id="pktag">proposed · floor</span></div>
+  <div class="pq" id="pq"></div>
+  <div class="pw" id="pw"></div>
+  <div class="phint"><b>draw</b> the edge to wire it&nbsp;·&nbsp;<b>slash</b> across to dismiss</div>
+  <div class="pacts"><button class="yes" id="pyes">✓</button><button class="no" id="pno">✕</button></div>
+</div>
+
+<div class="lens" id="lens"></div>
+<div class="toast" id="toast"></div>
+<div class="legend" id="legend"></div>
+<div class="recov" id="recov"></div>
+<div class="sliders" id="sliders"></div>
+
+<script src="canvas-system.js"></script>
+<script src="canvas.js"></script>
+<script src="recovery_scorer.js"></script>
+<script>
+/* exp-editorial.html — Causality CHARADES, chef "editorial". Turn 3 (Round 3,
+   CONVERGE). Sensibility: EDITORIAL / TYPOGRAPHIC — Fraunces-forward, restraint,
+   timed reveals. Gesture→AI stance: PROPOSE — the system suggests an edge; you
+   accept or reject, and your accept/reject IS the recovery score.
+
+   WHERE THE ROOM CONVERGED ME (two fixes to my Turn-2 nine):
+   1. The directory end is now LIVE-PARSED, not hand-transcribed. buildDirSceneLive()
+      fetches the real doctrine (../ai-native-loop-substrate.md) and the real loop
+      modules (../loop/*.py) at RUNTIME, greps the clause-citation tallies in the
+      browser, and grows the mesh from those bytes — clause theses quoted from the
+      doctrine, "cites ×N" counts are the literal grep. No number is typed into this
+      file. (If the tree is unreachable — file:// or wrong root — it degrades to a
+      snapshot, flagged MAGENTA and named as such. Honest, never silent.)
+   2. The verdict is now a DRAWN GESTURE. The system proposes an edge as a magenta
+      ghost between two nodes; you DRAW that edge (drag node→node, the engine's own
+      link gesture) to ACCEPT it, or SLASH across it to REJECT. The tightest loop is
+      now the most gesture-native: your drawn stroke moves the REAL recovery_scorer.js
+      score live. (Quiet accept/dismiss buttons remain as a keyboard-free fallback.)
+
+   THE SYSTEM I NAMED (free-roam of the whole repo): the DOCTRINE CITATION MESH.
+   ontum's doctrine is the spine; the loop's code cites it constantly. A clause is a
+   nucleus thesis; the modules that cite it bloom around it — the SAME grammar at
+   directory scale, carrying the SAME elided-mediator trap as the cat phrase: the
+   careless read "the code cites the doctrine" elides the specific CLAUSE (node.py
+   cites D-4 ×12, not "the doctrine") the citation actually routes through.
+
+   THE BACKBONE is one Complexity slider spanning BOTH scales seamlessly:
+   • low end — the cute cat-sunbeam nucleus from phrases.json: "The cat naps." grows
+     into a living mesh. The corpus's own surface_trap arrives LAST, to be rejected;
+     your draws/slashes are scored by the real recovery_scorer.js — reject the trap
+     and you BECOME the scorer.
+   • high end — "point at ontum/": same growth, parsed live from the tree.
+
+   Everything rides the REAL engine (canvas.js): water-fill discs, ink-wobble,
+   travelling pulses, the native link-draw gesture — no re-implemented drawing.
+   Magenta = floor-proposed phrase relations · the surface trap · editorial
+   selection. The directory's citation counts are LIVE and carry no flag. */
+(async () => {
+  'use strict';
+  const C = window.Causality, SYS = window.CausalitySystem;
+  if (!C || !SYS) { document.body.innerHTML = '<p style="padding:40px;font-family:monospace">engine failed to load (canvas.js / canvas-system.js)</p>'; return; }
+  const SCORER = window.CausalityScorer || null;     // recovery_scorer.js — the REAL deterministic scorer
+  const COL = SYS.TOKENS.COLOR, FACET = SYS.TOKENS.FACET, BUILD = SYS.TOKENS.BUILD;
+  const PIG = C.PIGMENT, GLYPH = C.GLYPH;
+  const POS = COL.positive, STRAIN = COL.strain, INK = COL.ink, DIM = COL.dim, MOCK = BUILD.mock.color, INF = COL.inference;
+  const TAU = Math.PI * 2, clamp = (v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+  const clean = w => String(w).replace(/[.,;:!?]/g,'').toLowerCase();   // map key + sentence-ink key
+
+  // ── the engine ──────────────────────────────────────────────────────────────
+  const cv = document.getElementById('cv');
+  const S = C.canvas(cv, {
+    perms: { create:true, link:true, flip:true, move:true, rename:false, erase:true, tap:true, type:false, setline:false },
+    onselect: (sel) => onSelect(sel),
+    onchange: () => { S.nodes.forEach(n=>{ if(n._gword) wordHue[clean(n._gword)]=n.hue; }); reconcileDrawn(); },
+  });
+  S.energyExternal = true;            // hold the felt-field; we fold it from the mesh
+  S.baseline = 0.5;
+
+  // ── SCENE A: the cute nucleus (the benchmark, known latent structure) ──────────
+  let DATA; try { DATA = await (await fetch('phrases.json')).json(); } catch(e){ DATA = { phrases: [] }; }
+  const RAW = (DATA.phrases || []).find(p => p.id === 'cat-sunbeam') || (DATA.phrases||[])[0];
+
+  function makePhraseScene(raw){
+    if(!raw) return null;
+    const glyphs = raw.glyphs.map((g,i)=>({ word:g.word, facets:g.facets||[], stage: typeof g.stage==='number'?g.stage:0, idx:i, type:'stock', note:null }));
+    const rels = (raw.relations||[]).map((r,i)=>({ key:'A/r'+i, fromWord:r.from.split('.')[0], toWord:r.to.split('.')[0], from:r.from, to:r.to, label:r.label, line:r.line||'relation', build:r.build||'mock', note:null }));
+    const trap = raw.surface_trap ? { key:'A/trap', trap:true, fromWord:raw.surface_trap.edge.from.split('.')[0], toWord:raw.surface_trap.edge.to.split('.')[0], from:raw.surface_trap.edge.from, to:raw.surface_trap.edge.to, label:raw.surface_trap.edge.label, why:raw.surface_trap.why } : null;
+    const texts = raw.stages ? raw.stages.texts.slice() : [raw.text];
+    return {
+      id:'A', kind: raw.kind || 'moving attractor', scope:'phrase',
+      glyphs, rels, trap, texts, maxLocal: texts.length-1,
+      // the TRUTH mesh for recovery_scorer.js — the benchmark label
+      truthMesh: { glyphs: raw.glyphs.map(g=>({word:g.word,facets:g.facets||[]})), relations:(raw.relations||[]).map(r=>({from:r.from,to:r.to})), surface_trap: raw.surface_trap },
+      provenance: null,
+    };
+  }
+
+  // ── SCENE B: the directory high-end — the DOCTRINE CITATION MESH, LIVE-PARSED. ──
+  // The room's Turn-2 note: my counts were real-but-hand-transcribed. Fixed. This
+  // fetches the doctrine + the loop modules at RUNTIME and greps the citation
+  // tallies in the browser — the same fetch-and-parse the other chefs do. No count
+  // is typed into this file; the clause theses are quoted from the doctrine bytes.
+  const fetchText = async (path) => { try { const r = await fetch(path, {cache:'no-store'}); return r.ok ? await r.text() : ''; } catch(e){ return ''; } };
+  const sumv = o => Object.values(o).reduce((a,b)=>a+b,0);
+
+  async function buildDirSceneLive(){
+    const MODS = ['reconcile.py','node.py','reflect.py','slowloop.py','orchestrate.py'];
+    const [docText, ...modTexts] = await Promise.all([
+      fetchText('../ai-native-loop-substrate.md'),
+      ...MODS.map(m => fetchText('../loop/'+m)),
+    ]);
+    if (!docText || modTexts.every(t=>!t)) return dirSnapshot();   // tree unreachable → honest snapshot
+
+    // (1) parse the clause theses straight from the doctrine bytes
+    const theses = {}; const re = /\*\*([DI]-\d+)\.\s*([^*]+?)\*\*/g; let m;
+    while ((m = re.exec(docText))){ if(!theses[m[1]]) theses[m[1]] = m[2].trim().replace(/\s+/g,' ').replace(/\.$/,''); }
+    // (2) grep the per-module clause tallies at runtime
+    const perMod = {}, total = {}; let totalCites = 0, filesWith = 0;
+    MODS.forEach((mod,i)=>{ const hits = (modTexts[i].match(/\b[DI]-\d+\b/g)) || []; const counts = {};
+      hits.forEach(c=>{ counts[c]=(counts[c]||0)+1; total[c]=(total[c]||0)+1; totalCites++; });
+      perMod[mod] = counts; if (hits.length) filesWith++; });
+    // (3) the clauses that actually carry the economy — top-cited AND defined in the doctrine
+    const clauses = Object.keys(total).filter(c=>theses[c]).sort((a,b)=>total[b]-total[a]).slice(0,5);
+    const mods = MODS.filter(mod => clauses.some(c=>perMod[mod][c]));   // modules citing a shown clause
+    if (!clauses.length || !mods.length) return dirSnapshot();
+
+    // glyphs grow stage by stage: doctrine → clauses → citing modules
+    const glyphs = [{ word:'doctrine', facets:['source'], stage:0, idx:0, type:'source',
+      note:'ai-native-loop-substrate.md — the working contract the whole loop cites.' }];
+    let gi = 1;
+    clauses.forEach(c=>glyphs.push({ word:c, facets:['gate'], stage:1, idx:gi++, type:'gate', note:'“'+theses[c]+'.”' }));
+    mods.forEach(mod=>glyphs.push({ word:mod, facets:['actor'], stage:2, idx:gi++, type:'code',
+      note:'loop/'+mod+' — '+sumv(perMod[mod])+' clause-lines, live grep.' }));
+
+    // edges, every count from the grep: doctrine names each clause; each module → its top-cited clause
+    const rels = []; let ri = 0;
+    clauses.forEach(c=>rels.push({ key:'B/n'+ri++, fromWord:'doctrine', toWord:c, from:'doctrine', to:c, label:'names', line:'relation', build:'live', note:null }));
+    mods.forEach(mod=>{ const top = clauses.filter(c=>perMod[mod][c]).sort((a,b)=>perMod[mod][b]-perMod[mod][a])[0];
+      rels.push({ key:'B/c'+ri++, fromWord:mod, toWord:top, from:mod, to:top, label:'cites ×'+perMod[mod][top],
+        line:(mod==='slowloop.py'?'feedback':'relation'), build:'live', note:null }); });
+
+    // the SAME elided-mediator trap, at directory scale — the dominant module's tempting shortcut
+    const domMod = mods.slice().sort((a,b)=>sumv(perMod[b])-sumv(perMod[a]))[0];
+    const domTop = clauses.filter(c=>perMod[domMod][c]).sort((a,b)=>perMod[domMod][b]-perMod[domMod][a])[0];
+    const trap = { key:'B/trap', trap:true, fromWord:domMod, toWord:'doctrine', from:domMod, to:'doctrine', label:'cites the doctrine',
+      why:'the careless read is “'+domMod+' cites the doctrine”; in truth it cites a specific CLAUSE — '+domTop+' (×'+perMod[domMod][domTop]+') — the clause is the mediator the surface elides. The same shape as the cat’s shadow→warmth→cat.' };
+
+    const texts = [
+      'The doctrine is the spine.',
+      'The doctrine names '+clauses.slice(0,3).join(', ')+'…',
+      'The doctrine names '+clauses.join(', ')+'.',
+      'The code cites them — '+totalCites+' clause-lines across '+filesWith+' modules, parsed live.',
+    ];
+    return { id:'B', kind:'doctrine citation mesh', scope:'ontum/', glyphs, rels, trap, texts, maxLocal:texts.length-1,
+      truthMesh:null, live:true, provenance:'live grep of the working tree · ../loop/*.py · '+totalCites+' clause-lines, '+filesWith+' files' };
+  }
+
+  // honest fallback only — used when the tree can't be reached (file:// or wrong root).
+  // It is flagged MAGENTA end to end and says so; never a silent stand-in for the live read.
+  function dirSnapshot(){
+    const glyphs = [
+      { word:'doctrine', facets:['source'], stage:0, idx:0, type:'source', note:'ai-native-loop-substrate.md — serve from the repo root to parse this live.' },
+      { word:'D-4', facets:['gate'], stage:1, idx:2, type:'gate', note:'“The human is the last stop.”' },
+      { word:'I-2', facets:['gate'], stage:1, idx:0, type:'gate', note:'“Every node should be safe to run twice.”' },
+      { word:'I-8', facets:['gate'], stage:1, idx:4, type:'gate', note:'idempotence / reconcile family.' },
+      { word:'node.py', facets:['actor'], stage:2, idx:1, type:'code', note:'the one pen.' },
+      { word:'reflect.py', facets:['actor'], stage:2, idx:3, type:'code', note:'the reflection fold.' },
+    ];
+    const raw = [['doctrine','D-4','names','relation'],['doctrine','I-2','names','relation'],['doctrine','I-8','names','relation'],
+      ['node.py','D-4','cites ×12','relation'],['reflect.py','I-8','cites ×6','relation']];
+    const rels = raw.map((r,i)=>({ key:'B/r'+i, fromWord:r[0], toWord:r[1], from:r[0], to:r[1], label:r[2], line:r[3], build:'snapshot', note:null }));
+    const trap = { key:'B/trap', trap:true, fromWord:'node.py', toWord:'doctrine', from:'node.py', to:'doctrine', label:'cites the doctrine',
+      why:'the careless read is “node.py cites the doctrine”; in truth it cites D-4 (×12) — the clause is the elided mediator.' };
+    return { id:'B', kind:'doctrine citation mesh', scope:'ontum/', glyphs, rels, trap,
+      texts:['The doctrine is the spine.','The doctrine names D-4, I-2, I-8…','The doctrine names D-4, I-2, I-8.','SNAPSHOT — serve from the repo root to grep the tree live.'],
+      maxLocal:3, truthMesh:null, live:false, provenance:'SNAPSHOT — live parse unavailable (serve from repo root); counts shown are a stale fold' };
+  }
+
+  const phraseScene = makePhraseScene(RAW);
+  const dirScene = await buildDirSceneLive();
+  const SCENES = phraseScene ? [phraseScene, dirScene] : [dirScene];
+
+  // the one slider's track: a flat list of (scene, localStage) steps, phrase→ontum/
+  const STEPS = [];
+  SCENES.forEach((sc,si)=>{ for(let l=0;l<=sc.maxLocal;l++) STEPS.push({ si, l }); });
+  const G = STEPS.length - 1;
+  const crossAt = phraseScene ? (phraseScene.maxLocal + 1) : 0;   // global index where ontum/ begins
+
+  // ── session state ─────────────────────────────────────────────────────────
+  let gidx = 0;
+  try { const m = location.search.match(/[?&]c=(\d+)/); if(m) gidx = clamp(+m[1],0,G); } catch(e){}
+  const committed = new Set();        // rel keys the owner accepted (the recovered mesh) — global, keys are scene-prefixed
+  const rejected  = new Set();
+  let word2id = {}, wordHue = {}, basePos = {}, posKey = '';
+  let committedLinks = [];            // {l, label, line, build, trap}
+  let queue = [], cp = null;          // proposal queue + current proposal
+  let curText = '', sentT0 = 0;       // hero sentence + reveal clock
+  let sel = null;
+  let SC = SCENES[STEPS[gidx].si], local = STEPS[gidx].l;
+  function active(){ SC = SCENES[STEPS[gidx].si]; local = STEPS[gidx].l; return SC; }
+
+  // present glyphs at the active local stage
+  function presentGlyphs(){ return SC.glyphs.filter(g => g.stage <= local); }
+  function glyphByWord(w){ const c=clean(w); return SC.glyphs.find(g=>clean(g.word)===c); }
+
+  // stable home positions per scene: nucleus at heart, the rest on a calm ring
+  function ensurePositions(){
+    const key = SC.id + ':' + S.W + 'x' + S.H;
+    if (posKey === key && Object.keys(basePos).length) return;
+    posKey = key; basePos = {};
+    const cxp = S.W/2, cyp = S.H*0.54, R = Math.min(S.W,S.H)*0.27;
+    const ring = SC.glyphs.slice(1);
+    SC.glyphs.forEach((g,idx)=>{
+      const c = clean(g.word);
+      if (idx===0){ basePos[c] = { x:cxp, y:cyp }; return; }
+      const k = ring.indexOf(g), a = -Math.PI/2 + (k/Math.max(1,ring.length))*TAU + 0.32;
+      basePos[c] = { x: cxp + Math.cos(a)*R, y: cyp + Math.sin(a)*R*0.82 };
+    });
+  }
+
+  // ── build the mesh for the current step (reversible: full rebuild) ──
+  function buildMesh(){
+    active(); ensurePositions();
+    const keep = {}; S.nodes.forEach(n=>{ if(n._gword) keep[clean(n._gword)]={x:n.x,y:n.y}; }); // keep dragged positions
+    S.clear(); word2id = {}; wordHue = {};
+    presentGlyphs().forEach(g=>{
+      const c = clean(g.word);
+      const home = keep[c] || basePos[c] || {x:S.W/2,y:S.H/2};
+      const hue = PIG[g.idx % PIG.length];
+      const n = S.node(home.x, home.y, g.word, { type:g.type||'stock', hue, level: 0.42 });
+      n._gword = g.word; n._facets = g.facets; n._note = g.note; n._gtype = g.type;
+      word2id[c] = n.id; wordHue[c] = hue;
+    });
+    committedLinks = [];
+    SC.rels.forEach(r=>{ if(committed.has(r.key)) addLink(r); });
+    if (SC.trap && committed.has(SC.trap.key)) addLink(SC.trap);
+    foldField(); setSentence(); refreshQueue(); surfaceNext(); renderRecov();
+  }
+
+  function addLink(r){
+    const a=word2id[clean(r.fromWord)], b=word2id[clean(r.toWord)];
+    if (a==null || b==null) return;
+    const sign = (r.line === 'feedback' || r.trap) ? -1 : 1;
+    const l = S.link(a, b, { sign });
+    if (l) committedLinks.push({ l, label:r.label, line:r.line||'relation', build:r.build||'mock', trap:!!r.trap });
+  }
+
+  // fold the felt-field from the mesh (degree → ink amplitude / water level)
+  function foldField(){
+    const deg = new Map();
+    committedLinks.forEach(c=>{ const A=S.byId(c.l.a), B=S.byId(c.l.b); if(A)deg.set(A,(deg.get(A)||0)+1); if(B)deg.set(B,(deg.get(B)||0)+1); });
+    const maxd = Math.max(1, ...S.nodes.map(n=>deg.get(n)||0));
+    S.nodes.forEach(n=>{ const d=deg.get(n)||0; n.target = 0.34 + 0.5*(d/maxd); n.level = n.target*0.6; });
+    const e = committedLinks.length / Math.max(1, S.nodes.length);
+    S.energy = clamp(0.18 + e*0.4, 0.12, 0.85);
+  }
+
+  // ── proposals: the PROPOSE loop's queue ──
+  function eligible(r){ return word2id[clean(r.fromWord)]!=null && word2id[clean(r.toWord)]!=null && !committed.has(r.key) && !rejected.has(r.key); }
+  function refreshQueue(){
+    queue = SC.rels.filter(eligible);
+    if (SC.trap && eligible(SC.trap)) queue.push(SC.trap);     // the trap, last — reject it
+  }
+  function surfaceNext(){ cp = queue.length ? queue[0] : null; renderProp(); }
+
+  function renderProp(){
+    const el = document.getElementById('prop');
+    if (!cp){ el.classList.remove('show'); setTimeout(()=>{ if(!cp) el.style.display='none'; },260); return; }
+    document.getElementById('pktag').textContent = SC.scope==='ontum/' ? (SC.live?'proposed · live grep':'proposed · snapshot') : 'proposed · floor';
+    const fHue = wordHue[clean(cp.fromWord)]||INK, tHue = wordHue[clean(cp.toWord)]||INK;
+    document.getElementById('pq').innerHTML =
+      `connect <b style="color:${fHue}">${cp.fromWord}</b> &rarr; <b style="color:${tHue}">${cp.toWord}</b>?`;
+    document.getElementById('pw').textContent = cp.trap
+      ? '“' + cp.label + '” — does the surface read hold, or does it route through something?'
+      : (SC.scope==='ontum/' ? (SC.live?'parsed live — “':'snapshot — “') + cp.label + '”.' : 'reads as “' + cp.label + '”.');
+    el.style.display='block'; requestAnimationFrame(()=>el.classList.add('show'));
+    positionProp();
+  }
+  function positionProp(){
+    if (!cp) return; const A=S.byId(word2id[clean(cp.fromWord)]), B=S.byId(word2id[clean(cp.toWord)]); if(!A||!B) return;
+    const el=document.getElementById('prop'), mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+    el.style.left = clamp(mx-124, 12, S.W-260) + 'px';
+    el.style.top  = clamp(my-118, 70, S.H-160) + 'px';
+  }
+  function trapWiredToast(){ toast(SC.scope==='ontum/'
+    ? 'the tempting read, wired — but the citation routes through the CLAUSE, not the doctrine-as-whole. Same elided mediator as the cat.'
+    : 'the tempting read, wired — but the warmth is the mediator: the shadow blocks the warmth, the fading warmth wakes the cat.', true); }
+  function trapCaughtToast(r){ toast(SC.scope==='ontum/'
+    ? 'caught. the code cites CLAUSES, not the doctrine-as-blob — the clause is the mediator. You read the mesh, not the surface.'
+    : 'caught. “' + r.label + '” is the surface trap — the real mechanism routes through the warmth, not straight to the cat.', false); }
+
+  // the BUTTON path (the quiet fallback): commit by creating the link ourselves
+  function accept(){
+    if(!cp) return; const r=cp;
+    committed.add(r.key); addLink(r);
+    if (r.trap) trapWiredToast();
+    firePulse(r); foldField(); renderRecov();
+    cp=null; renderProp(); setTimeout(()=>{ refreshQueue(); surfaceNext(); }, 440);
+  }
+  function reject(){
+    if(!cp) return; const r=cp; rejected.add(r.key);
+    if (r.trap) trapCaughtToast(r);
+    cp=null; renderProp(); renderRecov(); setTimeout(()=>{ refreshQueue(); surfaceNext(); }, 160);
+  }
+  function firePulse(r){ const id=word2id[clean(r.fromWord)]; if(id!=null && S.firePulse) S.firePulse(id, 0.22); }
+  document.getElementById('pyes').onclick = accept;
+  document.getElementById('pno').onclick  = reject;
+
+  // ── the GESTURE path (the headline): the verdict is a DRAWN stroke ──────────────
+  // DRAW the edge (drag node→node — the engine's own link gesture) to ACCEPT it;
+  // the engine creates the link and fires onchange, and we adopt that drawn link as
+  // the verdict — so the stroke itself moves the real recovery_scorer.js score.
+  function reconcileDrawn(){
+    let SCr; try { SCr = SC; } catch(e){ return; }      // guard the boot edge (SC not yet bound)
+    if (!SCr || !committedLinks) return;
+    let advanced = false;
+    const links = S.links.slice();              // snapshot — we may splice duplicates
+    for (const l of links){
+      if (committedLinks.find(c=>c.l===l)) continue;            // already a tracked verdict
+      const A=S.byId(l.a), B=S.byId(l.b); if(!A||!B) continue;
+      const aw=clean(A._gword||A.label), bw=clean(B._gword||B.label);
+      const pool = SC.trap ? SC.rels.concat([SC.trap]) : SC.rels;
+      const match = pool.find(r=>{ const f=clean(r.fromWord), t=clean(r.toWord); return (f===aw&&t===bw)||(f===bw&&t===aw); });
+      if (match && !committed.has(match.key)){                  // a drawn edge that the system proposed → ACCEPT
+        committed.add(match.key);
+        l.sign = (match.line==='feedback' || match.trap) ? -1 : 1;
+        committedLinks.push({ l, label:match.label, line:match.line||'relation', build:match.build||'mock', trap:!!match.trap });
+        if (match.trap) trapWiredToast();
+        const id=word2id[clean(match.fromWord)]; if(id!=null && S.firePulse) S.firePulse(id, 0.24);
+        if (cp && cp.key===match.key){ cp=null; renderProp(); }
+        advanced = true;
+      } else if (match && committed.has(match.key)){            // a redrawn edge already wired → drop the duplicate
+        const i=S.links.indexOf(l); if(i>=0) S.links.splice(i,1);
+      } else {                                                  // a free-drawn relation — gesture authoring, flagged mock
+        l.sign = 1;
+        committedLinks.push({ l, label:'relates to', line:'relation', build:'mock', trap:false });
+        advanced = true;
+      }
+    }
+    if (advanced){ foldField(); renderRecov(); refreshQueue(); surfaceNext(); }
+  }
+  // SLASH across the proposed edge to REJECT it. Empty-canvas strokes are free
+  // (the engine only acts on strokes that start on a node), so a quick stroke that
+  // crosses the live ghost's A→B line is read as a dismissal — gesture-native.
+  const posLocal = e => { const r=cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; };
+  function segCross(ax,ay,bx,by, cx,cy,dx,dy){
+    const s1=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax), s2=(bx-ax)*(dy-ay)-(by-ay)*(dx-ax);
+    const s3=(dx-cx)*(ay-cy)-(dy-cy)*(ax-cx), s4=(dx-cx)*(by-cy)-(dy-cy)*(bx-cx);
+    return ((s1>0)!==(s2>0)) && ((s3>0)!==(s4>0));
+  }
+  let stroke=null;
+  cv.addEventListener('pointerdown', e=>{ if(e.button!==0) return; const [x,y]=posLocal(e);
+    const onNode = S.nodes.some(n=>Math.hypot(x-n.x,y-n.y) < S.NODE_R+6);   // node strokes belong to the engine
+    stroke = onNode ? null : { x0:x, y0:y, x1:x, y1:y, len:0, t0:performance.now() }; }, true);
+  cv.addEventListener('pointermove', e=>{ if(!stroke) return; const [x,y]=posLocal(e);
+    stroke.len += Math.hypot(x-stroke.x1, y-stroke.y1); stroke.x1=x; stroke.y1=y; }, true);
+  cv.addEventListener('pointerup', e=>{ const s=stroke; stroke=null; if(!s || !cp) return;
+    if (s.len < 26 || performance.now()-s.t0 > 700) return;                 // too small / too slow = not a slash
+    const A=S.byId(word2id[clean(cp.fromWord)]), B=S.byId(word2id[clean(cp.toWord)]); if(!A||!B) return;
+    if (segCross(s.x0,s.y0, s.x1,s.y1, A.x,A.y, B.x,B.y)) reject(); }, true);
+
+  // ── the live calibration readout ──
+  // PHRASE scene → the REAL recovery_scorer.js scores your accepts/rejects against
+  // the benchmark label (composite + reads_mechanism). DIRECTORY scene → a fold
+  // tally (parsed-not-live, magenta) since the directory carries no benchmark label.
+  function recoveredMesh(){
+    const glyphs = S.nodes.filter(n=>n._gword).map(n=>({ word:n._gword, facets:n._facets||[] }));
+    const relations = [];
+    SC.rels.forEach(r=>{ if(committed.has(r.key)) relations.push({ from:r.from, to:r.to }); });
+    if (SC.trap && committed.has(SC.trap.key)) relations.push({ from:SC.trap.from, to:SC.trap.to });
+    return { glyphs, relations };
+  }
+  function renderRecov(){
+    const el = document.getElementById('recov');
+    if (SC.truthMesh && SCORER){
+      const sc = SCORER.score(recoveredMesh(), SC.truthMesh);
+      const comp = sc.composite.toFixed(2);
+      const rm = sc.reads_mechanism;
+      const trapState = sc.trap.defined ? (sc.trap.hit ? '<span class="bad">trap wired ✕</span>' : (rejected.has(SC.trap.key) ? '<span class="ok">trap rejected ✓</span>' : 'trap pending')) : '';
+      el.innerHTML =
+        `<div class="big">${comp}<small> composite</small></div>`+
+        `<div>relation recall ${sc.relation.recall.toFixed(2)} · facet F1 ${sc.facet.f1.toFixed(2)}</div>`+
+        `<div>reads_mechanism ${rm?'<span class="ok">✓</span>':'<span style="color:var(--dim)">—</span>'} · ${trapState}</div>`+
+        `<div class="src">recovery_scorer.js — real, deterministic</div>`;
+    } else {
+      const n = SC.rels.filter(r=>committed.has(r.key)).length, N = SC.rels.length;
+      el.innerHTML =
+        `<div class="big">${n}<small> / ${N}</small></div>`+
+        `<div>citation edges recovered</div>`+
+        (SC.live
+          ? `<div class="src">${SC.provenance}</div>`+
+            `<div class="fold"><span class="d"></span> a tally, not a scored recovery — no benchmark label at this scale</div>`
+          : `<div class="fold"><span class="d"></span> ${SC.provenance||'snapshot'}</div>`);
+    }
+  }
+  let toastT=null;
+  function toast(msg, isTrap){ const el=document.getElementById('toast'); el.textContent=msg;
+    el.className='toast'+(isTrap?' trap':''); requestAnimationFrame(()=>el.classList.add('show'));
+    clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'), 5600); }
+
+  // ── the hero sentence (editorial signature): Fraunces, grows with the slider,
+  //    glyph words inked in their node's pigment, each rooted to its node by a
+  //    faint tendril. Staggered reveal — restraint and timing. ──
+  function setSentence(){ curText = SC.texts[clamp(local,0,SC.maxLocal)] || ''; sentT0 = S.t; }
+
+  // ── the overlay: drawn through the engine's own S.draw hook (no node re-drawing) ──
+  function drawLabel(ctx, txt, x, y, col, flag){
+    ctx.font='400 13px "Caveat",cursive'; const w=ctx.measureText(txt).width;
+    ctx.fillStyle='rgba(246,241,231,.92)'; ctx.fillRect(x-w/2-4, y-9, w+8 + (flag?12:0), 17);
+    ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(txt, x + (flag?-6:0), y);
+    if(flag){ ctx.fillStyle=MOCK; ctx.font='600 9px "IBM Plex Mono",monospace'; ctx.fillText('✎', x + w/2 + 2, y); }
+  }
+  S.draw = (ctx) => {
+    const ns = S.nodes; if(!ns.length) return;
+    // membrane — a calm breathing cell wall around the mesh (faint, behind the feel)
+    let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;
+    ns.forEach(n=>{ mnx=Math.min(mnx,n.x);mny=Math.min(mny,n.y);mxx=Math.max(mxx,n.x);mxy=Math.max(mxy,n.y); });
+    const cxm=(mnx+mxx)/2, cym=(mny+mxy)/2, rxm=(mxx-mnx)/2+104, rym=(mxy-mny)/2+98;
+    ctx.save(); ctx.strokeStyle='rgba(43,42,51,.22)'; ctx.lineWidth=1.2; ctx.setLineDash([5,8]); ctx.beginPath();
+    for(let i=0;i<=52;i++){ const a=i/52*TAU, k=1+Math.sin(a*3+S.t*0.4)*0.03; const x=cxm+Math.cos(a)*rxm*k, y=cym+Math.sin(a)*rym*k; i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.closePath(); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+
+    // committed-edge labels + the construction flag (mock relations / fold edges —
+    // not yet composition-generated / not a live read: iterations 0008/0011)
+    committedLinks.forEach(c=>{ const A=S.byId(c.l.a),B=S.byId(c.l.b); if(!A||!B) return;
+      const mx=(A.x+B.x)/2, my=(A.y+B.y)/2-12;
+      const flagged = c.trap || c.build!=='live';   // LIVE-parsed citation edges carry no construction flag
+      drawLabel(ctx, c.label, mx, my, c.trap?MOCK:(c.line==='feedback'?STRAIN:POS), flagged); });
+
+    // the live PROPOSE ghost — a magenta dashed suggestion (floor / fold, mock)
+    if (cp){ const A=S.byId(word2id[clean(cp.fromWord)]), B=S.byId(word2id[clean(cp.toWord)]);
+      if(A&&B){ const dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy)||1,nx=-dy/d,ny=dx/d,bow=Math.min(54,d*0.18)*(cp.trap?-1:1);
+        const mx=(A.x+B.x)/2+nx*bow, my=(A.y+B.y)/2+ny*bow;
+        const q=tt=>[(1-tt)**2*A.x+2*(1-tt)*tt*mx+tt*tt*B.x,(1-tt)**2*A.y+2*(1-tt)*tt*my+tt*tt*B.y];
+        ctx.save(); ctx.strokeStyle=MOCK; ctx.lineWidth=1.7; ctx.setLineDash([6,6]); ctx.globalAlpha=0.55+0.25*Math.sin(S.t*2.4);
+        ctx.beginPath(); for(let s=0;s<=1.001;s+=0.06){ const[x,y]=q(s); s?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha=1;
+        const[ex,ey]=q(1),[bx,by]=q(0.92),an=Math.atan2(ey-by,ex-bx);
+        ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex-Math.cos(an-.5)*9,ey-Math.sin(an-.5)*9); ctx.moveTo(ex,ey); ctx.lineTo(ex-Math.cos(an+.5)*9,ey-Math.sin(an+.5)*9); ctx.stroke();
+        const[lx,ly]=q(0.5); ctx.font='600 8px "IBM Plex Mono",monospace';
+        const tg = SC.scope!=='ontum/' ? 'PROPOSED' : (SC.live ? 'PARSED' : 'SNAPSHOT'); const lw=ctx.measureText(tg).width;
+        ctx.fillStyle=MOCK; ctx.fillRect(lx-lw/2-4,ly-7,lw+8,14); ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(tg,lx,ly);
+        // the gesture invitation — the verdict is a drawn stroke (Caveat, faint, breathing)
+        ctx.font='500 12px "Caveat",cursive'; ctx.fillStyle=INK; ctx.globalAlpha=0.5+0.18*Math.sin(S.t*2.4);
+        ctx.fillText('trace it to wire  ·  slash to dismiss', lx, ly+16); ctx.globalAlpha=1;
+        ctx.restore(); } }
+
+    // ── the sentence: measure → root tendrils → ink the words (reveal-staggered) ──
+    const words = curText.split(/(\s+)/);
+    let total=0; words.forEach(w=>{ ctx.font=(wordHue[clean(w)]?'600 ':'300 ')+'30px "Fraunces",serif'; total+=ctx.measureText(w).width; });
+    let x=Math.max(28, S.W/2-total/2); const y=92;
+    const placed=[];
+    words.forEach(w=>{ const c=clean(w), h=wordHue[c]; const ww=(ctx.font=(h?'600 ':'300 ')+'30px "Fraunces",serif', ctx.measureText(w).width);
+      placed.push({ w, c, h, x, ww }); x+=ww; });
+    // tendrils first (so the prose sits over them) — each glyph word rooted to its node
+    placed.forEach((p,wi)=>{ if(!p.h || word2id[p.c]==null) return; const n=S.byId(word2id[p.c]); if(!n) return;
+      const rev=clamp((S.t-sentT0-wi*0.05)/0.5,0,1); if(rev<=0) return;
+      const sx=p.x+p.ww/2, sy=y+7, ex=n.x, ey=n.y-S.NODE_R-3, mx2=(sx+ex)/2, my2=(sy+ey)/2-26;
+      ctx.save(); ctx.globalAlpha=0.16*rev; ctx.strokeStyle=p.h; ctx.lineWidth=1.1; ctx.setLineDash([2,4]);
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.quadraticCurveTo(mx2,my2,ex,ey); ctx.stroke(); ctx.setLineDash([]); ctx.restore(); });
+    // the words
+    ctx.textBaseline='alphabetic'; ctx.textAlign='left';
+    placed.forEach((p,wi)=>{ const rev=clamp((S.t-sentT0-wi*0.05)/0.5,0,1);
+      ctx.save(); ctx.globalAlpha=rev; ctx.font=(p.h?'600 ':'300 ')+'30px "Fraunces",serif';
+      ctx.fillStyle=p.h||'rgba(43,42,51,.46)'; ctx.fillText(p.w, p.x, y+(1-rev)*4); ctx.restore(); });
+  };
+
+  // ── selection → the Lens (conversation through the graph, PROPOSE-flavored) ──
+  function onSelect(s){ sel=s; const L=document.getElementById('lens');
+    if(!s){ L.classList.remove('show'); setTimeout(()=>{ if(!sel)L.style.display='none'; },240); return; }
+    if(s.kind==='node'){ const n=s.ref; const fac=(n._facets||[]); const word=n._gword||n.label;
+      const chips = fac.length ? fac.map(f=>`<span class="chip">${(FACET[f]||{icon:'·'}).icon} ${f}</span>`).join('')
+                               : `<span class="chip">${GLYPH[n.type]||'·'} ${n.type}</span>`;
+      const conns = committedLinks.filter(c=>c.l.a===n.id||c.l.b===n.id)
+        .map(c=>{ const A=S.byId(c.l.a),B=S.byId(c.l.b); return `<div><b>${A._gword||A.label}</b> ${c.label} <b>${B._gword||B.label}</b></div>`; }).join('') || '<div style="color:var(--dim)">— no relations yet; accept a proposal</div>';
+      const noteLine = n._note ? `<div class="note">${n._note}</div>` : '';
+      const nlBlock = SC.scope==='ontum/'
+        ? `<div class="sub">parsed from</div><div class="conn" style="color:${SC.live?'var(--positive)':'var(--mock)'}">${SC.live?'live grep over ../loop/*.py — counts read from the bytes at runtime':'SNAPSHOT — serve from the repo root to grep live'}</div>`
+        : `<div class="sub">propose a relation, in words</div>
+           <div class="nl"><input id="nlin" placeholder="e.g. ${word} warms the cat" autocomplete="off"></div>
+           <div class="nlnote"><span class="d"></span> floor: wires words it can see; the bridge enriches this</div>`;
+      L.innerHTML = `<h4>Lens</h4>
+        <div class="row"><span class="ico" style="border-color:${n.hue};color:${n.hue}">${String(word)[0]||'·'}</span><span class="ttl">${word}</span></div>
+        ${noteLine}
+        <div class="chips">${chips}</div>
+        <div class="sub">connected through</div><div class="conn">${conns}</div>
+        ${nlBlock}`;
+      placeLens(n.x+S.NODE_R+18, n.y-40);
+      const inp=document.getElementById('nlin'); if(inp){ inp.onkeydown=e=>{ if(e.key==='Enter') nlPropose(word, inp.value); }; setTimeout(()=>inp.focus(),120); }
+    } else if(s.kind==='edge'){ const e=s.ref; const ci=committedLinks.find(c=>c.l===e);
+      const A=S.byId(e.a),B=S.byId(e.b); const lab=ci?ci.label:'relation'; const line=ci?ci.line:'relation';
+      const flag = ci && ci.build==='live' ? 'live grep — citation tally' : (ci && ci.build==='snapshot' ? '✎ snapshot' : '✎ hand-wired (mock)');
+      L.innerHTML = `<h4>Lens · relation</h4>
+        <div class="conn"><b>${A?(A._gword||A.label):'?'}</b><br>&nbsp;&nbsp;${lab} &rarr;<br><b>${B?(B._gword||B.label):'?'}</b></div>
+        <div class="sub">${line} · ${flag}</div>`;
+      placeLens(((A?A.x:0)+(B?B.x:0))/2+20, ((A?A.y:0)+(B?B.y:0))/2);
+    }
+    L.style.display='block'; requestAnimationFrame(()=>L.classList.add('show'));
+  }
+  function placeLens(x,y){ const L=document.getElementById('lens'); L.style.left=clamp(x,12,S.W-280)+'px'; L.style.top=clamp(y,70,S.H-230)+'px'; }
+  // NL through the graph: the deterministic floor wires the selected glyph to any
+  // other present glyph it can see named in the words (flagged floor; bridge enriches)
+  function nlPropose(fromWord, text){
+    const t=clean(text); let toWord=null;
+    presentGlyphs().forEach(g=>{ if(clean(g.word)!==clean(fromWord) && t.indexOf(clean(g.word))>=0) toWord=g.word; });
+    if(!toWord){ toast('the floor can only wire glyphs it can see — name one that is on the canvas.', true); return; }
+    const known = SC.rels.find(r=>(clean(r.fromWord)===clean(fromWord)&&clean(r.toWord)===clean(toWord))||(clean(r.fromWord)===clean(toWord)&&clean(r.toWord)===clean(fromWord)));
+    cp = known && !committed.has(known.key) ? known
+       : { key:'nl-'+clean(fromWord)+'-'+clean(toWord), fromWord, toWord, from:fromWord, to:toWord, label:'relates to', line:'relation', build:'mock' };
+    renderProp();
+    document.getElementById('lens').classList.remove('show');
+  }
+
+  // ── the slider strip — Complexity is the live backbone, spanning phrase→ontum/;
+  //    the four named-but-unbuilt reference sliders wear the construction flag ──
+  const SL = document.getElementById('sliders');
+  function buildSliders(){ SL.innerHTML='';
+    const c=document.createElement('div'); c.className='sl spine';
+    c.innerHTML=`<div class="lab"><span>Complexity</span><span class="val" id="cval"></span></div>`;
+    const r=document.createElement('input'); r.type='range'; r.min=0; r.max=Math.max(1,G); r.step=1; r.value=gidx;
+    r.oninput=()=>{ const prevScope=SC.scope; gidx=+r.value; sel=null; onSelect(null); buildMesh(); setVal();
+      if(SC.scope!==prevScope && SC.scope==='ontum/') toast(SC.live
+        ? 'now pointing at ontum/ — the same grammar, directory scale, parsed live from the tree. The doctrine is the nucleus; the code cites it.'
+        : 'now pointing at ontum/ — same grammar, directory scale (SNAPSHOT — serve from the repo root for the live grep).', false);
+    };
+    c.appendChild(r);
+    const ph=document.createElement('div'); ph.className='phase'; ph.id='phase';
+    ph.innerHTML=`<span id="phP">the cat naps</span><span id="phD">ontum/</span>`;
+    c.appendChild(ph);
+    SL.appendChild(c);
+    ['Length','Twists','Weird','Colors'].forEach(name=>{ const d=document.createElement('div'); d.className='sl mock';
+      d.innerHTML=`<div class="lab"><span>${name}</span><span class="mtag">${BUILD.mock.tag}</span></div><input type="range" min="0" max="4" value="0" disabled>`;
+      SL.appendChild(d); });
+    setVal();
+  }
+  function setVal(){
+    const v=document.getElementById('cval'); if(v) v.textContent = SC.scope==='ontum/' ? 'ontum/ · '+(local+1)+'/'+(SC.maxLocal+1) : (curText||'').split(/\s+/).filter(Boolean).length + 'w';
+    const p=document.getElementById('phP'), d=document.getElementById('phD');
+    if(p) p.className = SC.scope==='phrase'?'on':''; if(d) d.className = SC.scope==='ontum/'?'on':'';
+  }
+
+  document.getElementById('legend').innerHTML = `<span class="sw"></span> magenta = under construction: floor-proposed phrase relations · the surface trap · editorial selection. The directory's citation counts are <b style="color:var(--ink)">live-parsed</b> from the tree.`;
+  document.getElementById('new').onclick = ()=>{ gidx=0; committed.clear(); rejected.clear(); sel=null; onSelect(null); buildMesh(); buildSliders(); };
+  document.getElementById('save').onclick = ()=>{ try{ localStorage.setItem('causality.editorial', JSON.stringify({gidx, committed:[...committed], rejected:[...rejected]})); toast('saved your reading.', false); }catch(e){} };
+
+  // a gentle beat so the wires breathe (engine pulses, not re-drawn)
+  setInterval(()=>{ const ns=S.nodes.filter(n=>n._gword); if(ns.length && S.firePulse) S.firePulse(ns[(Math.random()*ns.length)|0].id, 0.10); }, 2100);
+  // keep the floating panels glued to their nodes as the field drifts
+  (function ui(){ positionProp(); if(sel && sel.kind==='node'){ const n=sel.ref; placeLens(n.x+S.NODE_R+18, n.y-40); } requestAnimationFrame(ui); })();
+
+  // go
+  const boot = ()=>{ if(!S.W){ requestAnimationFrame(boot); return; } buildMesh(); buildSliders(); };
+  boot();
+})();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@ surface, for *realness*.
 
 Sibling to arc-intake (done-line 0038). arc-intake lets bdo confirm an *arc*
 by closing an issue; this lets him make a *gate real* the same way — never a
-CLI, never a custom UI (his stated rule: he acts from GitHub on his phone). A
+CLI, never a custom UI (his stated rule: he acts from GitHub, on whatever device he's at). A
 mock pipeline stage with a built, tested real backing becomes one issue he
 closes with a plain-language comment; this pen is the deterministic gh I/O
 around that gesture: open the issue, find the ones he closed, read his closing

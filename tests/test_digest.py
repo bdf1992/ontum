@@ -219,6 +219,26 @@ class TestSupersededRefusalIsHistory(unittest.TestCase):
         self.assertEqual([d["atom"] for d in div], ["atom.b.v0"])
         self.assertEqual(div[0]["verdict"], "collision")
 
+    def test_superseded_piece_drops_from_live_arc_tally(self):
+        arc = {"epic": "epic.x", "confirmed": {"by": "bdo"}, "pieces": [
+            {"atom": "atom.x.v0", "landed": False, "awaiting": False,
+             "parked": True, "standing": "parked",
+             "refusals": [{"verdict": "missed"}], "superseded": True},
+            {"atom": "atom.x.v1", "landed": True, "awaiting": False,
+             "parked": False, "standing": "landed", "refusals": []},
+        ]}
+        digest._refresh_arc_counts(arc)
+        self.assertEqual(arc["total"], 1)
+        self.assertEqual(arc["landed"], 1)
+        self.assertEqual(arc["parked"], 0)
+        self.assertEqual(arc["refused"], 0)
+        self.assertEqual(arc["history"], 1)
+        line = digest._arc_line(arc)
+        self.assertIn("1/1 landed", line)
+        self.assertIn("1 history", line)
+        self.assertNotIn("parked", line)
+        self.assertNotIn("refused", line)
+
 
 class TestQueueOverCap(_Temp):
     def test_tick_over_its_setpoint_cap_is_a_divergence(self):
@@ -260,6 +280,11 @@ class TestSpan(_Temp):
         d = digest.digest(self.root, since="2026-06-01", until="2026-06-05")
         self.assertEqual(d["refusals"], 1)
         self.assertEqual(len(d["divergences"]), 1)
+
+    def test_same_day_span_label_is_the_day_not_a_range(self):
+        self.assertEqual(digest._span_label({"since": "2026-06-17",
+                                             "until": "2026-06-17"}),
+                         "2026-06-17")
 
 
 class TestLandingNotRefusal(_Temp):
@@ -374,6 +399,22 @@ class TestGestureSurface(_Temp):
         d = digest.digest(self.root)
         self.assertNotIn("a test arc", digest.render(d),
                          "the arc's prose was re-dumped — the unreadability bdo refused")
+
+    def test_loose_live_atom_is_named_but_not_made_bdos_move(self):
+        d = {"span": {"since": "2026-06-17", "until": "2026-06-17"},
+             "setpoint": None,
+             "field": {"ticks": 0, "heat": 0, "cool": 0,
+                       "budget_spent": 0, "peak_backlog": 0,
+                       "deferred_reasons": {}},
+             "arcs": [],
+             "loose": [{"atom": "atom.loose.v0",
+                        "standing": "in-flight (derive:value.accepted)",
+                        "awaiting": False, "parked": False}],
+             "landings": 0, "refusals": 0, "divergences": []}
+        text = digest.render(d)
+        self.assertIn("**Your move:** nothing on you", text)
+        self.assertIn("1 loose atom(s) are outside an arc", text)
+        self.assertIn("atom.loose.v0", text)
 
 
 class TestEndLineVerdict(_Temp):
