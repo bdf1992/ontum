@@ -1,0 +1,55 @@
+{
+  "atom": {
+    "id": "atom.causality-experience.v0",
+    "story": {
+      "text": "As bdo, I want Causality's home to be a living experience I can open and play, not a parts catalog: a cute three-word story ('the cat naps') that grows through ONE complexity slider into ontum's own real running loop — every stage parsed live from loop/reconcile.py, its .mock.v0 gates glowing magenta because they are literally mock in the source — where I shape and steer by gesture (hold a node and its real, citation-bearing context blooms; lasso a region into a package; draw or slash an edge to move the real recovery score), because the surface is only earned when the simple-cute thing visibly BECOMES the complex system and I can talk to my AI by playing it.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The Causality experience, served — the spatial-graph RepoPrompt realized",
+      "value": "The home surface of epic.causality-surface, taken from the locked frame (iterations 0012: a spatial-graph, gesture-native RepoPrompt where the living graph IS the context, generated from where you point) to a playable artifact. experience.html opens on a cute nucleus and one Complexity slider grows it word -> phrase (the scored surface_trap) -> networked corpus -> the real ontum loop parsed live from loop/reconcile.py. Gesture-native and honest: real recovery_scorer.js wired so a draw/slash moves a true score; the loop's own mock stages flagged magenta; a deterministic floor closes the gesture->AI loop offline, the localhost bridge enriches it.",
+      "why_now": "bdo asked to open the bake-off output on his live URL (his judging surface), and the charades bake-off (4 chefs x 3 turns, the whole room reacting between turns) earned a winner: experience.html fuses circuitry's COMMAND base, spatial's lasso-BLEND, editorial's draw/slash-to-score, naturalist's ink-creatures. Verified with my own screenshots at slider levels 0/2/4 (the cute cat genuinely grows into the real parsed loop). The four candidates land beside it so bdo can compare and pick on the URL.",
+      "if_accepted": "Causality's home stops being ingredients and becomes the dish bdo can play; the nucleus->slider->complex experience and the gesture loop reach the deployed Pages URL; the bake-off's four candidates are openable for comparison; the spatial-graph-RepoPrompt frame is no longer just words in iterations 0012.",
+      "if_rejected": "The experience stays behind a localhost the one judge with taste cannot open (the same 'the seeing loop was broken' failure that stalled the canvas before it was served); the bake-off spend yields nothing bdo can touch.",
+      "cost_of_wrong_call": "Low: experience.html and the exp-*.html candidates are static preview surfaces that reuse committed engine files (canvas.js / canvas-system.js / recovery_scorer.js) and the committed phrases.json benchmark; they add no runtime, the log never depends on them, and retiring a candidate deletes a file nothing references. experience.html depends on the sibling exp-naturalist.js for its creatures (landed with it).",
+      "mechanism": "experience.html + exp-naturalist.js, reusing the real engine (window.Causality.canvas, S.node/S.link, the 10 node types, GLYPH, water-fills, pulses) — no reimplemented drawing, no invented skin. The directory high-end fetches and parses loop/reconcile.py's real PIPELINE at runtime; phrases.json is the seed + benchmark (recovery_scorer.js scores recovery live, surface_trap shown); the construction flag (canvas-system.js BUILD) renders anything mock magenta. Cream-only, on-canvas, runs on a static server with no build step. The four exp-<chef>.html candidates are the bake-off record.",
+      "reading": [
+        "causality/iterations.md",
+        "causality/experience.html",
+        "causality/display-system.md",
+        ".ai-native/epics/epic.causality-surface.json"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": [
+        "causality/experience.html",
+        "causality/exp-naturalist.js",
+        "causality/exp-circuitry.html",
+        "causality/exp-editorial.html",
+        "causality/exp-naturalist.html",
+        "causality/exp-spatial.html",
+        "causality/iterations.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "causality/experience.html",
+        "causality/iterations.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record for the Causality experience surface — the charades bake-off winner (experience.html) and its four candidate surfaces. Authored to bring the served home-surface work onto the log as a unit the loop can see, judge, and land (the off-log-gate discipline). Never mutated; current verdicts are the fold over .ai-native/log/ (D-5)."
+}

@@ -1,0 +1,127 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Causality · the bake-off</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f6f1e7;--ink:#2b2a33;--dim:#8d8678;--faint:#b8b1a2;--teal:#0e8a7b;--rust:#d4543f;--purple:#7a5ba6;--amber:#b8742c;--blue:#3f7cb6;--mock:#ff2bd6;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);overflow:hidden;font-family:"Space Grotesk",system-ui,sans-serif;}
+  #cv{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;}
+  header{position:fixed;top:0;left:0;right:0;z-index:10;padding:14px 22px;pointer-events:none;}
+  header h1{margin:0;font:600 21px "Fraunces",serif;letter-spacing:.01em;}
+  header h1 b{color:var(--purple);font-weight:600;}
+  header .sub{font:400 10px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.16em;text-transform:uppercase;margin-top:2px;}
+  header .phrase{font:400 15px "Fraunces",serif;color:var(--ink);margin-top:9px;opacity:.82;}
+  .legend{position:fixed;left:22px;bottom:20px;z-index:10;font:400 10px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.86);border:1.2px solid rgba(43,42,51,.22);border-radius:10px;padding:10px 13px;max-width:300px;line-height:1.55;}
+  .legend .ln{display:flex;align-items:center;gap:8px;margin:2px 0;}
+  .legend .sw{width:22px;height:0;flex:none;border-top-width:2.2px;}
+  .legend .sw.r{border-top:2.4px solid var(--teal);} .legend .sw.f{border-top:2.4px dashed var(--amber);} .legend .sw.t{border-top:2px dashed var(--mock);opacity:.6;}
+  .legend b{color:var(--ink);font-weight:500;}
+  .panel{position:fixed;right:20px;bottom:20px;z-index:10;font:400 10px "IBM Plex Mono",monospace;color:var(--dim);background:rgba(255,252,245,.86);border:1.2px solid rgba(43,42,51,.22);border-radius:10px;padding:10px 13px;max-width:286px;line-height:1.5;}
+  .panel .hd{font-weight:600;color:var(--ink);font-family:"Fraunces",serif;font-size:12px;margin-bottom:5px;}
+  .panel .chef{display:inline-block;border:1px solid rgba(43,42,51,.3);border-radius:5px;padding:1px 6px;margin:2px 3px 2px 0;color:var(--ink);}
+  .panel .win{margin-top:7px;color:var(--teal);} .panel em{color:var(--amber);font-style:normal;}
+</style></head>
+<body>
+<canvas id="cv"></canvas>
+<header>
+  <h1>Causa<b>lity</b></h1>
+  <div class="sub">the bake-off · chefs compared · nothing crowned</div>
+  <div class="phrase" id="phrase"></div>
+</header>
+<div class="legend" id="legend"></div>
+<div class="panel" id="panel"></div>
+<script src="canvas-system.js"></script>
+<script src="canvas.js"></script>
+<script>
+(async () => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const SYS = window.CausalitySystem || null;
+  const C0 = (SYS && SYS.TOKENS && SYS.TOKENS.COLOR) || {};
+  const COL = { ink:'#2b2a33', dim:'#8d8678', teal:'#0e8a7b', rust:'#d4543f', amber:'#b8742c', mock:'#ff2bd6', paper:'#f6f1e7' };
+  const TAU = Math.PI * 2;
+  let REC; try { REC = await (await fetch('examples/cat-bakeoff.json')).json(); } catch (e) { document.body.innerHTML = '<p style="padding:30px;font-family:monospace">bake-off record not found — run the comparator, then serve from repo root.</p>'; return; }
+  $('phrase').textContent = '“' + REC.text + '”';
+
+  const cv = $('cv');
+  const C = window.Causality.canvas(cv, {});
+  if (C.baseline !== undefined) C.baseline = 0.4;
+  dispatchEvent(new Event('resize'));   // the engine sized S.W/S.H before CSS layout (canvas default 300x150) — re-size to the viewport now
+
+  // ── layout: warmth (the mediator) at the heart, the rest on a ring ──
+  const W = () => C.W || innerWidth, H = () => C.H || innerHeight;
+  const byWord = {};
+  function place() {
+    C.clear(); Object.keys(byWord).forEach(k => delete byWord[k]);
+    const cx = W() / 2, cy = H() / 2 + 24, R = Math.min(W() * 0.26, H() * 0.34);
+    const hub = REC.nodes.find(n => n.word === 'warmth') || REC.nodes[0];
+    const ring = REC.nodes.filter(n => n !== hub);
+    const mk = (n, x, y) => { const node = C.node(x, y, n.word, { type: 'stock', hue: COL.ink, level: 0.42, data: n.word }); byWord[n.word] = { node, meta: n }; };
+    mk(hub, cx, cy);
+    ring.forEach((n, i) => { const a = -Math.PI / 2 + (i / ring.length) * TAU; mk(n, cx + Math.cos(a) * R, cy + Math.sin(a) * R * 0.94); });
+  }
+  place(); addEventListener('resize', place);
+
+  const facetStr = meta => (meta.facets || []).map(f => f.facet + (f.status === 'flavor' ? '*' : '')).join('+');
+
+  // ── the divergence overlay: robust solid (consensus), flavor dashed (one chef), trap ghost ──
+  C.draw = (ctx) => {
+    ctx.save();
+    ctx.lineJoin = 'round'; ctx.textAlign = 'center';
+    const drawEdge = (fw, tw, opts) => {
+      const A = byWord[fw], B = byWord[tw]; if (!A || !B) return;
+      const ax = A.node.x, ay = A.node.y, bx = B.node.x, by = B.node.y;
+      const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1, nx = dx / L, ny = dy / L;
+      const r = (C.NODE_R || 30) + 4;
+      const x1 = ax + nx * r, y1 = ay + ny * r, x2 = bx - nx * r, y2 = by - ny * r;
+      ctx.strokeStyle = opts.color; ctx.lineWidth = opts.w || 2; ctx.globalAlpha = opts.alpha || 1;
+      ctx.setLineDash(opts.dash || []);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      // arrowhead
+      ctx.setLineDash([]); const ah = 7;
+      ctx.beginPath(); ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - nx * ah - ny * ah * 0.5, y2 - ny * ah + nx * ah * 0.5);
+      ctx.lineTo(x2 - nx * ah + ny * ah * 0.5, y2 - ny * ah - nx * ah * 0.5);
+      ctx.closePath(); ctx.fillStyle = opts.color; ctx.fill();
+      if (opts.label) {
+        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        ctx.font = '500 12px "Caveat", cursive'; ctx.globalAlpha = 1;
+        ctx.fillStyle = COL.paper; const tw2 = ctx.measureText(opts.label).width;
+        ctx.fillRect(mx - tw2 / 2 - 3, my - 8, tw2 + 6, 15);
+        ctx.fillStyle = opts.color; ctx.fillText(opts.label, mx, my + 4);
+        if (opts.tag) { ctx.font = '400 8px "IBM Plex Mono",monospace'; ctx.fillStyle = COL.dim; ctx.fillText(opts.tag, mx, my + 16); }
+      }
+      ctx.globalAlpha = 1;
+    };
+    // robust edges (consensus) — solid teal
+    REC.edges.filter(e => e.status === 'robust').forEach(e => drawEdge(e.fromWord, e.toWord, { color: COL.teal, w: 2.6, label: e.label }));
+    // flavor edges (one chef) — dashed amber, tagged with the chef
+    REC.edges.filter(e => e.status === 'flavor').forEach(e => drawEdge(e.fromWord, e.toWord, { color: COL.amber, w: 1.8, dash: [5, 5], label: e.label, tag: e.readers.join() + ' only' }));
+    // the trap — faint magenta ghost, labelled by its fate
+    if (REC.trap) drawEdge(REC.trap.fromWord, REC.trap.toWord, { color: COL.mock, w: 1.6, dash: [3, 5], alpha: 0.5, label: 'trap', tag: REC.trap.takenBy.length ? 'TAKEN by ' + REC.trap.takenBy.join() : 'avoided by all' });
+    // facet annotation under each node
+    ctx.font = '400 9px "IBM Plex Mono",monospace'; ctx.globalAlpha = 1;
+    Object.values(byWord).forEach(({ node, meta }) => {
+      const hasFlavor = (meta.facets || []).some(f => f.status === 'flavor');
+      ctx.fillStyle = hasFlavor ? COL.amber : COL.dim;
+      ctx.fillText(facetStr(meta), node.x, node.y + (C.NODE_R || 30) + 16);
+    });
+    ctx.restore();
+  };
+
+  // ── the panels ──
+  $('legend').innerHTML =
+    '<div class="ln"><span class="sw r"></span><b>robust</b> — consensus (&ge;2 independent chefs)</div>' +
+    '<div class="ln"><span class="sw f"></span><b>flavor</b> — one chef only (an open question)</div>' +
+    '<div class="ln"><span class="sw t"></span><b>trap</b> — the tempting misread</div>' +
+    '<div style="margin-top:6px;color:var(--faint)">facet* = a flavor facet · nothing is crowned</div>';
+  $('panel').innerHTML =
+    '<div class="hd">the bake-off</div>' +
+    'chefs: ' + REC.chefs.map(c => '<span class="chef">' + c.label + ' · ' + c.kind + '</span>').join('') +
+    '<div class="win"><b>winner</b> = the robust core: ' + REC.winner.glyphs + ' glyphs, ' + REC.winner.edges + ' edges — grown from all, none picked whole.</div>' +
+    '<div style="margin-top:5px">flavors are <em>yours to adopt</em>; the seed is one chef, not the truth.</div>';
+})();
+</script>
+</body></html>

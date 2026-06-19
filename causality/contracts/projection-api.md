@@ -52,19 +52,20 @@ emitted by this slice — named, not faked (absence is information).
 - **Origin:** **imported** (the citation is authored) then **folded** (the
   resolution is computed).
 
-### 3. SiteNode *(spec-only)*
+### 3. SiteNode *(schema: `schemas/site-node.schema.json`)*
 - A place a term *lives* — a file, a log surface, a doctrine section, a
   glyph cell. The `to` end of an EvidenceEdge points at a SiteNode address.
 - **Writes:** the fold, by interning each distinct `ref.file`. **Reads:** the
   canvas (collapses many edges into one site), the audit.
 - **Source of truth:** the file/record on disk.
-- **Required (full surface):** `id`, `address` (repo-relative path or log
-  ref), `kind` (`code|doctrine|log|workflow|vault|surface`). **Derived:**
-  `exists`, `inbound_term_count`.
+- **Required:** `id`, `address` (repo-relative path or log ref), `kind`
+  (`code|doctrine|log|workflow|vault|surface`), `exists`,
+  `inbound_term_count`, `record_kind`. **Derived:** `exists`,
+  `inbound_term_count`.
 - **Invalid when:** `address` escapes the repo root; `kind` mismatched to the
   path.
-- **Origin:** **projected**. *Today:* implicit in `EvidenceEdge.to`; promoting
-  it to a first-class node is the next increment.
+- **Origin:** **projected**. *Today:* emitted by `term_economy.build_projection`
+  as `sites[]`; it indexes evidence places and never overrides the cited bytes.
 
 ### 4. ArtifactNode *(spec-only)*
 - An ontum artifact a term names — an atom, a receipt, an admission, an epic.
@@ -95,14 +96,15 @@ emitted by this slice — named, not faked (absence is information).
   FoldObservation producer; wrapping the other folds is later.
 
 ### 6. ProjectionView *(schema: `schemas/projection-view.schema.json`)*
-- The whole rendered fold: TermNodes + EvidenceEdges + summary + gaps. The
+- The whole rendered fold: TermNodes + SiteNodes + EvidenceEdges + summary + gaps. The
   unit the canvas loads and the audit reports.
 - **Writes:** `term_economy.build_projection`. **Reads:** the canvas, the
   audit, the byte-reproducibility test.
 - **Source of truth:** the seed + repo, deterministically. Delete the view and
   rebuild it; it is byte-identical (the projection property).
-- **Required:** `view`, `generator`, `term_count`, `class_summary`, `terms`,
-  `evidence_edges`, `gaps`. **Derived:** all of it (it is a fold).
+- **Required:** `view`, `generator`, `term_count`, `site_count`,
+  `class_summary`, `terms`, `sites`, `evidence_edges`, `gaps`. **Derived:**
+  all of it (it is a fold).
 - **Invalid when:** it carries a timestamp or any non-reproducible field;
   `class_summary` disagrees with the `terms`; re-running the fold over the
   same seed yields different bytes.

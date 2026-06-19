@@ -1,0 +1,52 @@
+{
+  "atom": {
+    "id": "atom.recommend-generative-tree.v0",
+    "story": {
+      "text": "As bdo handing the session a loose, complex design prompt, I need a recommend surface that composes my decision-space into a generative branching tree of routed panels — multiple tabs of <=4 options where the route I pick generates the next set of checkboxes — because a flat menu of twenty options cannot fit the modal and a single fork cannot carry a real design space; I want to walk a composed recommendation, not pick from a queue.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "recommend — /ask expanded into a generative branching tree, bounded by code",
+      "value": "Where /ask (done-line 0119) raises one fork and asks 'which of these?', recommend composes a routed TREE of AskUserQuestion panels: each call is up to 4 tabs x <=4 options, and a route selected in a tab GENERATES the next set of checkboxes, composed live by the session from that route + bdo's gesture. The ~20 options across several routes are the tree's leaves, walked branch by branch, recommended path marked at every step. It is generative by necessity (branches cannot be pre-authored) and bounded (compose.py runs the deterministic refusal check on each generated panel before it renders). This is the concrete form of the captured design-conversation meta-skill: shape-transfer is the product.",
+      "why_now": "bdo asked for it directly (2026-06-18) and corrected the shape twice in-thread, landing on the generative branching tree and choosing 'build the generative step now.' The /ask law (0119) and its ask_guard floor already exist to compose against; building recommend now reuses that floor rather than waiting.",
+      "if_accepted": "bdo gets a surface that turns a half-formed design prompt into a walkable, recommendation-first decision-tree; the owner-harness arc gains its synchronous wide-decision render beside /ask's single fork; the generative composer is the first real instance of inference-as-composition with a code-enforced bound.",
+      "if_rejected": "Complex design forks keep collapsing into either a single /ask (too narrow for the space) or an unstructured prose dump (no routed walk, nothing bdo can steer); the generative compositum bdo named stays unbuilt.",
+      "cost_of_wrong_call": "Low: the skill is prompt-as-code and compose.py is a read-only checker called by the session; nothing is wired into enforcement, no live hook can false-deny. Reverting is deleting the skill directory.",
+      "mechanism": "A new skill .claude/skills/recommend/ (SKILL.md + policy.md) inheriting /ask's whole law (R1-R7 + refusal teeth) as its floor and adding the tree rules RC1-RC5; a code bound compose.py that REUSES ask_guard.shape_problems (I-4, one definition) and adds the 4x4 + header cap, with a --selftest proving the §10 teeth (passes a good panel, refuses a bad one). The composer is the session (prompt-as-code) because AskUserQuestion is a session tool. Composes /ask, does not double-build it (§10).",
+      "reading": [
+        ".claude/skills/recommend/SKILL.md",
+        ".claude/skills/recommend/policy.md",
+        ".claude/skills/recommend/compose.py",
+        ".claude/skills/ask/policy.md",
+        ".ai-native/done/0125-recommend-generative-tree.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [
+        ".claude/skills/recommend/SKILL.md",
+        ".claude/skills/recommend/policy.md",
+        ".claude/skills/recommend/compose.py"
+      ],
+      "must_not_collide_with": [".claude/skills/ask/policy.md", ".claude/hooks/ask_guard.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/ask/SKILL.md",
+        ".claude/skills/ask/policy.md",
+        ".claude/hooks/ask_guard.py"
+      ]
+    }
+  },
+  "_note": "Birth record for recommend — /ask expanded into a generative branching tree (bdo, 2026-06-18; done-line 0125). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

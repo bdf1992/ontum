@@ -1,0 +1,11 @@
+{
+  "_note": "The change-management policy registry (arc.aim). The DON'T-REGRESS invariants of the Causality experience surface, as greppable feature markers (aim-exemplars.md). ONE source, two surfaces: change_policy.js (the JS judge + CLI) and .claude/hooks/change_guard.py (the PreToolUse guard) both read this, so they can never drift (the fence-registry pattern). A protected surface may not land an edit that drops any required feature; a deliberate retirement edits THIS file, on the record, bdo's call.",
+  "protectedSurfaces": ["causality/experience.html"],
+  "required": [
+    { "id": "complexity-slider", "markers": ["Complexity"], "why": "the one live growth dial — cute nucleus -> real loop" },
+    { "id": "phrase-skin", "markers": ["drawSentence"], "why": "the sentence-as-skin (its loss was a prior regression — never again)" },
+    { "id": "hover-unfold", "markers": ["_facetLayout"], "why": "hover-to-unfold the facets" },
+    { "id": "gestures", "markers": ["lasso", "COMMAND"], "why": "gesture-native interaction (lasso/GATHER, hold/COMMAND)" },
+    { "id": "honest-magenta", "markers": ["admissions.jsonl", "composeRel"], "why": "realness read from the log + relations generated (AIM I1/F5)" }
+  ]
+}

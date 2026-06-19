@@ -4,7 +4,9 @@
    fabricated/hand-rolled one fails), every facet must be fully specified, and
    every animation must name a real easing curve — no dangling references. */
 'use strict';
-const { TOKENS, TABLE, validate, ascii } = require('./canvas-system.js');
+const fs = require('fs');
+const path = require('path');
+const { TOKENS, TABLE, validate, ascii, RELATION, composeRelation, flipRelation } = require('./canvas-system.js');
 
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) { pass++; console.log('  ✓ ' + m); } else { fail++; console.log('  ✗ ' + m); } };
@@ -61,6 +63,61 @@ ok(asciiComplete, 'every facet has an ASCII fallback glyph');
 // coverage: the capability list bdo named is all present as tables
 const need = ['color', 'facet', 'shape', 'line', 'ease', 'anim', 'physics', 'interact', 'lens', 'build'];
 ok(need.every(t => t in TABLE), 'all named capability tables exist (color/shape/line/anim/easing/physics/interact/lens/facet/build)');
+
+// ── RELATION — type-by-composition for EDGES (iterations 0008). The teeth: a
+//    relation's label is GENERATED from (fromFacet, toFacet, valence), never
+//    hand-authored; the flip is a generative involution (flip(flip(r)) == r);
+//    an undeclared triple is REFUSED; and a constant/fabricated generator fails. ──
+console.log('\nrelation composition — generative ends + the perspective flip (teeth)\n');
+
+// a known facet-pair generates its EXPECTED label (not a free string)
+ok(composeRelation('signal', 'state', '-').label === 'blocks', "(signal, state, -) generates 'blocks' (a known pair → its expected label)");
+ok(composeRelation('state', 'objective', '+').label === 'satisfies', "(state, objective, +) generates 'satisfies'");
+ok(composeRelation('source', 'state', '+').label === 'feeds', "(source, state, +) generates 'feeds'");
+ok(composeRelation('state', 'actor', 'fades').label === 'wakes', "(state, actor, fades) generates 'wakes' (the corrected cat-chain)");
+
+// THE TEETH: an undeclared triple is REFUSED — a label has no home outside the
+// table, so it can never be hand-authored at a call site
+const refused = composeRelation('signal', 'state', 'sparkle');
+ok(refused === null, 'an undeclared valence is REFUSED (null) — a label is never hand-rolled (teeth)');
+ok(composeRelation('blarg', 'state', '+') === null, 'an undeclared from-facet is refused');
+
+// the flip is a GENERATIVE transform producing the typed dual, and an involution
+const r = composeRelation('signal', 'state', '-');
+const f = flipRelation(r);
+ok(f.from === 'state' && f.to === 'signal' && f.label === 'is blocked by', "flip(blocks) is the typed dual 'is blocked by', endpoints swapped");
+const ff = flipRelation(f);
+ok(JSON.stringify(ff) === JSON.stringify(r), 'flip(flip(r)) deep-equals r (the perspective flip is an involution)');
+
+// NEGATIVE CONTROL: a constant/fabricated generator (same label for everything)
+// cannot pass the expected-label assertions above — the separation has teeth
+const constantGen = () => ({ type: 'x', label: 'relates', inverse: 'relates' });
+ok(!(constantGen('signal', 'state', '-').label === 'blocks'), 'negative control: a constant generator does NOT produce the expected label (teeth)');
+
+// COVERAGE + no-hand-authored-labels: every relation the corpus declares resolves
+// through the generator, and NOT ONE carries a hand-authored label or build flag
+const P = JSON.parse(fs.readFileSync(path.join(__dirname, 'phrases.json'), 'utf8'));
+let everyRelComposes = true, noHandLabels = true;
+for (const ph of P.phrases) for (const rel of ph.relations) {
+  if ('label' in rel || 'build' in rel) { noHandLabels = false; console.log(`    ${ph.id}: relation ${rel.from}→${rel.to} carries a hand-authored label/build flag`); }
+  const ff2 = String(rel.from).split('.')[1], tf2 = String(rel.to).split('.')[1];
+  const c = composeRelation(ff2, tf2, rel.valence);
+  if (!c) { everyRelComposes = false; console.log(`    ${ph.id}: (${ff2}, ${tf2}, ${rel.valence}) has no composed relation`); }
+}
+ok(noHandLabels, 'no corpus relation carries a hand-authored label or build flag (the generator is the only source)');
+ok(everyRelComposes, 'every corpus relation resolves through composeRelation (full coverage — the generator covers the portfolio)');
+
+// every RELATION entry is fully specified (type + label + inverse) — no half-edges
+let relsComplete = true;
+for (const [k, e] of Object.entries(RELATION)) {
+  if (!e.type || !e.label || !e.inverse) { relsComplete = false; console.log('    incomplete relation: ' + k); }
+  if (k.split('|').length !== 3) { relsComplete = false; console.log('    malformed relation key (want from|to|valence): ' + k); }
+}
+ok(relsComplete, 'every RELATION entry is fully specified (type + label + inverse) under a from|to|valence key');
+
+// 'relation' is a declared table, so validate() also gates it
+ok(validate('relation', 'signal|state|-').ok, "validate('relation', …) accepts a declared composition");
+ok(!validate('relation', 'signal|state|sparkle').ok, 'validate refuses an undeclared composition');
 
 console.log('\n' + (fail === 0 ? 'PASSED' : 'FAILED') + ` — ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

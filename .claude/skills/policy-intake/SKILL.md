@@ -4,7 +4,7 @@ description: >
   Read bdo's gateway-policy authorizations from GitHub and act on them. The
   inference gateway (loop/inference.py) denies every (caller, surface, mind)
   by default — RBAC admits no thought without a rule — and a policy is bdo's to
-  set the way every decision of his is made: from GitHub on his phone, by
+  set the way every decision of his is made: from GitHub, wherever he is, by
   closing the policy's policy-confirm issue with a plain-language comment. This
   skill reads that comment, judges his intent (permit / decline / unclear), and
   on a clear permit runs the admission on his authorization (loop.inference
@@ -18,7 +18,7 @@ version: 0.1.0
 # policy-intake — bdo's GitHub gateway-policy stamps, read and acted on
 
 bdo will not run a CLI and will not open a custom UI. His surface is GitHub,
-which he already carries on his phone. Fourth sibling of arc-intake (done-line
+which he can reach from any device. Fourth sibling of arc-intake (done-line
 0038), realness-intake (0042), and rung-intake (0051): that family lets him
 confirm an *arc*, make a *gate real*, and grant a *trust rung*; this one lets
 him set a *gateway policy* — the default-deny RBAC (loop/inference.py) that
