@@ -111,6 +111,29 @@ The unifier — the thing that is neither "memory" nor "meaning" — is
 > traces that it hardens into craft.** Comparison is the metabolism between
 > them, and it is the whole reason the sketch must stay on the book.
 
+And experience is not a thing you *have* — it is a thing you *keep*. bdo's
+word for it is **the sauce**: not the dish (the shipped artifact) but the
+*mother sauce* / master stock / sourdough starter / solera — the cultures
+a kitchen keeps alive and **feeds**, never starting from scratch, each
+batch carrying a trace of every batch before it. A sauce is **reduced**
+(many traces simmered into one concentrated craft) and **cultured** (kept
+living across time). That is experience exactly: not stored cold, not
+recomputed from zero each morning, but a living reduction the loop feeds
+every session.
+
+This is the form that fits ontum's mortality — sessions die, files stay,
+the sauce survives:
+
+- **The starter is the palimpsest** — the append-only log keeps every
+  trace, so nothing is ever made from scratch.
+- **The sauce is the fold over it** — always re-derivable (D-5), but it
+  tastes of everything that came before.
+- **Feeding it** is just every session's traces landing on the book.
+
+The reason the loop feels like a contractor today is that it throws the
+sauce out and re-buys ingredients every morning. The pentimento organ is
+**the pot you never wash.**
+
 **Why this is the organ ontum is most missing.** Every fold today reads
 the log down to *current state* — `gaps`, `census`, `term_economy`,
 `reconcile` all ask *"what is true now?"* and throw the **journey** away.
