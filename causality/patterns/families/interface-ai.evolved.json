@@ -1,0 +1,118 @@
+{
+  "family": {
+    "id": "interface-ai",
+    "name": "Interface as AI",
+    "pin": "the model is the medium",
+    "ai_native_pin": "You describe what you want; local inference proposes a typed graph-spec; the system validates it against the live schema before anything renders. Natural language produces typed drafts, never truth — durable change still lands only through governed seams. The interface is not a thing the AI helps you use; the AI is the surface, and the schema is its conscience.",
+    "owns": "This family is the Commons home of two built mechanisms — the schema-gate-before-draw (the 0083 front door, with its negative-control test) and dry-run-preview (pencil-before-ink). Other families cite these as kin rather than re-owning them: edit:authored-finish rides the schema gate for editorial finish; play:simulate-before-commit and register:settle-on-commit cite dry-run-preview; instr:provisional-take cites the register mechanic. The virtual-request-node is kin to async:parked-pulse — they are two lifecycle stages of one unit (REQUEST pre-submit, RUNTIME post-submit).",
+    "axis_note": "Axis #1 'register' is read as commitment-bearing per RECONCILIATION.md (2026-06-16): ink = admitted/minted, pencil = proposed/simulated, bound to the generative-typing lifecycle. The JSON key stays 'register' for tally consistency across families."
+  },
+  "patterns": [],
+  "new_patterns": [
+    {
+      "id": "describe-to-canvas",
+      "name": "Describe to Canvas",
+      "intent": "A sentence becomes a typed, rendered graph — the prompt is the authoring surface, and the schema is what it's authoring against.",
+      "use_when": "Any typed-graph or structured surface where hand-placing nodes is the slow path; the user knows the shape they want in words before they know it in clicks.",
+      "axis": {
+        "register": "partial",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js — generate(S, description): describe → local inference → validateSpec → S.fromJSON; the description is the only input, the typed spec is the output",
+        "causality:authoring.js#buildPrompt — the live SCHEMA (TYPES + per-type config fields) is serialized into the model's contract, so NL is generated against the type system, not free-form",
+        "causality:display-system.md#interface-as-ai — 'AI as medium': the human's primary channel is natural language over a fully API-first product",
+        "foundry:04-causality"
+      ],
+      "non_example": "A chatbot sidebar bolted onto a click-ops editor: the chat answers questions but the surface is still built by hand, elements aren't API-addressable, and nothing the AI says is typed against a schema. NL-as-help is not NL-as-medium."
+    },
+    {
+      "id": "schema-gate-before-draw",
+      "name": "Schema Gate Before Draw",
+      "intent": "The proposed spec is checked against the live schema before a pixel is drawn — valid instantiates, invalid is refused with its divergence named, never rendered. The teeth of the medium, and the spine of this family.",
+      "use_when": "Anywhere a model (or a human) authors structure that will be trusted downstream; the moment generated output can reach a canvas, a gate must stand between the proposal and the render.",
+      "owns": "Canonical home of schema-validate-before-draw. edit:authored-finish rides this gate for its editorial-finish spec and cites it as kin; instr:provisional-take's schema-checked takes are the same teeth applied to live performance. None of those re-own the mechanism — this pattern is it, because it is the one actually built and negative-control tested.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js#validateSpec — returns {ok, errors[]}; unknown type, non-schema field, duplicate id, dangling link, and incompatible-port edges are each refused before render (generate() returns the spec unrendered on !ok: 'refused — nothing renders, no slop')",
+        "causality:authoring.test.js — the §10 validate→instantiate check: a valid spec lands, a malformed one is refused; a fabricated pass-through is the negative control (the test that makes register=full real, not analogized)",
+        "ontum:causality/term_economy.py — the same refusal on a ghost citation: no resolvable evidence, no mint",
+        "causality:canvas.js#SCHEMA — one schema drives defaults, inspector, persistence, AND the gate; the validator reads the same source the renderer does"
+      ],
+      "non_example": "Optimistic render-then-validate: draw the model's output immediately and show a red toast if it later fails. The slop already reached the canvas; the user already trusted it. A gate that fires after the draw is decoration, not a gate."
+    },
+    {
+      "id": "virtual-request-node",
+      "name": "Virtual Request Node",
+      "intent": "A change in pencil, not yet ink — a pending request that carries its kind, required fields, typed ports, and target pen, and walks a lifecycle (draft → valid/invalid → submitted → accepted/refused/landed) before it ever becomes a record. Honest state today: the request lives as a validated spec object (authoring.js) bound to a pen; the request as a node *rendered on the canvas, walking its lifecycle visibly*, is the family's least-built surface — proposed, not built.",
+      "use_when": "Surfaces where a change must be authored, inspected, and routed through a governed seam rather than mutated directly — the request deserves to be a first-class, addressable object the whole time it is pending.",
+      "kin": "async:parked-pulse — the same unit, one stage later: a virtual-request-node becomes a parked-pulse on submit (REQUEST/pencil pre-submit → RUNTIME/parked post-submit). They cite each other as kin, not as overlapping inventions.",
+      "axis": {
+        "register": "partial",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "axis_honesty": "agent-drivable is full and earned — the request routes through a pen (authoring.js → validateSpec → fromJSON), API-addressable end to end. register and provenance are partial, not full: the commitment lifecycle and route-home are real as a CONCEPT in ontum's atom→pen→receipt pipeline, but the pattern's distinctive claim — a visible request node walking that lifecycle on the canvas — is analogized, not built. The built slice is the draft→valid/invalid spec transition; the submitted→accepted/refused/landed states rendered as a node are not on disk. Scoring those axes full would claim an unbuilt UX. Lowered to partial per ISSUES round-1.",
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js — the generated spec IS the request in flight; validateSpec is its draft→valid/invalid transition before fromJSON makes it real (the built slice of the lifecycle)",
+        "ontum:reconcile.PIPELINE — grounds the lifecycle as a CONCEPT: an atom is a pending unit that walks value-gate → owner-stamp → placement → handoff → confirm, its state a fold over the log, never a direct mutation — the analogy the canvas node would render",
+        "ontum:loop/node.py — the one pen: a request lands only through judge()/admit; 'a node propels work, it never authorizes it' — why agent-drivable is full (the request routes through the admitted seam, never around it)",
+        "causality:display-system.md#C5 — TypedNode carries id, type, label, config, sites[], space, strata, divergence: the schema the request node would instantiate (declared, the visible-node UX not yet populated)"
+      ],
+      "non_example": "An optimistic-UI row that appears instantly and silently reconciles in the background. It shows the result before the request is judged, collapses REQUEST into RECORD, and offers no handle to the pending intention — the opposite of making the ask a visible, routable object."
+    },
+    {
+      "id": "dry-run-preview",
+      "name": "Dry-Run Preview",
+      "intent": "Show what would happen — the simulated result of the request — before submit. Pencil before ink, and the pencil is computed from the same fold that will draw the ink.",
+      "use_when": "Any mutating action whose blast radius isn't obvious from the gesture; the user (or agent) deserves to see the consequence in the SIMULATION register before committing it to the RECORD register.",
+      "owns": "Canonical home of pencil-before-ink preview. play:simulate-before-commit (consequence rendered on the live graph) and register:settle-on-commit (the pencil→ink transition) cite this as kin; they narrow to their family-specific surface and do not re-own the generic preview, which is grounded here in real read-only folds.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "ontum:reconcile.py --status — a read-only fold summary: what the next pass would do, computed but not committed",
+        "ontum:loop/digest.py --json + loop/orchestrate.py --status — the field's would-be behaviour emitted as a dataset, no write",
+        "ontum:causality/term_economy.py project — resolves and classifies without ever minting; the projection is the preview, the seed is the would-be commit",
+        "causality:authoring.js#generate — on !ok it returns the spec without rendering: the failed dry-run is legible before any draw"
+      ],
+      "non_example": "A confirm dialog that only restates the verb ('Submit? Cancel?') without computing the actual diff. It asks for consent without showing the consequence — ceremony, not simulation; the user is no better informed than before the click."
+    },
+    {
+      "id": "refusal-with-reason",
+      "name": "Refusal With Reason",
+      "intent": "The system declines a malformed or unsafe request in place, names exactly why, and keeps the original request attached — so the path from refusal back to its cause is never broken.",
+      "use_when": "Every authoring seam a model can drive; a refusal that drops the request or hides its reason forces a human turn to re-supply context the system already had.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js#validateSpec — each error names its locus: node[i] \"label\", the offending field, the unknown type with the valid set, the incompatible ports with direction; generate() returns {ok:false, errors, spec} carrying the refused spec",
+        "ontum:causality/term_economy.py — a citation that points to nothing is classed `ghost`, named, never silently dropped; two incompatible senses surface as `overloaded`",
+        "memory:ai-native-ux-error-carries-prompt — bdo's principle: the error response must contain the prompt/query that triggered it, so the user need not re-supply it",
+        "ontum:RUBRIC.md — 'sent back with the divergence named', the same refusal applied to patterns that overclaim"
+      ],
+      "non_example": "A generic 'Invalid input' toast with no field, no reason, and no echo of what was sent. The agent or user must reconstruct the request from memory to retry; the refusal threw away the one thing that made repair cheap."
+    }
+  ],
+  "open_questions": [
+    "RESOLVED (ISSUES round-1, #78): virtual-request-node no longer claims full/full/full. agent-drivable stays full (the request routes through a pen — built and API-addressable); register and provenance drop to partial because the visible-node lifecycle UX is analogized to ontum's pipeline, not built on the canvas. The honest position: today the request lives as a validated spec object bound to a pen (authoring.js), legible in the inspector; the rendered lifecycle node is proposed, not built. A future round can promote register/provenance to full only by landing that canvas surface — the axis score will move when the build does, not before.",
+    "describe-to-canvas binds to one local-inference bridge shape and does not yet log the authoring description as a durable RECORD — should the sentence that authored a graph be kept as provenance (the prompt that minted the draft), closing its register score from partial to full?",
+    "RESOLVED-DIRECTION (RECONCILIATION.md): the 'render all four registers with distinct ink' idea is not a per-pattern concern — it is the third cross-cutting facet (REGISTER = COMMITMENT, ink/pencil on the line channel, proposed C19), a shared Commons substrate alongside strata and anima. This family supplies the patterns that exercise it (schema-gate, dry-run, virtual-request-node); it does not own the substrate.",
+    "provenance-bearing sits at `partial` for the generative patterns because errors trace to the SCHEMA contract but not to source file:line/log bytes — does Interface-as-AI owe the holographic rule (every projection a path home to the C1 fundamental), and if so does authoring need to cite the schema's own provenance?"
+  ]
+}
