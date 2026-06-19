@@ -275,3 +275,4 @@
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/ask-surface","id":"rcp.merge.222","kind":"merge","node":"merge-node.claude.v1","pr":222,"ts":"2026-06-19T18:03:43Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/recommend-skill","id":"rcp.merge.234","kind":"merge","node":"merge-node.claude.v1","pr":234,"ts":"2026-06-19T18:11:28Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/hook-path-rooting","id":"rcp.merge.240","kind":"merge","node":"merge-node.claude.v1","pr":240,"ts":"2026-06-19T18:27:57Z","verdict":"landed"}
+{"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"claude/pr-reconcile-verb","id":"rcp.merge.224","kind":"merge","node":"merge-node.claude.v1","pr":224,"ts":"2026-06-19T18:41:04Z","verdict":"landed"}
