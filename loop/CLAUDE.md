@@ -304,6 +304,7 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the log (provenance) after the proof passes; it refuses anything this
   checker rejects. The cut between "phrasing" and "work" stays bright: the
   door is for prose only — syntax or schema is routed back to the pipeline.
+- [herald.py](herald.py) — the herald (epic.landing-throughput-response): agents are an open set, so registration and reputation are FOLDS over logged `herald_introduction` admissions, never a table — a herald `introduce`s a named/titled agent (the dumb pen mints a content-hash `credential` at the trust-ladder floor rank, read from `loop.trust`), `roster` folds who is registered (superseding, never erasing), and `reputation` derives distributed value from the log's provenance edges (exemplars net against notorieties per credential, and a herald earns a meta-reputation over the standing of whom it vouched, so a bad voucher is visible by construction); read-only but for the one pen, standing only ever earned forward (§10: standing is recomputed from records, never asserted; D-4).
 
 ### Invariants the code is built around (firm)
 
