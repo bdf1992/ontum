@@ -3,8 +3,8 @@ name: rung-intake
 description: >
   Read bdo's trust-rung grants from GitHub and act on them. The trust ladder
   (loop/trust.py) denies every class everything until a rung is admitted, and
-  a rung is bdo's to grant the way every decision of his is made: from GitHub
-  on his phone, by closing the class's rung-confirm issue with a plain-language
+  a rung is bdo's to grant the way every decision of his is made: from GitHub,
+  wherever he is, by closing the class's rung-confirm issue with a plain-language
   comment. This skill reads that comment, judges his intent (grant / decline /
   unclear), and on a clear grant runs the rung admission on his authorization
   (loop.node admit-rung --by bdo) — always replying with how it read him,
@@ -17,7 +17,7 @@ version: 0.1.0
 # rung-intake — bdo's GitHub trust grants, read and acted on
 
 bdo will not run a CLI and will not open a custom UI. His surface is GitHub,
-which he already carries on his phone. Third sibling of arc-intake (done-line
+which he can reach from any device. Third sibling of arc-intake (done-line
 0038) and realness-intake (done-line 0042): that pair lets him confirm an
 *arc* and make a *gate real*; this one lets him grant a *capability rung* —
 what a whole class of summoned agent may do from then on (read < judge <
