@@ -1,0 +1,31 @@
+{
+  "atom": {
+    "id": "atom.standard-self-heal-capture.v0",
+    "story": {
+      "text": "As the owner steering ambient operations soon to come online, I need the loop's quality standard captured as a generative, capability-indexed, self-updating manual rather than a frozen catalog of golden runs — because ambient ops must imagine-and-compare against 'smooth operation of the teeth' in cases never seen, and a stored exemplar rots the moment it is frozen (the freshness failure). The capture hoists the exemplar/notoriety poles (the manual is the generative type; an exemplar is one instance of it), and — the teeth — it names the feedback-loop hazard a self-updating standard creates (the bar becomes a mirror) and breaks it with airgaps and insulations: AG-2 (capability-admission ⊥ standard-update) was pressure-tested by an independent three-skeptic panel, found to LEAK against patient/temporal laundering, and repaired (IN-1 must track BLESSED capability via a pass-receipt, not merely EXERCISED capability) with a verdict-flip-without-work detector giving it teeth. It carries the bounded self-heal litmus (heal inside the owner-stamped bound, never by moving the bound to stop refusals). Value: the design that lets a standard meet expectation based on capability without the judged corrupting the judge survives this mortal session and becomes loop-visible work, instead of dying as uncommitted prose in a shared viewport.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "session-gateway.proposal.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "The capture refines atom.landing-throughput-resp-exemplars-and-notorieties.v0 under the same arc (epic.landing-throughput-response, which lands on its own branch). Pressure-tested 2026-06-18 by a diverge-judge panel: AG-2 leaked, the fix (track blessed not exercised capability + the verdict-flip detector) is on the record in the proposal. The fold over .ai-native/log/ is the live state (D-5); this file is the announced unit, never mutated."
+}
