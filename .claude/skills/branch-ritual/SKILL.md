@@ -89,7 +89,10 @@ changelog:
       HEAD differs — a parallel session can move the shared worktree's
       branch under you between reading HEAD and committing; the assertion
       turns that collision into a clean deny. Omitting `--on` refuses:
-      branch intent is required on every commit.
+      branch intent is required on every commit. `add` and `commit` also
+      refuse when this pen is invoked from a different git toplevel than
+      the worktree it lives in; a pen is local law, not a portable remote
+      control for another checkout.
       Raw `git add` / `git commit` join the command_guard deny-list,
       routed to the pen; everything else git add/commit take is
       forwarded for parity. The watcher now sees standalone local

@@ -492,6 +492,46 @@ def _refuse(message):
     sys.exit(1)
 
 
+def _git_toplevel(cwd):
+    proc = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True, encoding="utf-8",
+        errors="replace", cwd=cwd,
+    )
+    if proc.returncode != 0:
+        return None
+    return pathlib.Path(proc.stdout.strip()).resolve()
+
+
+def invocation_root_refusal(pen_root, cwd_root):
+    """Why this pen invocation may not mutate, or None.
+
+    The pen is worktree-local law: a session in worktree A must not be able to
+    invoke worktree B's pen and accidentally stage or commit in B.
+    """
+    if cwd_root is None:
+        return (
+            "not inside a git worktree - run the pen from the worktree whose "
+            "branch you are mutating"
+        )
+    pen_root = pathlib.Path(pen_root).resolve()
+    cwd_root = pathlib.Path(cwd_root).resolve()
+    if pen_root != cwd_root:
+        return (
+            f"pen/worktree mismatch: this pen belongs to {pen_root}, but the "
+            f"caller is in {cwd_root}. Use the pen from that worktree "
+            "(`python .claude/skills/branch-ritual/git.py ...` from its root) "
+            "so the environment and the tool agree."
+        )
+    return None
+
+
+def _assert_invocation_root():
+    reason = invocation_root_refusal(ROOT, _git_toplevel(pathlib.Path.cwd()))
+    if reason:
+        _refuse(reason)
+
+
 def _run(args):
     proc = subprocess.run(
         args, capture_output=True, text=True, encoding="utf-8",
@@ -503,6 +543,7 @@ def _run(args):
 
 
 def cmd_add(ns):
+    _assert_invocation_root()
     tokens = ns.forward
     reason = add_refusal(tokens)
     if reason:
@@ -559,6 +600,7 @@ def _workspace():
 
 
 def cmd_commit(ns):
+    _assert_invocation_root()
     branch = _run(["git", "branch", "--show-current"]).strip()
     reason = head_intent_refusal(branch, ns.on)
     if reason:
