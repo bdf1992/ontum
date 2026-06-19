@@ -1,0 +1,92 @@
+{
+  "family": {
+    "id": "play",
+    "name": "Playable Systems",
+    "pin": "understanding by poking",
+    "ai_native_pin": "poking that carries truth: the poke distinguishes a committed record (ink) from a proposed or simulated draft (pencil), and asks for each element's route home — a route register:provenance-trace owns and play surfaces. Play that bears commitment and triggers provenance, not just motion. The most AI-native of the v0 families: pulse-propagation and direct-manipulation make cause and control physical, not chrome.",
+    "axis_note": "Axis #1 scored as COMMITMENT (RECONCILIATION.md, 2026-06-16): does the gesture distinguish an admitted record (ink) from a proposed/simulated draft (pencil) on the propose->admit lifecycle? It is NOT a four-enum. RUNTIME/'liveness' is process (anima-tempo + activation), off this axis."
+  },
+  "patterns": [
+    {
+      "id": "direct-manipulation",
+      "name": "Direct Manipulation",
+      "current_intent": "The thing itself is the control: drag the node, bend the link — no inspector panel in between.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "partial" },
+      "verdict": "truth-capable",
+      "evolution": "Make every gesture round-trip to a typed mutation spec — drag = {op:'move', node, to} validated against SCHEMA before it renders — so the object of touch IS the object an agent emits; the 'no inspector' principle becomes 'the inspector is the schema', and human and model drive the same surface through one validated operation set.",
+      "non_example": "A drag handle that mutates DOM directly with no spec, no validation, and no API equivalent — pretty and responsive, but a model can't drive it and nothing records what the drag meant."
+    },
+    {
+      "id": "pulse-propagation",
+      "name": "Pulse Propagation",
+      "current_intent": "Cause visibly travels: a change is a particle moving down the wire, so causality is witnessed, not inferred.",
+      "axis": { "register": "partial", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "truth-capable",
+      "evolution": "Make the pulse commitment-bearing: a committed pulse replays an actual log event in ink and carries that event's id, a what-if pulse renders in pencil and is unmistakably a proposal/simulation — so the wire stops conflating 'this is on the record' with 'this might happen', and clicking a pulse opens its backing event (provenance). Whether the pulse is firing live is PROCESS (anima-tempo + node activation), off the commitment axis — not a register (RECONCILIATION.md). Crosses commitment partial->full and adds provenance.",
+      "non_example": "Every edge animating an identical glowing dot on a timer, real consequence and hypothetical consequence indistinguishable — the animation says 'something flows' but can't say what, or whether it is on the record or only imagined."
+    },
+    {
+      "id": "sign-flip",
+      "name": "Sign-Flip Affordance",
+      "current_intent": "The smallest possible edit — one click flips more-begets-more into more-begets-less — keeps play frictionless.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "partial" },
+      "verdict": "truth-capable",
+      "evolution": "Let the flip be a first-class proposal: one click emits {op:'set-sign', edge, value:-1} as pencil (proposed, uncommitted), schema-validated, previewed as a simulation on the live graph, and inked to a record only on commit — the frictionless toggle and its typed-op equivalent become the same act, so a model flips signs exactly as a novice does, and the proposed->admitted (pencil->ink) gap stays visible the whole time.",
+      "non_example": "A toggle that silently mutates a hidden model variable with no typed op, no preview, no committed/uncommitted distinction — frictionless for the human, opaque to the system and unreachable by an agent."
+    },
+    {
+      "id": "sketch-permission",
+      "name": "Sketchy Permission",
+      "current_intent": "Hand-drawn lines tell the user this is a draft world: wobble grants permission to experiment.",
+      "axis": { "register": "partial", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "truth-capable",
+      "evolution": "Bind the wobble to COMMITMENT instead of mood: pencil/hand-drawn rendering becomes the literal, enforced signal for a proposed/simulated mark (uncommitted, might-happen), clean ink the signal for an admitted record (committed, happened) — so visual style is no longer decoration over a draft, it is the commitment-register the user (and a model) can read and the surface can't lie about. This is the line-treatment channel the reconciliation assigns to register (solid=ink / dashed=pencil), kept clear of strata's colour and anima's motion. Pairs with simulate-before-commit.",
+      "non_example": "A sketchy filter applied to the whole canvas as an aesthetic — committed records and live drafts both wobble identically, so the 'draft world' look reassures while hiding which marks are already permanent."
+    }
+  ],
+  "new_patterns": [
+    {
+      "id": "simulate-before-commit",
+      "name": "Simulate Before Commit",
+      "current_intent": "Play's gesture, narrowed: a pending edit runs on the LIVE GRAPH as pencil — you watch its full propagated consequence ripple through the actual nodes and edges (simulation) before a commit inks it to a record. Sub-100ms: the pencil<->ink toggle on the canvas IS the play act, not a separate dialog. Play owns only the on-canvas, sub-100ms propagated-consequence rendering — the generic preview-before-commit primitive is interface-ai:dry-run-preview's, and the pencil->ink transition is register:settle-on-commit's.",
+      "use_when": "Use when an edit's consequence is graph-shaped — it propagates through neighbours — and the user must feel the ripple on the live canvas before committing. Not for non-propagating field edits (those are dry-run-preview's plain before/after), and not as the owner of the commit transition (that is settle-on-commit's).",
+      "axis": { "register": "full", "provenance": "partial", "agent_drivable": "full" },
+      "verdict": "ai-native",
+      "evolution": "Already crosses on play's narrowed slice: pencil-vs-ink is the whole gesture (commitment full), the pending edit is a validated typed spec (agent full), and the previewed pulse can open its would-be event (provenance partial). Next reach — a rejected commit (gate refusal) replays as a pencil pulse on the graph showing why it would not fit, so refusal is witnessed the same way consequence is (the simulate side of register:settle-on-commit's refusal).",
+      "non_example": "An optimistic-UI edit that renders as final immediately and reconciles in the background — there is no pencil/ink gap, so the user can't tell a previewed possibility from a committed fact, and a bad edit is already 'ink' before anything validates it.",
+      "kin": [
+        "register:settle-on-commit — owns the pencil->ink-on-commit transition; simulate-before-commit is its live-graph play surface, not a re-owner.",
+        "interface-ai:dry-run-preview — owns the generic preview-the-consequence-before-commit primitive (reconcile.py --status, digest --json, term_economy project); play owns only the on-canvas propagated-ripple form of it."
+      ],
+      "exemplars": [
+        "causality:canvas-authoring (authoring.js validates a returned graph-spec against SCHEMA before anything renders — simulate-before-commit at authoring scale)",
+        "https://ncase.me/loopy/ (edit a loop and watch consequence propagate live before you trust it)",
+        "foundry:04-causality"
+      ]
+    },
+    {
+      "id": "poke-to-route",
+      "name": "Poke to Route",
+      "current_intent": "Play's embodied gesture for asking provenance: poke any element and its route home lights up — the backing record, file:line, or log substring it resolves to. Play does NOT own the route-home primitive; that is register:provenance-trace (grounded in term_economy.py's file:line / log-substring evidence and display-system C15, the most-grounded home — round-1 dedup, most-grounded-home-wins). Play owns the POKE: the sub-100ms, agent-emittable 'where does this come from' query as a direct-manipulation act, plus the ghost-on-no-route reach that is play's own.",
+      "use_when": "Use when 'understanding by poking' should resolve to a verifiable source, not an authored label — the canvas poke that triggers register:provenance-trace and renders its result in play. Not a standalone provenance store: it surfaces register's route, never re-derives one.",
+      "axis": { "register": "none", "provenance": "partial", "agent_drivable": "partial" },
+      "verdict": "ai-native",
+      "evolution": "Narrowed to a lens of register:provenance-trace (round-1 dedup): the route-home it lights up is register's, not a re-owned primitive. Play's own reach is the ghost — a poke that finds no resolvable route renders the element as a ghost (term-economy's ghost class made pokeable), so absence of provenance is itself pokeable. That ghost-in-play behaviour is play's to own; without it this pattern would be truth-capable, a pure lens. The route-home it rides stays register's (D-4: no second source of truth).",
+      "non_example": "A tooltip that shows a hand-written label or a hard-coded description on hover — informative, but the text is authored prose with no resolvable backing, so poking teaches a story the system can't trace or verify.",
+      "kin": [
+        "register:provenance-trace — owns the route-home primitive (term_economy.py file:line / log substring, display-system C15); poke-to-route is its play-gesture surface, not a re-owner.",
+        "hud:provenance-tooltip — the HUD-chrome lens of the same register:provenance-trace primitive; three families, one 'click/hover/poke -> path home' primitive, register-owned."
+      ],
+      "exemplars": [
+        "causality:term-economy (evidence is file:line or a log substring, never prose — poke a term, get its route)",
+        "causality:canvas-inspector",
+        "https://ncase.me/loopy/"
+      ]
+    }
+  ],
+  "open_questions": [
+    "direct-manipulation scores agent_drivable=partial only — its 'no inspector panel in between' intent is in genuine tension with 'authoring goes through a schema-validated spec'. simulate-before-commit's sub-100ms pencil<->ink toggle is the proposed resolution (the schema IS the inspector; the gesture round-trips to a validated op). The open question is whether forcing every drag through a spec can stay under the ~100ms directness the pattern exists for, or whether validation has to be optimistic (render the pencil immediately, validate in the same frame).",
+    "Resolved by RECONCILIATION.md: a pulse's 'liveness' (RUNTIME) is NOT a commitment register — it is process (anima-tempo + node activation). The commitment a pulse must bear is ink (a replayed record, with its event-id) vs pencil (a what-if). What remains: is a replayed-record pulse unconfusable enough from a simulation pulse on the line/treatment channel alone, or does it also need the anima-tempo channel to read as 'happening now' — and if it borrows tempo, does that re-collide with anima's channel?",
+    "TOP OPEN: after round-1 dedup, both of play's ai-native new-patterns ride a primitive another family owns — poke-to-route -> register:provenance-trace, simulate-before-commit -> interface-ai:dry-run-preview + register:settle-on-commit. Play's genuinely-own contribution is the GESTURE PHYSICALITY: the sub-100ms, agent-emittable poke / drag / toggle as the embodied expression of those primitives (plus the ghost-on-no-route reach). Is 'owning the gesture, not the primitive' enough to stand as a family, or does it make play a lens-collection over register and interface-ai? The family's un-derivative strength is pulse-propagation + direct-manipulation (cause and control made physical); bdo's call before bless."
+  ]
+}

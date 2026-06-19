@@ -52,8 +52,14 @@ python -m loop.digest --since 2026-06-01 --until 2026-06-11
 python -m loop.retro                        # the retrospective fold — recurring patterns across all history, read-only
 python -m loop.retro --json                 # the raw dataset (machine-readable)
 
+python -m loop.heal                         # the healing fold — where the loop's own teeth bit too sharp or stale, read-only
+python -m loop.heal --json                  # the raw dataset (machine-readable)
+
 python -m loop.gate_eval                    # the value-gate eval corpus (charades: matched-variant atoms), read-only
 python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") verdict transcript
+
+python -m loop.phrasing check --path <p> --before <f> --after <f>   # the phrasing door: is an edit prose-only? read-only proof
+python .claude/skills/branch-ritual/pr.py phrasing --files <p>... --why "<note>" --by <who>   # mark a proven prose-only edit so it lands without an atom (the route)
 
 python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
 python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
@@ -226,6 +232,26 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the pattern and the one move; the fix stays a session's or bdo's (D-4).
   `--json` emits the dataset. The first node of the refinement-and-retro
   surface; more detectors and any owner surface ride later increments.
+- [heal.py](heal.py) — the healing fold (done-line 0111): the counterforce
+  to the teeth. Teeth without a healing reflex is autoimmunity — the loop
+  keeps a correct-but-stale bite inflamed on the owner surfaces and has no
+  organ that could ever see a tooth bite *wrong*. Sibling of `retro` on the
+  *bite* axis (retro: what keeps happening; heal: where did a tooth bite
+  wrong), reusing the same `Fold`, the digest's version-split, and
+  supersession — no second truth. Three detectors: **stale-park** (a gate
+  correctly negated an old version, the live version then passed the same
+  gate — the bite is healed, only its surfacing is stale; the field-topology
+  phantom), **flapping-gate** (a gate negates the *live* version after
+  advancing an earlier one — a current self-contradiction), and
+  **owner-override** (bdo's stamp advanced what a real gate refused, *after*
+  the refusal — ts-ordered, so the normal pipeline's early owner-stamp before
+  a later-stage gate is not a false override). The last two are the system's
+  first sensors of those failure modes — declared even at zero live instances
+  (like the cool valve), ready for when the gates judge un-vetted work.
+  Propose-only (D-4): it names the over-bite and the one heal move; it never
+  clears a park or re-opens a verdict — a bounded actuator, if it ever comes,
+  rides the disposer fence and is a later done-line. Surfaced ambiently
+  through `loop.summon`'s `heal_lines` (shown, never disposed).
 - [tags.py](tags.py) — the tag pool (done-line 0032): governed vocabulary
   for what tools do, the census fix pushed upstream to the write seam.
   Holds the one shared verb→intent `classify()` the watcher and the git
@@ -257,6 +283,27 @@ so a prompt edit can't reopen a settled verdict (I-2).
   an absence, not a field of mock stages. `loop.summon --hook` hands the
   single top gap to every session that blinks in — the idle default is
   "work the backlog the harness generated", never "wait for direction".
+- [phrasing.py](phrasing.py) — the phrasing backdoor's pure checker
+  (done-line 0117): bdo's low-ceremony door for pedantic prose edits.
+  A wording fix the machine never branches on ("on his phone" ->
+  "wherever he is") should not cost an atom, a judge, and a branch — the
+  full work-particle mantra (§15/D-5) — so a phrasing edit is exempt from
+  it. The teeth (the whiteout shape, done-line 0064): the door PROVES an
+  edit is prose-only rather than trusting a label — `.md` body free but
+  frontmatter keys/`name`/`version` protected; `.py` tokenized so only
+  comment/string CONTENT may differ; `.json` structure + non-prose values
+  byte-identical, only `PROSE_KEYS` string values may change — and names
+  what disqualified any other change. Stdlib, no git (loop/'s law). The
+  off-log gate gains a SECOND way to be backed
+  (`pr_audit.orphan_reason(..., phrasing_clean)`): a branch every non-log
+  change of which this proves prose-only needs no atom — the fact gathered
+  AND re-verified by the reach (`pr.py audit`, the git side) with this
+  same checker, so the client pen and the server CI inherit the door
+  together and neither can be lied to. The route (the git-bearing half) is
+  `pr.py phrasing`, which marks the edit with one `phrasing` admission on
+  the log (provenance) after the proof passes; it refuses anything this
+  checker rejects. The cut between "phrasing" and "work" stays bright: the
+  door is for prose only — syntax or schema is routed back to the pipeline.
 
 ### Invariants the code is built around (firm)
 

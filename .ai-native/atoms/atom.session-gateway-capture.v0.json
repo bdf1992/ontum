@@ -1,0 +1,41 @@
+{
+  "atom": {
+    "id": "atom.session-gateway-capture.v0",
+    "story": {
+      "text": "As bdo, I need this session's design thread captured durably on the record — the session report and the session-gateway / governed-folding / Anthology proposal — so the work is pickup-able by a future session or by me, instead of stranding in an uncommitted file and a mortal session's context. I literally asked 'how do I pick this up'; the honest answer is that the durable pickup artifacts (the report — the repo's orientation reading — and the proposal — the spec with the ordered increment list) must exist on the record, not in a working tree that can be cleaned.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "capture the session-gateway thread on the record: report 0085 + the proposal",
+      "value": "session-gateway.proposal.md (the converged design: insulated-not-isolated, branch-belongs-to-work, the session gateway, folding-as-verb, fold-capacity, governance spine, the Anthology) and .ai-native/reports/0085 (the session's end-state + the pickup recipe). Together they make the thread resumable without relying on a mortal session's memory.",
+      "why_now": "bdo asked how to pick this up. The proposal was an uncommitted file (it could strand — ironic for the proposal that exists because work stranded), and the session owed its §9 report. Capturing both is the answer to the question.",
+      "if_accepted": "The design and the session's end-state are durable. A fresh session reads report 0085 (orientation), the proposal §11 (the ordered increments #2-5), and §12b (the closed forks); or the loop hands increment #2 out once atomized. Pickup stops depending on remembering.",
+      "if_rejected": "The proposal stays an uncommitted file at risk of being lost on a tree clean, and the session leaves no report — the thread becomes hard to resume, the exact stranding the proposal is about.",
+      "cost_of_wrong_call": "Low: these are records/docs (a report and a design proposal), no code paths, no behavior change. Reverting is deleting two files. The proposal is explicitly PROPOSED/provisional and takes no arc-confirm it was not given.",
+      "mechanism": "Two files: session-gateway.proposal.md (repo root, governed by root CLAUDE.md) and .ai-native/reports/0085-teeth-healing-gateway-thread.md (written via the records pen, required sections present). No code. Built and committed in an isolated worktree, the landing commit asserting its branch via the new HEAD-intent guard (git.py commit --on).",
+      "reading": [
+        "session-gateway.proposal.md",
+        ".ai-native/reports/0085-teeth-healing-gateway-thread.md"
+      ]
+    },
+    "concern_surface": "process",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["session-gateway.proposal.md", ".ai-native/reports/0085-teeth-healing-gateway-thread.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [],
+      "receipts": []
+    }
+  }
+}

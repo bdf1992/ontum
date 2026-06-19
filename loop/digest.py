@@ -180,7 +180,26 @@ def digest(root, since=None, until=None):
     }
 
     superseded = _superseded([p for a in arcs for p in a["pieces"]] + loose)
+    for arc in arcs:
+        for piece in arc["pieces"]:
+            if piece.get("atom") in superseded:
+                piece["superseded"] = True
+                piece["standing"] = "superseded history"
+        _refresh_arc_counts(arc)
+    for piece in loose:
+        if piece.get("atom") in superseded:
+            piece["superseded"] = True
+            piece["standing"] = "superseded history"
     divergences = _divergences(fold, arcs, ticks, since, until, superseded)
+
+    # the prose stream — phrasing-lane edits in span, so the light lane (done-line
+    # 0117) is visible here and bdo is never blind to it (his correction, 2026-06-18)
+    phrasing_in_span = [
+        {"id": a.get("id"), "by": a.get("by"), "reason": a.get("reason"),
+         "files": [f.get("path") for f in a.get("files", [])]}
+        for a in fold.admissions
+        if a.get("type") == "phrasing" and in_span(a.get("ts"), since, until)
+    ]
 
     return {
         "span": {"since": since, "until": until},
@@ -191,6 +210,7 @@ def digest(root, since=None, until=None):
         "landings": len(landings),
         "refusals": len(refusals),
         "divergences": divergences,
+        "phrasing": phrasing_in_span,
     }
 
 
@@ -230,6 +250,23 @@ def _superseded(pieces):
     return {p.get("atom") for p in pieces
             if top_landed.get(_base_version(p.get("atom"))[0], -1)
             > _base_version(p.get("atom"))[1]}
+
+
+def _is_live_piece(piece):
+    return (not piece.get("superseded")
+            and piece.get("standing") not in ("landed", "unbuilt",
+                                              "superseded history"))
+
+
+def _refresh_arc_counts(arc):
+    pieces = [p for p in arc["pieces"] if not p.get("superseded")]
+    arc["total"] = len(pieces)
+    arc["landed"] = sum(1 for p in pieces if p.get("landed"))
+    arc["awaiting"] = sum(1 for p in pieces if p.get("awaiting"))
+    arc["parked"] = sum(1 for p in pieces if p.get("parked"))
+    arc["refused"] = sum(len(p.get("refusals", [])) for p in pieces)
+    arc["history"] = sum(1 for p in arc["pieces"] if p.get("superseded"))
+    return arc
 
 
 def _divergences(fold, arcs, ticks, since, until, superseded=frozenset()):
@@ -287,7 +324,7 @@ def open_count(d):
     awaiting/parked standing counts exactly as an arc piece's does."""
     return (len(d["divergences"])
             + sum(a["awaiting"] + a["parked"] for a in d["arcs"])
-            + sum(1 for p in d["loose"] if p.get("awaiting") or p.get("parked"))
+            + sum(1 for p in d["loose"] if _is_live_piece(p))
             + d["refusals"])
 
 
@@ -295,6 +332,8 @@ def _span_label(span):
     since, until = span.get("since"), span.get("until")
     if not since and not until:
         return "all time"
+    if since and since == until:
+        return since
     return f"{since or 'start'} … {until or 'now'}"
 
 
@@ -329,7 +368,7 @@ def _arc_line(arc):
     every digest was the other half of the unreadability. The mark: ✓
     confirmed, ○ not."""
     mark = "✓" if arc["confirmed"] else "○"
-    total = len(arc["pieces"])
+    total = arc.get("total", len(arc["pieces"]))
     extra = []
     if arc["awaiting"]:
         extra.append(f"{arc['awaiting']} awaiting")
@@ -337,8 +376,14 @@ def _arc_line(arc):
         extra.append(f"{arc['parked']} parked")
     if arc["refused"]:
         extra.append(f"{arc['refused']} refused")
+    if arc.get("history"):
+        extra.append(f"{arc['history']} history")
     suffix = (" · " + " · ".join(extra)) if extra else ""
     return f"- {mark} `{arc['epic']}` — {arc['landed']}/{total} landed{suffix}"
+
+
+def _loose_live(d):
+    return [p for p in d["loose"] if _is_live_piece(p)]
 
 
 def render(d):
@@ -363,8 +408,15 @@ def render(d):
                   "Each has built work waiting on your stamp; close its "
                   "confirm-issue with a yes and the loop lands its pieces.", ""]
     else:
-        lines += ["**Your move:** nothing — every arc with live work is "
-                  "confirmed; the loop is carrying its pieces.", ""]
+        loose = _loose_live(d)
+        if loose:
+            lines += [f"**Your move:** nothing on you — every arc with live "
+                      f"work is confirmed; {len(loose)} loose atom(s) are "
+                      "outside an arc and need a session to route or retire "
+                      "them.", ""]
+        else:
+            lines += ["**Your move:** nothing — every arc with live work is "
+                      "confirmed; the loop is carrying its pieces.", ""]
 
     # 2. the §10 teeth: where two locally-fine records refuse to fit. Kept,
     #    but terse and marked with whose move it is — most are the loop's.
@@ -408,14 +460,25 @@ def render(d):
         if arc["awaiting"] or arc["parked"] or arc["refused"]:
             for p in arc["pieces"]:
                 st = p.get("standing", p.get("state"))
-                if st not in ("landed", "unbuilt"):
+                if st not in ("landed", "unbuilt", "superseded history"):
                     lines.append(f"    - `{p['atom']}` — {st}")
     if d["loose"]:
         lines.append(f"- ○ (no arc) — {len(d['loose'])} loose atom(s)")
         for p in d["loose"]:
-            if p.get("standing") not in ("landed", "unbuilt"):
+            if p.get("standing") not in ("landed", "unbuilt",
+                                         "superseded history"):
                 lines.append(f"    - `{p['atom']}` — {p.get('standing')}")
-    lines.append("")
+    # 5. the prose stream — the light lane's edits, so you are never blind to it
+    ph = d.get("phrasing", [])
+    if ph:
+        lines.append(f"## Prose edits ({len(ph)}) — the light lane (no atom, "
+                     "still on the log)")
+        for e in ph:
+            files = ", ".join(f"`{p}`" for p in e["files"])
+            lines.append(f"- {_glance(e.get('reason'))} — by {e.get('by')} "
+                         f"({files})")
+        lines.append("")
+
     lines.append(f"_{d['landings']} landing(s), {d['refusals']} refusal(s) "
                  f"in span._")
     return "\n".join(lines)
@@ -445,9 +508,11 @@ def main(argv=None):
     # a divergence, a refusal in span, or anything still open — arc piece or
     # loose atom — is a report bdo should read; only a span that saw none of
     # it is done. Read-only either way (D-6).
-    if open_count(d):
+    opens = open_count(d)
+    if opens:
         print(f"result: report — {len(d['divergences'])} divergence(s), "
-              f"{d['refusals']} refusal(s) in span; the surface is yours to read (D-4)")
+              f"{d['refusals']} refusal(s), {opens} open item(s) in span; "
+              "the surface is yours to read (D-4)")
     else:
         print("result: done — clean span: nothing refused, nothing awaiting you")
     return 0
