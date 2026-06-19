@@ -62,14 +62,17 @@ python -m loop.disposer dispose            # self-admit one in-fence proposal (e
 python -m loop.tags                        # the intent tag pool and its drift, read-only
 python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a proposed value
 
+python -m loop.pull                        # the terminal-pull gateway — the piece-scale landable slice + the namespace gap, read-only
+python -m loop.pull --json                 # the raw dataset (machine-readable)
+
 python -m loop.pen new done --slug <slug> --title "<t>"     # the next done-line, from the directory's form
 python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by bdo   # bdo-only; refuses every session signer (no free "stop working" card)
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
-`node`, `summon`, `reflect`, `web`, `census`, `digest`, and `retro`
-import from the `loop` package and must run as modules (`python -m loop.<name>`)
-from the repo root.
+`node`, `summon`, `reflect`, `web`, `census`, `digest`, `retro`, and
+`pull` import from the `loop` package and must run as modules
+(`python -m loop.<name>`) from the repo root.
 
 Every invocation ends with a clear stdout result: `done | report |
 needs-you`. Treat `needs-you` as an escalation to surface, not an error
