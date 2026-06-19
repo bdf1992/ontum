@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.landing-throughput-resp-exemplars-and-notorieties.v0",
+    "story": {
+      "text": "The bank has two poles, both derived, never hand-asserted. Exemplars (good, to share and emulate) are derived by folding over agents' impacts and efforts at gateways \u2014 so exemplar != landing, and the stalled arcs (27 pieces of effort) are NOT exemplar-dark (this resolves the cold-start). Notorieties (bad) are derived from witnessed violation of policy and priors. The negative pole GENERATES exemplar definitions by inversion (the grip discipline: the non-example defines the example), and the violation stream re-derives the definition (freshness \u2014 never frozen). Boogeyman lifecycle, star-chamber-proof by category: named-before-proof = untidiness (soft: surface and inspect, never detain \u2014 a 'ghost accusation'); witnessed violation = hard notoriety (licenses reversible quarantine); rehabilitated/dissolved = superseded or cleaned. The definitions of exemplar AND boogeyman are themselves versioned, refusable, gated atoms. Value: the system learns what good and bad are from its own evidence, without minting fakes or detaining on a vibe.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/landing-throughput/",
+        "seal:46fa30be0089"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'landing-throughput' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.landing-throughput-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.landing-throughput-resp-gateway-actuator-ambient-thresholds-and-voids.v0",
+    "story": {
+      "text": "The actuator model (bdo co-design): the gateway IS the actuator \u2014 pull/block/route happens because the gateway enforces an ambient threshold (a homeostatic setpoint), and it enforces BOTH ways: shed/quarantine excess, and FILL voids (a sub-setpoint absence is a fill-trigger). The patrol is a scheduled surfacer over a bounded location, composed of surfacers, that finds work near its gateway and routes it by state, reports activity, detains (reversible quarantine) bad actors, and logs threshold use \u2014 the sense/act line held: the patrol may quarantine and present, never judge. Settings derived where possible, grounded in environmental policy. Value: terminal pull gets a concrete actuator (threshold enforcement), and the loop senses-and-fills voids instead of only draining.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/landing-throughput/",
+        "seal:46fa30be0089"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'landing-throughput' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.landing-throughput-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

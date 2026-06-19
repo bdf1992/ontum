@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.landing-throughput-resp-patrol-fold-passed-but-unpulled.v0",
+    "story": {
+      "text": "A patrol fold per gateway that senses seam health: queue age, passed-but-unpulled count, refusal rate, amendment churn, bypass attempts, capacity pressure, stalled-ready slices. Read-only sensor (not a judge), level-triggered, silent unless it detects a deficit. The crucial shift: it watches passed-but-NOT-consumed work, because that is the current failure mode \u2014 the existing surfaces watch refusals, not accumulation. Value: the loop finally senses the thing actually killing it (confirmed work that never lands).",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/landing-throughput/",
+        "seal:46fa30be0089"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'landing-throughput' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.landing-throughput-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

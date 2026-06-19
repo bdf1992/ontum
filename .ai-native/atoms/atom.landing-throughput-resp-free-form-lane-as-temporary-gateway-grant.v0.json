@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.landing-throughput-resp-free-form-lane-as-temporary-gateway-grant.v0",
+    "story": {
+      "text": "The escalated-and-fenced free-form lane becomes a temporary gateway grant: not 'this agent may range freely' but 'this summon may cross these gateways, in this neighborhood, for this through-line, under this guard policy, until this budget expires.' Value: the free-form lane gets teeth (bounded crossing rights, audited, time/budget-boxed) instead of being an unaudited hole.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/landing-throughput/",
+        "seal:46fa30be0089"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'landing-throughput' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.landing-throughput-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}
