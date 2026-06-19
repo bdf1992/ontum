@@ -1,0 +1,51 @@
+{
+  "atom": {
+    "id": "atom.digest-live-glance.v0",
+    "story": {
+      "text": "As bdo, the daily arc digest is one of my two surfaces, and it was lying to me by counting stale history as live work: superseded atom versions still showed in arc parked/refused tallies, a same-day span rendered as an ugly 'start … now' range instead of the date, and loose atoms outside any arc were either invisible or implied to be my move. This atom re-homes codex's fix (done-line 0110) onto the log so the off-log gate can see it: the digest now renders a same-day span as its date, excludes superseded versions from live tallies (marking them 'history'), and names loose live atoms as a session's routing job — never as a stamp waiting on me. The digest finally shows live blockers, not stale history.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The daily digest shows live blockers, not stale history: superseded versions excluded, same-day span labelled, loose atoms named without claiming bdo's move",
+      "value": "codex/digest-readability-fix corrects three ways loop/digest.py mis-read the field. (1) Superseded atom versions are marked 'superseded history' and excluded from a confirmed arc's parked/refused/awaiting tallies via _refresh_arc_counts, with a separate 'history' count so they are visible as history, not live work. (2) A span whose since == until renders as the single date instead of 'start … now'. (3) open_count and the render's 'Your move' line now distinguish a live loose atom (outside any arc, needs a session to route or retire) from settled history, and name it as a session's job rather than implying it waits on bdo's stamp. tests/test_digest.py covers the behavior (30 tests).",
+      "why_now": "bdo's standard for his steering surfaces (memory, 2026-06-16): the digest must lead with the honest answer to 'is anything on me?' and never claim a gesture that isn't there or count stale state as live. The unfixed digest violated both — stale atom.field-topology.v0 showed as live parked work and a loose atom read as owner-work. This is the owner-harness's daily glance telling the truth about itself.",
+      "if_accepted": "bdo's daily digest counts only live work, labels a one-day span by its date, and names loose atoms as a session's routing job — so the glance answers 'is anything on me?' truthfully and the loop carries what is the loop's.",
+      "if_rejected": "The digest keeps inflating arc tallies with superseded history and mislabelling loose work as the owner's, eroding the one surface bdo reads daily instead of operating the merge.",
+      "cost_of_wrong_call": "Low and reversible: loop/digest.py is a pure read-only fold that writes nothing; the change adds version-superseded filtering and label logic with focused tests, and reverting is reverting one PR. No runtime network, no second truth — it reads the same log.",
+      "mechanism": "loop/digest.py: _refresh_arc_counts recomputes an arc's live totals over non-superseded pieces and surfaces a 'history' count; _is_live_piece gates loose-atom liveness; _span_label collapses since == until to the date; open_count and render's 'Your move' / arc-line / loose sections all consult these so history is shown as history and loose live atoms are named as a session's move (not bdo's). Done-line 0110; report 0083; tests/test_digest.py.",
+      "reading": [
+        "loop/digest.py",
+        "tests/test_digest.py",
+        ".ai-native/done/0110-digest-live-glance.md",
+        ".ai-native/reports/0083-digest-live-glance.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/digest.py", "tests/test_digest.py"],
+      "must_not_collide_with": [
+        "the digest fold's existing version-split and divergence detection (this refines the same fold, it does not add a second truth)"
+      ],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/digest.py",
+        "tests/test_digest.py",
+        ".ai-native/done/0110-digest-live-glance.md",
+        ".ai-native/reports/0083-digest-live-glance.md (codex's session report for this work)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Re-homing atom for codex/digest-readability-fix (done-line 0110), authored so the off-log work carries an atom on the log under the atom-invariant gate. The work (loop/digest.py + tests) was authored by codex; this atom is authored by an independent Claude session and judged by an independent value-gate (value-gate.claude.v1) — no one signs their own line (D-2). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
