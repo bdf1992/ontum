@@ -279,5 +279,32 @@ class ConfirmIsBdosStamp(unittest.TestCase):
             pr.cmd_confirm(ns)
 
 
+class ConfirmFromRefValidatesNeverBypasses(unittest.TestCase):
+    """`confirm --from-ref` resolves issue #245's deadlock — an epic introduced
+    by an unlanded PR (its record only on the PR branch, not the trunk) can be
+    confirmed by reading the epic from that ref. The §10 teeth: --from-ref
+    RELOCATES where the epic is validated; it is never a bypass. A ref that does
+    not actually carry the epic must still refuse — epic_id_in_blob is that pure
+    check, over the bytes git hands back."""
+
+    EPIC = "epic.three-marks"
+    BLOB = '{"epic": {"id": "epic.three-marks", "owner": "bdo"}}'
+
+    def test_ref_carrying_the_epic_validates(self):
+        self.assertTrue(pr.epic_id_in_blob(self.BLOB, self.EPIC))
+
+    def test_ref_carrying_a_different_epic_is_refused(self):
+        # the teeth: the ref exists and is a valid epic file, but for ANOTHER
+        # arc — confirming this epic against it must not pass (not a bypass).
+        other = '{"epic": {"id": "epic.owner-harness"}}'
+        self.assertFalse(pr.epic_id_in_blob(other, self.EPIC))
+
+    def test_absent_or_garbage_blob_is_refused(self):
+        # an empty blob (the file does not exist at the ref) or non-JSON is no
+        # epic at all — never read as carrying it.
+        for blob in ("", "   ", "not json", "{}", '{"epic": {}}', "[]"):
+            self.assertFalse(pr.epic_id_in_blob(blob, self.EPIC))
+
+
 if __name__ == "__main__":
     unittest.main()

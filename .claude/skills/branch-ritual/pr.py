@@ -924,13 +924,55 @@ def real_gate_refusal(atom_id, receipts_text):
     return None
 
 
+def epic_id_in_blob(blob_text, epic):
+    """Does this epic-file blob declare the given epic id? Pure — the check
+    `confirm --from-ref` makes over the bytes git hands back, so the teeth (a
+    ref that does NOT actually carry the epic is still refused) are unit-testable
+    without git. An epic file is `{"epic": {"id": ...}}`; anything else is False."""
+    try:
+        return json.loads(blob_text).get("epic", {}).get("id") == epic
+    except (ValueError, AttributeError, TypeError):
+        return False
+
+
+def _materialize_epic_from_ref(wt, ref, epic):
+    """Copy the epic's file from a git ref into a confirm worktree's epics dir,
+    so `confirm` can validate an arc an unlanded PR introduces (issue #245's
+    deadlock: to confirm you need the epic on main, to land the PR you need the
+    arc confirmed). Validation ONLY — the confirm commit stages just
+    admissions.jsonl, so the stamp lands on the trunk while the epic record still
+    lands when ITS PR does. Refuses if the ref does not actually declare the epic
+    (epic_id_in_blob): --from-ref relocates where the epic is read, it is never a
+    bypass of the check, and the epic is read from the branch, never invented."""
+    _run(["git", "fetch", "origin", ref])
+    rel = f".ai-native/epics/{epic}.json"
+    blob = ""
+    for cand in (ref, f"origin/{ref}", "FETCH_HEAD"):
+        blob = _show_at(f"{cand}:{rel}")
+        if blob:
+            break
+    if not epic_id_in_blob(blob, epic):
+        _refuse(
+            f"--from-ref {ref!r} does not carry epic {epic!r} at {rel} — the ref "
+            "must be the branch that introduces the epic (its record is read from "
+            "there, never invented; this is validation, not a bypass)")
+    dest = wt / rel
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(blob, encoding="utf-8")
+
+
 def cmd_confirm(ns):
     """bdo's arc stamp that actually reaches the merge-node. `loop.node
     confirm-arc` only appends to the working tree; the merge-node reads the
     pushed trunk. This is the missing seam: append the same admission and push
     it to `origin/main` in one command, so one stamp authorizes the node — no
     hand-git. The owner's act (D-4): refused unless `--by bdo`. Done on a fresh
-    worktree off origin/main, so a stale or dirty viewport never blocks it."""
+    worktree off origin/main, so a stale or dirty viewport never blocks it.
+
+    `--from-ref <branch>` resolves issue #245's epic-introducing-PR deadlock:
+    when the arc's epic record lives only on an unlanded PR's branch (not yet on
+    the trunk), the epic is read from that ref for validation, while the
+    confirmation still lands on the trunk (the epic itself lands with its PR)."""
     _assert_invocation_root()
     import shutil
     import tempfile
@@ -942,6 +984,9 @@ def cmd_confirm(ns):
         _run(["git", "worktree", "add", "--detach", str(wt), "origin/main"])
         sys.path.insert(0, str(ROOT))
         from loop.node import confirm_arc  # the schema, not a second copy
+        from_ref = getattr(ns, "from_ref", "") or ""
+        if from_ref:
+            _materialize_epic_from_ref(wt, from_ref, ns.epic)
         adm = confirm_arc(wt / ".ai-native", ns.epic, "bdo", enabled=not ns.off)
         rel = ".ai-native/log/admissions.jsonl"
         _run(["git", "-C", str(wt), "add", rel])
@@ -1274,6 +1319,13 @@ def main(argv=None):
                          help="the arc to confirm, e.g. epic.owner-harness")
     confirm.add_argument("--by", required=True,
                          help="bdo — the owner's stamp, refused otherwise (D-4)")
+    confirm.add_argument("--from-ref", dest="from_ref", default="", metavar="REF",
+                         help="validate the epic from this git ref (a PR's head "
+                              "branch) when the arc's epic record lives only on "
+                              "an unlanded PR, not yet on the trunk — issue #245's "
+                              "epic-introducing-PR deadlock. The confirmation "
+                              "still lands on the trunk; only the epic is read "
+                              "from the ref")
     confirm.add_argument("--off", action="store_true",
                          help="withdraw a prior confirmation (supersede, never erase)")
     confirm.set_defaults(func=cmd_confirm)
