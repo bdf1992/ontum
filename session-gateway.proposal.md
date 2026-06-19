@@ -97,6 +97,23 @@ authorized (trust ladder + policy, *composed*), provisioned (a worktree —
 *lazily*, only on a code claim; read/judge sessions get a read-only binding and
 no tree), and **handed its binding** instead of inferring it from a shared HEAD.
 
+**The three A's (bdo, 2026-06-19).** Stated as a property rather than a
+mechanism, a session is born **authenticated, authorized, and attributed** —
+and *attributed* carries both senses on purpose. The session is **given its
+attributes** (the binding *is* the attribute set — workspace, branch, rung,
+claim, routes, capacity) **and** each attribute is a **signed record**
+(`--by`, `ts`, `supersedes`) that the session's every future act attributes
+back to. These are not two steps but one act: an attribute that is not
+attributed — asserted, on the record, by someone — is exactly the failure this
+arc fights, the inferred or self-asserted state (the current branch read from a
+shared HEAD; the merge-node's unadmitted landings). The load-bearing word is
+**given/asserted = not inferred**: you cannot attribute what you inferred, so
+the no-inference rule of §2 falls out as a *consequence* of attribution rather
+than a separate axiom. The three A's are the governance spine of §8 (authority
++ attribution) in session-birth form — authn + authz = **authority** ("may
+you"), and attributed = **attribution** plus the very attributes that authority
+granted.
+
 **Shape: fold + pen + enforcement (the loop's own pattern).**
 - As a **fold** (sense), the gateway answers "what is this session bound to /
   allowed / sufficiently provisioned for?" — read on **every pulse** by the

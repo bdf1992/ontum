@@ -1,0 +1,52 @@
+{
+  "atom": {
+    "id": "atom.ask-surface.v0",
+    "story": {
+      "text": "As bdo steering from the AskUserQuestion surface, I need that surface to be a faithful projection of the session's gesture rather than a generic menu — recommendation-first, routes narrated not labelled, a config panel when I am composing the move, and a comprehension checklist when the fork is about a design whose shape lives in my head — because a list of options with no recommendation is still a queue I must break out of to ask 'what's recommended?', and an ask that fronts a call the session could make is offloading; I want the question to carry the session's reading, not withhold it.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "ask — the ontum way to ask: the question surface as a projection of the session's gesture",
+      "value": "The AskUserQuestion surface, made structural rather than left to a session's willpower (bdo, 2026-06-18: it is 'poorly used when generic' — he had to break out to Other to type 'whats recommended?'). A versioned skill (.claude/skills/ask/) with a governed policy (R1 recommendation-first, R2 routes narrated, R3 config-panel, R4 the offloading refusal, R5 one-way mirror, R6 honest-limit, R7 a design ask carries a multiSelect comprehension checklist), a registered memory home for the living discipline, a deterministic prototype guard (ask_guard.py: shape_problems refuses a generic menu — no recommendation or bare-label routes — fail-open, conservative), and an exemplars gallery the guard's refusal points at (the four worked before->after reshapings, one per refusal-check failure).",
+      "why_now": "bdo asked for it directly (2026-06-18), corrected it into the checklist rule in-thread ('you did NOT give me a checklist like you SHOULD be doing!!!'), and chose to make the ontum-ask shape structural (a skill + policy + guard) rather than a per-session habit. It is the synchronous twin of the bdo-brief node's async digest and the first instance of the structured-communication channel (recommend, done-line 0125, composes its floor).",
+      "if_accepted": "bdo's question surface stops degrading into a menu: every ask leads with the session's reasoned pick and the one divergence seam to weigh against his own judgment; design forks arrive with a comprehension checklist he can correct with a tap; the offloading refusal turns 'am I obeying the ask policy' from willpower into a shape the guard can deny. The owner-harness arc gains its synchronous fork render.",
+      "if_rejected": "The AskUserQuestion surface keeps degrading into the generic menu bdo named as the failure; asks that should never have been raised (offloaded calls) keep reaching him; design forks keep being a single under-shaped pick he cannot tell is a misread until it is built.",
+      "cost_of_wrong_call": "Low: the skill is prompt-as-code and ask_guard.py is an unwired prototype (named in done-line 0119 as the next increment; not in settings.json, so no live hook can false-deny). Reverting is deleting the skill directory and the prototype. The guard is conservative by construction: it denies only a clear generic menu and allows anything it cannot confidently judge.",
+      "mechanism": "A versioned skill .claude/skills/ask/ (SKILL.md the ritual, policy.md the governed rules with references); a registered memory ontum-ask-surface-discipline for accumulated learnings; a prototype PreToolUse guard .claude/hooks/ask_guard.py whose shape_problems() is the deterministic refusal floor (R1/R2) and whose --rate beat surfaces escalating over-asking pressure (the mock-shame shape, never blocking); and exemplars.md, the reshape gallery the guard's deny message and SKILL both cite (this kills the dangling citation the structured-comms proposal named as a ghost). The shape composes the bdo-brief inference-construct (one shape, two render targets); it does not double-build it.",
+      "reading": [
+        ".claude/skills/ask/SKILL.md",
+        ".claude/skills/ask/policy.md",
+        ".claude/skills/ask/exemplars.md",
+        ".claude/hooks/ask_guard.py",
+        ".ai-native/done/0119-ask-surface.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [
+        ".claude/skills/ask/SKILL.md",
+        ".claude/skills/ask/policy.md",
+        ".claude/skills/ask/exemplars.md",
+        ".claude/hooks/ask_guard.py"
+      ],
+      "must_not_collide_with": [".claude/skills/recommend/policy.md", "loop/brief.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/brief.py",
+        ".claude/projects/c--Users-bdf19-ontum/memory/bdo-surface-inference-construct-not-tickets.md"
+      ]
+    }
+  },
+  "_note": "Birth record for ask — the ontum way to ask, the question surface as a projection of the session's gesture (bdo, 2026-06-18; done-line 0119). Authored retroactively to back the PR on the log (the off-log gate's invariant); the work it records already stands on disk. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
