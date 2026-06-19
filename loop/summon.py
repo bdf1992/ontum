@@ -171,6 +171,32 @@ def slowloop_lines(root, hour=None):
     ]
 
 
+def heal_lines(root):
+    """The healing fold's over-bites (done-line 0111), surfaced read-only —
+    where a tooth may have bitten too sharp or a healed bite still surfaces as
+    open. Propose-only, like the slow-loop line: shown, never disposed (D-4) —
+    the heal stays a session's or bdo's move. Tied to the same root; fail-soft,
+    since the hook is exit-0-always."""
+    if not (Path(root) / "log").is_dir():
+        return None
+    from loop import heal as heal_mod
+    d = heal_mod.heal(root)
+    if not d["findings"]:
+        return None
+    counts = ", ".join(f"{k}×{v}" for k, v in sorted(d["counts"].items()))
+    top = d["findings"][0]
+    move = top["move"]
+    if len(move) > 200:
+        move = move[:200].rstrip() + " …"
+    return [
+        f"[loop] healing — {len(d['findings'])} place(s) a tooth may need care "
+        f"({counts}):",
+        f"[loop]   top: {top['kind']} {top['subject']} — {move}",
+        "[loop]   a finding, not a fix — the heal stays yours (D-4); the full "
+        "read: python -m loop.heal",
+    ]
+
+
 def resolve_root(arg_root):
     """Hooks run wherever the harness runs them; the project dir is the
     anchor when given (CLAUDE_PROJECT_DIR), the CWD default otherwise."""
@@ -227,6 +253,13 @@ def main(argv=None):
             sl_lines = slowloop_lines(root)
             if sl_lines:
                 for ln in sl_lines:
+                    print(ln)
+            # done-line 0111: the healing fold's over-bites, read-only — where
+            # a tooth bit too sharp or a healed bite still surfaces (propose-
+            # only, the heal stays a session's or bdo's; D-4).
+            h_lines = heal_lines(root)
+            if h_lines:
+                for ln in h_lines:
                     print(ln)
             gap = top_gap(root)
             if gap:

@@ -120,10 +120,30 @@ class ClaudeParity(unittest.TestCase):
         self.assertEqual([e["status"] for e in recorded], ["degraded"])
 
     def test_prompt_rules_are_at_least_watched_by_claude(self):
+        # A prompt rule is not denied by the Claude guard — only `forbidden`
+        # rows compile into DENY_RULES. Its teeth are on the Codex surface
+        # (it prompts) and the registry record. The invariant that keeps a
+        # prompt rule honest on the Claude side is that the guard at least
+        # *watches* its surface, so the act is never invisible: a git verb
+        # the watcher tracks (GIT_MUTATING), or a non-local external head
+        # (gh, ...) external_bins always records.
         for rule in PROMPT:
+            head = rule["argv"][0]
             with self.subTest(rule=rule["id"]):
-                self.assertEqual(rule["argv"][0], "git")
-                self.assertIn(rule["argv"][1], command_guard.GIT_MUTATING)
+                if head == "git":
+                    verbs = rule["argv"][1]
+                    verbs = verbs if isinstance(verbs, tuple) else (verbs,)
+                    for verb in verbs:
+                        self.assertIn(
+                            verb, command_guard.GIT_MUTATING,
+                            f"{rule['id']}: git prompt rule names a verb the "
+                            f"watcher does not track: {verb}")
+                else:
+                    self.assertNotIn(head, command_guard.LOCAL_HEADS)
+                    self.assertTrue(
+                        command_guard.external_bins(rule["match"][0]),
+                        f"{rule['id']}: prompt-rule surface {head!r} is not "
+                        "watched by the guard")
 
 
 class RenderedSurface(unittest.TestCase):

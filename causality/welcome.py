@@ -194,6 +194,10 @@ font:400 11.5px "Space Grotesk";color:#7a4038;line-height:1.5}
 .absence{font:300 14px "Space Grotesk";color:#6b6456;line-height:1.6}
 .foot{font:300 9px "IBM Plex Mono",monospace;color:var(--faint);
 letter-spacing:.06em;margin-top:30px;line-height:1.9}
+.nav{margin-left:auto;font:500 10px "IBM Plex Mono",monospace;letter-spacing:.16em;
+text-transform:uppercase;color:var(--think);text-decoration:none;
+border:1.2px solid rgba(122,91,166,.5);border-radius:20px;padding:6px 13px}
+.nav:hover{background:rgba(122,91,166,.08)}
 """
 
 FONTS = ("https://fonts.googleapis.com/css2?family=Caveat:wght@500;600"
@@ -317,7 +321,8 @@ def render_html(root, hour, recent=5):
              f"<link href='{FONTS}' rel='stylesheet'>",
              f"<style>{STYLE}</style></head><body>",
              "<header><h1>Causa<b>lity</b></h1>"
-             "<div class='sub'>the felt field · folded, not painted · this moment</div></header>",
+             "<div class='sub'>the felt field · folded, not painted · this moment</div>"
+             "<a class='nav' href='canvas.html'>open the canvas →</a></header>",
              "<p class='lede'>Not a description of the system — a fold of it. What you "
              "feel here is read from the records the loop just kept, this moment.</p>"]
     if field["empty"]:
