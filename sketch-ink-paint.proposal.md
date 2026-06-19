@@ -313,13 +313,12 @@ Today summon hands a janitorial gap. Under this framework it hands a
 **stage-aware situation**:
 
 > *3 marks of pressure. **Sketch un-inked:** 50 branch commits + 14
-> Causality increments carry no atom — exploration that never became
-> truth; ink them, or whiteout them so the ghost stays to learn from.
-> **Ink leaking:** the merge-node has 22
-> landings no admission ever named — provisional hand, permanent mark.
-> **Paint on the wrong wall:** 11 owner-asks sit in report files bdo never
-> opens — done, but unreadable. Top stroke: ink the off-log gate (it makes
-> the un-inked countable).*
+> Causality increments carry no atom — exploration that never became truth;
+> ink them, or whiteout them so the ghost stays to learn from. **Ink
+> leaking:** the merge-node has 22 landings no admission ever named —
+> provisional hand, permanent mark. **Paint on the wrong wall:** owner-asks
+> sit in report files bdo never opens — done, but unreadable. Top stroke:
+> ink the off-log gate (it makes the un-inked countable).*
 
 The owner inherits the same, colored for him: *the un-inked is the
 agents' work; the unreadable paint is mine to receive; one fence-stroke
@@ -350,22 +349,63 @@ unblocks the colorist.*
    once the sketchbook (steps 1–2) gives it something comparable to read —
    you cannot fold a journey the book never recorded.
 
+## Decisions — the short version (so it is easy to act on)
+
+If you want to move this with the least thought, here is the **recommended
+default path** — accept it wholesale, or override only the forks below:
+
+- **Adopt the framing as a *fold label*, not doctrine yet** (Q1). Prove it
+  reads true against the live backlog first; promote the one sentence
+  later.
+- **Build steps 1–2 as the first increment** (Q4): the mark-label on
+  `loop.gaps` + the sketch primitive on the log + the `un_inked()` fold +
+  one summon line. That is the smallest thing that puts the sketchbook back
+  in the book. Scope it as **one done-line under a small epic**, so steps
+  3–6 have a home.
+- **Defer the pentimento/sauce organ to its own arc** (Q5) — it is the
+  deepest gap, but you cannot keep a sauce the kitchen never let simmer;
+  steps 1–2 must feed it first.
+
+Only **two forks genuinely need your judgement** (the rest have safe
+defaults above):
+
+- **Q3 — un-admitted writes: accept-and-stamp-sketch, or refuse at the
+  seam?** My strong lean is **accept-and-stamp** — refusal would have
+  stranded the merge-node's 22 landings instead of making them visible
+  (the exact off-book failure this proposal exists to end). This is the one
+  call that changes the system's character; everything else is mechanics.
+- **Sketch governance** (Q2) — I believe *unchanged* (the inker is still
+  the gate, D-2); flag it only if you disagree.
+
+To start the build when you are back, one line is enough: *"take the
+default path, build steps 1–2."* To change course, name the fork.
+
 ## What this touches, and what it does not
 
-- **Composes with, does not replace** the pens, `gaps.py`,
-  `orchestrate`, the reflect beat, and the outcome-pressure fold — it
-  *names the stages* those already operate in, and ranks across them.
-- **Builds no new write path.** The ink machinery is the win we keep;
-  this only adds a label, a read-only fold, and a boundary check.
-- **Extends the doctrine by one sentence** if adopted: *"A pen is the ink
-  of a three-mark making — sketch (provisional, erasable), ink (committed,
-  receipted), paint (additive, surfaced) — and a flaw is a mark made in
-  the wrong stage."* That is the whole doctrinal cost.
+- **Composes with, does not replace** the pens, `gaps.py`, `orchestrate`,
+  the reflect beat, and the outcome-pressure fold — it *names the stages*
+  those already operate in, and ranks across them.
+- **Adds exactly one small write path** — the cheap **sketch primitive**
+  (a draft mark on the log, paired with the existing whiteout as its
+  eraser). Everything else is a label, a read-only fold, or a boundary on
+  an existing pen; the ink machinery is untouched. (Earlier drafts of this
+  proposal said "no new write path" — that was wrong: the sketchbook needs
+  one. It is the only one.)
+- **Extends the doctrine by two sentences** if adopted, not one — and the
+  second is the larger:
+  1. *the marks:* "A pen is the ink of a three-mark making — sketch
+     (provisional, erasable), ink (committed, receipted), paint (additive,
+     surfaced) — and a flaw is a mark made in the wrong stage."
+  2. *the pentimento:* "State is a fold over the log's surface; **experience
+     is a fold over its palimpsest** — the superseded and abandoned layers
+     — and a loop that keeps no such fold has memory and meaning but cannot
+     get better." This is the load-bearing one, and the bigger commitment.
 
 ---
 
-*Next, if you take it: answer the four questions, and the first build is
-the mark-label on `loop.gaps` plus a sketch primitive on the log and an
-`un_inked()` fold with one summon line — the smallest thing that puts the
-sketchbook back in the book, so a waking session sees the 50 stranded
-commits as comparable sketch instead of a silent strand.*
+*Next, if you take it: the recommended default path above, whose first
+build is the mark-label on `loop.gaps` plus a sketch primitive on the log
+and an `un_inked()` fold with one summon line — the smallest thing that
+puts the sketchbook back in the book, so a waking session sees the 50
+stranded commits as comparable sketch instead of a silent strand. The
+pentimento organ that keeps the sauce is its own arc, after.*
