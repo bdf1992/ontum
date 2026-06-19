@@ -127,6 +127,11 @@
             "type": "command",
             "command": "python .claude/hooks/reflect_auto.py",
             "timeout": 150
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/continue_beat.py",
+            "timeout": 30
           }
         ]
       }
