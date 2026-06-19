@@ -2,7 +2,7 @@
 name: arc-intake
 description: >
   Read bdo's arc confirmations from GitHub and act on them. bdo steers from
-  GitHub on his phone — he closes an arc's confirm issue with a plain-language
+  GitHub, wherever he is — he closes an arc's confirm issue with a plain-language
   comment, and the comment carries his intent. This skill reads that comment,
   judges his intent (confirm / decline / unclear), and on a clear confirm runs
   the confirm pen and lets the merge-node land the arc's PRs — always replying
@@ -19,7 +19,7 @@ version: 0.1.1
 # arc-intake — bdo's GitHub confirmations, read and acted on
 
 bdo will not run a CLI and will not open a custom UI. His surface is GitHub,
-which he already carries on his phone. An arc with PRs waiting becomes one
+which he can reach from any device. An arc with PRs waiting becomes one
 issue; he **closes it with a comment in his own words**, and the comment is
 the intent. This skill is the session that reads him — because meaning is the
 model's to recover, not a keyword's.
