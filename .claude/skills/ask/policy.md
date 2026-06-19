@@ -48,6 +48,28 @@ never hand-tuned silently. A new rule is a new entry here, referenced.
   memory, and audit.
   *Refs:* done-line 0119 non-example.
 
+- **R7 — A design/shape ask carries a comprehension checklist.** When the
+  ask is about a *design*, a direction, or anything whose shape lives in
+  bdo's head (not a simple pick), include a **multiSelect checklist** that
+  surfaces *my current understanding* as confirmable items — "check what I
+  have right, uncheck what's off" — so he can SEE and correct whether I
+  have the shape rather than guess. The pick-one routes *decide*; the
+  checklist *verifies comprehension*. Lead with it.
+  *Refs:* bdo, 2026-06-18 ("you did NOT give me a checklist like you SHOULD
+  be doing!!!") — he often cannot tell when I have grasped the full shape;
+  the checklist is the shape-transfer mechanism. **Cap:** the tool allows
+  ≤4 options per question, so a longer checklist consolidates items or
+  splits across questions (a real constraint, learned the same day).
+  *Enforcement:* this is a **judgment rule**, not a deterministic deny —
+  the guard cannot tell a design ask from a simple one without
+  false-denying legitimate simple asks, which would be worse than the gap
+  (the conservative principle ask_guard is built on). So R7 lives here and
+  in the skill, is applied by the session, and is read by the audit fold;
+  the guard's hard teeth stay on the deterministic floor (R1/R2). The
+  honest split is itself an instance of the gateway-policy-spine's
+  fail-mode tier (see `gateway-policy-spine.proposal.md`): bright-line
+  rules get hard teeth, judgment rules get discipline + audit.
+
 ## The refusal check (the teeth)
 
 Before sending any `AskUserQuestion`, an ask is **refused** — do not send

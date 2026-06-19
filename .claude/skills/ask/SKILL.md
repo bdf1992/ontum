@@ -71,6 +71,14 @@ registered memory, and the audit. Branding lives there, not in CSS.
    code, or a sensible default. If a session could make the call itself,
    making it *is* the work; asking is offloading. This is the refusal —
    see [policy.md](policy.md).
+5. **Design asks carry a comprehension checklist (R7).** When the fork is
+   about a *design* whose shape lives in bdo's head, lead with a
+   **multiSelect checklist** that surfaces *your current understanding* as
+   confirmable items — "check what I have right, uncheck what's off." He
+   often cannot tell when you have grasped the full shape; the checklist
+   is how he sees and corrects it. The routes decide; the checklist
+   verifies you understood. (Tool cap: ≤4 options per question — consolidate
+   or split a longer checklist.)
 
 ## The refusal (the teeth)
 
