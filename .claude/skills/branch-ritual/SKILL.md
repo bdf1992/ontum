@@ -82,14 +82,14 @@ changelog:
       sibling pen, git.py, brands the two highest-risk verbs in the
       shared-tree fleet: `add` refuses a sweep (`add .` / `-A` / `-u`)
       and stages only named paths; `commit` refuses `-a`/`--all`,
-      requires a real step-shaped message, and never commits the trunk.
+      requires a real step-shaped message, requires `commit --on <branch>`
+      so the intended branch is declared, and never commits the trunk.
       `commit --on <branch>` is the HEAD-intent guard (done-line 0118):
       assert the branch you believe you are on and the pen refuses if live
       HEAD differs — a parallel session can move the shared worktree's
       branch under you between reading HEAD and committing; the assertion
-      turns that collision into a clean deny. Omitting `--on` skips the
-      check (backward compatible); pass it whenever you commit in a shared
-      tree.
+      turns that collision into a clean deny. Omitting `--on` refuses:
+      branch intent is required on every commit.
       Raw `git add` / `git commit` join the command_guard deny-list,
       routed to the pen; everything else git add/commit take is
       forwarded for parity. The watcher now sees standalone local
@@ -237,7 +237,7 @@ section), don't work around it.
 2. Confirm you're on this session's `claude/*` branch *in its own worktree*
    (not the primary checkout) and everything is committed — stage named
    paths and commit through the git pen (`git.py add <paths>`, then
-   `git.py commit -m "<what landed>"`): small, step-shaped commits, no
+   `git.py commit --on <branch> -m "<what landed>"`): small, step-shaped commits, no
    sweep.
    Mid-session increments leave the machine only through the branded push:
    `python .claude/skills/branch-ritual/pr.py push` (red suite refuses

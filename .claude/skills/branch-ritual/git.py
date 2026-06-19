@@ -201,10 +201,16 @@ def head_intent_refusal(branch, expected):
     commit that names its branch is refused when the names disagree (the
     collision that authored this guard). The assertion is per-invocation and
     explicit: nothing stored, nothing another session can race. Omitting
-    `--on` skips the check (backward compatible) — the protection is opt-in
-    until it is made the default (a later chapter of the session-gateway arc)."""
+    `--on` refuses: branch intent is mandatory after the moving-viewport
+    incident."""
+    # Hotfix: branch intent is mandatory; do not infer it from live HEAD.
     if not expected:
-        return None
+        return (
+            "HEAD-intent required: commit with `--on <branch>` naming the "
+            "branch this work is meant for. A moving shared viewport already "
+            "landed a commit on the wrong branch; the pen will not infer "
+            "intent from live HEAD."
+        )
     if branch != expected:
         return (
             f"HEAD-intent mismatch: you declared --on '{expected}', but live HEAD "
@@ -832,7 +838,7 @@ def main(argv=None):
                         help="optional intent tag; a known value that lies about "
                              "the verb is refused, a new one rides as proposed")
     commit.add_argument("--on", metavar="BRANCH",
-                        help="the branch you believe you are on; the pen refuses "
+                        help="required branch intent; the pen refuses "
                              "if live HEAD differs — the HEAD-intent guard "
                              "(done-line 0118), for the shared-tree fleet")
     commit.add_argument("--claim", metavar="WORK",

@@ -121,6 +121,11 @@ class TestFold(unittest.TestCase):
 class TestLivePenWiring(unittest.TestCase):
     """Drive the git pen as a subprocess to prove `--claim` reaches the check."""
 
+    def _current_branch(self):
+        return subprocess.run(
+            ["git", "branch", "--show-current"], cwd=REPO,
+            capture_output=True, text=True).stdout.strip()
+
     def test_claim_for_unowned_work_refuses(self):
         """A commit asserting a `--claim` the current branch is not bound to is
         refused — whether the branch is UNBOUND ("not bound") or bound to OTHER
@@ -129,9 +134,12 @@ class TestLivePenWiring(unittest.TestCase):
         its own atom when the dogfood ran), so the wiring proof is the stable
         part: `--claim` reaches `binding_refusal`, names the asserted claim,
         and denies cleanly."""
+        cur = self._current_branch()
+        if not cur:
+            self.skipTest("detached HEAD in this test environment")
         p = subprocess.run(
             [sys.executable, str(PEN), "commit",
-             "--claim", "atom.definitely-not-bound", "-m", "x"],
+             "--on", cur, "--claim", "atom.definitely-not-bound", "-m", "x"],
             cwd=REPO, capture_output=True, text=True)
         out = p.stdout + p.stderr
         self.assertNotEqual(p.returncode, 0,

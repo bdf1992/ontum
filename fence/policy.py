@@ -217,17 +217,34 @@ RULES = (
         "not_match": ("git status",),
     },
     {
-        "id": "git-branch-topology",
-        "argv": ("git", ("branch", "worktree")),
+        "id": "git-branch-mutate",
+        "argv": ("git", "branch", ("-d", "-D", "-m", "-M", "-c", "-C",
+                                   "--delete", "--move", "--copy")),
         "decision": "prompt",
         "justification": (
-            "Creating or deleting branches and worktrees is fleet topology. "
-            "Sessions branch off main into ../ontum-wt/<slug> (AGENTS.md); "
-            "deleting a branch can strand unpushed work. Approve only for "
-            "your own worktree."
+            "Deleting, moving, or copying branches is fleet topology. "
+            "Deleting a branch can strand unpushed work; moving one can "
+            "move a session's floor. Approve only for your own worktree."
         ),
-        "match": ("git branch -d old", "git worktree add ../wt/x"),
-        "not_match": ("git status",),
+        "match": ("git branch -d old", "git branch --delete old",
+                  "git branch -m old new"),
+        "not_match": ("git status", "git branch --show-current",
+                      "git branch --list"),
+    },
+    {
+        "id": "git-worktree-mutate",
+        "argv": ("git", "worktree", ("add", "remove", "prune", "repair",
+                                     "move")),
+        "decision": "prompt",
+        "justification": (
+            "Creating, moving, repairing, pruning, or removing worktrees is "
+            "fleet topology. Sessions branch off main into ../ontum-wt/<slug> "
+            "(AGENTS.md); approve only for your own worktree."
+        ),
+        "match": ("git worktree add ../wt/x", "git worktree remove ../wt/x",
+                  "git worktree prune"),
+        "not_match": ("git status", "git worktree list",
+                      "git worktree list --porcelain"),
     },
     # Raw `gh` mutations beyond `pr` (done-line 0101). `gh` is always
     # watched by the Claude guard (it is external, never local); registering
