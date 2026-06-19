@@ -191,15 +191,38 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["git", ["branch", "worktree"]],
+    pattern = ["git", "branch", ["-d", "-D", "-m", "-M", "-c", "-C", "--delete", "--move", "--copy"]],
     decision = "prompt",
-    justification = "Creating or deleting branches and worktrees is fleet topology. Sessions branch off main into ../ontum-wt/<slug> (AGENTS.md); deleting a branch can strand unpushed work. Approve only for your own worktree.",
+    justification = "Deleting, moving, or copying a branch is fleet topology \u2014 in the shared tree it can strand unpushed work. Sessions branch off main into their own worktree (../ontum-wt/<slug>; AGENTS.md); approve only for your own worktree. Read-only `git branch`, `git branch --show-current`, and `git branch --list` are not topology \u2014 they pass, the introspection a session needs to know where it is.",
     match = [
         "git branch -d old",
-        "git worktree add ../wt/x",
+        "git branch -D feature",
+        "git branch -m old new",
+        "git branch --delete old",
+        "git branch --move old new",
+        "git branch -C a b",
     ],
     not_match = [
+        "git branch",
+        "git branch --show-current",
+        "git branch --list",
         "git status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "worktree", ["add", "remove", "prune", "repair", "move"]],
+    decision = "prompt",
+    justification = "Adding, removing, pruning, repairing, or moving a worktree is fleet topology. A session provisions its own worktree off main (../ontum-wt/<slug>; AGENTS.md) and approves only for that. Read-only `git worktree list [--porcelain]` is introspection \u2014 it passes, so a session can see the fleet's worktrees.",
+    match = [
+        "git worktree add ../wt/x",
+        "git worktree remove ../wt/x",
+        "git worktree prune",
+        "git worktree move ../a ../b",
+    ],
+    not_match = [
+        "git worktree list",
+        "git worktree list --porcelain",
     ],
 )
 
