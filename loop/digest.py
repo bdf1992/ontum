@@ -50,6 +50,26 @@ from loop.reconcile import (DEFAULT_ROOT, TERMINAL_EVENT, Fold, arc_confirmation
                             now_ts, real_nodes)
 from loop.orchestrate import next_action, read_setpoint
 
+# A merge-node `landed` verdict is the terminal act but carries no next event;
+# read it as a landing, not a refusal (retro fold 0098 surfaced the inflation).
+LANDING_VERDICTS = frozenset({"landed"})
+
+
+def _is_landing(rc):
+    """A receipt that advanced the work to terminal — the explicit advance into
+    TERMINAL_EVENT, or a `landed` verdict (terminal by nature, no next event)."""
+    return (rc.get("next_suggested_event") == TERMINAL_EVENT
+            or rc.get("verdict") in LANDING_VERDICTS)
+
+
+def _is_refusal(rc):
+    """A receipt that did not advance and is not a landing — a real pushed-back
+    verdict. A landing is never a refusal, and a receipt carrying no verdict
+    refused nothing (so neither merge landings nor verdict-less records count)."""
+    return (rc.get("next_suggested_event") is None
+            and not _is_landing(rc)
+            and bool(rc.get("verdict")))
+
 
 def in_span(ts, since, until):
     """A record's date (ts[:10]) within [since, until] inclusive; a None
@@ -102,11 +122,13 @@ def digest(root, since=None, until=None):
     setpoint = read_setpoint(fold.admissions)
 
     receipts = [rc for rc in fold.receipts if in_span(rc.get("ts"), since, until)]
-    # generic verdict reading: the advance into TERMINAL_EVENT is a landing;
-    # a receipt with no next event is a refusal — true for the mock pipeline
-    # today and the merge-node's {land, refuse, send_back} the day it lands.
-    landings = [rc for rc in receipts if rc.get("next_suggested_event") == TERMINAL_EVENT]
-    refusals = [rc for rc in receipts if rc.get("next_suggested_event") is None]
+    # generic verdict reading (corrected, retro fold 0098): a landing is the
+    # advance into TERMINAL_EVENT OR a `landed` verdict (which carries no next
+    # event — it IS terminal); a refusal is a non-advancing, non-landing verdict.
+    # The old "no next event == refusal" counted all 77 merge landings as
+    # refusals (the 58-where-~7-were-real inflation retro surfaced).
+    landings = [rc for rc in receipts if _is_landing(rc)]
+    refusals = [rc for rc in receipts if _is_refusal(rc)]
 
     # attribute every present atom to its arc (or to the loose pile)
     by_epic = {}
@@ -170,6 +192,15 @@ def digest(root, since=None, until=None):
             piece["standing"] = "superseded history"
     divergences = _divergences(fold, arcs, ticks, since, until, superseded)
 
+    # the prose stream — phrasing-lane edits in span, so the light lane (done-line
+    # 0117) is visible here and bdo is never blind to it (his correction, 2026-06-18)
+    phrasing_in_span = [
+        {"id": a.get("id"), "by": a.get("by"), "reason": a.get("reason"),
+         "files": [f.get("path") for f in a.get("files", [])]}
+        for a in fold.admissions
+        if a.get("type") == "phrasing" and in_span(a.get("ts"), since, until)
+    ]
+
     return {
         "span": {"since": since, "until": until},
         "setpoint": setpoint,
@@ -179,6 +210,7 @@ def digest(root, since=None, until=None):
         "landings": len(landings),
         "refusals": len(refusals),
         "divergences": divergences,
+        "phrasing": phrasing_in_span,
     }
 
 
@@ -436,7 +468,17 @@ def render(d):
             if p.get("standing") not in ("landed", "unbuilt",
                                          "superseded history"):
                 lines.append(f"    - `{p['atom']}` — {p.get('standing')}")
-    lines.append("")
+    # 5. the prose stream — the light lane's edits, so you are never blind to it
+    ph = d.get("phrasing", [])
+    if ph:
+        lines.append(f"## Prose edits ({len(ph)}) — the light lane (no atom, "
+                     "still on the log)")
+        for e in ph:
+            files = ", ".join(f"`{p}`" for p in e["files"])
+            lines.append(f"- {_glance(e.get('reason'))} — by {e.get('by')} "
+                         f"({files})")
+        lines.append("")
+
     lines.append(f"_{d['landings']} landing(s), {d['refusals']} refusal(s) "
                  f"in span._")
     return "\n".join(lines)

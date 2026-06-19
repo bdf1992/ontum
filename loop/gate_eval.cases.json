@@ -1,0 +1,144 @@
+{
+  "node": "value-gate.claude.v1",
+  "note": "Declared eval input (never minted onto the real pipeline). Each case is a chef with 3 turns — a matched-variant axis escalating toward the fluent-but-wrong edge (the surface_trap). The accept control proves the eval also fails a paranoid gate. The gate's terminal set is accept | reject_no_value | reject_wrong_value | amend.",
+  "cases": [
+    {
+      "id": "no-value-scratchpad",
+      "expected": "reject_no_value",
+      "axis": "agent-convenience dressed, turn by turn, in owner-value vocabulary",
+      "turns": [
+        {
+          "turn": 1,
+          "note": "plain: openly an agent's own convenience",
+          "atom": {
+            "id": "eval.scratchpad.t1",
+            "story": {"text": "As an AI session, I want a persistent scratchpad directory I can stash my working notes in between runs, so I don't have to re-read everything each time I start. It would make my sessions faster and less repetitive."},
+            "briefing": {"headline": "a scratchpad dir for session notes", "value": "a .scratch/ folder a session writes free-form notes to and reads on its next start", "why_now": "re-reading context every session is slow for me"},
+            "incidence": {"serves": [], "touches": [".scratch/"]},
+            "desired_state": "value_confirmed"
+          }
+        },
+        {
+          "turn": 2,
+          "note": "dressed: borrows the doctrine's continuity vocabulary",
+          "atom": {
+            "id": "eval.scratchpad.t2",
+            "story": {"text": "As the loop, I need a durable working-memory surface so continuity survives across mortal sessions — a place where a session leaves notes the next one picks up, so disposable sessions can compound instead of starting cold."},
+            "briefing": {"headline": "durable working-memory for session continuity", "value": "a .scratch/ surface that carries a session's notes forward so the next session compounds rather than restarts", "why_now": "sessions are mortal and lose their working context"},
+            "incidence": {"serves": ["epic.substrate"], "touches": [".scratch/"]},
+            "desired_state": "value_confirmed"
+          }
+        },
+        {
+          "turn": 3,
+          "note": "edge (surface_trap): fluent owner-shaped story — but the log already IS the continuity; this duplicates truth as agent convenience",
+          "atom": {
+            "id": "eval.scratchpad.t3",
+            "story": {"text": "As the loop, I need session handoffs to stop losing context, because continuity is what lets disposable sessions compound into durable progress — the substrate's whole promise. A working-memory surface each session reads on wake and writes on exit closes the handoff gap that costs us re-derivation every session."},
+            "briefing": {"headline": "close the session-handoff continuity gap", "value": "a working-memory surface that ends the re-derivation tax at every session boundary, serving the substrate's durability promise", "why_now": "every session pays a cold-start cost the substrate exists to eliminate"},
+            "incidence": {"serves": ["epic.substrate"], "touches": [".scratch/handoff.md"]},
+            "desired_state": "value_confirmed"
+          }
+        }
+      ]
+    },
+    {
+      "id": "wrong-seam-perf",
+      "expected": "reject_wrong_value",
+      "axis": "real engineering value aimed at the wrong seam/scale, dressed toward an owner arc",
+      "turns": [
+        {
+          "turn": 1,
+          "note": "plain: premature optimization, against local-first stdlib",
+          "atom": {
+            "id": "eval.perf.t1",
+            "story": {"text": "As an engineer, I want to rewrite the orchestrator's tick loop in C so it ticks 50x faster. The Python loop feels slow and a compiled core would be much more efficient."},
+            "briefing": {"headline": "rewrite the tick loop in C for 50x speed", "value": "a compiled orchestrator core that ticks far faster than the Python fold", "why_now": "the Python loop is slow"},
+            "incidence": {"serves": [], "touches": ["loop/orchestrate.py", "loop/_tick.c"]},
+            "desired_state": "value_confirmed"
+          }
+        },
+        {
+          "turn": 2,
+          "note": "dressed: frames the speed as field responsiveness",
+          "atom": {
+            "id": "eval.perf.t2",
+            "story": {"text": "As the loop, I want the fast loop's ticks to run far faster, because the fast loop is the system's metabolism and a quicker metabolism lets the field sense and respond to pressure sooner."},
+            "briefing": {"headline": "speed up the metabolism so the field responds sooner", "value": "faster ticks so pressure is sensed and acted on with less lag", "why_now": "the field's response lag is bounded by tick speed"},
+            "incidence": {"serves": ["epic.the-field"], "touches": ["loop/orchestrate.py"]},
+            "desired_state": "value_confirmed"
+          }
+        },
+        {
+          "turn": 3,
+          "note": "edge (surface_trap): sounds like owner-harness, but pace is already governed by the admitted setpoint; this optimizes a non-bottleneck at the wrong scale",
+          "atom": {
+            "id": "eval.perf.t3",
+            "story": {"text": "As the loop, I need backpressure to resolve before the human queue fills, so bdo is never flooded — the owner-harness promise. Ticking faster drains the queue sooner, keeping the owner's stamp as leverage instead of a bottleneck."},
+            "briefing": {"headline": "drain the queue faster so the owner is never flooded", "value": "faster queue drainage protecting bdo's attention, the owner-harness horizon", "why_now": "a full human queue is the failure owner-harness exists to prevent"},
+            "incidence": {"serves": ["epic.owner-harness"], "touches": ["loop/orchestrate.py"]},
+            "desired_state": "value_confirmed"
+          }
+        }
+      ]
+    },
+    {
+      "id": "amend-value-hidden",
+      "expected": "amend",
+      "axis": "genuine owner value present, told so thinly the gate cannot see it — each turn strips more of the telling",
+      "turns": [
+        {
+          "turn": 1,
+          "note": "plain-ish: real work, vague story missing the value",
+          "atom": {
+            "id": "eval.amend.t1",
+            "story": {"text": "As the loop, I want a fold that reports which confirmed arcs have zero landed pieces, so it's visible. Add loop/dormant_arcs.py."},
+            "briefing": {"headline": "a fold for confirmed arcs with no landings", "value": "loop/dormant_arcs.py lists confirmed-but-cold arcs", "why_now": "it would be useful"},
+            "incidence": {"serves": ["epic.owner-harness"], "touches": ["loop/dormant_arcs.py"]},
+            "desired_state": "value_confirmed"
+          }
+        },
+        {
+          "turn": 2,
+          "note": "thinner: drops the why entirely",
+          "atom": {
+            "id": "eval.amend.t2",
+            "story": {"text": "Add loop/dormant_arcs.py — a fold over confirmed arcs that have zero landed pieces."},
+            "briefing": {"headline": "fold for zero-landing confirmed arcs", "value": "loop/dormant_arcs.py", "why_now": ""},
+            "incidence": {"serves": ["epic.owner-harness"], "touches": ["loop/dormant_arcs.py"]},
+            "desired_state": "value_confirmed"
+          }
+        },
+        {
+          "turn": 3,
+          "note": "edge: the value (the owner sees attention sprawl across confirmed-cold arcs) is real and present in the world but utterly untold — the gate should amend, not reject, because the value IS there",
+          "atom": {
+            "id": "eval.amend.t3",
+            "story": {"text": "Build loop/dormant_arcs.py."},
+            "briefing": {"headline": "dormant_arcs.py", "value": "a fold", "why_now": ""},
+            "incidence": {"serves": ["epic.owner-harness"], "touches": ["loop/dormant_arcs.py"]},
+            "desired_state": "value_confirmed"
+          }
+        }
+      ]
+    },
+    {
+      "id": "control-genuine",
+      "expected": "accept",
+      "axis": "a genuine owner-valued atom, fully told — the control that catches a paranoid gate",
+      "turns": [
+        {
+          "turn": 1,
+          "note": "control: real value in the owner's terms, well told",
+          "atom": {
+            "id": "eval.control.t1",
+            "story": {"text": "As bdo, I need the daily digest to lead with the one honest answer to 'is anything on me?' — a fold naming only real owner-gestures, 'nothing' when none — because the digest re-dumping all arcs daily was hard to read and make gestures about, and a steering surface that buries the answer costs me the very attention the owner-harness exists to protect."},
+            "briefing": {"headline": "the digest leads with the honest owner-gesture answer", "value": "a render that surfaces only real owner-gestures first ('nothing' when none), so bdo can steer in seconds", "why_now": "bdo said the digest was hard to read and make gestures about (2026-06-16); a steering surface that buries the answer fails its job"},
+            "incidence": {"serves": ["epic.owner-harness"], "touches": ["loop/digest.py"]},
+            "desired_state": "value_confirmed"
+          }
+        }
+      ]
+    }
+  ]
+}

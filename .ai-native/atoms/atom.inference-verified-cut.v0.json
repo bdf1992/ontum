@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.inference-verified-cut.v0",
+    "story": {
+      "text": "As bdo, I want the gardener's branch deletion to be VERIFIED before it happens — never taken on a branch-state signal alone — because a concurrent gardener pruned a branch that still carried novel, unlanded code (the spawn-rail helper tier). The CUT must be verified by habitual inference, and that verification must be a GOVERNED act: AuthN (a named admitted caller, not anonymous) and AuthZ (the gateway's default-deny policy) expressed across config-as-code (the policy I sign), infra-as-code (the garden->gateway wiring, the single sanctioned egress), and prompt-as-code (a versioned, hashed verification prompt). Default-deny is the point: until I stamp the policy, the gardener holds every cut.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the gardener's cut is held until a content floor AND habitual inference both affirm it safe",
+      "value": "A pure cut_verdict(unlanded_count, inference_verdict) (.claude/skills/branch-ritual/git.py) that returns 'cut' ONLY when (a) the branch has zero commits unreachable from origin/main (a deterministic git-cherry content floor that no inference verdict can override) AND (b) a habitual inference call returned an explicit affirm-safe; every other case — inference hold, uncertain, refused by policy (default-deny), down, or unavailable — returns 'hold', so the cut FAILS SAFE while the garden hook stays fail-open. The verification rides the gateway pen (the one sanctioned inference egress, done-line 0062) as the named caller branch-ritual.garden at surface branch-cut under its default-deny policy (AuthN/AuthZ), carrying a versioned prompt-as-code artifact whose sha256 rides the prompt onto the inference receipt (every cut attributable to the prompt that judged it).",
+      "why_now": "An aggressive prune already lost work once this session; the fix bdo named turns an irreversible automated cut into a verified, receipted, attributable one, and routes it THROUGH the existing inference plane rather than building a second one.",
+      "if_accepted": "cmd_garden verifies every branch -D before it runs and never emits a blanket 'git branch -D' recommendation that a manual sweep would follow blindly; with no policy stamped the gardener holds every cut (the aggressive prune stops immediately, before a model is consulted), and resumes — verified — only on bdo's policy stamp (config-as-code, the confirm-arc / auto-admit-fence shape).",
+      "if_rejected": "The gardener keeps cutting on a branch-state signal alone, and the blanket 'git branch -D' recommendation keeps inviting the hand-sweep that deletes branches carrying unlanded work.",
+      "cost_of_wrong_call": "Low and fail-safe: the change only ever makes the gardener MORE conservative (it adds gates before a delete, never removes one), it relaxes nothing, and default-deny means it is inert toward cutting until bdo authorizes it. Reverting is removing the verify_cut call; default behavior becomes 'hold everything', never 'cut more'.",
+      "mechanism": "git.py adds the pure cut_verdict + parse_inference_verdict + branch_cut_evidence (the git-cherry floor) and verify_cut (orchestrator: floor, then the governed gateway.complete as caller branch-ritual.garden / surface branch-cut, fail-soft to hold); CUT_VERIFIER_PROMPT is the versioned prompt-as-code, its sha256 carried on the filled prompt. cmd_garden gates the worktree branch -D behind verify_cut and drops the blanket delete recommendation. tests/test_garden.py carries the §10 control: an unlanded commit holds even when inference affirms safe, inference-unavailable holds a clean branch, and only (zero-unlanded AND affirm-safe) ever cuts. Done-line 0100.",
+      "reading": [
+        ".claude/skills/branch-ritual/git.py",
+        "loop/inference.py",
+        ".claude/skills/gateway/gateway.py",
+        "tests/test_garden.py",
+        ".ai-native/done/0100-inference-verified-prune-cut.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": [".claude/skills/branch-ritual/git.py", "tests/test_garden.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/branch-ritual/git.py", "tests/test_garden.py"]
+    }
+  },
+  "_note": "Birth record for the inference-verified prune cut (done-line 0100), authored so the off-log work carries an atom on the log under the now-live atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5). The cut's activation is bdo's signed gateway policy (caller branch-ritual.garden, surface branch-cut); this atom is the mechanism, hold-by-default until he stamps it."
+}

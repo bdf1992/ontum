@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.causality-hero-animated.v0",
+    "story": {
+      "text": "As bdo, I want the Causality hero — the served landing at the public URL I open from my phone — to actually be alive when I reach it, not a still diagram: glyphs that fill like water vessels by how much they carry, a pulse that travels each relation so I can see the beat of an act move, facets that grow out of a glyph when I open it instead of popping, and a felt field whose tempo and ink-life come from the story's own structure rather than decoration. This is the increment that completes the first real landing of the whole hero surface (the design system, the phrase portfolio, the progressive-discovery renderer, and the Pages build that serves it), so the place the system becomes communicable is finally both reachable and animate. The serving stays the experience layer, never the loop: only rendered static artifacts leave, the loop's metabolism stays local-first, and the motion writes nothing back.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The Causality hero comes alive: the served Story-demo surface, animated and folded from the mesh",
+      "value": "The canvas design system (canvas-system.js) declared six animation tokens but the Story-demo renderer used only two, leaving four declared-but-idle. This wires all four into causality/story.html — water-fill discs whose level is folded from each glyph's degree in the mesh, an amber pulse that travels every relation edge (rust on feedback loops), an activation ring when a glyph opens, and a staggered entrance fade — and grounds the felt field in structure rather than paint: ink-wobble amplitude (energy) and pulse tempo are folded per-phrase from edge density and loop count, so a denser story visibly runs more alive. Hover-to-open eases the facets growing out of the glyph and re-anchors facet-level edges to their animated positions. It is the closing increment of the first landing of the entire Causality hero surface to main, where it deploys to the public URL.",
+      "why_now": "bdo asked to work on animations and polish for the canvas, judged it by eye, and confirmed the direction on the live screenshots; then asked to land it so it reaches the served URL. The hero surface has never landed (the branch was 13 commits ahead of main and the live URL was a stale deploy), so this is the increment that both completes the polish and puts the whole surface up. epic.causality-surface is confirmed and its charter is exactly this: the system gains a place to be seen and steered.",
+      "if_accepted": "The owner opens the public URL and the hero is animate in the established design language — water-level glyphs, travelling pulses, eased facet discovery, a felt field that emerges from each phrase's own structure. The Causality surface crosses from a still served page to a living one without the loop gaining any network seam or a second way to be changed.",
+      "if_rejected": "The hero stays a still diagram behind a stale deploy; the four declared animation tokens remain idle promises in the design system; the 'felt field' stays a claim rather than something visible, and the experience work keeps being hard to judge because the alive version is never the one on the URL.",
+      "cost_of_wrong_call": "Low and reversible: the change is confined to the experience layer (causality/story.html and its read-only fold over the committed design system + portfolio), published only as static artifacts by the existing Pages build. No runtime network is added; nothing is written back; reverting is reverting one PR. The motion is frame-rate independent and verified deterministically headless, so it cannot silently regress the loop.",
+      "mechanism": "causality/story.html: a real-time-driven clock with entrance and water levels expressed closed-form in time (frame-rate independent, headless-verifiable); per-glyph animation state (openA/waterA/birthA/ringT) advanced each frame; a waterDisc primitive (clipped fill with a live meniscus) whose level is folded from glyph degree; a pulseDot travelling each edge's bezier at the folded tempo; an activation ring on open; eased facet grow-out with edges re-anchored to animated facet positions. energy and tempo are folded per-phrase from the mesh (edge count, feedback-loop count). No new design tokens are invented — every motion is an existing canvas-system.js ANIM entry finally rendered. Recorded as iterations 0009.",
+      "reading": [
+        "causality/story.html",
+        "causality/canvas-system.js",
+        "causality/iterations.md"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.causality-surface"],
+      "touches": ["causality/story.html", "causality/canvas-system.js", "causality/phrases.json", ".github/workflows/pages.yml"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["causality/story.html", "causality/canvas-system.js"]
+    }
+  },
+  "_note": "Birth record for the animated Causality hero (iterations 0009), authored so the served-surface work carries an atom on the log under the atom-invariant gate. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
