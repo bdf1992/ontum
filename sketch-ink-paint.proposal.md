@@ -4,7 +4,9 @@
 craft it is borrowed from. The pen is the **inker's** stage of a
 three-stage making — pencil sketch, pen linework, paint-over — and naming
 the other two turns a scattered backlog of recurring flaws into one
-diagnosis. Written for bdo to react to. Not adopted — a proposal.*
+diagnosis. A fourth element emerged in conversation with bdo — the
+**pentimento** (experience read out of the palimpsest), the organ ontum is
+most missing. Written for bdo to react to. Not adopted — a proposal.*
 
 ## The problem, exactly
 
@@ -79,6 +81,52 @@ This flips one line of the diagnosis below: the 50 stranded commits are
 the book*, which is precisely why we can neither learn from them nor
 improve. Getting sketch **into** the book (as erasable-with-trace) is the
 fix, not getting it off.
+
+## The pentimento — the fourth element, and the one we are most missing
+
+There are three *marks* (sketch, ink, paint), but the principle above
+names a fourth thing that is not a mark at all — it runs *across* all
+three, and it is the reason any of this is worth doing. The trades have
+exact words for it:
+
+- **A pentimento** — the single trace. The art word (Italian *pentirsi*,
+  "to repent") for a line a painter changed or painted over that *still
+  shows through.* Your eraser-that-leaves-a-trace is, precisely, a
+  pentimento. ontum already mints these: the whiteout/supersede ("leaves a
+  mark; you can still see under it").
+- **A palimpsest** — the accumulated book. A manuscript scraped and
+  rewritten where the earlier writing is still partly readable beneath. The
+  append-only log *is* a palimpsest: every superseded verdict, abandoned
+  branch, and whited-out line still legible under the current surface.
+- **Craft / tacit knowledge / "tricks of the trade"** — the output. The
+  lore distilled from many pentimenti and **happy accidents** (serendipity
+  — which only pays off if the accident left a trace you can return to and
+  recognize: *no book, no happy accident*).
+
+The unifier — the thing that is neither "memory" nor "meaning" — is
+**experience**:
+
+> **Memory is the trace retained. Meaning is what the trace says.
+> Experience is memory made *comparable* — held against enough other
+> traces that it hardens into craft.** Comparison is the metabolism between
+> them, and it is the whole reason the sketch must stay on the book.
+
+**Why this is the organ ontum is most missing.** Every fold today reads
+the log down to *current state* — `gaps`, `census`, `term_economy`,
+`reconcile` all ask *"what is true now?"* and throw the **journey** away.
+None asks *"what did we try, abandon, or stumble into?"* The slow loop
+(§15, run-hot-to-explore / cool-to-consolidate) is *supposed* to be the
+craft-distiller, but it currently folds the snapshot, not the palimpsest —
+and it cannot even write back its one dial (the write-back gap, report
+0062). So the system has memory (the log) and meaning (the folds) but
+**no experience** — it cannot get better at its own craft, only re-derive
+its current state. That is the deepest flaw under all the others.
+
+The fix names an organ, not a mark: a **palimpsest fold** — a read over
+the log's *superseded and abandoned* layers (not its surface) whose output
+is **craft** the next session inherits at wake, the same way it inherits a
+gap today. The pentimento layer is how the hand gets better; without it,
+the loop is a thermostat, not an apprentice.
 
 ## The five dimensions (Media, Medium, Method, Muse, Mode)
 
@@ -222,6 +270,16 @@ its own, §9):
    until he draws the fence — exactly the right shape (D-4 at one level
    down).
 
+6. **The palimpsest fold — the pentimento organ (the deepest, do last).**
+   A read-only fold over the log's *superseded and abandoned* layers — not
+   its current surface — that surfaces "what did we try and erase, and what
+   keeps recurring" as **craft** the summon hands at wake. The whiteout and
+   the un-inked fold (step 2) are its inputs; the slow loop is its natural
+   consumer (it would fold the journey, not the snapshot). This is the
+   organ that turns memory + meaning into experience — the thing that lets
+   the hand get better, currently absent. Largest of the six; the first
+   five make it possible.
+
 Nothing here is a new subsystem. Every step is *a label, a fold, or a
 boundary on an existing pen* — because the ink machinery is already built;
 the work is naming the two marks on either side of it.
@@ -263,6 +321,11 @@ unblocks the colorist.*
 4. **First build scope.** Smallest real version: steps 1–2 (relabel +
    the un-inked fold + one summon line). Does that become an epic with a
    done-line series, or a single done-line?
+5. **The pentimento organ — its own arc?** The palimpsest fold (step 6) is
+   bigger than this proposal and arguably the system's deepest gap (no
+   *experience*, only state). *My lean:* it earns its own epic/outcome
+   once the sketchbook (steps 1–2) gives it something comparable to read —
+   you cannot fold a journey the book never recorded.
 
 ## What this touches, and what it does not
 
