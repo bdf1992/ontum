@@ -37,3 +37,8 @@ __pycache__/
 # Jekyll/Pages build output — rebuilt from source on every `jekyll build`
 # and by the Pages workflow; never truth, never tracked.
 _site/
+
+# session-ephemeral nag state, not truth: the continue-beat's per-session
+# beat count + escalate marker (done-line 0127) — the work it nudges toward
+# is a fold over the log; this only holds the patrol's count and stand-down
+.ai-native/continue-beat.json
