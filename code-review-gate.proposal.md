@@ -83,6 +83,34 @@ Inserting a stage means the fold now requires `code.reviewed` *before*
    grant the reviewer class its rung (bdo, via rung-intake).
 5. wire the spawn-rail reviewer + the cloud-ultra escalation path.
 
+## Relationship to PR #237 (the generative QC standard) — reconciled
+
+PR #237 captures a *generative quality-control standard* for **ambient
+operations**: a capability-indexed, self-updating `derive_type` an operation
+generates an expectation from and scores the actual against (meters:
+impact/energy/heal), with **airgaps** so the judged cannot move its own bar
+(the "bar becomes a mirror" failure). Reconciliation (bdo authorized,
+2026-06-19):
+
+- **Not a duplicate, and not a merge.** Different *object* and *judgment
+  shape*: #237 scores **continuous operation** against meters; code-review
+  makes a **discrete pass/fail** call on a **code diff** at the landing seam.
+  Correctness/clarity is not meter-scored; ambient smoothness is not
+  diff-reviewed. Forcing one into the other weakens both — code-review is
+  **not** an instance of #237's standard.
+- **Shared principle — inherited, not reinvented.** #237's load-bearing
+  insight is the **anti-mirror / airgap** law: a quality bar must not rise to
+  whatever the system already does, or the teeth never bite. That is exactly
+  code-review's §10 risk ("a fabricated reviewer that always says `clean`").
+  Code-review's teeth **cite #237's airgap** — its AG-2 ("capability-admission
+  must not move the bar in the same act") maps onto "passing review must not be
+  inferred from the code passing its own tests" — rather than authoring a
+  weaker copy.
+- **Build order:** independent. Code-review builds on its own and references
+  #237's principle for its anti-mirror teeth. They are **siblings** under one
+  quality theme, serving different arcs (session-gateway vs
+  landing-throughput-response), not one framework.
+
 ## Open / named
 
 - The migration handling (grandfather vs created-after-admission) is the one
