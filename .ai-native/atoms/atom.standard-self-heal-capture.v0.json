@@ -9,7 +9,7 @@
     "concern_surface": "review",
     "incidence": {
       "serves": [
-        "epic.landing-throughput-response"
+        "epic.the-field"
       ],
       "touches": [],
       "must_not_collide_with": [],
@@ -27,5 +27,5 @@
       "receipts": []
     }
   },
-  "_note": "The capture refines atom.landing-throughput-resp-exemplars-and-notorieties.v0 under the same arc (epic.landing-throughput-response, which lands on its own branch). Pressure-tested 2026-06-18 by a diverge-judge panel: AG-2 leaked, the fix (track blessed not exercised capability + the verdict-flip detector) is on the record in the proposal. The fold over .ai-native/log/ is the live state (D-5); this file is the announced unit, never mutated."
+  "_note": "Re-homed to epic.the-field by bdo's steering (2026-06-19): the field's self-knowledge of whether its own gates bite honestly (the standard, the bite axis, the airgaps that stop the judged corrupting the judge). Originally drafted for epic.landing-throughput-response — the gateway-economy arc, still unlanded/scattered WIP, never metabolized into the loop — and carries forward that arc's exemplars/notorieties design. Pressure-tested 2026-06-18 by a diverge-judge panel: AG-2 leaked, the fix (track blessed not exercised capability + the verdict-flip detector) is on the record in the proposal. The fold over .ai-native/log/ is the live state (D-5); this file is the announced unit."
 }
