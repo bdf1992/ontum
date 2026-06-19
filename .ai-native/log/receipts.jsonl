@@ -283,3 +283,4 @@
 {"authorized_by":"adm.476af874f9e4","epic":"epic.substrate","head":"worktree-session-gateway-route","id":"rcp.merge.223","kind":"merge","node":"merge-node.claude.v1","pr":223,"ts":"2026-06-19T18:58:20Z","verdict":"landed"}
 {"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"worktree-code-review-gate","id":"rcp.merge.238","kind":"merge","node":"merge-node.claude.v1","pr":238,"ts":"2026-06-19T19:04:14Z","verdict":"landed"}
 {"authorized_by":"adm.6e3ccedc1f0b","epic":"epic.the-field","head":"claude/standard-self-heal-capture","id":"rcp.merge.237","kind":"merge","node":"merge-node.claude.v1","pr":237,"ts":"2026-06-19T19:10:00Z","verdict":"landed"}
+{"authorized_by":"adm.728a87a9ca48","epic":"epic.owner-harness","head":"claude/gh-reflection-write-through","id":"rcp.merge.230","kind":"merge","node":"merge-node.claude.v1","pr":230,"ts":"2026-06-19T19:26:18Z","verdict":"landed"}
