@@ -76,7 +76,22 @@ session.
    A refusal is a `report` — it names what was missing; leave that PR for when
    its arc is confirmed or its suite goes green.
 
-3. **Stop when the confirmed arcs are landed.** What you could not land stays
+3. **When a confirmed PR conflicts, reconcile it — don't leave it.** Each land
+   advances the trunk, and GitHub's server-side merge does not apply this
+   repo's `union` driver, so it reads every append-only log as a conflict the
+   moment main moves — the cascade that re-conflicts the next branch in a
+   landing wave. The branded fix does the mechanical re-merge in an isolated
+   worktree (never the viewport), pushes through the suite gate, and **refuses
+   any real, non-log conflict** back to a session on the branch:
+   ```sh
+   python .claude/skills/branch-ritual/pr.py reconcile <n>
+   ```
+   If it reports `done`, the branch now carries main and lands clean — go back
+   to step 2 and land it. If it refuses with a real conflict (e.g. two edits to
+   `loop/CLAUDE.md`), that is authoring work for a session on the branch, not
+   the merge-node's — leave it (done-line 0122).
+
+4. **Stop when the confirmed arcs are landed.** What you could not land stays
    open as the unit it is. Do not escalate a refusal to bdo as a merge — it is
    already visible in his digest.
 

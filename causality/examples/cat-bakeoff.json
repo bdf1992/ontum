@@ -1,0 +1,223 @@
+{
+  "text": "The cat naps in the sunbeam until the shadow steals its warmth.",
+  "chefs": [
+    {
+      "label": "seed",
+      "kind": "hand-authored"
+    },
+    {
+      "label": "claude-A",
+      "kind": "inferred"
+    },
+    {
+      "label": "claude-B",
+      "kind": "inferred"
+    }
+  ],
+  "nodes": [
+    {
+      "word": "cat",
+      "facets": [
+        {
+          "facet": "actor",
+          "status": "robust",
+          "readers": [
+            "seed",
+            "claude-A",
+            "claude-B"
+          ]
+        },
+        {
+          "facet": "objective",
+          "status": "robust",
+          "readers": [
+            "seed",
+            "claude-A",
+            "claude-B"
+          ]
+        }
+      ]
+    },
+    {
+      "word": "naps",
+      "facets": [
+        {
+          "facet": "action",
+          "status": "robust",
+          "readers": [
+            "claude-A",
+            "claude-B"
+          ]
+        }
+      ]
+    },
+    {
+      "word": "shadow",
+      "facets": [
+        {
+          "facet": "signal",
+          "status": "robust",
+          "readers": [
+            "seed",
+            "claude-A",
+            "claude-B"
+          ]
+        },
+        {
+          "facet": "time",
+          "status": "flavor",
+          "readers": [
+            "seed"
+          ]
+        }
+      ]
+    },
+    {
+      "word": "sunbeam",
+      "facets": [
+        {
+          "facet": "source",
+          "status": "robust",
+          "readers": [
+            "seed",
+            "claude-A",
+            "claude-B"
+          ]
+        },
+        {
+          "facet": "time",
+          "status": "flavor",
+          "readers": [
+            "seed"
+          ]
+        }
+      ]
+    },
+    {
+      "word": "warmth",
+      "facets": [
+        {
+          "facet": "state",
+          "status": "robust",
+          "readers": [
+            "seed",
+            "claude-A",
+            "claude-B"
+          ]
+        }
+      ]
+    },
+    {
+      "word": "steals",
+      "facets": [
+        {
+          "facet": "action",
+          "status": "flavor",
+          "readers": [
+            "claude-B"
+          ]
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "fromWord": "cat",
+      "toWord": "naps",
+      "fromFacet": "actor",
+      "toFacet": "action",
+      "label": "enacts",
+      "status": "robust",
+      "readers": [
+        "claude-A",
+        "claude-B"
+      ]
+    },
+    {
+      "fromWord": "shadow",
+      "toWord": "warmth",
+      "fromFacet": "signal",
+      "toFacet": "state",
+      "label": "blocks",
+      "status": "robust",
+      "readers": [
+        "seed",
+        "claude-A",
+        "claude-B"
+      ]
+    },
+    {
+      "fromWord": "sunbeam",
+      "toWord": "warmth",
+      "fromFacet": "source",
+      "toFacet": "state",
+      "label": "feeds",
+      "status": "robust",
+      "readers": [
+        "seed",
+        "claude-A",
+        "claude-B"
+      ]
+    },
+    {
+      "fromWord": "warmth",
+      "toWord": "cat",
+      "fromFacet": "state",
+      "toFacet": "actor",
+      "label": "wakes",
+      "status": "robust",
+      "readers": [
+        "seed",
+        "claude-A",
+        "claude-B"
+      ]
+    },
+    {
+      "fromWord": "warmth",
+      "toWord": "cat",
+      "fromFacet": "state",
+      "toFacet": "objective",
+      "label": "satisfies",
+      "status": "robust",
+      "readers": [
+        "seed",
+        "claude-A",
+        "claude-B"
+      ]
+    },
+    {
+      "fromWord": "cat",
+      "toWord": "sunbeam",
+      "fromFacet": "objective",
+      "toFacet": "source",
+      "label": "seeks",
+      "status": "flavor",
+      "readers": [
+        "claude-B"
+      ]
+    },
+    {
+      "fromWord": "shadow",
+      "toWord": "steals",
+      "fromFacet": "signal",
+      "toFacet": "action",
+      "label": "triggers",
+      "status": "flavor",
+      "readers": [
+        "claude-B"
+      ]
+    }
+  ],
+  "trap": {
+    "fromWord": "shadow",
+    "toWord": "cat",
+    "label": "steals its warmth",
+    "takenBy": [],
+    "type": "elided-mediator"
+  },
+  "winner": {
+    "glyphs": 5,
+    "edges": 5
+  },
+  "note": "No reading is crowned. Robust = carried by >= 2 independent chefs (consensus sources the claim); divergent = a single chef's flavor (an open question for the owner, D-4)."
+}
