@@ -48,6 +48,7 @@ class TestScout(unittest.TestCase):
         # even where the epic file names the subject, that citation must not be
         # what grounds the move (that was the vacuous antecedent in finding #1).
         priors = scout.substantive_priors(REPO, LIVE, "atom.scout-fold.v0")
+        self.assertTrue(priors, "expected substantive priors for a live arc")
         for ev in priors:
             self.assertNotIn("/epics/", ev["file"], ev)
 

@@ -134,11 +134,13 @@ def scout(root, purpose):
     return cta
 
 
-def render(out):
+def render(out, repo_root=None):
     if out.get("status") == "refused":
         return ("# Scout — REFUSED (no ungrounded conjecture emitted)\n"
                 f"  subject: {out.get('subject')}\n  why: {out.get('reason')}")
-    return scout_cta.render(scout_cta.REPO_ROOT, out)
+    # validate/render against the SAME root the CTA was grounded against — never
+    # the module's own parents[1] (that would be two resolvers, one truth).
+    return scout_cta.render(repo_root or scout_cta.REPO_ROOT, out)
 
 
 def main(argv=None):
@@ -150,10 +152,11 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     out = scout(args.root, args.purpose)
+    repo_root = Path(args.root).resolve().parent
     if args.json:
         print(json.dumps(out, indent=2, ensure_ascii=False))
     else:
-        print(render(out))
+        print(render(out, repo_root))
         print()
     if out.get("status") == "refused":
         print(f"result: report — Scout refused ({out.get('reason', '')[:70]}…); "
