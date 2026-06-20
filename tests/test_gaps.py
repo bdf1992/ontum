@@ -4,7 +4,12 @@ ranking is deterministic and the §10 case holds — with two kinds present
 the higher-pressure kind wins the hook line (a locally-fine lower gap
 refuses to lead); each kind renders with its one concrete move; a clean
 field prints no gap line in hook mode; the hook stays fail-open; the
-fold writes nothing."""
+fold writes nothing.
+
+Also pins done-line 0129 (epic.three-marks, wave 1): every gap carries its
+mark (sketch/ink/paint) by stage, not spelling — the §10 teeth being a
+`.mock` *writing* actor that a naive name-based rule would call sketch but
+the stage mapping must call ink (an ink-authority leak)."""
 
 import contextlib
 import io
@@ -293,6 +298,44 @@ class GapFoldTest(unittest.TestCase):
         gaps.gaps(self.root)
         gaps.top_gap(self.root)
         self.assertEqual(log_bytes(self.root), before)
+
+    # -- the mark label (done-line 0129, epic.three-marks wave 1) ----------
+
+    def test_every_gap_kind_maps_to_a_mark(self):
+        # the frame is whole: every kind declares a mark, every mark is one
+        # of the three, and all three marks are claimed (no orphan stage)
+        self.assertEqual(set(gaps.KIND_MARK), set(gaps.KIND_ORDER))
+        self.assertTrue(set(gaps.KIND_MARK.values()) <= set(gaps.MARKS))
+        self.assertEqual(set(gaps.KIND_MARK.values()), set(gaps.MARKS))
+
+    def test_mark_is_by_stage_not_spelling(self):
+        # the §10 teeth: the seed author's name carries `.mock`, but it
+        # WRITES a permanent record (the seed event) with no admission — an
+        # ink-authority leak, not a sketch. A naive "name contains .mock ->
+        # sketch" rule mislabels it; the stage mapping must call it ink.
+        orchestrate.admit_setpoint(self.root, SETPOINT, by="test-bdo")
+        orchestrate.orchestrate(self.root, quiet=True)
+        found = gaps.gaps(self.root)
+        actor = [g for g in found if g["kind"] == "mock-actor"]
+        self.assertTrue(actor)
+        self.assertIn(".mock", actor[0]["subject"])      # the bait
+        self.assertEqual(actor[0]["mark"], "ink")        # not "sketch"
+        # the fixed-verdict stages ARE sketch (pencil in ink's slot)
+        stage = [g for g in found if g["kind"] == "mock-stage"][0]
+        self.assertEqual(stage["mark"], "sketch")
+        # every yielded gap carries a mark, and top_gap inherits it
+        self.assertTrue(all(g.get("mark") in gaps.MARKS for g in found))
+        self.assertIn(gaps.top_gap(self.root)["mark"], gaps.MARKS)
+
+    def test_render_and_cli_show_the_mark(self):
+        # the fresh root surfaces only mock stages, all sketch
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(gaps.main(["--root", str(self.root)]), 0)
+        text = out.getvalue()
+        self.assertIn("mark: sketch", text)              # the per-gap line
+        self.assertIn("result: report —", text)
+        self.assertIn("sketch:", text)                   # the result-line tally
 
 
 if __name__ == "__main__":

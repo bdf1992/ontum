@@ -1,0 +1,61 @@
+{
+  "atom": {
+    "id": "atom.environments-arc.v0",
+    "story": {
+      "from": "bdo in session (2026-06-19): 'I think we should maybe think about creating at least three environments for production workflow ... and also deployments in GH', then 'it would help with natural version management rituals', then 'we can name broader infrastructure at this point to accommodate for real needs', then — having asked whether this would have helped past sessions toward the requirement that someone else accepts your work — 'Bless and auth given'.",
+      "framing": "It began as a plain dev/staging/prod question and a deployment ask, but the honest translation is not 1.0 infrastructure. bdo's own reframe named the spine: a SNAPSHOT is the natural unit a second party accepts — immutable, named, recorded the way an atom's identity already IS the sha256 of its bytes — and a deployment is the act of promoting a snapshot from one environment to the next, with acceptance attaching to the snapshot rather than the mutable branch. That joins the per-atom pipeline ↛ per-PR git namespace gap loop/pull.py was chipping at, and it answers the failure mode the evidence shows: work with no clean checkpoint between 'built' and 'accepted' strands (one session's garden report alone: 13 stranded branches; 'merged PR, but the cut is held — commits not on origin/main'). Two axes are named apart — the DEPLOY axis (preview/staging/production, each promotion a gated recorded deployment) and the RUNTIME axis (local/web-mobile/cloud parity, issue #245).",
+      "work": "This atom is the ratification request for epic.environments — the arc on the record, nothing built before the stamp. It captures two records: environments.proposal.md (the design and its evidence) and .ai-native/epics/epic.environments.json (the arc, its two axes, and its pieces, each pinned to a real need: snapshot-acceptance-unit, production-gate, preview-env, staging-rung, runtime-parity, served-control-plane). It holds two guardrails — no dev/staging/prod cargo-culted onto the LOCAL loop (the log is truth, nothing to deploy), and a deploy gate that EXECUTES bdo's stamp rather than inventing a verdict (the .github/ law). It composes existing organs (the merge-node, loop/digest.py, the off-log gate, the gateway economy §13.10, loop/pull.py) and refuses to double-build them (§10).",
+      "need": "bdo's confirm-arc on epic.environments — given in session and recorded — before any piece is built; and his call on the outer boundary (the served control plane held as horizon vs. pulled in now).",
+      "value": "Your stamp reaches the one promotion it never reached — the live surface you judge on stops changing without you — and work stops stranding because acceptance attaches to a frozen named snapshot, the unit that also joins the per-atom and per-PR namespaces.",
+      "text": "From bdo's environments-and-deployments ask and his snapshot reframe, I need epic.environments on the record as a confirmable arc — two axes, six pieces, two guardrails — because the recurring failure is work with no clean checkpoint a second party can accept, and a snapshot promoted across gated environments is that checkpoint.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "ordinary",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "This atom is records only — a proposal, an epic record, a done-line. It builds nothing and touches no external surface; the deploy pieces it names (which DO touch GitHub Environments) are later atoms with their own stamps and their own done-lines. Reversible by superseding admission without touching truth.",
+      "built_at_risk": false
+    },
+    "briefing": {
+      "headline": "name the environments arc; snapshots are what get accepted",
+      "value": "You asked whether this would have helped past sessions accept each other's work. The record says yes: stranded branches and held cuts are work with no clean checkpoint. This arc names the checkpoint — a snapshot promoted across gated environments — and reaches your stamp to the one promotion it never touched: the live URL, which changes today without you.",
+      "why_now": "You blessed and authorized it in session; capturing it on the record (not in chat) is how the next session inherits the arc, your standing rule.",
+      "if_accepted": "epic.environments is a confirmable arc; the first buildable slice is the production gate (smallest real teeth — the live URL only moves on your stamp); preview/staging/runtime-parity/control-plane follow as later done-lines.",
+      "if_rejected": "Deployment stays an unstamped auto-push to the surface you judge on, and acceptance keeps hanging off mutable branches — the stranding continues.",
+      "cost_of_wrong_call": "Low: records only, one superseding admission to retire; nothing is built and no external surface is touched until each piece earns its own stamp.",
+      "mechanism": "A proposal + epic record on the log (superseding, never erased); the arc composes the merge-node, loop/digest.py, the off-log gate, the gateway economy, and loop/pull.py rather than re-deriving them (§10); production-promotion becomes the confirm-arc shape — you confirm, the node lands.",
+      "reading": [
+        "environments.proposal.md",
+        ".ai-native/epics/epic.environments.json",
+        ".ai-native/done/0134-epic-environments-captured.md",
+        ".github/workflows/pages.yml"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.environments"],
+      "touches": [".ai-native/epics", ".ai-native/done", "docs"],
+      "must_not_collide_with": ["atom.surface-registry.v0", "atom.merge-node.v0"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "environments.proposal.md (the design captured this session)",
+        "epic.owner-harness (the served owner surface this composes)",
+        "loop/pull.py (the per-atom ↛ per-PR namespace gap this joins)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "This file is the atom's birth record and content-hash source. It is never mutated (D-5). This story is the ratification request for epic.environments — nothing the arc names is built; each deploy piece waits for its own stamp."
+}
