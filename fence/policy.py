@@ -313,7 +313,9 @@ def prefix_matches(argv, pattern):
     if len(argv) < len(pattern):
         return False
     for got, want in zip(argv, pattern):
-        alternatives = want if isinstance(want, tuple) else (want,)
+        # a tuple OR list of alternatives at this position (list so a barrier
+        # whose prefix arrives as JSON data — fence/barrier.py — works too)
+        alternatives = want if isinstance(want, (list, tuple)) else (want,)
         if got not in alternatives:
             return False
     return True

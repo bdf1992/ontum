@@ -131,5 +131,114 @@ class FenceClosure(unittest.TestCase):
         self.assertFalse(barrier.is_closed(fence))
 
 
+class AllMatcherKinds(unittest.TestCase):
+    """Every advertised predicate kind is exercised — not just command-regex —
+    so the done-line's 'the matcher is non-vacuous' holds for all four."""
+
+    def _link(self, predicate):
+        return {"id": "k", "predicate": predicate, "on_match": "block",
+                "reason": "a cold-reader reason", "witness": "sink"}
+
+    def test_argv_prefix_matches_via_the_shared_policy_matcher(self):
+        link = self._link({"kind": "argv-prefix",
+                           "prefix": ["git", ["push", "pull"]]})
+        self.assertEqual(barrier.validate_link(link), [])
+        self.assertFalse(barrier.decide(link, {"argv": ["git", "push", "x"]})["allow"])
+        self.assertFalse(barrier.decide(link, {"argv": ["git", "pull"]})["allow"])  # alt
+        self.assertTrue(barrier.decide(link, {"argv": ["git", "status"]})["allow"])
+
+    def test_path_glob_matches(self):
+        link = self._link({"kind": "path-glob", "glob": ".ai-native/log/*.jsonl"})
+        self.assertEqual(barrier.validate_link(link), [])
+        self.assertFalse(barrier.decide(link, {"path": ".ai-native/log/events.jsonl"})["allow"])
+        self.assertTrue(barrier.decide(link, {"path": "loop/reconcile.py"})["allow"])
+
+    def test_object_flag_reads_the_object_not_the_actor(self):
+        link = self._link({"kind": "object-flag", "flag": "frozen"})
+        self.assertEqual(barrier.validate_link(link), [])
+        self.assertFalse(barrier.decide(link, {"object": {"frozen": True}})["allow"])
+        self.assertTrue(barrier.decide(link, {"object": {"frozen": False}})["allow"])
+        self.assertTrue(barrier.decide(link, {})["allow"])  # no object -> no match
+
+
+class DegenerateLinksRefused(unittest.TestCase):
+    """A predicate that matches EVERYTHING is a block-all link wearing a kind;
+    the validator must refuse each degenerate form (it slipped the teeth before
+    the review caught it)."""
+
+    def base(self, predicate):
+        return {"id": "d", "predicate": predicate, "on_match": "block",
+                "reason": "r", "witness": "w"}
+
+    def test_empty_command_regex_pattern_refused(self):
+        problems = barrier.validate_link(self.base({"kind": "command-regex",
+                                                    "over": "command", "pattern": ""}))
+        self.assertTrue(any("no pattern" in p for p in problems), problems)
+        # and prove the hazard is real: an empty pattern WOULD match everything
+        self.assertFalse(barrier.decide(
+            self.base({"kind": "command-regex", "pattern": ""}),
+            {"command": "anything at all"})["allow"])
+
+    def test_empty_argv_prefix_refused(self):
+        problems = barrier.validate_link(self.base({"kind": "argv-prefix", "prefix": []}))
+        self.assertTrue(any("no prefix" in p for p in problems), problems)
+
+    def test_empty_path_glob_refused(self):
+        problems = barrier.validate_link(self.base({"kind": "path-glob", "glob": ""}))
+        self.assertTrue(any("no glob" in p for p in problems), problems)
+
+    def test_empty_object_flag_refused(self):
+        problems = barrier.validate_link(self.base({"kind": "object-flag", "flag": ""}))
+        self.assertTrue(any("no flag" in p for p in problems), problems)
+
+    def test_uncompilable_and_unknown_field_refused(self):
+        bad = self.base({"kind": "command-regex", "over": "nope", "pattern": "("})
+        problems = barrier.validate_link(bad)
+        self.assertTrue(any("unknown field" in p for p in problems), problems)
+        self.assertTrue(any("does not compile" in p for p in problems), problems)
+
+
+class ActorScanIsSubstring(unittest.TestCase):
+    """The actor-blind second tooth is a substring scan, as its docstring says:
+    a key that CONTAINS an authorization fragment is refused, not only the
+    exact reserved words."""
+
+    def link(self, **extra):
+        pred = {"kind": "command-regex", "over": "command", "pattern": "x"}
+        pred.update(extra)
+        return {"id": "a", "predicate": pred, "on_match": "block",
+                "reason": "r", "witness": "w"}
+
+    def test_substring_actor_keys_refused(self):
+        for key in ("user", "principal", "actor_id", "caller_role", "uid"):
+            problems = barrier.validate_link(self.link(**{key: "bdo"}))
+            self.assertTrue(any("smuggles actor-authorization" in p for p in problems),
+                            f"{key!r} was not caught: {problems}")
+
+    def test_legitimate_predicate_keys_not_false_flagged(self):
+        # the allowed predicate keys must not trip the substring scan
+        self.assertEqual(barrier.validate_link(self.link()), [])
+
+
+class SeamLinkPrecision(unittest.TestCase):
+    """The seam-seal link must catch the shelled push without blocking the git
+    pen's own commit traffic (the false positive the review caught)."""
+
+    def test_seals_the_shelled_and_plain_push(self):
+        seam = barrier.SEAM_LINK
+        shelled = ("python -c \"import subprocess;subprocess.run("
+                   "['git','push','origin','main'])\"")
+        self.assertFalse(barrier.decide(seam, {"command": shelled})["allow"])
+        self.assertFalse(barrier.decide(seam, {"command": "git push origin main"})["allow"])
+
+    def test_does_not_block_git_commit_mentioning_push(self):
+        seam = barrier.SEAM_LINK
+        for ok in ("git commit -m \"fix the push bug\"",
+                   "git log --oneline | grep push",
+                   "git status # ready to push later"):
+            self.assertTrue(barrier.decide(seam, {"command": ok})["allow"],
+                            f"the seam link false-blocked: {ok!r}")
+
+
 if __name__ == "__main__":
     unittest.main()

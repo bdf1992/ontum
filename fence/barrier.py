@@ -37,9 +37,13 @@ Three terms, the atom first (bdo: "Barrier might be an atomic example"):
     not-opaque — every link carries a cold-reader reason: you can see THROUGH
                  the fence to why you are stopped. No black-box denial.
 
-- **gate** — a barrier-link at a sanctioned opening *in* a fence: the one route
-  the fence intends you to use (role="gate"). The fence is the loop; the gate
-  is the opening in it.
+- **gate** — a barrier-link at a sanctioned opening *in* a fence: a link with
+  `on_match="allow"` marks the one route the fence intends you to use. The
+  opening mechanism is real in `decide` (an allow-link returns allow); gate
+  *precedence* — an opening that admits an act an otherwise-closed fence would
+  block — is NAMED here but not yet enforced by `validate_fence`/`covered`, a
+  later increment like the installed fences. The fence is the loop; the gate is
+  the opening in it.
 
 This module is the CONTRACT + its validators, not yet an installed fence. It is
 read-only and stdlib-only (fence/'s law): the gate is a predicate, deterministic
@@ -55,10 +59,19 @@ CLI:
 from __future__ import annotations
 
 import argparse
+import copy
 import fnmatch
 import json
+import pathlib
 import re
 import sys
+
+# The fence package already owns ONE argv-prefix matcher (policy.prefix_matches)
+# — reuse it rather than fork a twin (fence/CLAUDE.md: "one table, two surfaces,
+# no twin lists to drift"). The path insert mirrors command_guard so both
+# `python fence/barrier.py` and `from fence import barrier` resolve the sibling.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from fence.policy import prefix_matches  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # the barrier-link atom: predicate kinds, each over the act's OBSERVABLE FORM.
@@ -74,14 +87,19 @@ ALLOWED_KINDS = {
     "object-flag",     # a named flag on the OBJECT being acted on is set
 }
 
-# Keys a barrier-link's predicate must never name: they read WHO acts, not the
-# act. Their presence turns a barrier into a gateway, so validate refuses them.
-# (The hard guarantee is that `decide` is never handed the actor at all; this
-# scan is the second tooth, the substring grain observe.py also uses.)
-RESERVED_ACTOR_KEYS = {
-    "actor", "caller", "role_grant", "grant", "authorized", "authorization",
-    "rung", "stamp", "identity", "who", "rbac", "permission", "credential",
-}
+# Fragments a barrier-link's predicate key must never CONTAIN: they read WHO
+# acts, not the act. Their presence turns a barrier into a gateway, so validate
+# refuses them. The hard guarantee is that `decide` is never handed the actor at
+# all (the structural half); this is the second tooth — a substring scan (so
+# `actor_id`, `caller_role`, `principal` are all caught), the grain observe.py
+# uses. It is a defensive name-denylist, not a completeness proof: a smuggled
+# key under a wholly novel name still slips it, but stays inert because `decide`
+# never reads it.
+RESERVED_ACTOR_FRAGMENTS = (
+    "actor", "caller", "grant", "author", "rung", "stamp", "ident", "who",
+    "rbac", "permission", "credential", "user", "principal", "subject",
+    "uid", "role", "owner", "agent",
+)
 
 # What text field a command-regex reads. "command" is the RAW command (sees a
 # shelled git inside quotes — seals the seam); "command_guard_sees" is the
@@ -91,24 +109,12 @@ RESERVED_ACTOR_KEYS = {
 COMMAND_FIELDS = ("command", "command_guard_sees")
 
 
-def _argv_prefix(argv, prefix):
-    """True when argv starts with prefix; each prefix element is a literal or
-    a tuple of alternatives at that position (fence/policy.py's semantics)."""
-    if len(argv) < len(prefix):
-        return False
-    for got, want in zip(argv, prefix):
-        alts = want if isinstance(want, (list, tuple)) else (want,)
-        if got not in alts:
-            return False
-    return True
-
-
 def _predicate_matches(predicate, act):
     """Pure: does this predicate match this act's observable form? Reads only
     the act and the object — never the actor (it is not in scope)."""
     kind = predicate.get("kind")
     if kind == "argv-prefix":
-        return _argv_prefix(act.get("argv", []), predicate.get("prefix", ()))
+        return prefix_matches(act.get("argv", []), predicate.get("prefix", ()))
     if kind == "command-regex":
         field = predicate.get("over", "command")
         return re.search(predicate.get("pattern", ""),
@@ -153,23 +159,43 @@ def validate_link(link):
             f"reads outside the act's observable form: predicate kind {kind!r} "
             f"is not one of {sorted(ALLOWED_KINDS)} — a barrier decides on the "
             "act and the object, never on who acts (that is a gateway)")
-    # L3, second tooth: no predicate field may NAME an authorization concept.
-    smuggled = sorted(RESERVED_ACTOR_KEYS.intersection(
-        k.lower() for k in predicate))
+    # L3, second tooth: no predicate key may NAME an authorization concept (a
+    # substring scan, so actor_id / caller_role / principal are all caught).
+    smuggled = sorted(k for k in predicate
+                      if any(frag in k.lower() for frag in RESERVED_ACTOR_FRAGMENTS))
     if smuggled:
         problems.append(
             f"smuggles actor-authorization into the predicate ({', '.join(smuggled)}) "
             "— a barrier is actor-blind; route who-may decisions to a gateway")
-    # a command-regex must read a known text field, and a compilable pattern.
+    # a degenerate predicate matches EVERYTHING and would block all traffic
+    # while looking like a real link — the validator's job is to refuse it. An
+    # empty pattern (`re.search('', x)` always hits), an empty argv prefix
+    # (matches any argv), an empty glob (`fnmatch('','')` is True), or a blank
+    # object flag are each a block-all link wearing a kind. Require the
+    # discriminating field per kind.
+    if kind == "argv-prefix" and not predicate.get("prefix"):
+        problems.append("argv-prefix names no prefix — an empty prefix matches "
+                        "every argv (a block-all link); name the verbs")
+    if kind == "path-glob" and not str(predicate.get("glob", "") or "").strip():
+        problems.append("path-glob names no glob — an empty glob matches a "
+                        "pathless act (a block-all link); name the glob")
+    if kind == "object-flag" and not str(predicate.get("flag", "") or "").strip():
+        problems.append("object-flag names no flag — name the object flag it reads")
+    # a command-regex must read a known field, with a non-empty, compilable pattern.
     if kind == "command-regex":
         field = predicate.get("over", "command")
         if field not in COMMAND_FIELDS:
             problems.append(
                 f"command-regex reads unknown field {field!r}; one of {COMMAND_FIELDS}")
-        try:
-            re.compile(predicate.get("pattern", ""))
-        except re.error as exc:
-            problems.append(f"command-regex pattern does not compile: {exc}")
+        pattern = predicate.get("pattern", "")
+        if not str(pattern or "").strip():
+            problems.append("command-regex names no pattern — an empty pattern "
+                            "matches every command (a block-all link)")
+        else:
+            try:
+                re.compile(pattern)
+            except re.error as exc:
+                problems.append(f"command-regex pattern does not compile: {exc}")
 
     if link.get("on_match") not in ("block", "allow"):
         problems.append("on_match must be 'block' or 'allow'")
@@ -327,8 +353,13 @@ COMMAND_GUARD_LINKS = [
 # the torn perimeter into a closed fence.
 SEAM_LINK = {
     "id": "raw-git-push",
+    # bounded between git and push: only quotes, commas, and whitespace may sit
+    # between them — enough to match the shelled `['git','push']` and the plain
+    # `git push`, but NOT `git commit -m "fix the push bug"` (letters between
+    # them break the match). A greedy `[\s\S]*` here would block the git pen's
+    # own commit traffic — the false positive the review caught.
     "predicate": {"kind": "command-regex", "over": "command",
-                  "pattern": r"\bgit\b[\s\S]*\bpush\b"},
+                  "pattern": r"\bgit\b['\"\s,]+push\b"},
     "on_match": "block",
     "reason": "a `git push` reached by shelling out (subprocess, a script) is "
               "still a push to trunk; it is denied however it is spelled. Land "
@@ -339,19 +370,21 @@ SEAM_LINK = {
 
 def command_guard_fence():
     """The trunk-mutation fence as command_guard constitutes it today — torn
-    at the seam (the kill-test and the CLI both read this)."""
-    return {
+    at the seam (the kill-test and the CLI both read this). A deep copy, so a
+    caller that edits a returned link (even a nested predicate) can never reach
+    back and mutate the module constants — purity is structural, not by luck."""
+    return copy.deepcopy({
         "territory": "trunk-mutation",
         "routes": TRUNK_MUTATION_ROUTES,
-        "links": [dict(link) for link in COMMAND_GUARD_LINKS],
-    }
+        "links": list(COMMAND_GUARD_LINKS),
+    })
 
 
 def closed_trunk_fence():
     """The same fence with the seam sealed — the reference for what a closed
     trunk-mutation perimeter looks like."""
     fence = command_guard_fence()
-    fence["links"].append(dict(SEAM_LINK))
+    fence["links"].append(copy.deepcopy(SEAM_LINK))
     return fence
 
 
@@ -373,7 +406,9 @@ CONTRACT = {
     },
     "route_classes": {cls: ROUTE_GLOSS[cls] for cls in ROUTE_CLASSES},
     "allowed_predicate_kinds": sorted(ALLOWED_KINDS),
-    "gate": "a barrier-link at a sanctioned opening in a fence (role='gate')",
+    "gate": "a barrier-link with on_match='allow' at a sanctioned opening; the "
+            "opening is real in decide(), gate-precedence over a closed fence "
+            "is a later increment (named, not yet enforced)",
 }
 
 
