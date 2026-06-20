@@ -935,6 +935,29 @@ def epic_id_in_blob(blob_text, epic):
         return False
 
 
+def establish_plan(epic_on_trunk, source_ref):
+    """The three-way decision a confirm makes about an arc — pure for the suite
+    (the `arc_confirmed_in` / `land_refusal` pattern). An epic already on the
+    trunk is stamped as ever; a new epic (not yet on the trunk) is validated
+    from `--from-ref`; a new epic with NO ref cannot be confirmed — the stamp
+    would have nothing to validate against, so it is refused with the paved path
+    named, never left to a raw "nothing to commit" git failure (the §10 teeth:
+    a brand-new arc with no definition source is refused, not silently waved
+    through). Returns (action, reason); action in {confirm, establish, refuse}."""
+    if epic_on_trunk:
+        return ("confirm", "the epic is on the trunk — stamp the arc, as today")
+    if (source_ref or "").strip():
+        return ("establish",
+                f"the epic is not on the trunk yet — read it from {source_ref!r} to "
+                "validate, then stamp the new arc (the epic record lands with its PR)")
+    return ("refuse",
+            "a brand-new arc is established at confirm time, but its epic is not on "
+            "the trunk yet, so the stamp has nothing to validate against. Pass "
+            "--from-ref <branch> (the PR branch that introduces the epic) so the epic "
+            "is read from there; the confirmation lands on the trunk and the epic "
+            "record lands with its PR.")
+
+
 def _materialize_epic_from_ref(wt, ref, epic):
     """Copy the epic's file from a git ref into a confirm worktree's epics dir,
     so `confirm` can validate an arc an unlanded PR introduces (issue #245's
@@ -985,6 +1008,13 @@ def cmd_confirm(ns):
         sys.path.insert(0, str(ROOT))
         from loop.node import confirm_arc  # the schema, not a second copy
         from_ref = getattr(ns, "from_ref", "") or ""
+        # Decide before staging: a forward confirm of a brand-new arc with no
+        # --from-ref is refused with the paved path named (never the raw
+        # "nothing to commit" failure). A withdrawal (--off) is unaffected.
+        epic_on_trunk = (wt / ".ai-native" / "epics" / f"{ns.epic}.json").exists()
+        decision, _est_reason = establish_plan(epic_on_trunk, from_ref)
+        if decision == "refuse" and not ns.off:
+            _refuse(_est_reason)
         if from_ref:
             _materialize_epic_from_ref(wt, from_ref, ns.epic)
         adm = confirm_arc(wt / ".ai-native", ns.epic, "bdo", enabled=not ns.off)

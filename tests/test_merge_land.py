@@ -306,5 +306,35 @@ class ConfirmFromRefValidatesNeverBypasses(unittest.TestCase):
             self.assertFalse(pr.epic_id_in_blob(blob, self.EPIC))
 
 
+class EstablishPlanIsTheBootstrapDecision(unittest.TestCase):
+    """The pure decision `cmd_confirm` makes about a new arc (the
+    confirm-new-arc-bootstrap hardening). The §10 teeth: a brand-new arc with
+    NO source ref is refused with the paved path named — never waved through to
+    a raw "nothing to commit" git failure."""
+
+    def test_epic_on_trunk_confirms(self):
+        action, _ = pr.establish_plan(True, "")
+        self.assertEqual(action, "confirm")
+
+    def test_epic_on_trunk_confirms_even_with_a_ref(self):
+        # already on the trunk wins regardless of a ref — no re-establishment
+        action, _ = pr.establish_plan(True, "claude/intro")
+        self.assertEqual(action, "confirm")
+
+    def test_new_epic_with_a_source_ref_establishes(self):
+        action, _ = pr.establish_plan(False, "claude/intro")
+        self.assertEqual(action, "establish")
+
+    def test_new_epic_without_a_source_ref_refuses_naming_the_flag(self):
+        action, reason = pr.establish_plan(False, "")
+        self.assertEqual(action, "refuse")
+        self.assertIn("--from-ref", reason)  # the paved path is named
+
+    def test_blank_ref_is_treated_as_no_ref(self):
+        action, reason = pr.establish_plan(False, "   ")
+        self.assertEqual(action, "refuse")
+        self.assertIn("--from-ref", reason)
+
+
 if __name__ == "__main__":
     unittest.main()
