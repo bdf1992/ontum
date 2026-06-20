@@ -60,7 +60,6 @@ python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") v
 
 python -m loop.phrasing check --path <p> --before <f> --after <f>   # the phrasing door: is an edit prose-only? read-only proof
 python .claude/skills/branch-ritual/pr.py phrasing --files <p>... --why "<note>" --by <who>   # mark a proven prose-only edit so it lands without an atom (the route)
-
 python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
 python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
 python -m loop.disposer dispose            # self-admit one in-fence proposal (else escalate)
@@ -216,7 +215,15 @@ so a prompt edit can't reopen a settled verdict (I-2).
   This is the *eyes* of the owner-harness arc's last stretch (bdo stepping
   out of the merge seat); the merge-node is the *hand*, and it does not
   move until bdo admits it real (`--by bdo`) and the `bdo merges` hard
-  rule is amended — both his, neither this surface's.
+  rule is amended — both his, neither this surface's. **`atoms_on_main`**
+  (done-line 0124, D-13) is the per-atom↔per-PR join: the set of
+  artifact_ids the merge receipts record as having reached main (their
+  `landed_atoms`, the write-through carbon copy the PR pen now carries) —
+  the reading half that lets *"did atom X reach main?"* be answered from
+  the log alone, where the pre-D-13 receipt could only say *that* a PR
+  landed. Surfaced as a confirmed-on-main count; empty until the first
+  post-D-13 land carries its atoms (the 90 prior merges stand as lossy
+  history).
 - [retro.py](retro.py) — the retrospective fold (done-line 0098): the loop
   reads its *own history* for recurring patterns to refine on. Sibling of
   `digest` on a new axis — the digest folds one span, retro folds **all of

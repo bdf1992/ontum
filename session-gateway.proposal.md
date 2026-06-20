@@ -611,3 +611,165 @@ minted as a new currency instead of folded from `impact`/`energy`; a void-fill
 that manufactures work to hit a vanity number (fake tickets = mercury); a
 notoriety that detains on assumption rather than witnessed, reversible evidence
 (the star chamber).
+
+**The standard is generative, capability-indexed, and self-updating — which puts
+it in a feedback loop with the thing it judges.** Ambient operations need
+something to *imagine against and compare against*: not a frozen catalog of
+golden runs (a stored instance rots the moment it is frozen — the §12b freshness
+failure, mercury at the example level), but a **generative quality standard** — a
+*quality-control manual* an op can generate the expectation from ("what would
+smooth action of the teeth look like *here*, in a case never seen?") and then
+score the actual against (the oracle / val_bpb move, the latent structure being
+*smooth operation* instead of a sentence's mesh). This **hoists** the
+exemplar/notoriety poles: the manual is the generative *type* (a versioned,
+refusable, gated atom, the `derive_type` shape); an exemplar is one *instance*
+drawn from it, the meters score conformance, and the patrol *infers over the
+gap* with freeform creativity. Three layers: the manual (generative definition),
+the meters (`impact`/`energy`/`heal` — measure deviation), the inference (the
+patrol, creative within bounds).
+
+Because the system keeps *offering new capabilities*, the standard cannot be
+static — expectation must rise to meet capability, so the standard is **regulated,
+re-derived from current events, and inferred over** to keep meeting expectation.
+But a standard that is derived from the operations it governs *and* judges them
+has one dominant failure: **the bar becomes a mirror** — it rises to whatever the
+system already does, so the teeth never bite (the §10 failure lifted from one
+verdict to the whole standard). The fix is to break the loop deliberately, with
+**insulation** (controlled, lagged coupling — they talk through a buffer) where
+the standard must track capability, and **airgaps** (a hard break — no direct
+channel may exist) where a path would let the judged corrupt the judge.
+
+*The issues (hazards in the self-updating standard):* **mirror drift / grade
+inflation** (derived-from + judges → self-justifies); **capability-laundering**
+(a capability that can't meet the bar triggers a bar *edit* so it passes, instead
+of being refused — the AML problem at the standard seam); **who-judges-the-judge**
+(the inference that updates the standard is itself an operation; scored by the
+standard it produces, it signs its own line); **lag in the wrong direction**
+(standard outruns proven capability → aspiration-as-bar → autoimmunity; or lags
+it → ungoverned frontier borrowing unearned trust — the rated-zone-vs-frontier
+hazard); **retro-invalidation** (an update silently re-judges settled work);
+**frozen-vs-fresh tension** (the manual must stay fresh, but the bar a piece was
+*already judged against* must stay stable).
+
+*The airgaps (hard breaks — no direct channel):*
+- **AG-1 · operation ⟂ standard-setter.** The node whose operations a standard
+  governs cannot set or update that standard — *no-one-signs-their-own-line* /
+  D-2 / merge-node applied to the rubric. The standard-update is itself a gated,
+  refusable, versioned atom.
+- **AG-2 · capability-admission ⟂ standard-update** (the load-bearing one).
+  "We can now do X" lands on one seam; "X is the new normal of good" moves on a
+  *separate, separately-authorized* seam. No path may exist from *wanting a
+  capability to pass* to *the bar moving in the same breath*. This is the
+  anti-laundering gap.
+- **AG-3 · inference-fill ⟂ the bound.** The standard splits into a **bounded**
+  part (settled, owner-stamped) and a **fresh** inferred part; the inference
+  ranges freely *inside* the bound but has *no channel to move the bound* —
+  moving the bound is a separate gated act. This is the airgap that keeps
+  freeform creativity from drifting into self-justification.
+
+*The insulations (buffered coupling — coupled, but damped/lagged):*
+- **IN-1 · capability → standard, with a deliberate lag.** Coupled (the standard
+  *tracks* capability), but through a damper: it moves toward *proven* capability
+  (evidence on the log), never toward announced/aspirational capability. The lag
+  is the buffer against autoimmunity-vs-frontier.
+- **IN-2 · events → standard, through the settled fold.** The standard re-derives
+  from the *append-only log fold* (truth, immutable), never from the live
+  in-flight operation — so operations cannot steer their own standard by writing.
+  (The loop's deepest pattern: the log is truth, everything else is a fold.)
+- **IN-3 · meter ⟂ interpretation.** The meters stay dumb (measure raw reality);
+  the standard interprets. One organ that both measures and sets the bar can move
+  both to pass — keep them separate.
+
+*The governance spine (who owns what — authority + attribution, mapped onto the
+disposer fence):* the **bound** is bdo's stamp (he draws the envelope — how far
+the standard may move, what "expectation" may legitimately include — as
+`disposer admit-fence` draws per-dial bounds); the **fill** is inference
+self-admitting *within* the bound, citing the fence as `authorized_by` (the loop
+executes the stamp, never signs its own line); an **out-of-bound** move cannot
+self-admit and surfaces to bdo. Versioning resolves the retro-invalidation and
+frozen-vs-fresh hazards: the standard versions forward like a node prompt (§7) —
+the hash rides the receipt, a new version lands as history, old verdicts stand.
+
+*§10 teeth (this subsection).* A standard derived from the live operation instead
+of the settled fold (IN-2 breached → steerable bar); a standard-update admitted
+by the node it governs (AG-1 breached → self-sign); a capability that passes by
+editing the rubric in the same act (AG-2 breached → laundering); an inference
+that moves its own bound (AG-3 breached → self-justification); a frozen catalog
+of golden runs sold as the standard (the example-not-manual failure this
+subsection exists to refuse); a standard that has never refused an operation
+(mirror drift — the §10 self-test, the bar that could not have been a reject).
+
+*The one open dial:* **IN-1's lag** — how tightly the standard should trail
+proven capability. Too tight is autoimmunity; too loose is the ungoverned
+frontier. That envelope is bdo's to set (it is itself an AG-3 bound). Everything
+else above reuses patterns already on disk.
+
+*Pressure-test (diverge-judge panel, three independent skeptics, 2026-06-18).*
+AG-2 **as first written leaks**, and the panel converged on why and the fix:
+
+- **It only blocks same-*breath* laundering.** The patient path survives: admit a
+  sub-bar capability X on the capability seam (AG-1 clean); let ambient ops *run*
+  X over the lag window so it accrues log-evidence; then re-derive the standard
+  from the settled fold (IN-2 clean) where IN-1 reads X as "proven capability" and
+  legitimately raises the bar to bless it. The insulations *are* the laundromat;
+  the lag is a low-pass filter, not an airgap. This is the temporal form of the
+  same "mirror drift" the subsection lists separately — they are one failure.
+- **The fix (two skeptics, one mechanism): IN-1 must track *blessed* capability,
+  not *exercised* capability.** The deriving fold may count X as "proven" only via
+  a receipt showing X **passed the standard-version in force at its admission** (a
+  pass-receipt), never merely that it *ran*. A sub-bar X then produces no
+  pass-receipt, so no later fold can launder it in. This converts AG-2 from a ban
+  on a "same act" (unenforceable — motive isn't on the log) into an **eligibility
+  gate on what the standard-deriving fold may see** (enforceable — pass-receipts
+  are on the log).
+- **The breach is *not* silent** — the earlier note was wrong. Because the rubric
+  is §7-versioned and `prompt_hash` rides every receipt (`loop/node.py`), a
+  laundering bar-move shows as a **verdict-flip-without-work**: same `artifact_id`
+  (work unchanged), same judging node, `prompt_hash` moved H1→H2, verdict flipped
+  refuse→accept, and *no offsetting new refusals* elsewhere — a legitimate rise
+  bites *harder* (leaves new refusals), laundering only *admits*. This is a pure
+  fold, the sibling of `retro`'s churn and `digest`'s divergence, and I-2 helps:
+  the pen refuses to re-judge the same `(node, artifact_hash)`, so a launderer
+  must mint a new version, which surfaces in the version-split. Give AG-2 teeth by
+  the **disposer shape**: a standard-update self-admits within bdo's fence *only
+  if* it flips no settled refusal for unchanged work; a flip is an out-of-bound
+  key and escalates the whole move to bdo.
+- **Honest residue: greenfield laundering.** A brand-new capability never
+  previously refused has no settled refusal to flip, so the verdict-flip fold
+  finds nothing (`impact.py`'s own limit: absence is not lightness). Against
+  *prospective* laundering — authoring the bar around an untested capability —
+  AG-2 is only insulation-strength, governed by IN-1's lag, which is bdo's open
+  dial. AG-2 is **airgap-strength against retroactive laundering, lag-strength
+  against greenfield** — and should claim only that.
+- **Right-size the frame (third skeptic).** AG-2 is the *one* genuinely new
+  invariant here — anti-structuring: two correctly-signed acts may not be fused
+  into one authorization (distinct from AG-1's no-self-sign and IN-1's
+  content-coupling; it decouples the two *acts*). The other five hazards and
+  AG-1/AG-3/IN-1–3 are existing invariants at standard scale (D-2, log-as-truth,
+  the disposer split, §7 versioning, the §10 self-test). And the self-updating
+  *engine* is **premature**: no ambient ops at scale exist yet (the economy,
+  patrol, and poles are all still PROPOSED). The minimal build the evidence
+  supports today: a **§7-versioned rubric atom a gated node bumps**, carrying the
+  AG-2 eligibility gate and the verdict-flip check; add the disposer auto-admit
+  *fill* only when the owner-stamp volume is witnessed on the log as a bottleneck
+  (the system's own evidence-before-build rule).
+
+*Self-healing — the litmus that keeps it the right side of every airgap.* Teeth
+without a healing reflex is autoimmunity (`heal.py`'s founding line), so this
+standard must heal itself — but only one *kind* of healing is admissible. The
+litmus is a single question: **does the heal act *inside* the bound, or move the
+bound?** Healing that takes a *reversible* corrective act within bdo's fence
+(quarantine a suspect bar-version, re-derive within the envelope) and escalates
+anything that would exceed it is the disposer shape — admissible, the boogeyman
+lifecycle's "witnessed violation → reversible quarantine" applied to the standard
+judging *itself*. Healing that resolves the deficit by *lowering the bar to stop
+the pain of refusals* is anesthesia — it **is** mirror drift / capability-
+laundering (AG-3 breach), the failure this subsection refuses. So the standard
+self-heals *toward more honest biting, never toward less*. The organ is three
+pieces, two already real: `heal.py` (the bite-axis sensor), a new
+**verdict-flip-without-work** detector (a fourth `heal.py` detector — same `Fold`,
+version-split, and propose-only contract as its siblings; greenfield today, a
+sensor-before-the-load like `heal`'s own flapping/override), and the disposer
+fence (the bounded actuator, when the bottleneck is witnessed). The sensor ships
+read-only and propose-only; it never clears a park or moves a bar — the heal stays
+a session's or bdo's (D-4).

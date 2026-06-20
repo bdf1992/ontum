@@ -161,6 +161,30 @@ class TestBrandedPush(unittest.TestCase):
             self.assertIsNotNone(pen.forward_refusal(tokens), tokens)
 
 
+class TestPrPenInvocationRoot(unittest.TestCase):
+    def test_matching_root_passes(self):
+        self.assertIsNone(pen.invocation_root_refusal(ROOT, ROOT))
+
+    def test_missing_git_root_refuses(self):
+        reason = pen.invocation_root_refusal(ROOT, None)
+        self.assertIn("not inside a git worktree", reason)
+
+    def test_mismatched_git_root_refuses(self):
+        reason = pen.invocation_root_refusal(ROOT, ROOT.parent)
+        self.assertIn("pen/worktree mismatch", reason)
+        self.assertIn(str(ROOT.resolve()), reason)
+
+    def test_push_invoked_from_another_repo_refuses_before_network(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run(["git", "init", "-q"], cwd=tmp, check=True)
+            proc = subprocess.run(
+                [sys.executable, str(PEN_PATH), "push", "--red-ok", "probe only"],
+                cwd=tmp, capture_output=True, text=True)
+        out = proc.stdout + proc.stderr
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("pen/worktree mismatch", out)
+
+
 class TestIntegrate(unittest.TestCase):
     """Version 0.8.0: a session integrates a piece into an epic branch, never
     main — the trunk stays bdo's (done-line 0029)."""
