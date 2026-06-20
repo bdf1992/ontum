@@ -11,6 +11,10 @@ causality/welcome-preview.png
 # sensor trace: what Codex really hands a hook (done-line 0029) — deletable
 .ai-native/log/codex-hook-probe.jsonl
 
+# run trace, not truth: each headless gate run's prompt + raw output + stderr +
+# exit code (done-line 0138) — debug cache so a failed run is visible, deletable
+.ai-native/log/gate-runs/
+
 # nag tally, not truth: turns the same mock set has sat (done-line 0033) —
 # the still-mock set is a fold over the log; this only counts the pressure
 .ai-native/mock-shame.json
