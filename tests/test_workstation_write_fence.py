@@ -93,9 +93,27 @@ class WriteFence(unittest.TestCase):
         rc, err = run_guard(self.wt_file, session_cwd=self.primary, tool_name="Edit")
         self.assertEqual(rc, 2, err)
 
+    def test_multiedit_into_foreign_worktree_denied(self):
+        rc, err = run_guard(self.wt_file, session_cwd=self.primary, tool_name="MultiEdit")
+        self.assertEqual(rc, 2, err)
+
     def test_notebookedit_into_foreign_worktree_denied(self):
         rc, err = run_guard(self.wt / "n.ipynb", session_cwd=self.primary,
                             tool_name="NotebookEdit")
+        self.assertEqual(rc, 2, err)
+
+    # --- a relative path is resolved against the SESSION cwd, not the process
+    # cwd (the review's finding): a relative write from a worktree is its own
+    # tree, not foreign, even though the guard process runs from the viewport.
+    def test_relative_path_resolves_against_session_cwd(self):
+        # own-tree relative write is allowed
+        rc, err = run_guard("loop/new.py", session_cwd=self.wt)
+        self.assertEqual(rc, 0, err)
+        # a relative path that points into a FOREIGN tree (resolved against the
+        # session cwd) is denied — teeth: this fails if resolution used the
+        # process cwd instead of session_cwd (the review's finding)
+        rel = os.path.join("..", "wt", "loop", "new.py")
+        rc, err = run_guard(rel, session_cwd=self.primary)
         self.assertEqual(rc, 2, err)
 
 

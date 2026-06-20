@@ -108,7 +108,15 @@ def hook():
         return 0
     session_cwd = payload.get("cwd") or os.getcwd()
     try:
-        target = pathlib.Path(fp).resolve()
+        # resolve a relative path against the SESSION's cwd, not the process
+        # cwd (the project dir) — else a relative file_path from a worktree
+        # would mis-resolve into the viewport and false-positive (the review
+        # of done-line 0147 caught this; the harness mandates absolute paths,
+        # but the guard must not assume it)
+        target = pathlib.Path(fp)
+        if not target.is_absolute():
+            target = pathlib.Path(session_cwd) / target
+        target = target.resolve()
         foreign = foreign_worktree(target, session_cwd)
         if foreign is not None:
             print(
