@@ -11,6 +11,10 @@ causality/welcome-preview.png
 # sensor trace: what Codex really hands a hook (done-line 0029) — deletable
 .ai-native/log/codex-hook-probe.jsonl
 
+# run trace, not truth: each headless gate run's prompt + raw output + stderr +
+# exit code (done-line 0138) — debug cache so a failed run is visible, deletable
+.ai-native/log/gate-runs/
+
 # nag tally, not truth: turns the same mock set has sat (done-line 0033) —
 # the still-mock set is a fold over the log; this only counts the pressure
 .ai-native/mock-shame.json
@@ -19,10 +23,15 @@ causality/welcome-preview.png
 # (done-line 0058) — the unsurfaced set is a fold over reports + the log
 .ai-native/owner-ask-shame.json
 
-# nag tally, not truth: the continue-beat / patrol's per-session beat count
-# and escalate marker (session_id / beats / escalate_armed) — runtime state
-# the hook rewrites each turn, sibling of mock-shame / owner-ask-shame.
-.ai-native/continue-beat.json
+# session-ephemeral nag state, not truth (done-line 0135, the session-
+# lifecycle organ): the patrol's escalate marker (escalate_armed/reason), the
+# idle reminder's gap clock + decay count, and the continue-probe's per-session
+# fire trace. Runtime state the hooks rewrite, sibling of mock-shame; the work
+# the probe nudges toward is a fold over the log. (The retired continue-beat's
+# .ai-native/continue-beat.json is kept ignored below so stray copies stay out.)
+.ai-native/patrol.json
+.ai-native/idle-reminder.json
+.ai-native/log/continue-probe-fires.jsonl
 
 # session-ephemeral UI state, not truth: each session's last-seen open set
 # and last-poll clock for the standing-surface projection (done-line 0071) —
@@ -43,7 +52,6 @@ __pycache__/
 # and by the Pages workflow; never truth, never tracked.
 _site/
 
-# session-ephemeral nag state, not truth: the continue-beat's per-session
-# beat count + escalate marker (done-line 0127) — the work it nudges toward
-# is a fold over the log; this only holds the patrol's count and stand-down
+# retired (done-line 0135): the continue-beat's old per-session state file —
+# kept ignored so any stray copy on an old worktree never lands as truth.
 .ai-native/continue-beat.json

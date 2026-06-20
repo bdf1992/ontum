@@ -1,0 +1,48 @@
+{
+  "atom": {
+    "id": "atom.session-lifecycle-gateway.v0",
+    "story": {
+      "text": "As bdo, I said the continue-probe 'worked great and I want to enable it for all new sessions' — but the version that worked was a prototype wired into one live session, and the thing it replaced (the continue-beat, done-line 0127) is still on main forcing every session to continue after every turn, blind to whether I am present. This atom is the production lift: it retires the forcing block and stands up the real organ. Now EVERY new session registers itself the moment it opens (a SessionStart hook records its id and project dir into ~/.claude/ontum-sessions.json), an external watcher folds that registry against each session's transcript mtime to find the idle-and-eligible ones, a firing pen resumes them out of band, and the soft idle reminder injects a gateway-bounded, decaying suggestion the agent reads and decides on — never a forced continuation. The bound is real and default-deny: a continue-probe is silent until I stamp a gateway policy, and that policy carries a TOOL-SCOPE (propose-only by default, because a resumed session is tool-permission-gated and we proved it can draft but not execute) so a permitted continue still cannot over-reach. It is enable-for-all-new-sessions made structural, not a per-session wire.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the production session-lifecycle organ: every new session registered, watched, and softly continued within a tool-scoped gateway",
+      "value": "Three layers replace the retired continue-beat block. (1) Registration: .claude/hooks/session_register.py (SessionStart) records session_id -> {cwd} into ~/.claude/ontum-sessions.json for EVERY new session, pruning the dead — 'enable for all new sessions' with no per-session work. (2) The fold: loop/watcher.py is pure/stdlib/no-network — it names which registered sessions are idle past threshold (transcript mtime is the activity signal) AND gateway-eligible (loop.retry.gateway_open, default-deny), emitting the exact `claude --resume <id> -p <probe>` command without ever spawning it. (3) The edge: .claude/skills/continue-probe/probe.py consumes the fold, budgets which targets are due (cooldown + per-streak fire cap so an away session is never hammered), and on --fire resumes them, tracing every firing. The resumed turn lands the soft reminder via loop/retry.py + .claude/hooks/idle_reminder.py, which names the tool-scope the gateway granted.",
+      "why_now": "bdo, 2026-06-19: 'it worked great and I want to enable it for all new sessions.' The prototype proved end-to-end (a CronCreate idle-wake fired into a live session, which had full context, did one safe step, and stood down) and surfaced the tier-2 lever: a resumed agent is tool-permission-gated — it proposed and drafted but could not execute. So production needs the gateway to grant a TOOL-SCOPE, not just 'may continue'; propose-only is the safe default, widened only by his stamp.",
+      "if_accepted": "The continue-beat's forcing Stop-block is gone (the hook unwired and deleted, loop/patrol.py slimmed to the escalate marker it shares). In its place a session that opens here is registered, watched, and — once bdo opens the gateway — softly nudged to continue within a named tool-scope after a genuine idle gap, deciding for itself. The organ is silent until two of his gestures (open the gateway policy; stand up the external scheduler tick), so nothing fires unasked.",
+      "if_rejected": "The wrong primitive stays on main: every session is force-continued after every turn regardless of whether bdo is present, and 'enable for all new sessions' stays a per-session manual wire rather than an automatic registration.",
+      "cost_of_wrong_call": "Low and default-deny throughout. The watcher and reminder are silent until bdo stamps a continue-probe policy (no policy, no probe, however idle); the firing pen is dry-run unless --fire and bounded by a cooldown + fire cap; every firing is traced. loop/ stays no-network (the spawn lives only in the pen). The hooks fail-open and never gate a session. Reverting is re-wiring one Stop line and removing the new files; the retired done-line 0127 stands as history.",
+      "mechanism": "Gateway tool-scope: loop/inference.py policy records gain a `scope` (propose-only|full, default propose-only); inference.policy_scope(fold, caller, surface, mind) returns the granted scope or None (default-deny honoured). loop/retry.compose reads it and NAMES it in the reminder (propose-only forbids execution; full permits). loop/watcher.py: idle_sessions(now, registry, gateway, mtime) is the pure fold (now/gateway/mtime injected for the teeth); register_session(registry, sid, cwd, now, mtime) is the pure add-and-prune the SessionStart hook calls. The continue-probe pen's due_targets(idle, ledger, now, mtime) is the pure budget (cooldown + streak-reset + cap). Tests: test_watcher (active excluded, idle-in-window included, gateway-closed excluded, presumed-closed excluded, exact resume argv, register add/prune), test_retry (each silence condition, session-first content, the named scope, decay), test_gateway TestPolicyScope (denied->None, permit->propose-only, explicit full, deny overrides, bad scope refused), test_continue_probe (cooldown, cap, streak reset), test_patrol (the slimmed escalate marker, derived not constant). The retired continue_beat hook + decide-fold tests are gone with the primitive. Done-line 0135.",
+      "reading": [
+        "loop/watcher.py",
+        "loop/retry.py",
+        "loop/inference.py",
+        ".claude/hooks/session_register.py",
+        ".claude/hooks/idle_reminder.py",
+        ".claude/skills/continue-probe/probe.py",
+        "loop/patrol.py",
+        ".claude/settings.json",
+        ".ai-native/done/0135-session-lifecycle-gateway.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/watcher.py", "loop/retry.py", "loop/inference.py", "loop/patrol.py", ".claude/hooks/session_register.py", ".claude/hooks/idle_reminder.py", ".claude/skills/continue-probe/probe.py", ".claude/skills/continue-probe/SKILL.md", ".claude/settings.json", ".gitignore", "tests/test_watcher.py", "tests/test_retry.py", "tests/test_continue_probe.py", "tests/test_patrol.py", "tests/test_gateway.py"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/patrol.py", ".claude/hooks/reflect_auto.py", "loop/inference.py", "loop/gaps.py"],
+      "receipts": []
+    }
+  }
+}
