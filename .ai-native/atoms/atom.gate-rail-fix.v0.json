@@ -1,0 +1,43 @@
+{
+  "atom": {
+    "id": "atom.gate-rail-fix.v0",
+    "story": {
+      "text": "As the loop, I need the branded headless gate rail to actually produce a verdict when a session requisitions it — otherwise the hard rule 'no work lands without an independent review through the branded spawn rail' has no working rail. The production-gate session (PR #286) hit this: gate.py launch returned an empty result and left nothing to debug, so the review had to be done off-rail. bdo asked for the fix, and named the tell: 'shouldn't it have written some file?' Reproduction found two root causes: (1) launch_claude passes no --model, so the child claude -p defaults to the alias `opus`, which 404s headless (model: opus not found); (2) it runs with cwd=ROOT, so the repo's UserPromptSubmit session hooks load in the child and block the prompt (num_turns 0, empty result, is_error false). The compose() prompt is self-contained, so a neutral cwd is the fix. And every run now leaves a trace file, so a failure is debuggable instead of vanishing.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the headless gate rail launches and leaves a trace",
+      "value": ".claude/skills/gate/gate.py launch_claude now passes an explicit, configurable --model (ONTUM_GATE_MODEL, default claude-opus-4-8) so the child no longer 404s on the `opus` alias, runs the self-contained prompt from a NEUTRAL cwd so the repo's UserPromptSubmit hooks no longer block the headless child, and writes a full run-trace file (prompt, raw stdout, stderr, exit code, model) on every launch — even on failure, with the path named in the failure report and the left-open trust-rail issue.",
+      "why_now": "bdo asked directly this session ('Let's fix that') after the production-gate session (PR #286) found the rail returns empty when a session requisitions a verdict — issues #284/#285. Without a working rail the independent-review hard rule has no mechanism.",
+      "if_accepted": "A session can requisition a real branded gate verdict from within itself again; failures are visible (a trace file + an open issue) instead of vanishing. The fix is demonstrated end-to-end by judging this very atom on the now-fixed rail.",
+      "if_rejected": "The branded spawn rail stays broken inside a session; independent reviews keep falling back to off-rail judges, and gate failures keep vanishing with no trace.",
+      "cost_of_wrong_call": "Low and bounded: the change is confined to the gate pen's launch step; it does not touch what a gate may decide, the §7 prompt lineage, the trust-rail issue contract, or the one-pen verdict write (D-4). The trace file is gitignored debug cache. Reverting is restoring the prior launch_claude.",
+      "mechanism": "launch_claude gains _launch_cmd (carries --model), _launch_cwd (a neutral tempdir, not ROOT), and write_trace (always-written gitignored trace under .ai-native/log/gate-runs/); it returns (verdict, reason, raw, trace) and names the trace path when it raises. tests/test_gate_rail.py joins the suite with §10 teeth using an injected fake runner (no live spawn): the command carries a --model, the cwd is not the repo root, and a trace is written on both a parse-success and a parse-failure run (the failure still names the path and raises so the issue stays open). Done-line 0138.",
+      "reading": [
+        ".claude/skills/gate/gate.py",
+        "tests/test_gate_rail.py",
+        ".gitignore",
+        ".ai-native/done/0138-gate-rail-fix.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.the-field"],
+      "touches": [".claude/skills/gate/gate.py", "tests/test_gate_rail.py", ".gitignore", ".ai-native/done/0138-gate-rail-fix.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/gate/gate.py", ".ai-native/reports/0104-production-gate.md"],
+      "receipts": []
+    }
+  }
+}
