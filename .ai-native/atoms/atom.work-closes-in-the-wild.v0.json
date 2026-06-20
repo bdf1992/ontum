@@ -1,0 +1,35 @@
+{
+  "atom": {
+    "id": "atom.work-closes-in-the-wild.v0",
+    "story": {
+      "text": "Work that is built and merged must close in the wild before the session dies (bdo, this thread): agents own their work through to landing, nothing hangs unfinished, nothing hangs on bdo. The terminal-pull gateway (done-line 0123) found the clog: atoms reach value_accepted, their PR is landed by the independent merge-node, yet the pipeline atom is abandoned one step past the value-gate and counts as inflight forever, so the inflight cap cools off new atom births. The cause is two terminals that never reconciled: the git-merge (work on main) and the pipeline terminal (value_confirmed). This is the road: the merge-node lands a PR it did NOT author, so its landed receipt IS the deciding acceptance for the piece (D-2's two acceptances, reframed this same thread) -- and with the per-atom join already on the receipt (landed_atoms, done-line 0124), orchestrate.next_action settles an atom whose id reached main and whose current bytes are the landed version (a SEED event on the record for THIS hash). The teeth (S10): an un-landed new version (same id in the join, fresh in-place edit, no seed for the new hash) is NOT settled -- it refuses to ride its sibling version's landing. The join is reused not re-derived (digest.atoms_on_main, the one definition); the settle is keyed to the independent lander, never the author (D-2 holds); landed-but-refused divergences still surface via the digest's independent fold. Value: the clog drains forward, work closes in the wild instead of dying past the value-gate, and the inflight cap stops cooling new births on already-landed work.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [
+        "loop/orchestrate.py",
+        "tests/test_orchestrate.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0133-work-closes-in-the-wild.md",
+        "loop/digest.py:atoms_on_main",
+        ".ai-native/done/0124-gh-reflection-write-through.md"
+      ],
+      "receipts": []
+    }
+  }
+}
