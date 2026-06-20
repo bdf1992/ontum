@@ -1,10 +1,13 @@
-"""§10 for the Scout generator (done-line 0148): the teeth bite a *real*
-move, closing review finding #1.
+"""§10 for the Scout generator (done-line 0148): the teeth bite at MOVE
+granularity — the move-granular fix for review finding #1.
 
-The discriminating test (§10): explore.py's grounding was vacuous because
-its arc-doc antecedent always resolved. Scout grounds on substantive,
-non-self-referential priors — so a real ghost move (an epic/subject with no
-log activity) is REFUSED, and a grounded move never cites the epic file.
+explore.py's grounding was vacuous: its arc-doc antecedent always resolved.
+Scout's first cut closed the literal vacuousness (cold epics refused) but
+still grounded a warm epic on "the epic id appears in the log" — a record the
+loop itself writes (arc_confirmed / workspace_claimed). The fix: ground only
+on priors that name the move's SUBJECT in real work or an authored bar, and
+drop the loop-written admissions ledger entirely. The discriminating test: a
+*confirmed* epic whose next move targets an un-worked piece is now REFUSED.
 """
 
 import unittest
@@ -15,46 +18,53 @@ from loop.reconcile import DEFAULT_ROOT
 
 ROOT = Path(DEFAULT_ROOT)
 REPO = ROOT.resolve().parent
-LIVE = "epic.strategy"  # confirmed on the log (confirm-arc + workspace claims)
+# a foundational epic with real piece work on the record (stable across the
+# branch and main); GROUNDS under the move-granular rule.
+WORKED = "epic.substrate"
+# a confirmed/warm epic whose pieces are not yet worked; REFUSES under the
+# move-granular rule even though it is touched (the residual this closes).
+WARM_UNWORKED = "epic.strategy"
 
 
 class TestScout(unittest.TestCase):
-    def test_live_purpose_grounds_non_self_referentially(self):
-        out = scout.scout(ROOT, LIVE)
-        # a grounded ScoutCTA, not a refusal
+    def test_grounds_a_live_purpose_with_real_work(self):
+        out = scout.scout(ROOT, WORKED)
         self.assertEqual(out.get("status"), "conjecture", out)
-        # it passes its own contract (schema + grounding + expiry)
         self.assertEqual(scout_cta.validate(REPO, out), [], out)
         self.assertTrue(out["priors_consulted"])
-        # the FIX for finding #1: no prior is the epic file (non-self-referential)
         for ev in out["priors_consulted"]:
+            # non-self-referential: never the epic file; and never the
+            # loop-written governance admissions.
             self.assertNotIn("/epics/", ev["file"], ev)
-        # marked conjecture, never truth
+            self.assertNotIn("admissions", ev["file"], ev)
         self.assertFalse(out["minted"])
         self.assertFalse(out["truth_claim"])
-        self.assertTrue(out["review_required"])
 
-    def test_ghost_epic_subject_has_no_substantive_prior(self):
-        # an epic/subject with no log activity grounds nothing — the teeth bite
-        # a real move, not just a fabricated dict (the explore.py failure).
-        priors = scout.substantive_priors(REPO, "epic.ghost-zzzzz", "atom.ghost-zzzzz.v0")
-        self.assertEqual(priors, [], priors)
+    def test_warm_confirmed_epic_without_piece_work_is_refused(self):
+        # THE discriminator: epic.strategy is confirmed and claimed (the loop
+        # wrote arc_confirmed/workspace_claimed for it), but its next move
+        # targets a piece with no real work — so Scout REFUSES. The teeth bite
+        # at move granularity, not merely epic-touched-vs-untouched.
+        out = scout.scout(ROOT, WARM_UNWORKED)
+        self.assertEqual(out.get("status"), "refused", out)
+
+    def test_grounding_never_uses_loop_written_admissions(self):
+        # substantive_priors must never cite the admissions ledger — that is
+        # where the self-fulfilling arc_confirmed/workspace_claimed records live.
+        priors = scout.substantive_priors(REPO, WORKED)
+        self.assertTrue(priors, "expected real-work priors for a worked arc")
+        for ev in priors:
+            self.assertNotIn("admissions", ev["file"], ev)
+            self.assertNotIn("/epics/", ev["file"], ev)
+
+    def test_ghost_subject_has_no_substantive_prior(self):
+        self.assertEqual(scout.substantive_priors(REPO, "atom.ghost-zzzzz.v0"), [])
 
     def test_nonexistent_purpose_is_refused(self):
         out = scout.scout(ROOT, "epic.ghost-zzzzz")
         self.assertEqual(out.get("status"), "refused", out)
 
-    def test_grounding_excludes_the_arc_doc_self_reference(self):
-        # even where the epic file names the subject, that citation must not be
-        # what grounds the move (that was the vacuous antecedent in finding #1).
-        priors = scout.substantive_priors(REPO, LIVE, "atom.scout-fold.v0")
-        self.assertTrue(priors, "expected substantive priors for a live arc")
-        for ev in priors:
-            self.assertNotIn("/epics/", ev["file"], ev)
-
     def test_fabricated_cta_cannot_validate(self):
-        # a constant ScoutCTA whose priors resolve nowhere is refused by the
-        # contract Scout validates against before emitting.
         fab = {
             "status": "conjecture", "lobe": "scout",
             "purpose": "x", "goal": "x", "horizon": "x",

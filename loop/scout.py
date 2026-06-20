@@ -42,25 +42,32 @@ from loop import scout_cta
 from causality.term_economy import resolve_evidence
 
 
-def substantive_priors(repo_root, eid, subject):
-    """Real, NON-self-referential priors for a move: log records / done-lines
-    that name the subject or the epic id, resolved on disk. The arc-doc
-    self-reference (the epic file containing its own id/piece) is EXCLUDED —
-    it always resolves and made explore.py's teeth vacuous (finding #1). A
-    move with no substantive prior here is ungrounded: the arc *naming* a
-    piece is not evidence the move is warranted; real activity on the record
-    is. Deduped; each entry is a {file, contains} the caller can re-resolve."""
+def substantive_priors(repo_root, subject):
+    """Priors that name THIS move's **subject** in real work or an authored
+    bar — the move-granular fix for review finding #1 (PR #321 wave 2 review).
+
+    Two exclusions, both load-bearing:
+      - the arc-doc self-reference (the epic file containing its own id) — it
+        always resolves and made explore.py's teeth vacuous;
+      - the **admissions** ledger — `arc_confirmed` / `workspace_claimed` are
+        governance records the loop writes as a *side-effect* of touching an
+        epic, so grounding on "the epic id appears in the log" discriminated
+        only epic-touched-vs-untouched, not whether *this* move is warranted.
+
+    What's left is evidence specific to the subject and not loop-written:
+    real pipeline work on the subject (`events`/`receipts` that name it) or an
+    authored done-line **bar** for it. A move whose subject names nothing real
+    is ungrounded — you cannot ground "announce X" with no evidence for X.
+    Deduped; each entry is a {file, contains} the caller can re-resolve."""
     repo_root = Path(repo_root)
-    cands = []
-    for ledger in ("admissions", "events", "receipts"):
-        for needle in (subject, eid):
-            if needle:
-                cands.append({"file": f".ai-native/log/{ledger}.jsonl",
-                              "contains": needle, "source": f"log:{ledger}"})
+    if not subject:
+        return []
+    cands = [{"file": f".ai-native/log/{ledger}.jsonl", "contains": subject,
+              "source": f"log:{ledger}"} for ledger in ("events", "receipts")]
     ddir = repo_root / ".ai-native" / "done"
     for p in sorted(ddir.glob("*.md")):
         try:
-            if subject and subject in p.read_text(encoding="utf-8", errors="replace"):
+            if subject in p.read_text(encoding="utf-8", errors="replace"):
                 cands.append({"file": f".ai-native/done/{p.name}",
                               "contains": subject, "source": "done-line"})
         except OSError:
@@ -120,12 +127,13 @@ def scout(root, purpose):
     epic = res[1]
     eid = epic["id"]
     kind, subject, move = derive_move(root, epic)
-    priors = substantive_priors(repo_root, eid, subject)
+    priors = substantive_priors(repo_root, subject)
     if not priors:
         return {"status": "refused", "subject": subject, "toward": eid,
-                "reason": ("no substantive, non-self-referential prior resolves for this "
-                           "move — ungrounded (the arc naming the piece is not enough; "
-                           "the teeth bite)")}
+                "reason": ("no real work or authored bar names this move's subject — "
+                           "ungrounded (the arc naming the piece, or the loop's own "
+                           "confirm/claim admissions, are not evidence the move is "
+                           "warranted; the teeth bite at move granularity)")}
     cta = build_scout_cta(epic, kind, subject, move, priors)
     problems = scout_cta.validate(repo_root, cta)
     if problems:
