@@ -50,12 +50,28 @@ ATOMS = ROOT / ".ai-native" / "atoms"
 NODES = ROOT / ".ai-native" / "nodes"
 EPICS = ROOT / ".ai-native" / "epics"
 
-# The model the headless mind judges with (done-line 0138). It MUST be an
-# explicit, valid model id: a child `claude -p` with no `--model` defaults to
-# the alias `opus`, which 404s in the headless context (`model: opus` not
-# found). Configurable so the model is an admitted choice, not a buried
-# constant; the default is the most capable id at authorship.
-GATE_MODEL = os.environ.get("ONTUM_GATE_MODEL") or "claude-opus-4-8"
+# The model the headless mind judges with. It MUST be an explicit, valid model
+# id (done-line 0138): a child `claude -p` with no `--model` defaults to the
+# alias `opus`, which 404s headless. The gate now draws one at RANDOM per run
+# from a pool (done-line 0142, bdo's direction): record the model + its cost and
+# let `loop.runs` fold cost by model, so the economy of who-judges-for-how-much
+# is visible. `ONTUM_GATE_MODEL`, if set, PINS one model and overrides the draw.
+GATE_MODEL_POOL = [m for m in (os.environ.get("ONTUM_GATE_MODELS") or "").split(",")
+                   if m.strip()] or ["claude-opus-4-8", "claude-sonnet-4-6",
+                                     "claude-haiku-4-5"]
+GATE_MODEL_PIN = os.environ.get("ONTUM_GATE_MODEL") or None
+
+
+def pick_model(pool=None, pin=None):
+    """The judging model for one run: the pin if set (an admitted override),
+    else a uniform random draw from the pool. Random lives in the pen, never in
+    a fold (loop/'s determinism law is for the log readers, not this launcher)."""
+    pin = pin if pin is not None else GATE_MODEL_PIN
+    if pin:
+        return pin
+    import random
+    return random.choice(pool or GATE_MODEL_POOL)
+
 
 # Where each run leaves its trace — debug cache (gitignored), never truth.
 GATE_RUNS = LOG / "gate-runs"
@@ -274,26 +290,46 @@ def write_trace(atom_id, node_id, info):
     return path
 
 
+def _parse_cost(envelope):
+    """The run's economy, from the `--output-format json` envelope: dollars and
+    token usage. None for `usd` when the envelope carried no cost (an unpriced
+    run confesses; the audit never reads a missing cost as $0, done-line 0142)."""
+    if not isinstance(envelope, dict):
+        return {"usd": None, "input_tokens": None, "output_tokens": None}
+    usage = envelope.get("usage") or {}
+    usd = envelope.get("total_cost_usd")
+    return {
+        "usd": usd if isinstance(usd, (int, float)) else None,
+        "input_tokens": usage.get("input_tokens"),
+        "output_tokens": usage.get("output_tokens"),
+    }
+
+
 def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subprocess.run):
     """Launch the mortal process: real inference, captured, and ALWAYS traced.
-    Returns (verdict, reason, raw, trace) or raises (after writing the trace,
-    whose path is named in the error) on a failure to launch/parse. `runner` is
-    injectable so the §10 test exercises both paths without a live spawn."""
-    model = model or GATE_MODEL
+    The model is drawn (or pinned) per run; the run's cost is parsed from the
+    envelope so `loop.runs` can fold cost by model (done-line 0142). Returns
+    (verdict, reason, raw, trace, model, cost) or raises (after writing the
+    trace, whose path is named in the error) on a failure to launch/parse.
+    `runner` is injectable so the §10 test exercises both paths without a live
+    spawn."""
+    model = model or pick_model()
     cmd = _launch_cmd(prompt, model)
     cwd = _launch_cwd()
     proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600)
     raw = proc.stdout or ""
     text = raw
+    envelope = None
     try:  # --output-format json wraps the result; unwrap to the model's text
-        env = json.loads(raw)
-        text = env.get("result", raw) if isinstance(env, dict) else raw
+        envelope = json.loads(raw)
+        text = envelope.get("result", raw) if isinstance(envelope, dict) else raw
     except json.JSONDecodeError:
         pass
+    cost = _parse_cost(envelope)
     # The trace is written BEFORE any parse decision — even an empty, garbled,
     # or crashed run leaves the prompt, raw output, stderr and exit code behind.
     trace = write_trace(atom_id, node_id, {
-        "ts": now(), "model": model, "cwd": cwd,
+        "ts": now(), "model": model, "cwd": cwd, "cost": cost,
         "cmd": cmd[:2] + ["<prompt elided — see 'prompt'>"] + cmd[3:],
         "returncode": proc.returncode, "prompt": prompt,
         "stdout": raw, "stderr": proc.stderr or "", "parsed_text": text,
@@ -312,7 +348,7 @@ def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subproc
         raise ValueError(f"the process returned no parseable verdict object; "
                          f"trace: {trace}; tail: {text.strip()[-300:]}")
     v = objs[-1]
-    return v["verdict"], v.get("reason", ""), text, trace
+    return v["verdict"], v.get("reason", ""), text, trace, model, cost
 
 
 def write_verdict(atom_id, node_id, verdict, reason):
@@ -325,13 +361,23 @@ def write_verdict(atom_id, node_id, verdict, reason):
     return (r.stdout + r.stderr).strip()
 
 
-def record_run(node_id, atom_id, by, moved):
-    subprocess.run(
-        ["python", "-m", "loop.runs", "record", "--kind", "gate-judgment",
-         "--by", by, "--advanced", str(moved),
-         "--note", f"{node_id} judged {atom_id}"],
-        capture_output=True, text=True, cwd=str(ROOT), timeout=60,
-    )
+def record_run(node_id, atom_id, by, moved, model=None, cost=None):
+    """Note the run on the ledger, carrying the model it used and its cost so
+    `loop.runs` can fold cost by model (done-line 0142). A missing cost is
+    passed as nothing, never as $0 — an unpriced run confesses."""
+    cmd = ["python", "-m", "loop.runs", "record", "--kind", "gate-judgment",
+           "--by", by, "--advanced", str(moved),
+           "--note", f"{node_id} judged {atom_id}"]
+    if model:
+        cmd += ["--model", model]
+    cost = cost or {}
+    if cost.get("usd") is not None:
+        cmd += ["--cost-usd", str(cost["usd"])]
+    if cost.get("input_tokens") is not None:
+        cmd += ["--input-tokens", str(cost["input_tokens"])]
+    if cost.get("output_tokens") is not None:
+        cmd += ["--output-tokens", str(cost["output_tokens"])]
+    subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT), timeout=60)
 
 
 def cmd_launch(ns):
@@ -359,7 +405,7 @@ def cmd_launch(ns):
     print(f"  trust-rail issue opened: {ref}")
 
     try:
-        verdict, reason, _, _ = launch_claude(prompt, ns.atom, ns.node)
+        verdict, reason, _, _, model, cost = launch_claude(prompt, ns.atom, ns.node)
     except Exception as e:  # the mind hung or crashed: leave the issue OPEN
         issue_comment(address, ref, f"⚠ the process did not return a verdict: "
                       f"{e}\n\nThe issue stays open — this is the run you wanted "
@@ -386,12 +432,13 @@ def cmd_launch(ns):
     ])
     if landed:
         issue_close(address, ref, comment)
-        record_run(ns.node, ns.atom, ns.by, moved=1)
+        record_run(ns.node, ns.atom, ns.by, moved=1, model=model, cost=cost)
         print(f"result: report — {ns.node} judged {ns.atom} -> {verdict} "
-              f"({rcp_id}); issue {ref} closed with the verdict")
+              f"({rcp_id}); issue {ref} closed with the verdict "
+              f"[{model}, ${(cost or {}).get('usd') if (cost or {}).get('usd') is not None else '?'}]")
     else:
         issue_comment(address, ref, comment)
-        record_run(ns.node, ns.atom, ns.by, moved=0)
+        record_run(ns.node, ns.atom, ns.by, moved=0, model=model, cost=cost)
         print(f"result: needs-you — the process returned `{verdict}` but the one "
               f"pen refused it (issue {ref} left open):\n{out}")
     return 0

@@ -70,12 +70,14 @@ class GateRailLaunch(unittest.TestCase):
         self.assertNotEqual(Path(gate._launch_cwd()).resolve(), gate.ROOT.resolve())
 
     def test_default_model_is_explicit_not_the_opus_alias(self):
-        self.assertTrue(gate.GATE_MODEL)
-        self.assertNotEqual(gate.GATE_MODEL, "opus")
+        # done-line 0142: the single GATE_MODEL became a pool the gate draws from
+        self.assertTrue(gate.GATE_MODEL_POOL)
+        self.assertNotIn("opus", gate.GATE_MODEL_POOL)
+        self.assertNotEqual(gate.pick_model(), "opus")
 
     def test_success_writes_a_trace_and_uses_model_and_cwd(self):
         runner, captured = _runner_returning(_verdict_envelope("accept"))
-        verdict, reason, text, trace = gate.launch_claude(
+        verdict, reason, text, trace, model, cost = gate.launch_claude(
             "a self-contained prompt", atom_id="atom.x.v0",
             node_id="value-gate.claude.v1", runner=runner)
         self.assertEqual(verdict, "accept")
