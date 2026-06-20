@@ -42,7 +42,7 @@ CLAIM_TYPES = ("arc", "epic", "spike", "branch", "watch", "defer")
 def _derive_claim_type(cta):
     """The bounded form a ScoutCTA wants, read from the move's own shape — a
     real derivation (different CTAs -> different types), never a constant."""
-    why = cta.get("why_this_move_now", "")
+    why = cta.get("why_this_move_now") or ""
     attn = (cta.get("attention_class") or "").lower()
     if why.startswith("[open-question"):
         return "watch"      # a fork to monitor, not yet actionable
