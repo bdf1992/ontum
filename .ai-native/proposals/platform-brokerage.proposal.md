@@ -199,6 +199,60 @@ wireheading trap). Two anchors prevent it: the pentimento must be *actual* super
 bytes (not a painted-on history effect), and Observable ties every node to a real
 receipt. Self-defining, but **pinned to committed reality at every node**.
 
+## The third axis: instrument-fitness (bdo's sanity-check, 2026-06-20)
+
+The deep layer above has two axes: a **safety axis** (the consequence-gate — is the
+act reversible/bounded/observable/learning?) and a **work-quality axis** (the sauce —
+is the *result* good, peer-judged?). bdo named the missing third: **instrument-fitness
+— are the *tools the agent works with* good enough that anyone will actually use
+them?** His four lines are all about the *condition of the instrument*, not the safety
+of the act done with it:
+
+> People don't use exploded, dry, chewed **pens**. People don't use dull, no-eraser,
+> awkward **pencils**. People don't write to wet, sketchy, poor **media**. People don't
+> use **lead paint**.
+
+This maps onto the sketch→ink→paint analogy already proposed
+(`.ai-native/proposals/sketch-ink-paint.proposal.md`), now read as *tool condition*:
+
+- **Pencil (sketch / explore).** Needs an **eraser** (reversibility — present, as the
+  pentimento), **sharpness** (resolution), and **low friction** (ergonomics). A dull
+  bound is the over-containment shadow (`over_containment.py`, T6) — only the *safety*
+  half; the *ergonomics* half is unmeasured.
+- **Pen (ink / commit).** Must be **reliable and ergonomic**, not exploded/chewed. The
+  pens are built *safe* (named paths, no sweep, logged) but their **ergonomics are
+  nowhere measured** — and the pen is **already exploded for whole contexts**: #245
+  (the paved pens don't work from web/mobile). This is the live failure.
+- **Media (the substrate).** Must be **durable and settled**. The log is ontum's best
+  instrument — append-only, byte-deterministic, torn-tail-tolerant. The one axis
+  already first-class here.
+- **Paint (render / publish).** Must be **non-toxic** to whoever consumes it. The
+  consequence-gate flags toxic *outward acts* (the poison-flag) but does not measure
+  whether the rendered artifact itself is safe to read.
+
+**Why it is load-bearing, not cosmetic.** The doctrine's own claim demands it: *"any
+real operator will route around a dead-weight gate."* A bad instrument defeats the
+consequence-gate **before it is ever reached** — deeper than T6, because the
+interesting act is never *attempted* when the tool to attempt it is nasty. People
+don't use exploded pens; agents route to the off-log path (#107) instead. A perfectly
+calibrated stop-reflex holding a chewed pen still produces garbage.
+
+**The test (behavioral, with teeth).** *If agents route around a tool, the tool is
+exploded.* The watcher's "which wrapper to build next" (`command_guard --report`) is
+already a proto-sensor of this; #245 is the loud, unmeasured alarm. Instrument-fitness
+becomes a measured axis when the loop folds *route-around rate* per tool from the
+activity record (organ 1's sibling).
+
+**The worked example (this session, 2026-06-20).** The fence-heal that produced this
+section is Exhibit A. Healing two built-but-unlanded PRs (#341, #346) hit, in order: a
+**dull pencil** (a path-translation bug made the gate read an empty log and falsely
+report "no surface"), an **exploded pen** (the land verb gates on GitHub CI that never
+re-triggered on the new commits), **wet media** (the worktree was deleted under the
+session mid-operation by concurrent cleanup), all on a **contested viewport** (the very
+root cause). The work landed (#341 reached main) — but *only because the session pushed
+through friction a normal operator would have routed around*. The consequence-gate was
+never the failure surface. The instruments were. That is the proof this axis is real.
+
 ## The invariant that survives all of it (the one non-negotiable)
 
 **Log-is-truth.** Every facet above is admissible **only** because truth never
@@ -252,6 +306,9 @@ clauses are already negotiable in the reach). The doctrine amendment:
   — see facet #4.)
 - **holographic kill-test** — cut the mesh anywhere, regenerate the whole from the
   fragment, measure the reconstruction error; the platform's own falsification.
+- **instrument-fitness** — the third axis (beside safety and work-quality): are the
+  *tools* (pencil/pen/media/paint) good enough to use? Measured behaviorally —
+  route-around rate per tool. A tool agents route around is *exploded* (the #107 risk).
 
 ## Open edges — NOT yet cut (preserved honestly, the owner's to resolve)
 
