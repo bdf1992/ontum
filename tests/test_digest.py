@@ -72,6 +72,48 @@ class TestReadOnly(_Temp):
         self.assertEqual(before, after, "the digest mutated the log; it must only fold")
 
 
+def _append_merge(root, pr, landed_atoms=None, ts="2026-06-06T10:00:00Z"):
+    """A merge-node landing receipt — the git-merge namespace. `landed_atoms`
+    None omits the field entirely (the pre-D-13 lossy shape)."""
+    rc = {"id": f"rcp.merge.{pr}", "kind": "merge", "node": "merge-node.test.v0",
+          "epic": "epic.test", "head": f"claude/b{pr}", "pr": pr,
+          "verdict": "landed", "authorized_by": "adm.test", "ts": ts}
+    if landed_atoms is not None:
+        rc["landed_atoms"] = landed_atoms
+    reconcile.append_line(root / "log" / "receipts.jsonl", rc)
+    return rc
+
+
+class TestAtomsOnMain(_Temp):
+    """Done-line 0124 / D-13: the per-atom↔per-PR join read from the log alone.
+    The §10 teeth are the lossy-vs-faithful contrast — a write-through receipt
+    joins, the pre-D-13 lossy one cannot, even though both say `landed`."""
+
+    def test_faithful_receipt_joins_lossy_one_does_not(self):
+        _append_merge(self.root, 7, landed_atoms=["atom.a.v0", "atom.b.v0"])
+        _append_merge(self.root, 8, landed_atoms=None)  # the old lossy shape
+        on_main = digest.atoms_on_main(reconcile.Fold(self.root))
+        self.assertEqual(on_main, {"atom.a.v0", "atom.b.v0"})
+        # PR #8 said `landed` too, yet contributes nothing — it never named an
+        # atom, so it cannot honestly claim one reached main (the namespace gap).
+
+    def test_only_landing_verdicts_count(self):
+        # a non-landing receipt carrying a stray landed_atoms field is not a
+        # merge to main and must not join (only LANDING_VERDICTS are on-main).
+        _append_merge(self.root, 9, landed_atoms=["atom.real.v0"])
+        reconcile.append_line(self.root / "log" / "receipts.jsonl", {
+            "id": "rcp.notamerge", "verdict": "accept", "next_suggested_event": "x",
+            "landed_atoms": ["atom.fake.v0"], "ts": "2026-06-06T11:00:00Z"})
+        on_main = digest.atoms_on_main(reconcile.Fold(self.root))
+        self.assertEqual(on_main, {"atom.real.v0"})
+
+    def test_surfaced_in_the_dataset_and_render(self):
+        _append_merge(self.root, 7, landed_atoms=["atom.a.v0"])
+        d = digest.digest(self.root)
+        self.assertEqual(d["atoms_on_main"], ["atom.a.v0"])
+        self.assertIn("confirmed on main", digest.render(d))
+
+
 class TestArcGrouping(_Temp):
     def test_arc_present_with_confirmation_status(self):
         d = digest.digest(self.root)
@@ -177,6 +219,26 @@ class TestSupersededRefusalIsHistory(unittest.TestCase):
         self.assertEqual([d["atom"] for d in div], ["atom.b.v0"])
         self.assertEqual(div[0]["verdict"], "collision")
 
+    def test_superseded_piece_drops_from_live_arc_tally(self):
+        arc = {"epic": "epic.x", "confirmed": {"by": "bdo"}, "pieces": [
+            {"atom": "atom.x.v0", "landed": False, "awaiting": False,
+             "parked": True, "standing": "parked",
+             "refusals": [{"verdict": "missed"}], "superseded": True},
+            {"atom": "atom.x.v1", "landed": True, "awaiting": False,
+             "parked": False, "standing": "landed", "refusals": []},
+        ]}
+        digest._refresh_arc_counts(arc)
+        self.assertEqual(arc["total"], 1)
+        self.assertEqual(arc["landed"], 1)
+        self.assertEqual(arc["parked"], 0)
+        self.assertEqual(arc["refused"], 0)
+        self.assertEqual(arc["history"], 1)
+        line = digest._arc_line(arc)
+        self.assertIn("1/1 landed", line)
+        self.assertIn("1 history", line)
+        self.assertNotIn("parked", line)
+        self.assertNotIn("refused", line)
+
 
 class TestQueueOverCap(_Temp):
     def test_tick_over_its_setpoint_cap_is_a_divergence(self):
@@ -218,6 +280,11 @@ class TestSpan(_Temp):
         d = digest.digest(self.root, since="2026-06-01", until="2026-06-05")
         self.assertEqual(d["refusals"], 1)
         self.assertEqual(len(d["divergences"]), 1)
+
+    def test_same_day_span_label_is_the_day_not_a_range(self):
+        self.assertEqual(digest._span_label({"since": "2026-06-17",
+                                             "until": "2026-06-17"}),
+                         "2026-06-17")
 
 
 class TestLandingNotRefusal(_Temp):
@@ -332,6 +399,22 @@ class TestGestureSurface(_Temp):
         d = digest.digest(self.root)
         self.assertNotIn("a test arc", digest.render(d),
                          "the arc's prose was re-dumped — the unreadability bdo refused")
+
+    def test_loose_live_atom_is_named_but_not_made_bdos_move(self):
+        d = {"span": {"since": "2026-06-17", "until": "2026-06-17"},
+             "setpoint": None,
+             "field": {"ticks": 0, "heat": 0, "cool": 0,
+                       "budget_spent": 0, "peak_backlog": 0,
+                       "deferred_reasons": {}},
+             "arcs": [],
+             "loose": [{"atom": "atom.loose.v0",
+                        "standing": "in-flight (derive:value.accepted)",
+                        "awaiting": False, "parked": False}],
+             "landings": 0, "refusals": 0, "divergences": []}
+        text = digest.render(d)
+        self.assertIn("**Your move:** nothing on you", text)
+        self.assertIn("1 loose atom(s) are outside an arc", text)
+        self.assertIn("atom.loose.v0", text)
 
 
 class TestEndLineVerdict(_Temp):

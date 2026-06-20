@@ -158,19 +158,20 @@ class HandoffSeamTest(unittest.TestCase):
         self.assertEqual(
             [r for r in receipts(self.root) if r.get("node") == HANDOFF_REAL], [])
 
-    def test_refused_when_parked_but_not_real(self):
-        # the realness guard itself: admit real to park the atom at handoff,
-        # then revert the stage to its mock (a null real_node). The event is
-        # announced and unsatisfied, the stage is mock → the seam refuses the
-        # deterministic verdict with "not admitted-real".
+    def test_deterministic_gate_auto_runs_no_park(self):
+        # the new contract (done-line 0107): a deterministic real gate is a pure
+        # fold, so the loop RUNS it itself rather than parking for a summoned
+        # node that never comes — the landed-but-unsettled clog. The old "park
+        # then revert" realness scenario is gone by design: a deterministic gate
+        # can no longer be "parked but not real". The realness guard still bites
+        # for inference gates, which genuinely park (test
+        # test_lands_no_verdict_until_admitted_real covers "no real verdict
+        # without admission"). hand-a is hollow → the loop auto-judges send_back.
         node.admit_real(self.root, HANDOFF_STAGE, HANDOFF_REAL, by="test-bdo")
-        orchestrate.orchestrate(self.root, quiet=True)  # parks at handoff
-        node.admit_real(self.root, HANDOFF_STAGE, None, by="test-bdo")  # revert to mock
-        rc, text = self._judge()
-        self.assertEqual(rc, 2)
-        self.assertIn("not admitted-real", text)
-        self.assertEqual(
-            [r for r in receipts(self.root) if r.get("node") == HANDOFF_REAL], [])
+        orchestrate.orchestrate(self.root, quiet=True)  # the loop auto-runs it
+        recs = [r for r in receipts(self.root) if r.get("node") == HANDOFF_REAL]
+        self.assertEqual(len(recs), 1)               # the loop wrote it, no human
+        self.assertEqual(recs[0]["verdict"], "send_back")  # the gate still bit
 
     def test_send_back_lands_through_the_pen_once_real(self):
         node.admit_real(self.root, HANDOFF_STAGE, HANDOFF_REAL, by="test-bdo")

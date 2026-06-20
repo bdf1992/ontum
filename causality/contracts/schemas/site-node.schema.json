@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ontum:causality/site-node",
+  "title": "SiteNode",
+  "description": "A projected place where term evidence lives: a repo file, log file, doctrine surface, workflow record, vault source, or Causality surface. It is folded from EvidenceEdge refs and never becomes the source of truth.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "address", "kind", "exists", "inbound_term_count", "record_kind"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^site:[a-z0-9][a-z0-9-]*$"},
+    "address": {"type": "string", "minLength": 1, "description": "repo-relative path or log address projected from an evidence ref."},
+    "kind": {
+      "type": "string",
+      "enum": ["code", "doctrine", "log", "workflow", "vault", "surface"],
+      "description": "DERIVED: the broad source-of-truth surface this address belongs to."
+    },
+    "exists": {"type": "boolean", "description": "DERIVED: at least one cited address for this site is readable on disk."},
+    "inbound_term_count": {"type": "integer", "minimum": 0, "description": "DERIVED: count of distinct TermNodes citing this site."},
+    "record_kind": {"const": "projected"}
+  },
+  "$comment": "Invalid: treating a site as truth. SiteNodes are indexes over evidence refs; the cited bytes decide existence and resolution."
+}

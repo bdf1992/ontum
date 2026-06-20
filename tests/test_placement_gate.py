@@ -180,30 +180,42 @@ class PlacementSeamTest(unittest.TestCase):
         self.assertEqual(
             [r for r in receipts(self.root) if r.get("node") == PLACEMENT_REAL], [])
 
-    def test_refused_when_parked_but_not_real(self):
-        # the realness guard itself: admit real to park the atom at placement,
-        # then revert the stage to its mock (a null real_node). The event is
-        # announced and unsatisfied, the stage is mock → the seam refuses the
-        # deterministic verdict with "not admitted-real".
+    def test_deterministic_gate_auto_runs_no_park(self):
+        # the new contract (done-line 0107): a deterministic real gate is a pure
+        # fold, so the loop RUNS it itself rather than parking for a summoned
+        # node that never comes — the landed-but-unsettled clog. place-b parked
+        # at placement forever under the old behaviour (a real gate awaited a
+        # human); now the loop auto-judges it (the collision is symmetric, so
+        # place-b reads collision too). The teeth: a placement-real receipt
+        # exists that the loop wrote, with NO human and NO summon. The realness
+        # guard still bites for inference gates, which genuinely park
+        # (test_lands_no_verdict_until_admitted_real).
         node.admit_real(self.root, PLACEMENT_STAGE, PLACEMENT_REAL, by="test-bdo")
-        orchestrate.orchestrate(self.root, quiet=True)  # parks at placement
-        node.admit_real(self.root, PLACEMENT_STAGE, None, by="test-bdo")  # revert to mock
-        rc, text = self._judge()
-        self.assertEqual(rc, 2)
-        self.assertIn("not admitted-real", text)
-        self.assertEqual(
-            [r for r in receipts(self.root) if r.get("node") == PLACEMENT_REAL], [])
+        # no pen call, no summon — just the loop
+        orchestrate.orchestrate(self.root, quiet=True)
+        recs = [r for r in receipts(self.root)
+                if r.get("node") == PLACEMENT_REAL
+                and r.get("artifact_id") == "atom.place-b.v0"]
+        self.assertEqual(len(recs), 1)              # the loop wrote it, no human
+        self.assertEqual(recs[0]["verdict"], "collision")
+        # the loop's verdict carries the law's attribution, like the pen's would
+        spec_hash = "sha256:" + hashlib.sha256(NODE_SPEC.read_bytes()).hexdigest()
+        self.assertEqual(recs[0].get("prompt_hash"), spec_hash)
 
-    def test_collision_lands_through_the_pen_once_real(self):
+    def test_collision_lands_by_the_loop_once_real(self):
+        # once placement is real the loop computes its verdict and lands it
+        # itself (done-line 0107): the collision reaches the record with the
+        # law's prompt_hash, exactly as the pen would have written it — no park,
+        # no summoned node. The check still BITES: a real collision is written
+        # verbatim, not skipped.
         node.admit_real(self.root, PLACEMENT_STAGE, PLACEMENT_REAL, by="test-bdo")
-        orchestrate.orchestrate(self.root, quiet=True)  # parks at the real placement
-        rc, text = self._judge()
-        self.assertEqual(rc, 0)
-        recs = [r for r in receipts(self.root) if r.get("node") == PLACEMENT_REAL]
+        orchestrate.orchestrate(self.root, quiet=True)  # the loop auto-judges
+        recs = [r for r in receipts(self.root)
+                if r.get("node") == PLACEMENT_REAL
+                and r.get("artifact_id") == "atom.place-a.v0"]
         self.assertEqual(len(recs), 1)
         rc_obj = recs[0]
         self.assertEqual(rc_obj["verdict"], "collision")
-        self.assertEqual(rc_obj["artifact_id"], "atom.place-a.v0")
         # attributable to the exact law (§7): prompt_hash is the node spec's sha
         spec_hash = "sha256:" + hashlib.sha256(NODE_SPEC.read_bytes()).hexdigest()
         self.assertEqual(rc_obj.get("prompt_hash"), spec_hash)

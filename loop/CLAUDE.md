@@ -55,6 +55,14 @@ python -m loop.digest --since 2026-06-01 --until 2026-06-11
 python -m loop.retro                        # the retrospective fold — recurring patterns across all history, read-only
 python -m loop.retro --json                 # the raw dataset (machine-readable)
 
+python -m loop.heal                         # the healing fold — where the loop's own teeth bit too sharp or stale, read-only
+python -m loop.heal --json                  # the raw dataset (machine-readable)
+
+python -m loop.gate_eval                    # the value-gate eval corpus (charades: matched-variant atoms), read-only
+python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") verdict transcript
+
+python -m loop.phrasing check --path <p> --before <f> --after <f>   # the phrasing door: is an edit prose-only? read-only proof
+python .claude/skills/branch-ritual/pr.py phrasing --files <p>... --why "<note>" --by <who>   # mark a proven prose-only edit so it lands without an atom (the route)
 python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
 python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
 python -m loop.disposer dispose            # self-admit one in-fence proposal (else escalate)
@@ -62,14 +70,17 @@ python -m loop.disposer dispose            # self-admit one in-fence proposal (e
 python -m loop.tags                        # the intent tag pool and its drift, read-only
 python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a proposed value
 
+python -m loop.pull                        # the terminal-pull gateway — the piece-scale landable slice + the namespace gap, read-only
+python -m loop.pull --json                 # the raw dataset (machine-readable)
+
 python -m loop.pen new done --slug <slug> --title "<t>"     # the next done-line, from the directory's form
 python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by bdo   # bdo-only; refuses every session signer (no free "stop working" card)
 ```
 
 Gotcha: only `reconcile.py` runs as a plain script. `orchestrate`,
-`node`, `summon`, `reflect`, `web`, `census`, `digest`, and `retro`
-import from the `loop` package and must run as modules (`python -m loop.<name>`)
-from the repo root.
+`node`, `summon`, `reflect`, `web`, `census`, `digest`, `retro`, and
+`pull` import from the `loop` package and must run as modules
+(`python -m loop.<name>`) from the repo root.
 
 Every invocation ends with a clear stdout result: `done | report |
 needs-you`. Treat `needs-you` as an escalation to surface, not an error
@@ -210,7 +221,15 @@ so a prompt edit can't reopen a settled verdict (I-2).
   This is the *eyes* of the owner-harness arc's last stretch (bdo stepping
   out of the merge seat); the merge-node is the *hand*, and it does not
   move until bdo admits it real (`--by bdo`) and the `bdo merges` hard
-  rule is amended — both his, neither this surface's.
+  rule is amended — both his, neither this surface's. **`atoms_on_main`**
+  (done-line 0124, D-13) is the per-atom↔per-PR join: the set of
+  artifact_ids the merge receipts record as having reached main (their
+  `landed_atoms`, the write-through carbon copy the PR pen now carries) —
+  the reading half that lets *"did atom X reach main?"* be answered from
+  the log alone, where the pre-D-13 receipt could only say *that* a PR
+  landed. Surfaced as a confirmed-on-main count; empty until the first
+  post-D-13 land carries its atoms (the 90 prior merges stand as lossy
+  history).
 - [retro.py](retro.py) — the retrospective fold (done-line 0098): the loop
   reads its *own history* for recurring patterns to refine on. Sibling of
   `digest` on a new axis — the digest folds one span, retro folds **all of
@@ -226,6 +245,26 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the pattern and the one move; the fix stays a session's or bdo's (D-4).
   `--json` emits the dataset. The first node of the refinement-and-retro
   surface; more detectors and any owner surface ride later increments.
+- [heal.py](heal.py) — the healing fold (done-line 0111): the counterforce
+  to the teeth. Teeth without a healing reflex is autoimmunity — the loop
+  keeps a correct-but-stale bite inflamed on the owner surfaces and has no
+  organ that could ever see a tooth bite *wrong*. Sibling of `retro` on the
+  *bite* axis (retro: what keeps happening; heal: where did a tooth bite
+  wrong), reusing the same `Fold`, the digest's version-split, and
+  supersession — no second truth. Three detectors: **stale-park** (a gate
+  correctly negated an old version, the live version then passed the same
+  gate — the bite is healed, only its surfacing is stale; the field-topology
+  phantom), **flapping-gate** (a gate negates the *live* version after
+  advancing an earlier one — a current self-contradiction), and
+  **owner-override** (bdo's stamp advanced what a real gate refused, *after*
+  the refusal — ts-ordered, so the normal pipeline's early owner-stamp before
+  a later-stage gate is not a false override). The last two are the system's
+  first sensors of those failure modes — declared even at zero live instances
+  (like the cool valve), ready for when the gates judge un-vetted work.
+  Propose-only (D-4): it names the over-bite and the one heal move; it never
+  clears a park or re-opens a verdict — a bounded actuator, if it ever comes,
+  rides the disposer fence and is a later done-line. Surfaced ambiently
+  through `loop.summon`'s `heal_lines` (shown, never disposed).
 - [tags.py](tags.py) — the tag pool (done-line 0032): governed vocabulary
   for what tools do, the census fix pushed upstream to the write seam.
   Holds the one shared verb→intent `classify()` the watcher and the git
@@ -270,6 +309,28 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the rest of the arc — sibling of `gaps`/`census` on a new axis (what a
   neighbouring system forces us to account for), the cut and the build stay a
   session's or bdo's (D-4).
+- [phrasing.py](phrasing.py) — the phrasing backdoor's pure checker
+  (done-line 0117): bdo's low-ceremony door for pedantic prose edits.
+  A wording fix the machine never branches on ("on his phone" ->
+  "wherever he is") should not cost an atom, a judge, and a branch — the
+  full work-particle mantra (§15/D-5) — so a phrasing edit is exempt from
+  it. The teeth (the whiteout shape, done-line 0064): the door PROVES an
+  edit is prose-only rather than trusting a label — `.md` body free but
+  frontmatter keys/`name`/`version` protected; `.py` tokenized so only
+  comment/string CONTENT may differ; `.json` structure + non-prose values
+  byte-identical, only `PROSE_KEYS` string values may change — and names
+  what disqualified any other change. Stdlib, no git (loop/'s law). The
+  off-log gate gains a SECOND way to be backed
+  (`pr_audit.orphan_reason(..., phrasing_clean)`): a branch every non-log
+  change of which this proves prose-only needs no atom — the fact gathered
+  AND re-verified by the reach (`pr.py audit`, the git side) with this
+  same checker, so the client pen and the server CI inherit the door
+  together and neither can be lied to. The route (the git-bearing half) is
+  `pr.py phrasing`, which marks the edit with one `phrasing` admission on
+  the log (provenance) after the proof passes; it refuses anything this
+  checker rejects. The cut between "phrasing" and "work" stays bright: the
+  door is for prose only — syntax or schema is routed back to the pipeline.
+- [herald.py](herald.py) — the herald (epic.landing-throughput-response): agents are an open set, so registration and reputation are FOLDS over logged `herald_introduction` admissions, never a table — a herald `introduce`s a named/titled agent (the dumb pen mints a content-hash `credential` at the trust-ladder floor rank, read from `loop.trust`), `roster` folds who is registered (superseding, never erasing), and `reputation` derives distributed value from the log's provenance edges (exemplars net against notorieties per credential, and a herald earns a meta-reputation over the standing of whom it vouched, so a bad voucher is visible by construction); read-only but for the one pen, standing only ever earned forward (§10: standing is recomputed from records, never asserted; D-4).
 
 ### Invariants the code is built around (firm)
 
