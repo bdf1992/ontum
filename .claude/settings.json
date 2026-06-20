@@ -126,6 +126,11 @@
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/standing_surface.py\"",
             "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_register.py\"",
+            "timeout": 10
           }
         ]
       }
@@ -137,11 +142,6 @@
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/reflect_auto.py\"",
             "timeout": 150
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/continue_beat.py",
-            "timeout": 30
           }
         ]
       }
@@ -168,6 +168,11 @@
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/standing_surface.py\"",
             "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/idle_reminder.py\"",
+            "timeout": 10
           }
         ]
       }
