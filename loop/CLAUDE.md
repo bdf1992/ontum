@@ -60,7 +60,6 @@ python -m loop.gate_eval score --transcript <p>   # score a panel ("the room") v
 
 python -m loop.phrasing check --path <p> --before <f> --after <f>   # the phrasing door: is an edit prose-only? read-only proof
 python .claude/skills/branch-ritual/pr.py phrasing --files <p>... --why "<note>" --by <who>   # mark a proven prose-only edit so it lands without an atom (the route)
-
 python -m loop.disposer                    # the slow loop's fence + what it would dispose, read-only
 python -m loop.disposer admit-fence --bounds '{"step_budget_per_tick":[2,5]}' --by bdo   # bdo draws the fence
 python -m loop.disposer dispose            # self-admit one in-fence proposal (else escalate)
