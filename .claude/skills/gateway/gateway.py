@@ -96,7 +96,7 @@ def _receipt(root, *, mind, backing, model, prompt_hash, latency_ms, tokens,
         "prompt_hash": prompt_hash,
         "latency_ms": latency_ms,
         "tokens": tokens,
-        "outcome": outcome,           # ok | error | refused | unregistered
+        "outcome": outcome,           # ok | error | refused | unregistered | saturated
         "caller": caller,
         "surface": surface,
         "route": route,

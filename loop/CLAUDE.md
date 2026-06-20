@@ -76,6 +76,9 @@ python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a 
 python -m loop.pull                        # the terminal-pull gateway — the piece-scale landable slice + the namespace gap, read-only
 python -m loop.pull --json                 # the raw dataset (machine-readable)
 
+python -m loop.inference_queue             # the inference admission queue's stats fold — in-flight, throughput, per-mind latency, saturation, read-only
+python -m loop.inference_queue admit --bound <n> --by bdo   # set the in-flight concurrency dial (the gateway's backpressure)
+
 python -m loop.pen new done --slug <slug> --title "<t>"     # the next done-line, from the directory's form
 python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by bdo   # bdo-only; refuses every session signer (no free "stop working" card)
 ```
@@ -359,6 +362,24 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the runtime witness (every firing → a first-class receipt, the sibling of
   `tool-use.jsonl` the git/gh-gateway proposal deferred).
 - [herald.py](herald.py) — the herald (epic.landing-throughput-response): agents are an open set, so registration and reputation are FOLDS over logged `herald_introduction` admissions, never a table — a herald `introduce`s a named/titled agent (the dumb pen mints a content-hash `credential` at the trust-ladder floor rank, read from `loop.trust`), `roster` folds who is registered (superseding, never erasing), and `reputation` derives distributed value from the log's provenance edges (exemplars net against notorieties per credential, and a herald earns a meta-reputation over the standing of whom it vouched, so a bad voucher is visible by construction); read-only but for the one pen, standing only ever earned forward (§10: standing is recomputed from records, never asserted; D-4).
+- [inference_queue.py](inference_queue.py) — the inference admission queue
+  (done-line 0152, epic.inference-gateway): the summon queue on the request
+  axis. The gateway authorized and receipted every completion but fired each
+  immediately and synchronously — no concurrency bound, so a burst of
+  completions stacked model/KV-cache past physical memory and the host
+  swap-thrashed (bdo's llama-server kill). Three parts, stdlib and local-first
+  (a file semaphore is a local coordination primitive, not the no-network
+  ban's broker): an **admitted concurrency dial** (`concurrency_bound`/
+  `set_bound`, default-safe when unset, never a code constant — the setpoints
+  law), a **lease-based `O_EXCL` file semaphore** (`acquire`/`release`,
+  self-healing on a dead holder once its lease lapses — the torn-tail
+  mortality property; release is token- and lease-guarded so a lapsed holder
+  can never delete the live slot), and a **read-only stats fold** over the
+  inference receipts (throughput, per-mind latency, saturation, live
+  in-flight). The gateway pen acquires a slot before the completion and
+  releases after, receipting a witnessed `saturated` outcome when the plane
+  stays full — backpressure on the record, never a silent host-kill. The
+  bound's value is bdo's to tune (D-4).
 
 ### Invariants the code is built around (firm)
 

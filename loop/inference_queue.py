@@ -193,6 +193,14 @@ def release(handle):
         return  # already gone or torn — nothing of ours to release
     if data.get("token") != handle.get("token"):
         return  # reclaimed by another holder; not ours to delete
+    if _is_stale(path):
+        # our own lease has lapsed: the slot is the lease's to reclaim now,
+        # not ours to delete. Unlinking here would race a stealer that claimed
+        # it in the window between our token-read and this unlink, deleting the
+        # NEW holder's slot. A lapsed holder has no right to mutate the slot;
+        # the next acquire reaps it by lease. (When the lease is still valid no
+        # steal can intervene, so the unlink below is safe.)
+        return
     try:
         os.unlink(str(path))
     except OSError:
