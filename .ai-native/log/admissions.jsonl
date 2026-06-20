@@ -173,3 +173,4 @@
 {"by":"bdo","enabled":true,"epic":"epic.landing-throughput-response","id":"adm.e99318d905e6","supersedes":null,"ts":"2026-06-19T07:46:34Z","type":"arc_confirmed"}
 {"by":"bdo","enabled":true,"epic":"epic.landing-throughput-response","id":"adm.eabc51e7a57e","supersedes":null,"ts":"2026-06-20T02:06:11Z","type":"arc_confirmed"}
 {"by":"bdo","enabled":true,"epic":"epic.landing-throughput-response","id":"adm.b6a6c293745e","supersedes":null,"ts":"2026-06-20T02:17:55Z","type":"arc_confirmed"}
+{"by":"bdo","enabled":true,"epic":"epic.repoprompt-parity","id":"adm.e96e5650de81","supersedes":null,"ts":"2026-06-20T02:18:16Z","type":"arc_confirmed"}
