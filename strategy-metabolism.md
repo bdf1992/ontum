@@ -208,7 +208,7 @@ to change any.
 - [explore-lobe.proposal.md](explore-lobe.proposal.md) stands as the design
   capture (history); this note is the broader frame it feeds.
 - The earlier working `epic.explore-lobe` is **renamed** to
-  `epic.strategy-metabolism` (pieces Scout/Claim/Build/Prune) — adopting
+  `epic.strategy` (pieces Scout/Claim/Build/Prune) — adopting
   decisions A/B. Epics are not frozen, and the old file was never committed,
   so this is a clean rename, not a rewrite of history.
 - **Frozen done-line 0140** (`atom.explore-fold.v0`) names "explore" (not

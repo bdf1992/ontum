@@ -1,6 +1,6 @@
 {
   "epic": {
-    "id": "epic.strategy-metabolism",
+    "id": "epic.strategy",
     "owner": "bdo",
     "status": "proposed",
     "provisional_name": "named per bdo's carry-over brief (decision A/B): Scout → Claim → Build → Prune; the rename of the earlier working epic.explore-lobe",

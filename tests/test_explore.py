@@ -15,7 +15,7 @@ from causality.term_economy import resolve_evidence
 
 ROOT = Path(DEFAULT_ROOT)
 REPO = ROOT.resolve().parent
-PURPOSE = "epic.strategy-metabolism"
+PURPOSE = "epic.strategy"
 
 
 class TestExplore(unittest.TestCase):

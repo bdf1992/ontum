@@ -66,7 +66,7 @@ MARKS = {
 FIXTURE = {
     "status": "conjecture",
     "lobe": "scout",
-    "purpose": "epic.strategy-metabolism — land lawful pre-evidence motion, smallest-first",
+    "purpose": "epic.strategy — land lawful pre-evidence motion, smallest-first",
     "goal": "a working Scout -> Claim -> Build -> Prune metabolism",
     "horizon": "Scout emits one marked CTA, Claim bounds it, Build routes it, Prune retires it",
     "priors_consulted": [
