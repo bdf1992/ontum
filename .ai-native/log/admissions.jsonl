@@ -182,3 +182,4 @@
 {"branch":"claude/epic-environments","by":"claude","claim":"atom.environments-arc.v0","id":"adm.54fa3e0e1c07","supersedes":null,"ts":"2026-06-20T04:13:39Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.three-marks","id":"adm.79c36a1b45cc","supersedes":null,"ts":"2026-06-20T04:24:44Z","type":"arc_confirmed"}
 {"by":"bdo","enabled":true,"epic":"epic.environments","id":"adm.b30f27b9d5ad","supersedes":null,"ts":"2026-06-20T04:33:25Z","type":"arc_confirmed"}
+{"by":"claude","files":[{"after":"sha256:c7aa80fcf88b136c6f32a20e68b3cb4d3ddc9513f392174d349f5430d8264e81","before":"sha256:c7aa80fcf88b136c6f32a20e68b3cb4d3ddc9513f392174d349f5430d8264e81","path":"git-gh-gateway.proposal.md"}],"id":"adm.d2765bc8706b","reason":"new design proposal, prose-only","ts":"2026-06-20T04:59:55Z","type":"phrasing"}
