@@ -10,12 +10,16 @@ snapshot is the unit that does not strand, and the unit that joins the
 per-atom (content-hash) and per-PR (git) namespaces `loop/pull.py` made
 visible as an open gap.
 
-This module COMPOSES, it does not double-build (§10): it sits OVER the atom
-content-hash identity in `reconcile.py` (`load_atoms`), the existing
-value-gate/owner-stamp receipts (acceptance is DERIVED, never a second write
-path or a second authority), `loop/pull.py`'s namespace_gap, and
-`loop/deploy.py`'s stamped-snapshot shape. It is the joining unit across
-them, not a second ledger.
+This module COMPOSES `reconcile.py` directly — the atom content-hash identity
+(`load_atoms`) and the existing value-gate/owner-stamp receipts (acceptance is
+DERIVED here, never a second write path or a second authority). It does not
+double-build (§10) the neighbours it is a SIBLING of: it is in the grain of
+`loop/pull.py`'s `namespace_gap` finding (the per-atom↔per-PR gap it names),
+carries the same stamped-snapshot shape as `loop/deploy.py`, and will join to
+`loop/digest.py`'s `atoms_on_main` (D-13) — but it reads the same log and the
+same content-hash identity rather than re-deriving any of them. Verifying that
+a snapshot's commit actually reached main, by reading `digest.atoms_on_main`,
+is the next increment of the join, not this one.
 
 The §10 teeth — a snapshot that LIES about its join is caught, not trusted.
 Two locally-fine records refuse to fit:
@@ -49,7 +53,7 @@ from pathlib import Path
 
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, append_line, canon,
                             load_atoms, now_ts, real_nodes, receipt_for_stage,
-                            short_hash, superseded_atom_ids)
+                            short_hash)
 
 SNAPSHOT_TYPE = "snapshot"
 # The independent acceptance an atom must earn (D-2): the value-gate stage —
@@ -213,7 +217,8 @@ def mint(root, name, atom_ids, commit, by, enabled=True, supersedes=None):
     frozen = [{"id": a, "frozen_hash": live[a]} for a in atom_ids]
     adm = {
         "id": "adm." + short_hash(SNAPSHOT_TYPE, name, commit or "",
-                                   str(enabled), str(by), now_ts()),
+                                   "|".join(atom_ids), str(enabled), str(by),
+                                   now_ts()),
         "type": SNAPSHOT_TYPE,
         "name": name,
         "commit": (commit or "").strip() or None,
@@ -239,8 +244,8 @@ def _mark(verdict):
         verdict, "?")
 
 
-def render(root):
-    d = dataset(root)
+def render(root, d=None):
+    d = d if d is not None else dataset(root)
     snaps = d["snapshots"]
     lines = ["# Snapshots — the acceptance unit (the spine)", ""]
     if not snaps:
@@ -311,16 +316,21 @@ def main(argv=None):
             print(canon(res))
         else:
             print(f"snapshot `{res['name']}`: {res['verdict']} — {res['reason']}")
-        return 0 if res["verdict"] == "accepted" else (
-            0 if res["verdict"] == "unaccepted" else 1)
+        if res["verdict"] in ("stale", "ghost"):
+            print(f"result: needs-you — snapshot `{res['name']}` lies about its "
+                  f"join ({res['verdict']}); re-mint over the current atoms")
+            return 1
+        verb = "done" if res["verdict"] == "accepted" else "report"
+        print(f"result: {verb} — snapshot `{res['name']}` is {res['verdict']}")
+        return 0
 
     # no subcommand: read-only status over all snapshots
-    if args.json:
-        print(canon(dataset(args.root)))
-        return 0
-    print(render(args.root))
-    print()
     d = dataset(args.root)
+    if args.json:
+        print(canon(d))
+    else:
+        print(render(args.root, d))
+        print()
     bad = [s for s in d["snapshots"] if s["verdict"] in ("stale", "ghost")]
     if bad:
         print(f"result: report — {len(bad)} snapshot(s) lie about their join "
