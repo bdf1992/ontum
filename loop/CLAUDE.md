@@ -45,6 +45,9 @@ python -m loop.census                      # the organ census: which organs carr
 
 python -m loop.gaps                        # the gap backlog, pressure-ordered — the top one is the work
 
+python -m loop.parity                      # the RepoPrompt boundedness parity matrix — read-only, fails on a ghost citation
+python -m loop.parity --json               # the raw dataset (machine-readable)
+
 python -m loop.digest                      # the owner's merge digest — read-only fold, arc-first
 python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
 python -m loop.digest --since 2026-06-01 --until 2026-06-11
@@ -293,6 +296,19 @@ so a prompt edit can't reopen a settled verdict (I-2).
   an absence, not a field of mock stages. `loop.summon --hook` hands the
   single top gap to every session that blinks in — the idle default is
   "work the backlog the harness generated", never "wait for direction".
+- [parity.py](parity.py) — the boundedness parity matrix (done-line 0115),
+  wave 1 of `epic.repoprompt-parity`. A pure read-only fold that mines
+  RepoPrompt CE (`docs/sources/repoprompt-context-engineering.md`, read-only
+  inspiration) as a catalogue of agent-**boundedness** techniques: each row
+  reads one capability as "how does this keep an agent bounded?" and answers
+  it with one verdict — `have` (cites a resolvable repo file), `build` (names
+  an atom in the epic), `dont-double-build` (cites a real owning epic). The
+  §10 teeth are the term-economy/gaps grip rule: `validate()` fails on a ghost
+  citation, and `tests/test_parity.py` proves the check is not vacuous (a
+  fabricated row of each verdict is caught). The requirements mine that orders
+  the rest of the arc — sibling of `gaps`/`census` on a new axis (what a
+  neighbouring system forces us to account for), the cut and the build stay a
+  session's or bdo's (D-4).
 - [phrasing.py](phrasing.py) — the phrasing backdoor's pure checker
   (done-line 0117): bdo's low-ceremony door for pedantic prose edits.
   A wording fix the machine never branches on ("on his phone" ->
