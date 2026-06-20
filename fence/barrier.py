@@ -45,6 +45,23 @@ Three terms, the atom first (bdo: "Barrier might be an atomic example"):
   later increment like the installed fences. The fence is the loop; the gate is
   the opening in it.
 
+Where this sits in the per-directory gateway stack (change-management.proposal.md,
+the gatekeeping layers `fence · policy · guard · gate · threshold`). That
+proposal's term-economy fix governs the words here: the repo's `*_guard` hooks
+(`command_guard`, `write_guard`, …) are **gates** — they decide pass/deny on a
+*thing flowing through* ("guard" is overloaded). So, mapped to the stack:
+  - a **barrier-link** is one firm denial — an element of the stack's **Fence**
+    layer (the `fence/policy.py` deny-list, generalized here past argv).
+  - this module's **fence** is that Fence layer seen as a CLOSED perimeter around
+    a territory — the deny-set a gate enforces. `command_guard_fence()` therefore
+    means "the fence the `command_guard` *gate* enforces," NOT that `command_guard`
+    is itself a fence (it is the gate).
+  - this module's **gate** (an `on_match="allow"` opening) is a NARROWER sense
+    than the stack's **Gate** layer (the pass/deny decider): here the opening *in*
+    the fence, there the decider *at* the seam. The overload is flagged, not
+    silently merged (the term-economy way); reconciling the two senses in code
+    (renaming) is a later atom, not this prose.
+
 This module is the CONTRACT + its validators, and — since done-line 0150 — the
 home of the first INSTALLED instance: `SEAM_LINK` is the raw-command seam tooth
 that `command_guard` now imports and runs to seal the shelled-git-push the
@@ -393,10 +410,10 @@ def prefix_rules_fence():
 
 
 def command_guard_fence():
-    """The LIVE command_guard since done-line 0150: the prefix registry PLUS the
-    raw seam tooth (SEAM_LINK) it now runs over the RAW command. Closed — the
-    seam is sealed. Installed reality, not a reference: command_guard imports
-    SEAM_LINK and enforces exactly this."""
+    """The fence the LIVE `command_guard` *gate* enforces since done-line 0150:
+    the prefix registry PLUS the raw seam tooth (SEAM_LINK) it now runs over the
+    RAW command. Closed — the seam is sealed. Installed reality, not a reference:
+    `command_guard` (the gate) imports SEAM_LINK and enforces exactly this."""
     fence = prefix_rules_fence()
     fence["links"].append(copy.deepcopy(SEAM_LINK))
     return fence
