@@ -1,0 +1,35 @@
+{
+  "atom": {
+    "id": "atom.heal-stale-park-inbox.v0",
+    "story": {
+      "text": "bdo asked what else needs healing. loop.heal named three stale-park over-bites (field-topology.v0, gates-enumerated.v1, gates-enumerated.v2): a gate correctly negated an OLD version, the LIVE version then PASSED the same gate, but the old refusal still surfaced as a live park on the owner's inbox -- confirmed at session start, loop.node inbox showed atom.field-topology.v0 parked while its v1 was confirmed. The cause is precise and the fix is small: gaps, digest, pull, and field all already filter superseded versions through the canonical reconcile.superseded_atom_ids (done-line 0056), but loop/node.py inbox was the one owner surface that never did. The fix adds that same canonical filter to inbox (no second truth, I-4): a version a higher sibling replaces is history, not live work, so it no longer surfaces as an open owner park -- its parked receipt stands on the log untouched. The teeth (section 10): a NON-superseded park still surfaces, so the filter is not a blanket hide. Value is the owner's: bdo's inbox stops showing phantom parks for work already healed in a later version, so the daily owner surface tells the truth about what is actually live. Sibling of the settle-on-main road (done-line 0133): that drained the inflight accounting for LANDED work; this drains the stale-park surfacing for SUPERSEDED work -- both make a dead-pipeline version stop masquerading as live.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.the-field"
+      ],
+      "touches": [
+        "loop/node.py",
+        "tests/test_node.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0136-heal-stale-park-inbox.md",
+        "loop/heal.py:stale_park_findings",
+        "loop/reconcile.py:superseded_atom_ids"
+      ],
+      "receipts": []
+    }
+  }
+}
