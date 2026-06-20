@@ -148,9 +148,14 @@ RULES = (
         "argv": ("git", "checkout"),
         "decision": "prompt",
         "justification": (
-            "The repo root is bdo's viewport on main - a session switches "
-            "branches only inside its own worktree (../ontum-wt/<slug>; "
-            "AGENTS.md). Approve only if this runs in your worktree."
+            "The repo root is bdo's VIEWPORT on main, and a worker edits only "
+            "its OWN workstation (its worktree). The workstation fence "
+            "(done-line 0145, command_guard) makes this LAW for Claude: a "
+            "tree/HEAD flip in the viewport is FORBIDDEN; the same command in "
+            "your worktree is fine. Make a workstation - git worktree add -b "
+            "claude/<slug> ../ontum-wt/<slug> origin/main - and run there; to "
+            "move the viewport to the trunk use the git pen (git.py sync), "
+            "which fast-forwards and never flips. Approve only in your worktree."
         ),
         "match": ("git checkout main", "git checkout -b codex/x"),
         "not_match": ("git status",),
@@ -160,9 +165,14 @@ RULES = (
         "argv": ("git", "switch"),
         "decision": "prompt",
         "justification": (
-            "The repo root is bdo's viewport on main - a session switches "
-            "branches only inside its own worktree (../ontum-wt/<slug>; "
-            "AGENTS.md). Approve only if this runs in your worktree."
+            "The repo root is bdo's VIEWPORT on main, and a worker edits only "
+            "its OWN workstation (its worktree). The workstation fence "
+            "(done-line 0145, command_guard) makes this LAW for Claude: a "
+            "tree/HEAD flip in the viewport is FORBIDDEN; the same command in "
+            "your worktree is fine. Make a workstation - git worktree add -b "
+            "claude/<slug> ../ontum-wt/<slug> origin/main - and run there; to "
+            "move the viewport to the trunk use the git pen (git.py sync), "
+            "which fast-forwards and never flips. Approve only in your worktree."
         ),
         "match": ("git switch main",),
         "not_match": ("git branch --list",),

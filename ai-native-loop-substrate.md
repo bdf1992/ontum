@@ -131,6 +131,7 @@ when we want to.
   reflection and a bug in the pen**: it manufactures a namespace the log cannot rejoin
   (the per-atom↔per-PR gap the terminal-pull gateway surfaced, done-line 0123). *(Firm
   at the boundary; the join field is the carbon copy.)*
+- **D-14. The Taster's Clause — serve a shaped choice, not a raw dump.** When a node puts a choice to a peer — another node, an agent, or the owner — it shapes that choice for the peer and the moment: not raw, unsorted options, not a flat list of every path, but the work already done on it — organized, the reasoning plain, the node's pick named, and the riskiest option flagged (the one that can't be undone, reaches outside, or breaks a lot when it's wrong). An unshaped dump isn't a service; it shoves the node's own work back onto the peer. The peer still picks, but from something already made for it. You serve; you never decide. A read is not a stamp.
 
 ### 1.2 What those decisions imply
 
