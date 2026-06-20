@@ -1,0 +1,55 @@
+{
+  "atom": {
+    "id": "atom.trespass-shame.v0",
+    "story": {
+      "text": "As bdo, I need a worker shamed for ATTEMPTING to flip the viewport or write a tree that isn't its own — even though the fence already denied it. My words (2026-06-20): 'it's shamed if it's attempted.' The two fences (done-lines 0145, 0147) are the wall; a blocked attempt is still an attempt, and a worker that keeps reaching into the viewport or another bench should hear it get louder until it stops and works in its own worktree. The deny stops the act; the shame names the trespasser. This is tooth #3, and it completes the workstation fence: deny the act, then name who tried.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "a denied trespass is still shamed",
+      "value": "workstation_guard now RECORDS each foreign-worktree denial to the watch log (the prerequisite — an unwitnessed attempt cannot be shamed; command_guard already recorded its viewport-flip denials), and its activity-register entry becomes witnessed:true. A new UserPromptSubmit beat, trespass_shame.py (sibling of mock_shame/owner_ask_shame), folds the watch log for THIS session's denied viewport-flip/foreign-worktree acts and screams — louder per new attempt, silent when none and silent on replay (a gitignored per-session high-water mark, not truth). Fail-open, exit 0 always.",
+      "why_now": "bdo corrected me directly: I had deprioritized tooth #3 as pointless once the fences deny, and he said the attempt itself is the shameable thing. With both fences live on main (rcp.merge.341, rcp.merge.346), this is the completing tooth.",
+      "if_accepted": "A worker that repeatedly reaches for the viewport or a foreign bench is named and the shame escalates until it stops — the social signal on top of the structural wall. The workstation fence is complete: act denied (1,2), trespasser named (3).",
+      "if_rejected": "Blocked attempts stay invisible: a worker can hammer the viewport every turn and nothing surfaces that it is working in the wrong place — only the silent denials, which a session can ignore.",
+      "cost_of_wrong_call": "Low and bounded. One new read-only UserPromptSubmit beat (fail-open, exit 0, like the other shame beats) plus a few lines making workstation_guard record its already-computed denial. Touches no pipeline stage, no verdict, no git mutation. The shame is keyed to the session being prompted and self-quiets; worst case is a stale nag line, never a blocked turn. Reverting is removing one hook + one settings line.",
+      "mechanism": "workstation_guard gains record() (append a {status:denied, rule:foreign-worktree, session, path} line to ONTUM_TOOL_WATCH_LOG, best-effort) called at the denial. trespass_shame.py: trespass_count() folds the watch log for a session's denied TRESPASS_RULES (viewport-flip, foreign-worktree); the beat compares it to a gitignored high-water mark (.ai-native/trespass-shame.json) and scream()s a banner that escalates across three tiers, only when the count grew this turn. settings.json wires it into UserPromptSubmit beside owner_ask_shame; .gitignore excludes the nag state; the activity register declares trespass_shame and flips workstation_guard to witnessed:true (the activity-accounting teeth, done-line 0143, require it). tests/test_trespass_shame.py: §10 teeth — new attempt shames, none is silent, replay is silent (high-water), a fresh attempt is loud again, the shout tier appears at high counts, and the write-fence denial is proven recorded. Done-line 0157. Tooth #3 of three; the source fix (spawn workers into worktrees) stays a later chapter.",
+      "reading": [
+        ".claude/hooks/trespass_shame.py",
+        ".claude/hooks/workstation_guard.py",
+        ".claude/settings.json",
+        ".claude/activity-register.json",
+        "tests/test_trespass_shame.py",
+        ".ai-native/done/0157-trespass-shame.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        ".claude/hooks/trespass_shame.py",
+        ".claude/hooks/workstation_guard.py",
+        ".claude/settings.json",
+        ".claude/activity-register.json",
+        ".gitignore",
+        "tests/test_trespass_shame.py",
+        ".ai-native/done/0157-trespass-shame.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/hooks/workstation_guard.py",
+        ".ai-native/done/0147-workstation-write-fence.md"
+      ],
+      "receipts": []
+    }
+  }
+}

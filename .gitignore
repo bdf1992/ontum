@@ -26,6 +26,10 @@ causality/welcome-preview.png
 # (done-line 0058) — the unsurfaced set is a fold over reports + the log
 .ai-native/owner-ask-shame.json
 
+# nag high-water mark, not truth: per-session count of denied trespasses
+# (tooth #3) — the attempts themselves are witnessed on the watch log
+.ai-native/trespass-shame.json
+
 # session-ephemeral nag state, not truth (done-line 0135, the session-
 # lifecycle organ): the patrol's escalate marker (escalate_armed/reason), the
 # idle reminder's gap clock + decay count, and the continue-probe's per-session
