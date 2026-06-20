@@ -101,8 +101,9 @@ yourself**:
   is lifted (bdo, 2026-06-12): a value-creating dependency is admissible
   by common sense — don't hand-roll what a mature library does right —
   provided it stays offline and named. Prefer stdlib.
-- **No one signs their own line (D-2)** — a gate never judges its own
-  writer's work.
+- **Two acceptances, never one (D-2)** — earn your own acceptance first, then earn an
+  independent one: a gate never judges its own writer's work, and when no independent judge
+  for your work exists yet, you forge one within policy rather than abandon the work.
 
 ## Your workspace
 

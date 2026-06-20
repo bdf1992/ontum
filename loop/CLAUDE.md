@@ -339,9 +339,15 @@ so a prompt edit can't reopen a settled verdict (I-2).
 
 ### Invariants the code is built around (firm)
 
-- **No one signs their own line.** A node never judges its own writer's
-  output; the owner (bdo) is the last stop. Anything self-approving is
-  a design bug.
+- **Earn your own acceptance first; you just can't cast the deciding one.** Judge,
+  validate, and accept your own work before you share it — that conviction is your case
+  and your standing, and it keeps slop on your side of the wall. But your acceptance never
+  lands it: a different reader accepts it into the record, the owner (bdo) is the last stop.
+  Two gates, yours then theirs. Skipping your own judgment is the slop bug; making your own
+  judgment final is the self-dealing bug. And when no independent judge for your kind of
+  work exists yet, forge one — within policy, toward the second set of eyes, never around
+  them (the §7 node prompt, the spawn rail, `admit-real`, the herald are the forge).
+  Abandoning work at a gate you cannot pass — or could forge — is the design bug.
 - **The owner is the last stop — at arc scale (done-line 0028).** bdo
   may *confirm an arc* (`loop.node confirm-arc --epic <id> --by bdo`),
   an admitted record that is his standing stamp for every piece under
