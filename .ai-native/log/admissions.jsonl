@@ -187,3 +187,4 @@
 {"branch":"claude/report-0135-environments","by":"claude","claim":"report.0103-environments-capture","id":"adm.5a3e83ccf488","supersedes":null,"ts":"2026-06-20T05:27:29Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.diagram","id":"adm.399f90e086fd","supersedes":null,"ts":"2026-06-20T03:35:58Z","type":"arc_confirmed"}
 {"branch":"claude/diagram-floor-gate","by":"claude","claim":"atom.diagram-floor-gate.v0","id":"adm.426cf4465c44","supersedes":null,"ts":"2026-06-20T16:44:49Z","type":"workspace_claimed"}
+{"by":"bdo","enabled":true,"epic":"epic.diagram","id":"adm.20c3e241484f","supersedes":null,"ts":"2026-06-20T17:09:00Z","type":"arc_confirmed"}
