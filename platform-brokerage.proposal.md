@@ -8,6 +8,15 @@ built. The companion memories are `ontum-activity-accounting-gateway`,
 `ontum-git-gh-gateway`, `ontum-platform-vision-gateway-economy`, and
 `ontum-gateway-separation-of-powers`.
 
+> **Deepening (2026-06-20, same conversation's continuation).** A second pass
+> found the layer the five facets stand *on*: the **consequence tier** and the
+> **generative ladder** that the platform exists to operate. The witnessed mesh
+> (facet #2) is its **pentimento** channel; the Herald-brokerage (facet #4) is its
+> **reputation economy**. The deep layer is the new section "The deeper layer: the
+> consequence tier," below the facets — and it promotes the `exports/model-free-mode`
+> package from a one-shot critique bundle to the **research spine of the measurement
+> layer**.
+
 ## How this arc was found (the thread)
 
 It began at "account for **all** activity, even the harness's own hooks, and
@@ -106,6 +115,90 @@ links today; a *chain* composes them (internal → internal-shared → public), 
 link an owner-or-policy gesture. The core never trusts the outside; the gateway's
 one-way glass scales up the chain.
 
+## The deeper layer: the consequence tier (what the five facets stand on)
+
+*Added from the design conversation's continuation (2026-06-20). The five facets
+above are the **body** — gateway, mesh, brokerage. This is the **metabolism** they
+serve: why the platform exists and what it operates on. It is the bridge to
+`epic.model-free-mode-response` and the `exports/model-free-mode` package.*
+
+**The shift (the higher tier).** Today's AI operates at the **action tier** — it
+picks tokens/actions, and we gate the *actions* (a whitelist; brittle; routed-around
+— the doctrine's T1). The platform lifts operation to the **consequence tier**: an
+agent is given a *consequence to satisfy* (a volume to fill) and mashes freely toward
+it, gated not on what it pressed but on what it **caused**. This is the new class
+object's "higher tier," and it is the move that sidesteps today's AI traps —
+hallucination, reward-hacking, metric-optimization, lost provenance — *by
+construction* (each trap's antidote is named below).
+
+**The generative ladder (how a consequence is born).** A unit of meaning is built by
+climbing a dimensional ladder, each rung an act of **interpretation**, not
+calculation:
+
+> **fill a 0d point** (a *gesture* — dimensionless intent) → **interpret until
+> measurable** (the gesture resolves into a handle) → **measurements make a surface**
+> (a field) → **surface composed into an object** (a bounded volume / holon) →
+> **object defined and molded** (identity, type, governed, versioned).
+
+The molded object at one tier **is** the 0d point at the next — the ladder re-climbs,
+holographically, at rising tiers ("all the way up"; bdo: "I could go on for days").
+This is the holon-graph (facet #1) given its *generative* reading: not just a static
+interior-graph, but the path by which that interior was filled.
+
+**The four invariants = measure + contain.** The doctrine's gate (Reversible,
+Bounded, Observable, Learning) splits cleanly along the ladder:
+
+- **Measure the consequence** = **Observable + Learning** = **pentimento + sauce.**
+  - **Pentimento** — the *observed* channel: the creator's process showing through,
+    the real superseded bytes, attribution by construction. The append-only log *is*
+    the pentimento; the witnessed mesh (facet #2 / STREAM 1) is it surfaced. *(It
+    carries Reversible too: the prior mold never leaves, so walk-back is structural —
+    you cannot forge a one-way door in a medium that keeps the earlier image in the
+    paint.)*
+  - **Sauce** — the *tasted* channel: the emergent, integrative quality — does the
+    whole **cohere**, judged not by inspecting ingredients but by tasting the whole,
+    **by a panel of peers** (the gate-panel, PR #338, + the §7 spawn rail). The tooth:
+    **sauce is a measured coherence anchored to the pentimento** (relation-bucket
+    coherence, val_bpb on the mesh) — never a vibes-verdict, or it becomes the
+    confident-hallucination it exists to defeat.
+- **Contain the consequence** = **Bounded + Reversible** = the mesh boundary + the
+  pentimento.
+
+**The measurement layer is load-bearing, and the model-free research is its spine.**
+The doctrine's three open estimators *are* the measurement organs: the reversibility
+classifier + blast-radius bound = the **contain** estimators; the in-stream
+learning-progress signal = the **sauce**, made a number. So
+`epic.model-free-mode-response` does not run *beside* the platform — it **is** the
+platform's measurement engine. Wave-1's `observe.py` (Observable-as-gate),
+`relation_ledger.py` (the relational middle band — meaning without mechanism), and
+`over_containment.py` (the predictive-vs-trivial discriminator) are its first organs.
+
+**The reputation economy (the brokerage's foundation).** Pentimento + sauce, composed
+over a creator's history, *are* a reputation: **exemplars net against notorieties, per
+credential, recomputed forward, never asserted** — exactly `herald.py`'s model. This
+is what lets the consequence tier **scale without a central gate on every act**: the
+front door opens *per-creator, in proportion to earned standing* (the trust ladder
+allocates the rope). The doctrine's "maximally free *and* maximally interruptible"
+becomes operable — freedom **allocated by reputation** rather than pre-cleared by
+whitelist. The tooth (§10, one level up): a **herald earns a meta-reputation over the
+standing of whom it vouched**, so a cartel is visible by construction — the vouching
+graph is itself reputation-bearing. Facet #4 (the brokerage) is this economy's
+*transport*; this layer is its *principle*.
+
+**The holographic kill-test (the whole object's falsification).** "Holographic" is
+testable: **cut the mesh anywhere, regenerate the whole from the fragment, measure the
+reconstruction error** (val_bpb on the mesh itself). A pentimento that cannot
+regenerate the whole from a fragment is decoration; one that can is real holographic
+compression. This is the §10 teeth at platform scale — the wager with a test
+attached, matching the doctrine's own.
+
+**Self-defining domain (the anti-wirehead anchor).** The mesh emits its own rules —
+the objective and the complex rules it fills against are generated *as it climbs*
+(geometry emits chemistry…). The danger is self-reference collapse (the noisy-TV /
+wireheading trap). Two anchors prevent it: the pentimento must be *actual* superseded
+bytes (not a painted-on history effect), and Observable ties every node to a real
+receipt. Self-defining, but **pinned to committed reality at every node**.
+
 ## The invariant that survives all of it (the one non-negotiable)
 
 **Log-is-truth.** Every facet above is admissible **only** because truth never
@@ -143,6 +236,22 @@ clauses are already negotiable in the reach). The doctrine amendment:
   arc-confirm / policy links to lift internal → public.
 - **broker-on-record / transport-ephemeral** — the cut that keeps a broker
   log-truth-safe.
+- **consequence tier** — operation on what an act *causes*, not which act; the higher
+  tier that sidesteps action-gating's traps. The new class object lives here.
+- **the generative ladder** — point → measure → surface → object → mold; a unit of
+  meaning born by dimensional interpretation, the object becoming the next tier's point.
+- **pentimento** — the *observed* measurement channel: the creator's process and
+  superseded bytes showing through; the append-only log surfaced. Carries Observable
+  *and* Reversible structurally.
+- **sauce** — the *tasted* measurement channel: emergent coherence, peer-panel-judged,
+  anchored to a number (val_bpb / relation-bucket coherence). Carries Learning.
+- **measurement layer** — pentimento + sauce; the model-free research (the three
+  estimators) is its spine.
+- **reputation economy** — exemplars net notorieties per credential, recomputed
+  forward; allocates the consequence tier's rope per creator. (The Herald, generalized
+  — see facet #4.)
+- **holographic kill-test** — cut the mesh anywhere, regenerate the whole from the
+  fragment, measure the reconstruction error; the platform's own falsification.
 
 ## Open edges — NOT yet cut (preserved honestly, the owner's to resolve)
 
@@ -154,6 +263,17 @@ clauses are already negotiable in the reach). The doctrine amendment:
    premature)? *Decides whether the substrate facet is built now or deferred.*
 3. **What the brokerage routes first** — work, data-streams, or confirmations?
 4. **Atom = floor** — confirmed as the indivisible leaf? (Read as yes; pin it.)
+5. **The measure/contain 2×2** — does Observable+Learning = *measure* and
+   Bounded+Reversible = *contain* hold, or is it too clean? Reversible is claimed on
+   *both* sides (the pentimento gives it). One axis or two?
+6. **Where the non-deterministic organ enters the pure fold** *(the determinant
+   question, from the package's T3).* Sauce — the learning-progress signal, and any
+   locality-sensitive/meaning hash over atoms — is inherently learned and predictive;
+   the core is a deterministic fold ("the log is truth, everything else is a fold").
+   Is the measurement layer a **gated reach** (like the inference gateway, admitted by
+   the very consequence-gate this serves), or can the signal be expressed as a *fold
+   over the log's own verdict history* and stay native? This decides whether
+   model-free operation is *first-class* here or bolted on.
 
 ## CTAs (the first links, in order — none to build before the cuts above)
 
@@ -169,6 +289,13 @@ clauses are already negotiable in the reach). The doctrine amendment:
   by one owner gesture.
 - **Doctrine amendment** (no-broker → brokerage) is bdo's to make when the
   brokerage slice proves the cut.
+- **The measurement layer's spine: promote `exports/model-free-mode`.** The package
+  stops being a one-shot critique bundle and becomes the research spine of the
+  measurement layer; the doctrine's three estimators become its organs (`observe.py`,
+  `relation_ledger.py`, `over_containment.py` are wave 1). The **existence proof** is
+  to climb the ladder *once*, publicly, on the model-free-mode material, and run the
+  **holographic kill-test** on the result — the smallest run that banks-or-falsifies
+  the whole deep layer (the doctrine's own kill-criterion, lifted to platform scale).
 
 ## Connections (compose, do not double-build — §10)
 
@@ -181,7 +308,14 @@ clauses are already negotiable in the reach). The doctrine amendment:
 - **The gateway separation-of-powers** (memory) — the brokerage is an *enforcement*
   organ under the regulatory branch; its routing policy is *legislation*.
 - **Causality / the canvas** — already renders typed graphs with a recursion lens;
-  the holon-graph stream is its data.
+  the holon-graph stream is its data, and the **pentimento (process visualized)** is
+  the canvas pointed at provenance.
+- **`epic.model-free-mode-response` + `exports/model-free-mode`** — the **measurement
+  engine** of the deep layer; `observe.py` / `relation_ledger.py` / `over_containment.py`
+  (wave 1, PR #351) are its first organs. Do not double-build — the platform's
+  measurement layer *is* this epic, lifted to platform tier.
+- **The gate-panel** (PR #338) + the **§7 spawn rail** — the **peer panel** that
+  tastes the sauce; plural independent judges, not one model's verdict.
 
 ## Cautions
 
