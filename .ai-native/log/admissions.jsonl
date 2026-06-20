@@ -199,3 +199,4 @@
 {"branch":"claude/relation-governed-exploration","by":"claude","claim":"epic.model-free-mode-response","id":"adm.2bd8f4148be3","supersedes":"adm.80836534bd96","ts":"2026-06-20T21:35:38Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.strategy","id":"adm.bc55d43121f8","supersedes":null,"ts":"2026-06-20T22:08:38Z","type":"arc_confirmed"}
 {"branch":"claude/tasters-clause","by":"claude","claim":"atom.tasters-clause.v0","id":"adm.e55cd121ec9c","supersedes":null,"ts":"2026-06-20T22:13:15Z","type":"workspace_claimed"}
+{"branch":"claude/strategy-claim","by":"claude","claim":"epic.strategy","id":"adm.a304dedb8c54","supersedes":null,"ts":"2026-06-20T23:20:45Z","type":"workspace_claimed"}
