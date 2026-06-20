@@ -197,3 +197,4 @@
 {"by":"bdo","enabled":true,"epic":"epic.strategy","id":"adm.bc55d43121f8","supersedes":null,"ts":"2026-06-20T22:08:38Z","type":"arc_confirmed"}
 {"branch":"claude/tasters-clause","by":"claude","claim":"atom.tasters-clause.v0","id":"adm.e55cd121ec9c","supersedes":null,"ts":"2026-06-20T22:13:15Z","type":"workspace_claimed"}
 {"atoms":[{"frozen_hash":"sha256:4a021f9127c9bb38b48558d233103bd9d0a674838b271d42417ed73a8fba9b7b","id":"atom.snapshot-acceptance-unit.v0"}],"by":"claude","commit":"903712d","enabled":true,"id":"adm.919ed81a05b4","name":"env-spine","supersedes":null,"ts":"2026-06-20T22:55:52Z","type":"snapshot"}
+{"atoms":[{"frozen_hash":"sha256:e7127b25e3877cf410899286fbf59162f3c15e80c55812fd7df1c27a09da7782","id":"atom.snapshot-acceptance-unit.v0"}],"by":"claude","commit":"0053bce","enabled":true,"id":"adm.fe3564c24b82","name":"env-spine","supersedes":null,"ts":"2026-06-20T23:06:46Z","type":"snapshot"}
