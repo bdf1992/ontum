@@ -13,6 +13,11 @@
 # so its bytes are pinned like the log's — never eol-rewritten.
 causality/examples/*.json -text
 
+# Rendered diagrams are byte-deterministic compose.py artifacts
+# (epic.diagram, done-line 0132): the §10 test pins the committed SVG to
+# a fresh render, so its bytes must never be eol-rewritten.
+diagrams/examples/*.svg -text
+
 # Append-only logs: parallel branches only ever append; union-merge
 # keeps both tails instead of conflicting.
 .ai-native/log/*.jsonl merge=union

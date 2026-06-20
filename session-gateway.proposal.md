@@ -781,3 +781,77 @@ sensor-before-the-load like `heal`'s own flapping/override), and the disposer
 fence (the bounded actuator, when the bottleneck is witnessed). The sensor ships
 read-only and propose-only; it never clears a park or moves a bar — the heal stays
 a session's or bdo's (D-4).
+
+## 14. The registration-and-repair gateway activity (bdo, 2026-06-19)
+
+**Provenance:** co-designed in conversation (bdo + Claude), 2026-06-19, triggered
+by a *live* recurrence of §1 — a session (this one) built a whole confirmed-arc
+slice (`epic.diagram` wave 1) directly in the **stranded primary viewport**
+because nothing forced the work into its own container first. The diagnosis bdo
+asked for named the root cause precisely; this section is his fix for it. The
+organ-mapping and the §10 teeth are Claude's completeness sweep, flagged as such.
+PROPOSED.
+
+**The sharpening over §5/§11.** §5's gateway is a level-triggered *sense* + a
+deterministic-or-inference *route*; §11.1–2 give the *guard* (refuse a commit on
+an unbound HEAD). All of that would have **bounced** this session's first write —
+but bouncing leaves the *actual* root (a viewport a prior mortal session left
+stranded off `main`) sitting there for the next session to inherit and re-trip. A
+static tooth fixes the symptom. bdo's reframe: the gateway is an **activity**, not
+only a guard — it **registers a worksurface to a user, alerts when a session ends
+up in the wrong environment, and investigates and repairs the root cause.** A
+MAPE-K loop at the session seam, three phases, each composing an organ that
+already exists (no double-build, §10):
+
+- **Register** (worksurface → user) — the claim↔workspace binding (§11.2,
+  `loop/workspace.py` + the git-pen `--claim`, done-line 0121), elevated from an
+  optional flag to a **gateway registration act at session entry**. The binding
+  *is* the attribute set of the three A's (§5, "attributed").
+- **Detect + alert** (wrong environment) — a fold of *registered claim* vs
+  *actual* (HEAD, cwd, git toplevel, **owner**). Divergence ⇒ wrong env. The
+  HEAD-intent guard (done-line 0118) is the *point-check* of this; the activity
+  makes it the **ambient, every-pulse** check the summon hook already runs.
+- **Investigate + repair** (root cause) — `heal.py`'s bite-axis fold (*proposes*
+  the repair, propose-only by D-4) + the git-pen `sync`'s stranded-viewport
+  restore (*executes* the safe case) + branch dissolution (the gardener's route
+  home). The activity is the loop that binds sense → propose → execute into one
+  beat, and aims at the **cause** (the stranding) not the symptom (this write).
+
+**The insight in "to a *user*."** The worksurface belongs to the **user**, not the
+session. The viewport is bdo's — a *reading* surface, parked on `main`; a
+**session** gets a *workbench*. So "wrong environment" has a precise definition: a
+session operating in the user's viewport (exactly what recurred here), or two
+sessions colliding on one bench. This is the membrane architecture's
+external/internal line drawn at the session seam — the user's surface vs the
+session's container — and it is *why* registration must bind to `(user|session)`,
+not to a bare HEAD.
+
+**The open owner decision — the bounded-repair fence.** Repair that restores a
+*clean* stranded viewport or dissolves a *merged dead* branch is reversible and
+safe — auto-do it (the `sync` hook already does this much). Repair that **moves
+uncommitted work** is high reversibility-cost — auto-doing it can destroy work. So
+the activity must split: **auto-repair the reversible, escalate the work-bearing.**
+That split is the disposer-fence shape (a bounded standing auto-admit bdo stamps
+once, per-case bounds) applied to repair — and it is the concrete form of bdo's
+standing open question across this arc (bounded-autonomy regulation vs.
+escalate-every-policy). *Lean (Claude): bounded-auto within a fence bdo draws —
+the third application of a shape already proven by the disposer and by `sync`'s
+safe-restore — escalating only the cases a repair would lose work.* The lag/extent
+of auto-repair is bdo's dial, the §13.10 IN-1 shape at the session seam.
+
+**Where it sits in §11.** It is not a new increment so much as the *binding* of
+#2 (claim↔workspace), #3 (the gateway fold), and #4 (provisioning + gardener
+reclaim) into one level-triggered activity — buildable only after #2's record
+shape (§10.4) is chosen. The first cut is the alert (sense), which ships the day
+#2 lands; repair (execute) waits on the fence stamp.
+
+**§10 teeth (this section).** A registration that stays advisory instead of
+enforced (the exact failure that recurred here — a ritual a session must
+remember); an activity that only *alerts* and never repairs the root (back to
+symptom-bouncing — the next session re-inherits the stranding); an auto-repair
+that moves uncommitted work without escalation (destroys work — the orphan failure
+of §3, inverted); auto-repair outside a fence (unbounded autonomy — the
+escalate-everything question answered by *not* answering it); a "repair" that
+heals toward *less* friction by abandoning the binding rather than restoring the
+environment (anesthesia, the §13.10 litmus — heal toward more honest insulation,
+never less).
