@@ -71,6 +71,23 @@ def _is_refusal(rc):
             and bool(rc.get("verdict")))
 
 
+def atoms_on_main(fold):
+    """The per-atom↔per-PR join, read from the log alone (D-13): the set of
+    artifact_ids a merge receipt records as having reached main via its
+    `landed_atoms`. This is the reading half of the write-through carbon copy —
+    the answer to "did atom X reach main?" that the pre-D-13 merge receipt could
+    not give (it recorded only *that* a PR landed, never *which* atoms, so the
+    two namespaces could not join — the terminal-pull gateway's namespace gap,
+    done-line 0123). A `landed` receipt with no `landed_atoms` is lossy history
+    (the 90 pre-D-13 merges) and contributes nothing here — it cannot, honestly,
+    name an atom it never carried. Pure fold; no git, no network."""
+    on_main = set()
+    for rc in fold.receipts:
+        if rc.get("verdict") in LANDING_VERDICTS:
+            on_main.update(rc.get("landed_atoms") or [])
+    return on_main
+
+
 def in_span(ts, since, until):
     """A record's date (ts[:10]) within [since, until] inclusive; a None
     bound is unbounded. ISO-8601 dates sort lexically, so string compare is
@@ -211,6 +228,10 @@ def digest(root, since=None, until=None):
         "refusals": len(refusals),
         "divergences": divergences,
         "phrasing": phrasing_in_span,
+        # the per-atom↔per-PR join (D-13): which atoms a merge receipt confirms
+        # reached main. All-time, not span — "on main" is a standing fact, not a
+        # window. Empty until the first post-D-13 land carries its atoms.
+        "atoms_on_main": sorted(atoms_on_main(fold)),
     }
 
 
@@ -481,6 +502,9 @@ def render(d):
 
     lines.append(f"_{d['landings']} landing(s), {d['refusals']} refusal(s) "
                  f"in span._")
+    on_main = d.get("atoms_on_main", [])
+    if on_main:
+        lines.append(f"_{len(on_main)} atom(s) confirmed on main (D-13 join)._")
     return "\n".join(lines)
 
 

@@ -19,6 +19,11 @@ causality/welcome-preview.png
 # (done-line 0058) — the unsurfaced set is a fold over reports + the log
 .ai-native/owner-ask-shame.json
 
+# nag tally, not truth: the continue-beat / patrol's per-session beat count
+# and escalate marker (session_id / beats / escalate_armed) — runtime state
+# the hook rewrites each turn, sibling of mock-shame / owner-ask-shame.
+.ai-native/continue-beat.json
+
 # session-ephemeral UI state, not truth: each session's last-seen open set
 # and last-poll clock for the standing-surface projection (done-line 0071) —
 # the surface is the truth; this only remembers what was last shown, to tick

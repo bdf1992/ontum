@@ -111,6 +111,47 @@ def _refuse(message):
     sys.exit(1)
 
 
+def _git_toplevel(cwd):
+    proc = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True, encoding="utf-8",
+        errors="replace", cwd=cwd,
+    )
+    if proc.returncode != 0:
+        return None
+    return pathlib.Path(proc.stdout.strip()).resolve()
+
+
+def invocation_root_refusal(pen_root, cwd_root):
+    """Why this PR pen invocation may not mutate, or None.
+
+    The PR pen performs branch and GitHub mutations for the worktree it lives
+    in. A session in worktree A must not invoke worktree B's pen and push,
+    edit, or land B by accident.
+    """
+    if cwd_root is None:
+        return (
+            "not inside a git worktree - run the PR pen from the worktree "
+            "whose branch or PR you are mutating"
+        )
+    pen_root = pathlib.Path(pen_root).resolve()
+    cwd_root = pathlib.Path(cwd_root).resolve()
+    if pen_root != cwd_root:
+        return (
+            f"pen/worktree mismatch: this PR pen belongs to {pen_root}, but "
+            f"the caller is in {cwd_root}. Use the PR pen from that worktree "
+            "(`python .claude/skills/branch-ritual/pr.py ...` from its root) "
+            "so the environment and the tool agree."
+        )
+    return None
+
+
+def _assert_invocation_root():
+    reason = invocation_root_refusal(ROOT, _git_toplevel(pathlib.Path.cwd()))
+    if reason:
+        _refuse(reason)
+
+
 def _run(args):
     proc = subprocess.run(
         args, capture_output=True, text=True, encoding="utf-8",
@@ -152,6 +193,7 @@ def _check_tests(story):
 
 
 def cmd_create(ns):
+    _assert_invocation_root()
     branch = _run(["git", "branch", "--show-current"]).strip()
     if not branch or branch in ("main", "master"):
         _refuse(
@@ -240,6 +282,7 @@ def forward_refusal(tokens):
 
 
 def cmd_push(ns):
+    _assert_invocation_root()
     forward = [t for t in getattr(ns, "forward", []) if t != "--"]
     reason = forward_refusal(forward)
     if reason:
@@ -290,6 +333,7 @@ def cmd_push(ns):
 
 
 def cmd_edit(ns):
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json", "state,headRefName"]))
     if info["state"] != "OPEN":
@@ -311,6 +355,7 @@ def cmd_ready(ns):
     green (or declared red) suite, flip the draft. The flip makes the PR
     eligible for merge-node consideration after arc confirmation; accidental
     owner-merge pings die here."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number),
          "--json", "state,headRefName,isDraft"]))
@@ -339,6 +384,7 @@ def cmd_ready(ns):
 def cmd_unready(ns):
     """Back to a rolling draft — the de-escalation needs no story; it only
     takes the merge button away."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json", "state,isDraft"]))
     if info["state"] != "OPEN":
@@ -399,6 +445,7 @@ def cmd_retire(ns):
     through the one pen, with the reason on the record. Not a land — `land`
     merges a confirmed arc; this retires work that should never merge. The
     reason becomes the closing comment a cold reader reads alone."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json", "state,title"]))
     refusal = retire_refusal(info.get("state"), ns.reason)
@@ -548,6 +595,7 @@ def cmd_phrasing(ns):
     before/after content hashes, the reason, --by); the session then commits the
     prose files (and the admission) with the git pen and opens the PR with
     `pr.py create` — the gate exempts a phrasing-clean branch (no atom needed)."""
+    _assert_invocation_root()
     import hashlib
     sys.path.insert(0, str(ROOT))
     from loop import phrasing
@@ -600,6 +648,7 @@ def cmd_integrate(ns):
     """Merge a piece-PR into its epic branch (done-line 0029). Main stays
     governed by arc confirmation and merge-node land; this lands a piece on a
     non-trunk integration branch."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number),
          "--json", "state,baseRefName,headRefName,mergeable"]))
@@ -875,13 +924,79 @@ def real_gate_refusal(atom_id, receipts_text):
     return None
 
 
+def epic_id_in_blob(blob_text, epic):
+    """Does this epic-file blob declare the given epic id? Pure — the check
+    `confirm --from-ref` makes over the bytes git hands back, so the teeth (a
+    ref that does NOT actually carry the epic is still refused) are unit-testable
+    without git. An epic file is `{"epic": {"id": ...}}`; anything else is False."""
+    try:
+        return json.loads(blob_text).get("epic", {}).get("id") == epic
+    except (ValueError, AttributeError, TypeError):
+        return False
+
+
+def establish_plan(epic_on_trunk, source_ref):
+    """The three-way decision a confirm makes about an arc — pure for the suite
+    (the `arc_confirmed_in` / `land_refusal` pattern). An epic already on the
+    trunk is stamped as ever; a new epic (not yet on the trunk) is validated
+    from `--from-ref`; a new epic with NO ref cannot be confirmed — the stamp
+    would have nothing to validate against, so it is refused with the paved path
+    named, never left to a raw "nothing to commit" git failure (the §10 teeth:
+    a brand-new arc with no definition source is refused, not silently waved
+    through). Returns (action, reason); action in {confirm, establish, refuse}."""
+    if epic_on_trunk:
+        return ("confirm", "the epic is on the trunk — stamp the arc, as today")
+    if (source_ref or "").strip():
+        return ("establish",
+                f"the epic is not on the trunk yet — read it from {source_ref!r} to "
+                "validate, then stamp the new arc (the epic record lands with its PR)")
+    return ("refuse",
+            "a brand-new arc is established at confirm time, but its epic is not on "
+            "the trunk yet, so the stamp has nothing to validate against. Pass "
+            "--from-ref <branch> (the PR branch that introduces the epic) so the epic "
+            "is read from there; the confirmation lands on the trunk and the epic "
+            "record lands with its PR.")
+
+
+def _materialize_epic_from_ref(wt, ref, epic):
+    """Copy the epic's file from a git ref into a confirm worktree's epics dir,
+    so `confirm` can validate an arc an unlanded PR introduces (issue #245's
+    deadlock: to confirm you need the epic on main, to land the PR you need the
+    arc confirmed). Validation ONLY — the confirm commit stages just
+    admissions.jsonl, so the stamp lands on the trunk while the epic record still
+    lands when ITS PR does. Refuses if the ref does not actually declare the epic
+    (epic_id_in_blob): --from-ref relocates where the epic is read, it is never a
+    bypass of the check, and the epic is read from the branch, never invented."""
+    _run(["git", "fetch", "origin", ref])
+    rel = f".ai-native/epics/{epic}.json"
+    blob = ""
+    for cand in (ref, f"origin/{ref}", "FETCH_HEAD"):
+        blob = _show_at(f"{cand}:{rel}")
+        if blob:
+            break
+    if not epic_id_in_blob(blob, epic):
+        _refuse(
+            f"--from-ref {ref!r} does not carry epic {epic!r} at {rel} — the ref "
+            "must be the branch that introduces the epic (its record is read from "
+            "there, never invented; this is validation, not a bypass)")
+    dest = wt / rel
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(blob, encoding="utf-8")
+
+
 def cmd_confirm(ns):
     """bdo's arc stamp that actually reaches the merge-node. `loop.node
     confirm-arc` only appends to the working tree; the merge-node reads the
     pushed trunk. This is the missing seam: append the same admission and push
     it to `origin/main` in one command, so one stamp authorizes the node — no
     hand-git. The owner's act (D-4): refused unless `--by bdo`. Done on a fresh
-    worktree off origin/main, so a stale or dirty viewport never blocks it."""
+    worktree off origin/main, so a stale or dirty viewport never blocks it.
+
+    `--from-ref <branch>` resolves issue #245's epic-introducing-PR deadlock:
+    when the arc's epic record lives only on an unlanded PR's branch (not yet on
+    the trunk), the epic is read from that ref for validation, while the
+    confirmation still lands on the trunk (the epic itself lands with its PR)."""
+    _assert_invocation_root()
     import shutil
     import tempfile
     if (ns.by or "").strip().lower() != "bdo":
@@ -892,6 +1007,16 @@ def cmd_confirm(ns):
         _run(["git", "worktree", "add", "--detach", str(wt), "origin/main"])
         sys.path.insert(0, str(ROOT))
         from loop.node import confirm_arc  # the schema, not a second copy
+        from_ref = getattr(ns, "from_ref", "") or ""
+        # Decide before staging: a forward confirm of a brand-new arc with no
+        # --from-ref is refused with the paved path named (never the raw
+        # "nothing to commit" failure). A withdrawal (--off) is unaffected.
+        epic_on_trunk = (wt / ".ai-native" / "epics" / f"{ns.epic}.json").exists()
+        decision, _est_reason = establish_plan(epic_on_trunk, from_ref)
+        if decision == "refuse" and not ns.off:
+            _refuse(_est_reason)
+        if from_ref:
+            _materialize_epic_from_ref(wt, from_ref, ns.epic)
         adm = confirm_arc(wt / ".ai-native", ns.epic, "bdo", enabled=not ns.off)
         rel = ".ai-native/log/admissions.jsonl"
         _run(["git", "-C", str(wt), "add", rel])
@@ -960,11 +1085,21 @@ def land_refusal(info, confirmation, by, by_admitted=False):
     return None
 
 
-def _merge_receipt(pr, epic, by, authorized_by, head):
-    """The merge receipt (D-5): the land as an act on the record, citing the
-    arc confirmation that authorized it. Built here; pushed to the trunk by
+def _merge_receipt(pr, epic, by, authorized_by, head, landed_atoms=None):
+    """The merge receipt (D-5, D-13): the land as an act on the record, citing
+    the arc confirmation that authorized it. Built here; pushed to the trunk by
     _push_receipt_to_trunk — never left in a worktree (the bug that left every
-    real merge unrecorded: a receipt in a throwaway worktree is no receipt)."""
+    real merge unrecorded: a receipt in a throwaway worktree is no receipt).
+
+    `landed_atoms` is the write-through carbon copy (D-13): the artifact_ids the
+    PR's range actually added under .ai-native/atoms/, so this GitHub surface act
+    reflects *which* local atoms reached main, not only *that* a PR did. Without
+    it the pipeline namespace (per-atom) and the git namespace (per-PR) cannot
+    join, and the loop can never confirm a piece is on main (the per-atom↔per-PR
+    gap, done-line 0123). An empty list is honest — a PR that added no atom file
+    (a phrasing-only branch) — and distinct from a missing field on the 90
+    historical receipts, which means 'never computed' (those stand as lossy
+    history; the gap closes forward, D-13)."""
     return {
         "id": f"rcp.merge.{pr}",
         "kind": "merge",
@@ -973,6 +1108,7 @@ def _merge_receipt(pr, epic, by, authorized_by, head):
         "epic": epic,
         "head": head,
         "verdict": "landed",
+        "landed_atoms": sorted(landed_atoms or []),
         "authorized_by": authorized_by,
         "ts": _now(),
     }
@@ -1027,6 +1163,7 @@ def cmd_land(ns):
     merges — he confirms arcs and reads the digest; this lands what he
     confirmed, refuses by default, and records every land. Run it as a node
     that did not author the PR (the merge-node SKILL is explicit)."""
+    _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json",
          "state,baseRefName,headRefName,isDraft,mergeable,title,body,statusCheckRollup,author"]))
@@ -1037,10 +1174,20 @@ def cmd_land(ns):
     if reason:
         _refuse(reason)
     head = info.get("headRefName")
+    base = info.get("baseRefName") or "main"
+    # The write-through join (D-13): compute which atoms this PR lands BEFORE the
+    # merge, while origin/{head} still exists (GitHub deletes it on merge). Same
+    # reach the off-log gate uses (_range_atom_facts → loop.pr_audit), so the
+    # receipt's `landed_atoms` cannot disagree with what the gate counted. If the
+    # reach fails we do not land a lossy receipt — the land raises and retries,
+    # never records a merge it cannot describe.
+    _run(["git", "fetch", "origin", base, head])
+    landed_atoms, _receipt_ids, _phrasing_clean = _range_atom_facts(
+        f"origin/{base}", f"origin/{head}")
     if ns.dry_run:
         print(f"result: report — DRY RUN: would land PR #{ns.number} "
               f"({head} -> main) on arc {ns.epic} confirmed by bdo "
-              f"({confirmation}); nothing merged")
+              f"({confirmation}); atoms {landed_atoms or '(none)'}; nothing merged")
         return
     # Merge only — never --delete-branch. Across the fleet the head branch is
     # checked out in a worktree, and `gh pr merge --delete-branch` fails on the
@@ -1049,7 +1196,8 @@ def cmd_land(ns):
     # merges. The SessionStart gardener (done-line 0037) prunes the merged
     # worktree and branch; GitHub's delete_branch_on_merge clears the remote head.
     _run(["gh", "pr", "merge", str(ns.number), "--squash"])
-    receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head)
+    receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head,
+                             landed_atoms=landed_atoms)
     if _push_receipt_to_trunk(receipt):
         print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
               f"on bdo's confirmed arc {ns.epic}; receipt {receipt['id']} on the trunk. "
@@ -1201,6 +1349,13 @@ def main(argv=None):
                          help="the arc to confirm, e.g. epic.owner-harness")
     confirm.add_argument("--by", required=True,
                          help="bdo — the owner's stamp, refused otherwise (D-4)")
+    confirm.add_argument("--from-ref", dest="from_ref", default="", metavar="REF",
+                         help="validate the epic from this git ref (a PR's head "
+                              "branch) when the arc's epic record lives only on "
+                              "an unlanded PR, not yet on the trunk — issue #245's "
+                              "epic-introducing-PR deadlock. The confirmation "
+                              "still lands on the trunk; only the epic is read "
+                              "from the ref")
     confirm.add_argument("--off", action="store_true",
                          help="withdraw a prior confirmation (supersede, never erase)")
     confirm.set_defaults(func=cmd_confirm)
