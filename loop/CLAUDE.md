@@ -305,7 +305,12 @@ so a prompt edit can't reopen a settled verdict (I-2).
   an atom in the epic), `dont-double-build` (cites a real owning epic). The
   §10 teeth are the term-economy/gaps grip rule: `validate()` fails on a ghost
   citation, and `tests/test_parity.py` proves the check is not vacuous (a
-  fabricated row of each verdict is caught). The requirements mine that orders
+  fabricated row of each verdict is caught). The sharper tooth (done-line
+  0132): a `have` must carry `evidence` — a substring its cited file actually
+  contains — so a row cannot stand on a real file that does not do the claimed
+  thing (the ghost-in-spirit that let the multi-root row falsely claim
+  `field.py` folds three sibling repos; it folds every *arc within ontum*, and
+  is now re-verdicted `build` -> `atom.multi-root-fold.v0`). The requirements mine that orders
   the rest of the arc — sibling of `gaps`/`census` on a new axis (what a
   neighbouring system forces us to account for), the cut and the build stay a
   session's or bdo's (D-4).
