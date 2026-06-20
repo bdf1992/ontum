@@ -110,6 +110,18 @@ when we want to.
 - **D-12. Every site is a transducer; agent and environment differ only in rate.** Each
   node reads the medium, is moved by it, and writes back. A fast site is an agent; a slow
   site is an environment. Same primitive — they co-adapt, and they nest. (§15.)
+- **D-13. External surfaces are deterministic reflections of the log; the pen that
+  writes to one is a write-through carbon copy.** GitHub (PRs, issues, merge state) and
+  any other outward surface is *downstream* of the log (D-5) — never a second source of
+  truth. The pen that pushes to it must carry **enough to re-derive the local truth it
+  reflects**, so the reflection can always be joined back to the atom/receipt it stands
+  for. This is the records pen's carbon-copy — a raw write into the log is legal only as
+  a zero-divergence copy of what the pen would emit — generalized from the *local*
+  boundary to *every* boundary. A surface write that **drops the local identity** — a
+  merge that records *that* a PR landed but not *which atoms* reached main — is a **lossy
+  reflection and a bug in the pen**: it manufactures a namespace the log cannot rejoin
+  (the per-atom↔per-PR gap the terminal-pull gateway surfaced, done-line 0123). *(Firm
+  at the boundary; the join field is the carbon copy.)*
 
 ### 1.2 What those decisions imply
 

@@ -191,6 +191,37 @@ def commit_refusal(branch, message, forwarded):
     return None
 
 
+def head_intent_refusal(branch, expected):
+    """Why this commit may not run because HEAD is not where the session
+    thinks it is, or None (done-line 0118).
+
+    `expected` is the branch the session ASSERTS it is on (`--on`); `branch`
+    is live HEAD. In the shared-tree fleet a parallel session can move the
+    worktree's branch between a session reading HEAD and committing — so a
+    commit that names its branch is refused when the names disagree (the
+    collision that authored this guard). The assertion is per-invocation and
+    explicit: nothing stored, nothing another session can race. Omitting
+    `--on` refuses: branch intent is mandatory after the moving-viewport
+    incident."""
+    # Hotfix: branch intent is mandatory; do not infer it from live HEAD.
+    if not expected:
+        return (
+            "HEAD-intent required: commit with `--on <branch>` naming the "
+            "branch this work is meant for. A moving shared viewport already "
+            "landed a commit on the wrong branch; the pen will not infer "
+            "intent from live HEAD."
+        )
+    if branch != expected:
+        return (
+            f"HEAD-intent mismatch: you declared --on '{expected}', but live HEAD "
+            f"is '{branch or 'detached'}'. A parallel session may have moved the "
+            f"shared worktree's branch under you. Check out '{expected}' (or work "
+            f"from its own worktree) before committing — this is the branch "
+            f"collision turned into a clean deny (done-line 0118)."
+        )
+    return None
+
+
 # Numbered records whose id must be fleet-unique: a new done-line or report
 # minted against a stale local fold collides with one already on a sibling
 # branch — the four 0020 done-lines are the incident, tonight's 0050 the
@@ -461,6 +492,46 @@ def _refuse(message):
     sys.exit(1)
 
 
+def _git_toplevel(cwd):
+    proc = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True, encoding="utf-8",
+        errors="replace", cwd=cwd,
+    )
+    if proc.returncode != 0:
+        return None
+    return pathlib.Path(proc.stdout.strip()).resolve()
+
+
+def invocation_root_refusal(pen_root, cwd_root):
+    """Why this pen invocation may not mutate, or None.
+
+    The pen is worktree-local law: a session in worktree A must not be able to
+    invoke worktree B's pen and accidentally stage or commit in B.
+    """
+    if cwd_root is None:
+        return (
+            "not inside a git worktree - run the pen from the worktree whose "
+            "branch you are mutating"
+        )
+    pen_root = pathlib.Path(pen_root).resolve()
+    cwd_root = pathlib.Path(cwd_root).resolve()
+    if pen_root != cwd_root:
+        return (
+            f"pen/worktree mismatch: this pen belongs to {pen_root}, but the "
+            f"caller is in {cwd_root}. Use the pen from that worktree "
+            "(`python .claude/skills/branch-ritual/git.py ...` from its root) "
+            "so the environment and the tool agree."
+        )
+    return None
+
+
+def _assert_invocation_root():
+    reason = invocation_root_refusal(ROOT, _git_toplevel(pathlib.Path.cwd()))
+    if reason:
+        _refuse(reason)
+
+
 def _run(args):
     proc = subprocess.run(
         args, capture_output=True, text=True, encoding="utf-8",
@@ -472,6 +543,7 @@ def _run(args):
 
 
 def cmd_add(ns):
+    _assert_invocation_root()
     tokens = ns.forward
     reason = add_refusal(tokens)
     if reason:
@@ -515,8 +587,37 @@ def _ref_record_listing(staged_new):
         return None
 
 
+def _workspace():
+    """The workspace-binding module (loop/workspace.py, done-line 0121), or
+    None if loop isn't importable. The fold and the pure `binding_refusal`
+    live there; the pen only enforces."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from loop import workspace
+        return workspace
+    except Exception:  # noqa: BLE001 — handled at the call site
+        return None
+
+
 def cmd_commit(ns):
+    _assert_invocation_root()
     branch = _run(["git", "branch", "--show-current"]).strip()
+    reason = head_intent_refusal(branch, ns.on)
+    if reason:
+        _refuse(reason)
+    # The claim↔workspace binding (done-line 0121): a commit asserting it
+    # serves a claim (`--claim`) is refused unless this branch is bound to that
+    # claim — the branch belongs to its work, not the mortal session (§4).
+    # Opt-in like `--on`; omitted, the binding is never consulted.
+    if getattr(ns, "claim", None):
+        ws = _workspace()
+        if ws is None:
+            _refuse("--claim asked for the workspace-binding check, but "
+                    "loop.workspace is not importable from here — run from the "
+                    "repo root, or drop --claim")
+        reason = ws.binding_refusal(branch, ns.claim, ws.active_bindings(ROOT / ".ai-native"))
+        if reason:
+            _refuse(reason)
     reason = commit_refusal(branch, ns.message, ns.forward)
     if reason:
         _refuse(reason)
@@ -778,6 +879,15 @@ def main(argv=None):
     commit.add_argument("--intent", metavar="VALUE",
                         help="optional intent tag; a known value that lies about "
                              "the verb is refused, a new one rides as proposed")
+    commit.add_argument("--on", metavar="BRANCH",
+                        help="required branch intent; the pen refuses "
+                             "if live HEAD differs — the HEAD-intent guard "
+                             "(done-line 0118), for the shared-tree fleet")
+    commit.add_argument("--claim", metavar="WORK",
+                        help="the work this branch serves; the pen refuses if the "
+                             "branch is unbound or bound to a different claim — "
+                             "the workspace binding (done-line 0121). Bind first "
+                             "with `python -m loop.workspace claim`")
     commit.set_defaults(func=cmd_commit)
 
     sync = verbs.add_parser(

@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.healing-fold.v0",
+    "story": {
+      "text": "As the loop, I want to sense where my own teeth bit too sharp — a gate that refused work that was actually fine, or a correct bite whose wound has healed but still surfaces as open — so the friction I place comes with a healing reflex instead of becoming autoimmunity. The whole record shows my gates almost never refuse (~3.4% of verdicts), and the one phantom I carry (atom.field-topology.v0's 'missed', long after v1 built loop/field.py and confirmed) still rides the owner views as if it were live. This is the counterforce bdo named: heal before sharpening. A read-only, propose-only fold, sibling of retro on the bite axis, citing receipts not prose, naming the over-bite and the one heal move — never clearing a park or re-opening a verdict (the heal stays a session's or bdo's, D-4).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the healing fold: the loop senses where its own teeth bit too sharp",
+      "value": "loop/heal.py — a pure, stdlib, read-only fold over the entire append-only log, sibling of retro on the bite axis (retro: what keeps happening; heal: where did a tooth bite wrong). Three detectors, each cited to real receipts: stale-park (a gate correctly negated an old version, the live version then passed the same gate — the bite is healed, only its surfacing is stale), flapping-gate (a gate negates the live version after advancing an earlier one — a current self-contradiction), owner-override (bdo's stamp advanced what a real gate refused, AFTER the refusal — ts-ordered so the normal pipeline is not a false positive). It reuses the digest's version-split and reconcile's supersession rather than re-deriving them (no second truth, §10).",
+      "why_now": "bdo's direction this session: an /insights crawl of the whole history showed the gates refuse ~3.4% of the time (the system's own §10 says a check that never refuses isn't doing its job) and that we carry an un-healed bite (the field-topology phantom). bdo: before sharpening any tooth, build the counterforce — heal first, teeth-placement is the named-next. Teeth without healing is autoimmunity.",
+      "if_accepted": "The loop gains the counterforce to its own friction. python -m loop.heal folds all history and names where a tooth bit too sharp or stale, each finding carrying one concrete heal move; the summon hook hands the over-bite line to every session that blinks in. The two 'too sharp' sensors (flapping, override) are declared even at zero live instances — the first sensors of those failure modes, ready for when the gates start judging un-vetted work.",
+      "if_rejected": "Friction has no healing reflex: correct-but-stale bites keep cluttering the owner surfaces (the field-topology phantom rides on), and the day a gate bites work bdo wanted, nothing on the record could ever see it.",
+      "cost_of_wrong_call": "Low and fail-safe: the fold is read-only (it writes nothing, judges nothing, clears no park — D-4), additive (a new sibling module beside retro/digest/gaps), and reuses existing folds rather than introducing a second truth. Reverting is deleting the module; nothing depends on it.",
+      "mechanism": "loop/heal.py: stale_park_findings / flapping_findings / owner_override_findings fold over reconcile.Fold and reuse loop.digest._base_version, _glance, and reconcile.superseded_atom_ids. loop/summon.py gains heal_lines for the ambient hook (the slowloop-line pattern: shown, never disposed). tests/test_heal.py joins the suite with §10 teeth: a stale-park is caught and cites the planted receipt ids (the line a constant classifier cannot fake); a genuine open park is NOT read as stale; a flap is caught but a consistently-refused atom is NOT flagged; an owner-override fires only when the stamp lands AFTER the refusal (the exact false positive the real log exposed during construction); the fold writes nothing. Done-line 0114; full suite green at 889.",
+      "reading": [
+        "loop/heal.py",
+        "tests/test_heal.py",
+        "loop/summon.py",
+        "loop/retro.py",
+        ".ai-native/done/0114-healing-fold.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.the-field"],
+      "touches": ["loop/heal.py", "tests/test_heal.py", "loop/summon.py", "loop/CLAUDE.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/retro.py", "loop/digest.py", "loop/gaps.py"],
+      "receipts": []
+    }
+  }
+}

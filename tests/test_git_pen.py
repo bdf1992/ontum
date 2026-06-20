@@ -94,6 +94,30 @@ class TestCommitRefusal(unittest.TestCase):
         self.assertIsNone(gitpen.commit_refusal(self.BRANCH, ["feat: a real line"], []))
 
 
+class TestInvocationRootRefusal(unittest.TestCase):
+    def test_matching_root_passes(self):
+        self.assertIsNone(gitpen.invocation_root_refusal(ROOT, ROOT))
+
+    def test_missing_git_root_refuses(self):
+        reason = gitpen.invocation_root_refusal(ROOT, None)
+        self.assertIn("not inside a git worktree", reason)
+
+    def test_mismatched_git_root_refuses(self):
+        reason = gitpen.invocation_root_refusal(ROOT, ROOT.parent)
+        self.assertIn("pen/worktree mismatch", reason)
+        self.assertIn(str(ROOT.resolve()), reason)
+
+    def test_pen_invoked_from_another_repo_refuses_before_git_add(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run(["git", "init", "-q"], cwd=tmp, check=True)
+            proc = subprocess.run(
+                [sys.executable, str(PEN_PATH), "add", "x.py"],
+                cwd=tmp, capture_output=True, text=True)
+        out = proc.stdout + proc.stderr
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("pen/worktree mismatch", out)
+
+
 class TestSyncRefusal(unittest.TestCase):
     """Done-line 0031, amended 2026-06-11 (rules expect support, not offload):
     a viewport stranded off the trunk is the session's to RESTORE, not bdo's

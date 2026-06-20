@@ -1,0 +1,49 @@
+{
+  "atom": {
+    "id": "atom.confirm-from-ref.v0",
+    "story": {
+      "text": "As the loop's own governance steering from the web/mobile Claude Code environment, I need `pr.py confirm` to validate an arc's epic from a PR branch when that epic is introduced by an unlanded PR — because the arc-confirm gate validates the epic against origin/main, and an epic-introducing PR keeps its epic record only on its own branch, so to confirm the arc bdo needs the epic on main while to land the PR he needs the arc confirmed: a deadlock that froze epic.three-marks on its first real end-to-end use of the gate. I want one stamp to reach the merge-node without bypassing the gate.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "confirm --from-ref — an epic-introducing PR can confirm its own arc (issue #245's deadlock)",
+      "value": "The arc-confirm seam made whole: `pr.py confirm --from-ref <branch>` reads the arc's epic file from the PR branch for validation only, while the confirmation admission still lands on the trunk (the epic record lands with its own PR). The teeth (epic_id_in_blob): a ref that does not actually declare the epic is refused — --from-ref relocates where the epic is read, it is never a bypass of the check, and the epic is read from the branch, never invented.",
+      "why_now": "The arc-confirm gate's first real end-to-end use caught a real bug: there are zero arc_confirmed admissions on main, so the epic-introducing-PR deadlock had never fired until epic.three-marks (PR #244) tried to confirm its own arc. This is the §10 catch epic.three-marks is about — a locally-fine PR that refuses to fit the gate as written. Issue #245 names it as actively blocking the loop's governance from the web/mobile surface.",
+      "if_accepted": "An arc introduced by an unlanded PR can be confirmed by bdo (his --by bdo stamp) reading the epic from the PR ref; the confirmation reaches origin/main where the merge-node reads it, and the epic record lands with its own PR. The deadlock is gone without weakening the gate — a ref that does not carry the epic still refuses.",
+      "if_rejected": "Every arc-introducing PR stays deadlocked: confirmation needs the epic on main, landing needs the arc confirmed, and the only escape is the off-gate steering-commit path the arc exists to retire. The first real use of the confirmation gate stays a wall instead of a fixed seam.",
+      "cost_of_wrong_call": "Low: --from-ref is opt-in and additive — confirm without it behaves exactly as before (validate against origin/main). The read is validation-only; the confirm commit stages only admissions.jsonl, so a wrong ref can never push foreign content to the trunk, only refuse. Reverting is dropping one argument and one helper.",
+      "mechanism": "pr.py gains epic_id_in_blob (a pure check over the bytes git returns) and _materialize_epic_from_ref (copies the epic file from the ref into the confirm worktree's epics dir for validation, refusing a ref that does not declare the epic); cmd_confirm reads --from-ref and materializes before calling the unchanged confirm_arc schema. The §10 teeth live in tests/test_merge_land.py (ConfirmFromRefValidatesNeverBypasses): a different-epic blob and an absent/garbage blob are both refused — validation, not a bypass.",
+      "reading": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_merge_land.py",
+        ".ai-native/done/0130-confirm-from-ref.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_merge_land.py",
+        ".ai-native/done/0130-confirm-from-ref.md"
+      ],
+      "must_not_collide_with": ["loop/node.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/branch-ritual/pr.py",
+        ".ai-native/done/0130-confirm-from-ref.md"
+      ]
+    }
+  },
+  "_note": "Birth record for confirm --from-ref, the arc-confirm seam fix for issue #245's epic-introducing-PR deadlock (done-line 0130). Authored to back the PR on the log (the off-log gate's atom invariant); the work it records stands on disk. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

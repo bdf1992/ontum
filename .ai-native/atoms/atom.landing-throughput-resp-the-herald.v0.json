@@ -1,0 +1,39 @@
+{
+  "atom": {
+    "id": "atom.landing-throughput-resp-the-herald.v0",
+    "story": {
+      "text": "Agents cannot be pre-registered -- the engineering party varies (D-4), virtual nodes blink in and dissolve, generated agents are an open set. So invert the registry the way the log inverts all state: do not store agents, store the HERALD (a versioned generative skill, prompt-as-code) plus the append-only log; 'registered' and 'reputation' are FOLDS, never a table. A herald introduces a suitable agent into a situation -- name, title, RANK -- and 'well met' is an admission through the gateway: the herald PROPOSES the agent (loop/inference.py's seam), a bounded policy ADMITS it (legislation/enforcement), rank starts at the trust rung's floor (loop/trust.py). We log heralds and herald-skills, NOT agents: the herald is the accountable introducer, the introduction mints a credential, every later act cites it. Reputation is the exemplars/notorieties bank folded -- but value is DISTRIBUTED (bdo): it propagates along the log's provenance edges, so the agent earns AND the herald that vouched earns a meta-reputation for whom it mints. That dissolves the credential-vs-herald question -- value flows to the whole chain, weighted by part, not to one row. The FELT FEEL of an agent (bdo) is that distributed-value fold RENDERED as anima (strength x tempo): 'well met' is a felt act, so an agent's standing is sensed on meeting -- derived from the fold, never decorative (anima is traceable to folds, not vibes; that is WHY it is hard to say -- so derive it, do not author it). Teeth: a fresh agent starts at the floor rung (zero privilege), so escaping notorieties escapes TO powerlessness; re-minting to dodge a verdict is churn the retro/heal beat already senses; the herald sits on the provenance edge of every act its agent commits, so a bad voucher is visible by construction. Value: the gateway admits contributors it could never enumerate, and they earn standing that is felt, distributed, and laundering-resistant -- with no registry to drift.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [
+        "loop/inference.py",
+        "loop/trust.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "atom.landing-throughput-resp-exemplars-and-notorieties.v0"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "atom.landing-throughput-resp-the-contribution-economy.v0",
+        "atom.landing-throughput-resp-exemplars-and-notorieties.v0",
+        "loop/herald.py",
+        "tests/test_herald.py"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A bdo+session design from the gateway-agent-registration thread (2026-06-18/19), NOT a foreign-review finding -- so its provenance is the design itself and the two contribution-economy atoms it composes with (the bank), not seal 46fa30be0089. The herald is the MINT/INTRODUCTION at the gateway; exemplars-and-notorieties is the BANK; this atom is how a contributor enters the economy. The value gate judges the story; bdo's confirm-arc on 'epic.landing-throughput-response' queues it with the rest. Never mutated -- the fold over .ai-native/log/ is the live state (D-5)."
+}

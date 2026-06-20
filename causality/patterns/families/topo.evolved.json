@@ -1,0 +1,81 @@
+{
+  "family": {
+    "id": "topo",
+    "name": "Curated Topologies",
+    "pin": "position is meaning",
+    "ai_native_pin": "position is DERIVED meaning with a path home — an arrangement must resolve to a backing (file:line / record / classifier verdict) or it is decoration shaped like a map. Near must be provably near; a continent must be a computed class; a lineage edge must walk to a record."
+  },
+  "patterns": [
+    {
+      "id": "semantic-adjacency",
+      "name": "Semantic Adjacency",
+      "current_intent": "Near things are related things — the map's first promise, kept everywhere, or the map lies.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Becomes provenance-bearing when each unit of nearness cites the math that placed it — click the gap between two nodes and the surface shows the computed similarity (embedding distance, shared-citation count) that made them neighbors; adjacency that can show its work stops being an assertion and becomes a route to source.",
+      "non_example": "Nodes hand-placed for visual balance where proximity is purely aesthetic, and clicking the space between two close nodes yields nothing — an adjacency that cannot produce the number behind 'near' is the exact lie the family pin forbids."
+    },
+    {
+      "id": "stable-layout",
+      "name": "Stable Layout",
+      "current_intent": "The same data lands in the same place every visit, so spatial memory compounds into expertise.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "partial" },
+      "verdict": "truth-capable",
+      "evolution": "The deterministic seed graduates from 'looks the same' to 'position is a pure function of identity' — the same content-hash that gives an atom its pipeline identity (loop reconcile grain) gives it its coordinate, so any agent reproduces the layout from the log alone, no browser physics in the loop. That makes position a typed, reproducible function: the agent-drivable axis it already half-touches.",
+      "non_example": "A force-directed graph re-simulated live on every load that merely memoizes the first result to a cache — stability by stored snapshot, not by a derivable function; a fresh agent handed only the data cannot reproduce the coordinates, so the 'stability' is a cache artifact, not a property of identity."
+    },
+    {
+      "id": "region-taxonomy",
+      "name": "Region as Taxonomy",
+      "current_intent": "Categories become continents: membership is drawn, not labeled, and borders admit ambiguity.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "decoration",
+      "evolution": "Regions stop being painted and start being computed: a node's continent is the output of a classifier (causality's term taxonomy — minted / projected / proposed / ghost), so membership routes to the verdict and its evidence, and an overloaded node visibly straddles two borders instead of being filed once. Gains provenance AND register at once — a 'proposed' region renders in pencil, a 'minted' region in ink.",
+      "non_example": "Continents drawn by a designer and nodes dropped into them by a content editor — borders that admit ambiguity for aesthetic softness while encoding no classifier verdict, so a genuinely overloaded node has no way to surface its two incompatible memberships; the map is honest-looking and truth-blind."
+    },
+    {
+      "id": "genealogy-trails",
+      "name": "Genealogy Trails",
+      "current_intent": "Influence is drawn as a walkable path; hovering one node lights its ancestry and descendants.",
+      "axis": { "register": "partial", "provenance": "none", "agent_drivable": "none" },
+      "verdict": "truth-capable",
+      "evolution": "The strongest topo pattern, but still one axis until its edges resolve. Its one real leg today is commitment: a lineage edge can draw confirmed influence in solid ink and proposed influence in dashed pencil on the line channel (partial — the treatment exists, the binding to admitted records does not). Provenance is none today, not partial: the path is drawn but not yet resolved to a backing, so it is shaped like provenance without being grounded in it (the inverse claim would be the ghost the rubric refuses). It graduates to ai-native only when hovering a node lights ancestry as ACTUAL records — this commit derived from that done-line, this term cites that file:line — the holographic rule made walkable: no node without a path home. That is what would carry provenance none -> full and clear the two-axis bar; until a record resolves under the hover, the table must read provenance=none to match the truth-capable verdict.",
+      "non_example": "A hand-curated 'influences' graph where every arrow encodes a curator's opinion and hovering a node reveals more curated opinion — a genealogy with no resolvable backing at any node is decoration in the shape of provenance, the ghost citation the rubric sends back."
+    }
+  ],
+  "new_patterns": [
+    {
+      "id": "backing-bound-topology",
+      "name": "Backing-Bound Topology",
+      "current_intent": "Every node's existence and position resolve to a backing record: click any node and walk home to its file:line / log substring / commit, and a node whose citation does NOT resolve renders as a ghost — visibly hollow — instead of as a solid claim. The holographic rule given a shape: no projection without a path home.",
+      "axis": { "register": "none", "provenance": "full", "agent_drivable": "full" },
+      "verdict": "ai-native",
+      "evolution": "This is the family pin in its AI-native form — 'position is meaning' becomes 'position is derived meaning, and the meaning can be walked back to truth.' It is the one topo pattern where the AI is substantive, not bolted on: the seed is a typed spec an agent authors, the fold resolves each citation against committed bytes before anything renders, and an unresolvable backing is refused (classed ghost) rather than drawn. The teeth are PROVENANCE, not commitment: resolving a backing tells you a node has a path home, not where it sits on propose->admit — a resolved citation can still back a proposed (pencil) atom, and a ghost is unresolvable rather than un-admitted. So register (commitment) scores none honestly; the pattern earns ai-native on provenance=full + agent-drivable=full alone, not on a register read it does not make. Grounded in causality:term_economy.py (evidence = file:line or log substring, ghost on a citation that points to nothing), causality:canvas.js (click node -> inspector -> backing), and causality/contracts/schemas/evidence-edge.schema.json.",
+      "non_example": "A node-link diagram where node.source is a URL string shown in a tooltip but never fetched or checked — a citation displayed is not a citation resolved; a node with a dead backing that still renders as solid is precisely the ghost this pattern exists to expose, the term_economy refusal turned into a visual.",
+      "exemplars": [
+        "causality/term_economy.py — the read-only fold: evidence is a file:line or log substring, and a citation that points to nothing is classed `ghost` (the resolve-or-refuse teeth this pattern renders).",
+        "causality/canvas.js — schema-driven inspector: click a node -> its config, the seam where a backing would be walked home (verified: SCHEMA + inspector resolve).",
+        "causality/contracts/schemas/evidence-edge.schema.json — the typed contract for an evidence edge (node -> backing record), the spec an agent authors before anything renders."
+      ]
+    },
+    {
+      "id": "register-strata",
+      "name": "Register and Strata (two channels, not one)",
+      "current_intent": "A node carries commitment and epistemic origin as TWO independent facets on two channels (RECONCILIATION.md, 2026-06-16): register (commitment, propose->admit) reads on the LINE channel — admitted in solid ink, proposed/simulated in dashed pencil; strata (epistemic origin: fundamental/derived/learned) reads on the COLOUR channel. The pattern's discipline is keeping them apart: a learned datum can be inked and a fundamental address can be penciled — commitment and stratum do not move together, and reading one off the other is the bug this pattern exists to forbid.",
+      "axis": { "register": "none", "provenance": "none", "agent_drivable": "partial" },
+      "verdict": "truth-capable",
+      "evolution": "Held at truth-capable, honestly recut from an earlier inflation that mapped 'settled RECORD -> fundamental stratum' (RECONCILIATION.md retired that conflation — commitment and stratum are orthogonal). One real leg stands today: agent-drivable=partial — causality:canvas.js carries the strata{fundamental,derived,learned} fields in its SCHEMA and the inspector edits them through a typed spec, so a model can drive the epistemic facet. But that field is the EPISTEMIC channel; the canvas has no commitment/register field at all (verified: `ink` in canvas.js is the hand-drawn render style, not an admission state), and no binding from real admission state to line-treatment exists. So register=none (the commitment rendering is unbuilt and was previously mis-grounded onto the strata field) and provenance=none (the same unbuilt binding). It graduates to ai-native only when a use-trace shows a real admission moving a node pencil->ink on the line channel — a populated commitment binding, distinct from the strata colour it no longer borrows from.",
+      "non_example": "A diagram that derives a node's line-treatment FROM its stratum — inking every fundamental node and penciling every learned one — so commitment is read off epistemic origin instead of off admission state; that is the exact two-facets-collapsed-into-one conflation this pattern is recut to refuse. (Also decoration: layers that encode parallax / z-index camera depth rather than any truth facet.)",
+      "exemplars": [
+        "causality/canvas.js — SCHEMA fields strata.fundamental / strata.derived / strata.learned (lines 71-73, 139) plus the schema-driven inspector: the real, agent-drivable epistemic-channel leg (verified to resolve).",
+        "evolution/RECONCILIATION.md — the decision record separating register (commitment, line) from strata (epistemic, colour) and retiring the 'settled record -> fundamental stratum' mapping.",
+        "causality/term_economy.py — the C4 verdict classes (minted/projected/proposed/ghost) the commitment read would resolve against once a binding is built (cited as the grounding target, not a claim of a built binding)."
+      ]
+    }
+  ],
+  "open_questions": [
+    "Genealogy-trails-evolved (horizontal: node -> ancestor node) and backing-bound-topology (vertical: node -> source record) are two different walks home. Are they one provenance gesture with two directions, or two patterns that must not be merged? Merging risks confusing 'derived from' (lineage) with 'cited by' (backing).",
+    "register-strata is now HELD at truth-capable (round-1 block resolved, RECONCILIATION.md): the strata schema field is real in canvas.js but it is the epistemic channel, and the commitment/register binding (admission-state -> line-treatment) is both unbuilt and was mis-grounded onto strata. The remaining open question is the graduation trigger: it enters as ai-native only on a use-trace of a real admission moving a node pencil->ink on the LINE channel — does that binding live in canvas.js (a new SCHEMA register field, line-treatment) or does the projection read commitment straight from term_economy's C4 classes at render time?",
+    "stable-layout's evolution claims position = f(identity-hash). Does any layout dense enough to be useful actually stay reproducible from hash alone, or does real legibility require a physics pass that breaks byte-determinism? If it needs physics, the agent-drivable score is generous and should fall to none."
+  ]
+}
