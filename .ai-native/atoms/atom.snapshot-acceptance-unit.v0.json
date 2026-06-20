@@ -1,0 +1,39 @@
+{
+  "atom": {
+    "id": "atom.snapshot-acceptance-unit.v0",
+    "story": {
+      "text": "Work strands because the acceptance discipline (no one signs their own line; merge-node; confirm-arc; external review) has hung off PRs — mutable, mid-flight (a single garden report: 13 stranded branches, a run of 'merged PR, but the cut is held'). bdo's reframe and the spine of epic.environments: a snapshot is the natural unit a second party accepts — immutable, named, recorded — the way an atom's identity already IS the sha256 of its bytes, and a deployment is promoting a snapshot from one environment to the next, acceptance attaching to the snapshot rather than the branch. This is the first build of the LOCAL tier in the local->git->github phasing bdo named this session, and the unit that joins the per-atom (content-hash) and per-PR (git) namespaces loop/pull.py made visible as an open gap. loop/snapshot.py is a pure read-only fold (stdlib, no net/git) with one writer (the mint pen): mint freezes each named atom's content-hash and refuses a ghost binding (an atom with no resolvable file); resolve folds a snapshot to its atoms (frozen-hash vs live-hash), its commit, and the DERIVED acceptance of each (read off the existing value-gate/owner-stamp receipts, never re-judged), and one snapshot-level verdict. It COMPOSES, never double-builds (S10): over pull.py's namespace_gap, digest's atoms_on_main/landed_atoms (D-13), deploy.py's stamped-snapshot shape, and reconcile.py's content-hash identity. The S10 teeth catch a snapshot that LIES about its join: a frozen reference to atom bytes that changed reads STALE, an atom with no file reads GHOST, an unjudged/refused atom is not accepted — two locally-fine records (a frozen reference and an edited atom) that refuse to fit, and the fold notices. Value: a frozen named snapshot is the unit that does not strand, and acceptance can attach to it as one thing; the namespace join becomes inspectable from the log alone. The local-deployment face (serving a snapshot, atom.local-preview.v0) and the git/github tiers are later pieces.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "snapshot",
+    "incidence": {
+      "serves": [
+        "epic.environments"
+      ],
+      "touches": [
+        "loop/pull.py",
+        "loop/deploy.py",
+        "loop/digest.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "atom.local-preview.v0"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0155-snapshot-acceptance-unit.md",
+        ".ai-native/epics/epic.environments.json",
+        "loop/snapshot.py",
+        "tests/test_snapshot.py"
+      ],
+      "receipts": []
+    }
+  }
+}
