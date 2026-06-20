@@ -39,6 +39,7 @@ import json
 import os
 import pathlib
 import re
+import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -105,6 +106,27 @@ GIT_MUTATING = {
     "restore", "rm", "mv", "am", "apply", "update-ref", "update-index",
     "gc", "prune", "notes", "replace", "commit-tree",
 }
+# The tree/HEAD-flipping subset — the verbs that change what is checked out,
+# discard working state, or rewrite history/refs. FORBIDDEN in bdo's viewport
+# (the primary tree): a worker edits only its own workstation (its worktree);
+# reading and organizing the viewport are fine, flipping it is not (bdo,
+# 2026-06-20 — the workstation fence, done-line 0145). Deliberately a SUBSET
+# of GIT_MUTATING: `worktree` (making/pruning workstations) and `tag`/`notes`
+# are organizing, not flipping, so they are absent; `add`/`commit` are already
+# denied everywhere by the fence registry. Enforced only in the primary tree —
+# in a linked worktree these are a session editing its own bench, which is the
+# whole point.
+GIT_VIEWPORT_FLIP = {
+    "checkout", "switch", "reset", "restore", "clean", "merge", "rebase",
+    "cherry-pick", "revert", "am", "apply", "stash",
+}
+# `git branch` reads when it lists; it flips when it deletes, renames, forces,
+# or creates. These flags mark the flip; an explicit list flag marks a read.
+GIT_BRANCH_FLIP_FLAGS = {"-d", "-D", "-m", "-M", "-f",
+                         "--delete", "--move", "--force", "-c", "-C", "--copy"}
+GIT_BRANCH_READ_FLAGS = {"-l", "--list", "-a", "--all", "-v", "-vv", "-r",
+                         "--remotes", "--show-current", "--contains",
+                         "--merged", "--no-merged", "--points-at"}
 # PowerShell cmdlets are Verb-Noun shaped and local by default; these
 # reach the network and stay visible to the watcher.
 PS_NETWORK_CMDLETS = {"invoke-webrequest", "invoke-restmethod", "send-mailmessage"}
@@ -236,6 +258,64 @@ TRUNK_MESSAGE = (
 )
 
 
+VIEWPORT_FLIP_MESSAGE = (
+    "denied, firm: this is bdo's VIEWPORT — the primary tree. A worker edits "
+    "only its OWN workstation (its worktree); reading and organizing the "
+    "viewport are fine, flipping it is not (bdo, 2026-06-20 — the workstation "
+    "fence). Make a workstation and work there:\n"
+    "  git worktree add -b claude/<slug> ../ontum-wt/<slug> origin/main\n"
+    "To advance the viewport to the trunk, the one sanctioned move is the git "
+    "pen (it never flips, only fast-forwards):\n"
+    "  python .claude/skills/branch-ritual/git.py sync"
+)
+
+
+def git_viewport_flip(acting):
+    """The flipping git verb in `acting`, or None.
+
+    Reads (status/log/diff/show) and workstation management (worktree) return
+    None. `git branch` returns the verb only when it deletes, renames, forces,
+    copies, or creates a branch — a bare list or an explicit list flag is a
+    read. Quoted prose is already stripped by the caller."""
+    for match in re.finditer(r"\bgit\s+([\w-]+)((?:\s+[^|;&\n]+)?)", acting):
+        sub = match.group(1)
+        if sub in GIT_VIEWPORT_FLIP:
+            return sub
+        if sub == "branch":
+            args = match.group(2).split()
+            if any(a in GIT_BRANCH_FLIP_FLAGS for a in args):
+                return "branch"
+            if any(a in GIT_BRANCH_READ_FLAGS for a in args):
+                continue  # an explicit read form
+            if any(not a.startswith("-") for a in args):
+                return "branch"  # `git branch <newname> [start]` — creating
+    return None
+
+
+def in_primary_viewport():
+    """True when the working dir is the repo's PRIMARY worktree — bdo's
+    viewport — where the per-worktree git-dir equals the shared common dir.
+    In a linked worktree the git-dir lives under .git/worktrees/<name> and
+    differs. Fails OPEN (False) when git cannot answer: a guard never gates on
+    a guess, and a non-repo cwd is not the viewport."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--git-dir", "--git-common-dir"],
+            capture_output=True, text=True, timeout=5,
+        )
+    except Exception:
+        return False
+    if out.returncode != 0:
+        return False
+    parts = out.stdout.split()
+    if len(parts) < 2:
+        return False
+    try:
+        return pathlib.Path(parts[0]).resolve() == pathlib.Path(parts[1]).resolve()
+    except Exception:
+        return False
+
+
 def first_deny(acting):
     """The first deny rule this command would hit — the trunk carve-out
     (a push naming main deserves the firm line, not the generic git-push
@@ -291,6 +371,23 @@ def hook():
                 "train_session": train_session, "surface": surface_of(command),
                 "intent": classify_intent(command),
                 "command": command, "session": session})
+
+    # The workstation fence (done-line 0145): a tree/HEAD-flipping git verb is
+    # forbidden in bdo's viewport (the primary tree) — a worker flips only its
+    # own worktree. Context-dependent, so it lives here, not in the static fence
+    # registry (like the trunk-push carve-out). Same train-mode courtesy as the
+    # registry rules: observe and record, block nothing.
+    flip = git_viewport_flip(acting)
+    if flip is not None and in_primary_viewport():
+        if not training:
+            record({"status": "denied", "rule": "viewport-flip", "verb": flip,
+                    "command": command, "session": session})
+            print(VIEWPORT_FLIP_MESSAGE, file=sys.stderr)
+            return 2
+        record({"status": "would-deny", "rule": "viewport-flip", "mode": "train",
+                "train_session": train_session, "verb": flip, "surface": "git",
+                "intent": classify_intent(command), "command": command,
+                "session": session})
 
     bins = external_bins(command)
     if bins:

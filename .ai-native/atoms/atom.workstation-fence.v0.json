@@ -1,0 +1,51 @@
+{
+  "atom": {
+    "id": "atom.workstation-fence.v0",
+    "story": {
+      "text": "As bdo, I need a worker to be physically unable to flip my viewport. The primary tree is my reading surface on main; it keeps getting stranded off-trunk because resumed and spawned workers do their work directly on it as if it were a scratch branch — I called it a plague that 'continually runs shit'. My rule (2026-06-20): a worker edits only its OWN workstation (its worktree); reading and organizing anywhere is fine; flipping someone else's tree, above all the viewport, is forbidden and shameful. The fence already carried git-checkout/git-switch rules but they were `decision: prompt` — advisory, and an autonomous resumed session auto-proceeds past a prompt — and the guard never actually checked WHERE it ran. This makes the rule law in the one place it must hold: a tree/HEAD flip in the viewport is refused; the same command in your own worktree is fine.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "a worker cannot flip the viewport — only its own worktree",
+      "value": "command_guard now refuses a tree/HEAD-flipping git verb (checkout, switch, reset, restore, clean, merge, rebase, cherry-pick, revert, am, apply, stash, or a mutating branch) when it runs in the PRIMARY tree (bdo's viewport), with exit 2 and the paved path; the identical command inside a linked worktree is allowed (a worker editing its own bench). Reads (status/log/diff/show), organizing (worktree add/remove, tag/notes), and the branded git pen (git.py sync, which fast-forwards and never flips) stay allowed in the viewport. Primary-vs-worktree is detected at runtime via git-dir vs git-common-dir; it fails open (never gates on a guess).",
+      "why_now": "bdo named the viewport re-stranding a plague this session and asked directly 'HOW DO WE STOP THIS?'. The viewport drifted off-trunk twice in one session — once as a stale dead-upstream branch, then again mid-session when a concurrent agent took it for new work. Cleaning by hand is mopping a leak; the fence is the structural stop.",
+      "if_accepted": "The viewport cannot be flipped by any worker, however it was spawned — a worker mis-born in the primary tree can read and organize but physically cannot strand it. The recurring cleanup work ends.",
+      "if_rejected": "The viewport keeps being stranded every time a resumed or spawned session lands in the primary tree; the owner's reading surface stays unreliable and the loop keeps generating janitorial cleanup.",
+      "cost_of_wrong_call": "Low and bounded. The change adds one runtime check to command_guard (context-dependent, beside the existing trunk-push carve-out) and rewrites two fence justifications; it touches nothing about what a gate may decide, no pipeline stage, no verdict write. It honors train mode (observe, don't block) like every other rule and fails open. The one residual conservatism — a `cd ../wt && git switch` chained from the viewport is still refused — is named in the done-line and pushes the worker to run from its bench. Reverting is removing the one hook block.",
+      "mechanism": "command_guard gains GIT_VIEWPORT_FLIP (the flipping subset of GIT_MUTATING — worktree/tag/notes deliberately excluded as organizing), git_viewport_flip() (names the flipping verb; branch only when it deletes/renames/forces/creates, a list is a read), and in_primary_viewport() (git-dir == git-common-dir, fails open). hook() refuses the flip in the viewport with VIEWPORT_FLIP_MESSAGE naming the worktree path and git.py sync, recording denied/would-deny like the registry rules. fence/policy.py's git-checkout and git-switch justifications are rewritten from the advisory prompt to the enforced law and the .codex layer re-rendered. tests/test_workstation_fence.py joins the suite with the §10 teeth: the SAME flip is denied from a primary-tree cwd and allowed from a real linked worktree, reads and the pen are allowed in the viewport. Done-line 0145. Tooth #1 of three (foreign-worktree write-denial and a trespass shame beat are later increments).",
+      "reading": [
+        ".claude/hooks/command_guard.py",
+        "fence/policy.py",
+        "tests/test_workstation_fence.py",
+        ".ai-native/done/0145-workstation-fence.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        ".claude/hooks/command_guard.py",
+        "fence/policy.py",
+        ".codex/rules/ontum.rules",
+        "tests/test_workstation_fence.py",
+        ".ai-native/done/0145-workstation-fence.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/hooks/command_guard.py",
+        "fence/policy.py"
+      ],
+      "receipts": []
+    }
+  }
+}
