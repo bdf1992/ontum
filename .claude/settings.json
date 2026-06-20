@@ -6,12 +6,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/command_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/command_guard.py\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/spawn_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/spawn_guard.py\"",
             "timeout": 10
           }
         ]
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/spawn_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/spawn_guard.py\"",
             "timeout": 10
           }
         ]
@@ -31,12 +31,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/write_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/write_guard.py\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/freeze_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/freeze_guard.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/change_guard.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/change_guard.py",
             "timeout": 10
           }
         ]
@@ -46,7 +56,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/freeze_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/freeze_guard.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/change_guard.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/change_guard.py",
             "timeout": 10
           }
         ]
@@ -58,12 +78,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/command_guard.py --post",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/command_guard.py\" --post",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/spawn_guard.py --post",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/spawn_guard.py\" --post",
             "timeout": 10
           }
         ]
@@ -73,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/spawn_guard.py --post",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/spawn_guard.py\" --post",
             "timeout": 10
           }
         ]
@@ -89,22 +109,22 @@
           },
           {
             "type": "command",
-            "command": "python .claude/skills/branch-ritual/git.py sync --hook",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/skills/branch-ritual/git.py\" sync --hook",
             "timeout": 45
           },
           {
             "type": "command",
-            "command": "python .claude/skills/branch-ritual/git.py garden --hook",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/skills/branch-ritual/git.py\" garden --hook",
             "timeout": 45
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/gesture_surface.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/gesture_surface.py\"",
             "timeout": 20
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/standing_surface.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/standing_surface.py\"",
             "timeout": 20
           }
         ]
@@ -115,8 +135,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/reflect_auto.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/reflect_auto.py\"",
             "timeout": 150
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/continue_beat.py",
+            "timeout": 30
           }
         ]
       }
@@ -131,17 +156,17 @@
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/mock_shame.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/mock_shame.py\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/owner_ask_shame.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/owner_ask_shame.py\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/standing_surface.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/standing_surface.py\"",
             "timeout": 20
           }
         ]

@@ -1,0 +1,43 @@
+{
+  "atom": {
+    "id": "atom.pr-reconcile-verb.v0",
+    "story": {
+      "text": "As the merge-node, every landing wave makes me pay the same mechanical tax by hand. GitHub's server-side merge does not apply this repo's `.gitattributes` `union` driver, so the moment the trunk advances it reads every append-only log (events/receipts/admissions.jsonl) as a conflict — and each land re-conflicts the next confirmed branch in the wave. Today I fix that by hand: spin a worktree, `git merge origin/main`, push, land — four PRs this session, three of them clogged exactly this way. bdo named the fix: brand the cascade reconcile into one verb. The value is leverage on every future wave and a structural guard — it works in an ISOLATED worktree so it never touches the shared viewport a parallel session holds, and it refuses to author a real (non-log) conflict, keeping the merge-node a lander and never a resolver.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the reconcile verb: the land-chain cascade fix, branded",
+      "value": "`pr.py reconcile <n>` — a branded PR-pen verb that merges the advanced trunk into a confirmed PR's branch in a throwaway worktree (never the viewport), lets the `union` driver resolve the append-only logs GitHub cannot, and hands the branch off through the same suite + branded-push gate as any session — then the merge-node lands it the usual way. Pure-log merges go through automatically; any real content conflict is surfaced and refused back to a session on the branch.",
+      "why_now": "This session landed #221/#219/#213/#203 as the merge-node; three hit the cascade and were reconciled by hand (worktree + union-merge + push). bdo asked to implement the verb that turns each into one command. The tax recurs on every multi-PR wave.",
+      "if_accepted": "The merge-node's land-chain loses its hand-cranked step: a confirmed PR that conflicts only on the union'd logs becomes one `reconcile` call away from landable, with the viewport never disturbed. The boundary stays bright — a real conflict is still a session's to resolve.",
+      "if_rejected": "Every landing wave keeps paying the manual worktree/merge/push tax per clogged PR, and the shared-viewport hazard stays a footgun each session re-navigates by hand.",
+      "cost_of_wrong_call": "Low and reversible: the verb only ever creates a temporary worktree, a union-only merge commit, and a push through the existing suite gate — all on a non-trunk branch, all behind the same refusals the pen already enforces. Reverting is deleting the verb. It writes nothing to the log and cannot land anything (landing stays the merge-node's separate, arc-confirmed act).",
+      "mechanism": "pr.py: `reconcile_refusal(state, base)` (open PR, trunk base only — a piece→epic merge is `integrate`), `reconcile_conflict_refusal(conflicted_paths)` (the §10 teeth: the union driver resolves the logs, so any path still in conflict is a real conflict the merge-node may not author away), and `cmd_reconcile` (gh-read the PR, fetch, isolated `git worktree add -B`, `git merge origin/main`, on clean push via the worktree's own pen copy, on conflict abort + refuse, always clean up the worktree in a finally). tests/test_pr_reconcile.py pins both refusals (wrong target; a real conflict naming its path); the merge-node SKILL.md ritual gains the reconcile step. Done-line 0122.",
+      "reading": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_pr_reconcile.py",
+        ".claude/skills/merge-node/SKILL.md",
+        ".ai-native/done/0122-pr-reconcile-verb.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": [".claude/skills/branch-ritual/pr.py", "tests/test_pr_reconcile.py", ".claude/skills/merge-node/SKILL.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/branch-ritual/pr.py", ".claude/skills/merge-node/SKILL.md"],
+      "receipts": []
+    }
+  }
+}

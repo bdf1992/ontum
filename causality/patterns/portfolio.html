@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pattern Commons — the Playable Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script>
+  // error visibility (browser-drive.md): catch errors `errors` misses (e.g. inside rAF)
+  window.__pageErr = null;
+  addEventListener('error', e => { window.__pageErr = (e.message || String(e.error)) + ' @ ' + (e.filename||'') + ':' + (e.lineno||''); });
+  addEventListener('unhandledrejection', e => { window.__pageErr = 'unhandled: ' + (e.reason && e.reason.message || e.reason); });
+</script>
+<style>
+  :root{
+    --bg:#07080f; --bg2:#0a0c16; --ink:#e9edfb; --dim:#6b7593; --faint:#404a66;
+    --acc:#9db4ff; --line:rgba(157,180,255,.13); --panel:rgba(12,15,28,.82);
+    /* strata hues (COLOUR channel — epistemic origin) */
+    --s-fund:#d8b25a; --s-deriv:#5b9bff; --s-learn:#b07aff;
+    /* verdict tones */
+    --v-ai:#5be3a0; --v-tc:#d8b25a; --v-dec:#6b7593;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.5;
+    background-image:radial-gradient(900px 500px at 78% -8%, rgba(91,155,255,.08), transparent 60%),
+                     radial-gradient(700px 460px at 8% 8%, rgba(176,122,255,.06), transparent 55%);}
+  ::selection{background:rgba(157,180,255,.22)}
+  a{color:inherit}
+  .mono{font-family:"IBM Plex Mono",monospace}
+  .tnum{font-feature-settings:"tnum"}
+
+  /* ---- studio header (glass HUD) ---- */
+  header.studio{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;
+    justify-content:space-between;gap:18px;padding:14px 26px;
+    background:linear-gradient(180deg, rgba(7,8,15,.92), rgba(7,8,15,.4) 70%, transparent);
+    backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);border-bottom:1px solid var(--line);}
+  header.studio .wm{font-family:"Fraunces",serif;font-weight:600;font-size:16px;letter-spacing:.01em}
+  header.studio .wm i{font-style:italic;font-weight:300;color:var(--acc)}
+  header.studio .vol{font:300 9px "IBM Plex Mono",monospace;letter-spacing:.34em;text-transform:uppercase;color:var(--dim);margin-top:2px}
+  header.studio .counts{display:flex;gap:22px;align-items:baseline}
+  header.studio .counts .c{text-align:right}
+  header.studio .counts .n{font-family:"Fraunces",serif;font-weight:300;font-size:21px;font-feature-settings:"tnum";line-height:1}
+  header.studio .counts .l{font:400 8px "IBM Plex Mono",monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);display:block;margin-top:4px}
+
+  /* ---- shell ---- */
+  main{max-width:1240px;margin:0 auto;padding:128px 26px 120px}
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity 1s cubic-bezier(.2,.8,.25,1),transform 1s cubic-bezier(.2,.8,.25,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---- hero masthead ---- */
+  .masthead{margin-bottom:30px}
+  .masthead .ey{font:300 9.5px "IBM Plex Mono",monospace;letter-spacing:.42em;text-transform:uppercase;color:var(--dim)}
+  .masthead h1{font-family:"Fraunces",serif;font-weight:300;font-size:clamp(40px,6.4vw,82px);line-height:.98;margin:16px 0 0;letter-spacing:-.01em}
+  .masthead h1 b{font-weight:600}
+  .masthead h1 i{font-style:italic;font-weight:300;color:var(--acc)}
+  .masthead .lede{font-family:"Fraunces",serif;font-style:italic;font-weight:300;font-size:clamp(15px,1.9vw,21px);
+    color:#c2c9e2;max-width:760px;margin:22px 0 0;line-height:1.5}
+  .masthead .lede b{font-style:normal;font-weight:500;color:var(--ink)}
+
+  /* ---- flagship ---- */
+  .flagship{margin:42px 0 60px;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg, rgba(10,12,24,.6), rgba(7,8,15,.2))}
+  .flagship .fhead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:20px 24px 4px}
+  .flagship .fhead .ix{font:300 9px "IBM Plex Mono",monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+  .flagship .fhead h2{font-family:"Fraunces",serif;font-weight:500;font-size:26px;margin-top:8px}
+  .flagship .fhead h2 i{font-style:italic;font-weight:300;color:var(--acc)}
+  .flagship .fhead p{font:300 11px "IBM Plex Mono",monospace;color:var(--dim);max-width:380px;text-align:right;line-height:1.7}
+  .fbody{display:grid;grid-template-columns:1fr 318px;gap:0;min-height:470px}
+  @media(max-width:880px){.fbody{grid-template-columns:1fr}}
+  .fgraph{position:relative}
+  .fgraph svg{display:block;width:100%;height:100%}
+  .freadout{border-left:1px solid var(--line);padding:22px 22px 26px;display:flex;flex-direction:column;background:rgba(7,8,15,.35)}
+  .freadout .rk{font:400 9px "IBM Plex Mono",monospace;letter-spacing:.24em;text-transform:uppercase;color:var(--acc)}
+  .freadout h3{font-family:"Fraunces",serif;font-weight:500;font-size:22px;margin:8px 0 2px}
+  .freadout .rsub{font:300 10px "IBM Plex Mono",monospace;color:var(--dim)}
+  .freadout .rintent{font-family:"Fraunces",serif;font-style:italic;font-size:13.5px;color:#cdd3e8;line-height:1.55;margin:16px 0}
+  .freadout .rlbl{font:500 8.5px "IBM Plex Mono",monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:14px 0 7px}
+  .freadout .rhome{font:400 11px "IBM Plex Mono",monospace;line-height:1.95;color:#aeb6cf;word-break:break-all}
+  .freadout .rhome .step{display:flex;gap:9px;align-items:baseline}
+  .freadout .rhome .dot{flex:0 0 auto;width:6px;height:6px;border-radius:50%;margin-top:5px}
+  .freadout .rhome .broken{color:#ff8a8a}
+  .freadout .rhint{margin-top:auto;font:300 10px "IBM Plex Mono",monospace;color:var(--faint);line-height:1.7;padding-top:18px}
+
+  /* ---- catalog ---- */
+  .secthead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+    margin:54px 0 22px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .secthead .lhs{display:flex;align-items:baseline;gap:16px}
+  .secthead .fam{font-family:"Fraunces",serif;font-weight:500;font-size:24px}
+  .secthead .pin{font-family:"Fraunces",serif;font-style:italic;font-weight:300;font-size:14px;color:var(--dim)}
+  .secthead .cnt{font:400 9px "IBM Plex Mono",monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+  .card{position:relative;border:1px solid var(--line);border-radius:13px;overflow:hidden;
+    background:linear-gradient(180deg, rgba(11,14,26,.72), rgba(8,10,18,.5));
+    display:flex;flex-direction:column;transition:border-color .4s, transform .4s, box-shadow .4s}
+  .card:hover{border-color:rgba(157,180,255,.32);transform:translateY(-3px);box-shadow:0 20px 48px -28px rgba(0,0,0,.85)}
+  .card.hero{border-color:rgba(91,227,160,.28)}
+  .card .top{padding:16px 17px 12px;display:flex;flex-direction:column;gap:9px}
+  .card .row1{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .card .ix{font:400 9px "IBM Plex Mono",monospace;letter-spacing:.18em;color:var(--faint);font-feature-settings:"tnum"}
+  .card .verdict{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.18em;text-transform:uppercase;
+    padding:3px 8px;border-radius:20px;border:1px solid currentColor;white-space:nowrap}
+  .v-ai{color:var(--v-ai)} .v-tc{color:var(--v-tc)} .v-dec{color:var(--v-dec)}
+  .card h3{font-family:"Fraunces",serif;font-weight:500;font-size:18.5px;line-height:1.12;letter-spacing:-.005em}
+  .card .pend-tag{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.18em;color:var(--s-deriv)}
+  .card .intent{font-family:"Fraunces",serif;font-style:italic;font-weight:300;font-size:12.8px;line-height:1.5;color:#b9c0d8}
+  .card .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .card .tag{font:400 8.5px "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--dim);
+    border:1px solid var(--line);border-radius:5px;padding:2px 7px}
+  .card .tag.kin{color:var(--acc);border-color:rgba(157,180,255,.22)}
+
+  /* axis meters */
+  .axes{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+  .axis{display:flex;align-items:center;gap:9px}
+  .axis .al{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);width:54px;flex:0 0 auto}
+  .axis .bar{flex:1;height:4px;border-radius:3px;background:rgba(157,180,255,.08);overflow:hidden}
+  .axis .bar span{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),#c9d6ff)}
+  .axis .av{font:400 8px "IBM Plex Mono",monospace;letter-spacing:.1em;color:var(--dim);width:42px;text-align:right;flex:0 0 auto}
+
+  /* demo stage */
+  .stage{position:relative;border-top:1px solid var(--line);background:rgba(5,6,12,.5);min-height:188px;display:flex;flex-direction:column}
+  .stage.pending{align-items:center;justify-content:center;min-height:128px;
+    margin:0;border-top:1px dashed rgba(157,180,255,.26)}
+  .stage .pend{display:flex;flex-direction:column;align-items:center;gap:10px;
+    border:1px dashed rgba(157,180,255,.3);border-radius:10px;padding:20px 26px;
+    background:repeating-linear-gradient(135deg,rgba(157,180,255,.025) 0 8px,transparent 8px 16px)}
+  .stage .pend .pdot{width:30px;height:30px;border-radius:50%;border:1.6px dashed rgba(157,180,255,.5)}
+  .stage .pend .pt{font:500 8.5px "IBM Plex Mono",monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .stage .pend .ps{font:300 9px "IBM Plex Mono",monospace;color:var(--faint)}
+  .stage svg{display:block;width:100%}
+  .stage .ctl{display:flex;flex-wrap:wrap;gap:8px;padding:11px 14px;border-top:1px solid var(--line);align-items:center}
+  .stage .demolbl{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--v-ai);
+    position:absolute;top:9px;left:14px;z-index:2}
+  button.bt{font:500 9px "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink);background:rgba(157,180,255,.1);border:1px solid rgba(157,180,255,.28);
+    border-radius:7px;padding:7px 12px;cursor:pointer;transition:background .25s,border-color .25s,transform .1s}
+  button.bt:hover{background:rgba(157,180,255,.2);border-color:var(--acc)}
+  button.bt:active{transform:scale(.96)}
+  button.bt.warn{color:#ffb4b4;border-color:rgba(255,138,138,.32);background:rgba(255,138,138,.08)}
+  button.bt.warn:hover{background:rgba(255,138,138,.16)}
+  button.bt.go{color:#bff7da;border-color:rgba(91,227,160,.34);background:rgba(91,227,160,.1)}
+  button.bt.go:hover{background:rgba(91,227,160,.2)}
+  .stage .read{font:400 9.5px "IBM Plex Mono",monospace;color:#aeb6cf;line-height:1.6;min-height:14px}
+  .stage .read .ok{color:var(--v-ai)} .stage .read .bad{color:#ff8a8a} .stage .read .mut{color:var(--dim)}
+  .stage input.spec{flex:1;min-width:120px;font:400 10px "IBM Plex Mono",monospace;color:var(--ink);
+    background:rgba(5,6,12,.7);border:1px solid var(--line);border-radius:7px;padding:8px 10px;outline:none}
+  .stage input.spec:focus{border-color:var(--acc)}
+
+  /* svg node label */
+  text.nlab{font-family:"Fraunces",serif;font-weight:300;font-style:italic;fill:#dfe4f4}
+  text.nid{font-family:"IBM Plex Mono",monospace;fill:var(--dim);letter-spacing:.04em}
+
+  footer{max-width:1240px;margin:0 auto;padding:30px 26px 70px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    font:300 9.5px "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+
+  /* film grain + cursor (inlined craft) */
+  .cf-grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:screen;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>")}
+  .cf-cursor{position:fixed;left:0;top:0;z-index:75;width:24px;height:24px;border-radius:50%;
+    border:1px solid rgba(232,236,248,.5);pointer-events:none;
+    transition:width .28s cubic-bezier(.2,.8,.25,1),height .28s cubic-bezier(.2,.8,.25,1),border-color .28s,background .28s,opacity .3s}
+  .cf-cursor::after{content:'';position:absolute;left:50%;top:50%;width:3px;height:3px;border-radius:50%;
+    background:var(--ink);transform:translate(-50%,-50%)}
+  .cf-cursor.hov{width:42px;height:42px;border-color:var(--acc);background:rgba(157,180,255,.07)}
+  .cf-cursor.down{width:16px;height:16px;border-color:var(--acc)}
+  .hidecur,.hidecur *{cursor:none !important}
+
+  /* arrival veil */
+  .intro{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;transition:opacity .9s ease}
+  .intro.lift{opacity:0;pointer-events:none}
+  .intro .eb{font:300 9.5px "IBM Plex Mono",monospace;letter-spacing:.42em;text-transform:uppercase;color:var(--dim);margin-bottom:34px}
+  .intro .stack{display:grid;place-items:center;min-height:150px}
+  .intro .stack>*{grid-area:1/1}
+  .intro .pct{font-family:"Fraunces",serif;font-weight:300;font-size:clamp(58px,9vw,100px);line-height:1;font-feature-settings:"tnum";transition:opacity .45s ease}
+  .intro.titled .pct{opacity:0}
+  .intro .ttl{font-family:"Fraunces",serif;font-weight:300;font-size:clamp(50px,9vw,108px);line-height:1;text-align:center;
+    opacity:0;transform:translateY(16px);transition:opacity .9s cubic-bezier(.2,.8,.25,1),transform .9s cubic-bezier(.2,.8,.25,1)}
+  .intro .ttl b{font-weight:600}.intro .ttl i{font-style:italic;font-weight:300;color:var(--acc)}
+  .intro.titled .ttl{opacity:1;transform:none}
+  .intro .isub{font:300 10px "IBM Plex Mono",monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);margin-top:28px;opacity:0;transition:opacity .9s ease .2s}
+  .intro.titled .isub{opacity:1}
+  .intro .foot{position:absolute;bottom:46px;display:flex;flex-direction:column;align-items:center;gap:13px}
+  .intro .bar{width:180px;height:1px;background:rgba(233,237,251,.12);overflow:hidden}
+  .intro .bar span{display:block;height:1px;width:0;background:var(--acc);transition:width .35s ease}
+  .intro .lab{font:300 9px "IBM Plex Mono",monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="cf-grain"></div>
+
+<header class="studio reveal" id="studio">
+  <div>
+    <div class="wm">Pattern <i>Commons</i></div>
+    <div class="vol">Vol. I · the playable portfolio · evolution / v1</div>
+  </div>
+  <div class="counts">
+    <div class="c"><span class="n tnum" id="cPat">0</span><span class="l">patterns</span></div>
+    <div class="c"><span class="n tnum" id="cFam">0</span><span class="l">families</span></div>
+    <div class="c"><span class="n tnum" id="cPlay">0</span><span class="l">playable</span></div>
+    <div class="c"><span class="n tnum" id="cAi">0</span><span class="l">ai-native</span></div>
+  </div>
+</header>
+
+<main>
+  <section class="masthead reveal" id="masthead">
+    <div class="ey">a commons of experience patterns · each card its own playable piece</div>
+    <h1>Truth <i>tells</i> itself.</h1>
+    <p class="lede">Every card below is a small, live portfolio piece — a demo <b>of</b> the pattern, not a description
+      of it. The grammar is fixed and legend-free: <b>commitment rides the line</b> (solid = ink/record · dashed =
+      pencil/proposal · broken = ghost), <b>origin rides colour</b> (the three strata), <b>force rides size and
+      motion</b>. Five cards play now; the rest are honest playable-ready slots.</p>
+  </section>
+
+  <!-- FLAGSHIP -->
+  <section class="flagship reveal" id="flagship">
+    <div class="fhead">
+      <div>
+        <div class="ix">Flagship · register:provenance-trace</div>
+        <h2>The graph that can't <i>lie</i></h2>
+      </div>
+      <p>click any node — its route home lights up and resolves to bytes. a ghost has no route, and shows it.</p>
+    </div>
+    <div class="fbody">
+      <div class="fgraph" id="fgraph"></div>
+      <aside class="freadout" id="freadout">
+        <div class="rk">no selection</div>
+        <h3>Ask anything its source</h3>
+        <div class="rsub">7 nodes · 3 strata · ink · pencil · ghost</div>
+        <p class="rintent">The holographic rule made interactive: no projection on screen without a resolvable
+          path to the bytes it claims. Click a node to walk it home.</p>
+        <div class="rhint">solid stroke = admitted record (ink) · dashed = proposed/simulated (pencil) ·
+          dotted &amp; hollow = ghost (a backing that does not resolve). colour names the stratum, size and pulse name the force — read it without this line.</div>
+      </aside>
+    </div>
+  </section>
+
+  <div id="catalog"></div>
+</main>
+
+<footer class="reveal" id="foot">
+  <div>Pattern Commons v1 · 53 patterns · 10 families · evolution SDLC</div>
+  <div>projection, never a second source of truth · promotion past proposed is bdo's (D-4)</div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const el = (n, a={}) => { const e = document.createElementNS(SVGNS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const h = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+
+  // ---------- the grammar (three orthogonal channels) ----------
+  const STRATA = { fundamental:'#d8b25a', derived:'#5b9bff', learned:'#b07aff' };
+  const COMMIT = {
+    ink:    { dash:'none',  w:2.3, op:1,   fill:.85 },
+    pencil: { dash:'7 5',   w:1.7, op:.92, fill:.16 },
+    ghost:  { dash:'1.5 6', w:1.5, op:.42, fill:0   },
+  };
+  const LV = { none:0, partial:.5, full:1 };
+
+  // ---------- data-shape helpers (the confirmed gotchas) ----------
+  const intentOf  = p => p.intent || p.current_intent || '';
+  const commitOf  = p => (p.axis && (p.axis.register != null ? p.axis.register : p.axis.commitment)) || 'none';
+  const provOf    = p => (p.axis && p.axis.provenance) || 'none';
+  const driveOf   = p => (p.axis && p.axis.agent_drivable) || 'none';
+  const kinOf     = p => !p.kin ? [] : (Array.isArray(p.kin) ? p.kin : [p.kin]);
+  const VERDICT_CLASS = { 'ai-native':'v-ai', 'truth-capable':'v-tc', 'decoration':'v-dec' };
+
+  // ---------- svg node factory (renders the full grammar) ----------
+  // strength 0..1 -> radius ; tempo 0..1 (0 slow .. 1 fast) -> pulse period
+  function drawNode(svg, x, y, { strata='derived', commit='ink', strength=.6, tempo=.4, label='', id='', clickable=false } = {}) {
+    const g = el('g', { class:'node', transform:`translate(${x} ${y})`, style: clickable ? 'cursor:pointer' : '' });
+    const hue = STRATA[strata] || STRATA.derived;
+    const c = COMMIT[commit] || COMMIT.ink;
+    const r = 11 + strength * 16;
+    const period = 4.2 - tempo * 3;          // anima tempo -> motion speed
+    // halo (anima: size + pulsing motion)
+    const halo = el('circle', { r:r+9, fill:'none', stroke:hue, 'stroke-width':1, opacity:.0, class:'halo' });
+    const hpulse = el('animate', { attributeName:'opacity', values:'.32;.04;.32', dur:period+'s', repeatCount:'indefinite' });
+    const hr = el('animate', { attributeName:'r', values:`${r+5};${r+12};${r+5}`, dur:period+'s', repeatCount:'indefinite' });
+    halo.appendChild(hpulse); halo.appendChild(hr); g.appendChild(halo);
+    // body fill (strata colour)
+    const body = el('circle', { r, fill:hue, 'fill-opacity':c.fill, stroke:'none' });
+    g.appendChild(body);
+    // commitment ring (the LINE channel)
+    const ring = el('circle', { r, fill:'none', stroke: commit==='ghost' ? '#9aa3bf' : hue,
+      'stroke-width':c.w, 'stroke-dasharray':c.dash, opacity:c.op, class:'ring' });
+    g.appendChild(ring);
+    if (commit === 'ghost') {  // the "crack" — a broken arc, unmistakable from a dash
+      const crack = el('path', { d:`M ${r*0.5} ${-r*0.8} L ${-r*0.3} ${r*0.55}`, stroke:'#ff8a8a', 'stroke-width':1.3, opacity:.5, fill:'none' });
+      g.appendChild(crack);
+    }
+    if (label) { const t = el('text', { class:'nlab', x:0, y:r+18, 'text-anchor':'middle', 'font-size':13 }); t.textContent = label; g.appendChild(t); }
+    if (id)    { const t = el('text', { class:'nid', x:0, y:r+31, 'text-anchor':'middle', 'font-size':8.5 }); t.textContent = id; g.appendChild(t); }
+    svg.appendChild(g);
+    return { g, body, ring, halo, x, y, r };
+  }
+  function drawEdge(svg, a, b, { commit='ink', dim=false } = {}) {
+    const c = COMMIT[commit] || COMMIT.ink;
+    const line = el('line', { x1:a.x, y1:a.y, x2:b.x, y2:b.y, stroke: commit==='ghost' ? '#9aa3bf' : '#7d88ad',
+      'stroke-width':c.w, 'stroke-dasharray':c.dash, opacity: dim ? .12 : c.op*.7, class:'edge' });
+    svg.insertBefore(line, svg.firstChild);  // edges under nodes
+    return line;
+  }
+
+  // ============================================================
+  //  HERO DEMO REGISTRY  —  id -> builder(container) -> handle
+  // ============================================================
+  const DEMOS = {};
+
+  // 1) provenance-trace  (also powers the flagship graph)
+  function buildProvenanceGraph(host, big) {
+    const W = 900, H = 470;
+    const svg = el('svg', { viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet' });
+    if (!big) svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    host.appendChild(svg);
+    // a real ontum graph: append is the only free layer; everything folds home to it
+    const N = {
+      append:   { x:135, y:235, strata:'fundamental', commit:'ink',    strength:1,  tempo:.2, label:'append', id:'events.jsonl',
+                  backing:'.ai-native/log/events.jsonl', home:['append'] },
+      atom:     { x:330, y:110, strata:'fundamental', commit:'ink',    strength:.8, tempo:.5, label:'atom', id:'sha256 bytes',
+                  backing:'.ai-native/atoms/<sha256>.md', home:['atom','append'] },
+      receipt:  { x:330, y:360, strata:'fundamental', commit:'ink',    strength:.8, tempo:.45, label:'receipt', id:'receipts.jsonl',
+                  backing:'.ai-native/log/receipts.jsonl', home:['receipt','append'] },
+      node:     { x:535, y:360, strata:'derived',     commit:'ink',    strength:.6, tempo:.9, label:'node', id:'loop/node.py',
+                  backing:'loop/node.py:1 — the one pen', home:['node','receipt','append'] },
+      arc:      { x:535, y:110, strata:'derived',     commit:'ink',    strength:.6, tempo:.3, label:'arc', id:'epics/',
+                  backing:'.ai-native/epics/epic.causality-surface.md', home:['arc','atom','append'] },
+      setpoint: { x:745, y:250, strata:'learned',     commit:'pencil', strength:.45, tempo:.6, label:'setpoint', id:'proposed dial',
+                  backing:'loop/orchestrate.py --status (proposed, awaiting --by bdo)', home:['setpoint','node','receipt','append'] },
+      ghost:    { x:745, y:70,  strata:'derived',     commit:'ghost',  strength:.45, tempo:.5, label:'four-registers', id:'?? unresolved',
+                  backing:'docs/phase-2/four-registers.md — DOES NOT RESOLVE (dropped, RECONCILIATION.md)', home:null },
+    };
+    const E = [
+      ['append','atom'], ['append','receipt'], ['receipt','node'], ['atom','arc'],
+      ['node','setpoint'], ['arc','ghost','ghost'],
+    ];
+    const edgeEls = {};
+    E.forEach(([a,b,com]) => { edgeEls[a+'>'+b] = drawEdge(svg, N[a], N[b], { commit: com || 'ink' }); });
+    const nodeEls = {};
+    Object.keys(N).forEach(k => {
+      const d = N[k];
+      const ne = drawNode(svg, d.x, d.y, { ...d, clickable:true });
+      nodeEls[k] = ne;
+      ne.g.addEventListener('click', () => trace(k));
+    });
+
+    const ro = big ? $('#freadout') : null;
+    let selected = null;
+
+    function setEdge(key, on) { const e = edgeEls[key]; if (!e) return;
+      e.setAttribute('opacity', on ? '.95' : '.1'); e.setAttribute('stroke-width', on ? '2.4' : '1'); }
+    function trace(k) {
+      selected = k;
+      const d = N[k];
+      // dim everything, then light the route home
+      Object.values(nodeEls).forEach(n => n.g.setAttribute('opacity', '.22'));
+      Object.keys(edgeEls).forEach(key => setEdge(key, false));
+      const lit = d.home || [k];
+      lit.forEach(id => nodeEls[id] && nodeEls[id].g.setAttribute('opacity', '1'));
+      // light the chain edges
+      for (let i = 0; i < lit.length - 1; i++) { const a = lit[i+1], b = lit[i]; if (edgeEls[a+'>'+b]) setEdge(a+'>'+b, true); }
+      if (!d.home) { nodeEls[k].g.setAttribute('opacity','1'); setEdge('arc>ghost', true); nodeEls.arc && nodeEls.arc.g.setAttribute('opacity','.5'); }
+      if (ro) renderReadout(k, d, lit);
+      return { node:k, lit:(d.home||[k]).slice(), backing:d.backing, resolves: !!d.home };
+    }
+    function reset() { selected = null;
+      Object.values(nodeEls).forEach(n => n.g.setAttribute('opacity','1'));
+      Object.keys(edgeEls).forEach(key => { const e = edgeEls[key]; e.setAttribute('opacity', String((COMMIT[ key==='arc>ghost'?'ghost':'ink' ].op)*.7)); e.setAttribute('stroke-width', key==='arc>ghost'?'1.5':'1.6'); });
+      if (ro) ro.innerHTML = baseReadout;
+    }
+    let baseReadout = ro ? ro.innerHTML : '';
+    function renderReadout(k, d, lit) {
+      const resolves = !!d.home;
+      const steps = (d.home || [k]).map(id => {
+        const sd = N[id]; const hue = STRATA[sd.strata];
+        return `<div class="step"><span class="dot" style="background:${hue}"></span><span>${sd.id}</span></div>`;
+      }).join('');
+      ro.innerHTML = `
+        <div class="rk">${resolves ? 'route resolved' : 'route broken'}</div>
+        <h3>${d.label}</h3>
+        <div class="rsub">${d.strata} · ${d.commit}${resolves?'':' · ghost'}</div>
+        <div class="rlbl">backing</div>
+        <div class="rhome ${resolves?'':'broken'}">${d.backing}</div>
+        <div class="rlbl">route home${resolves?' → fundamental':''}</div>
+        <div class="rhome">${resolves ? steps : '<div class="step broken"><span class="dot" style="background:#ff8a8a"></span><span>no resolvable path — the citation points to bytes that are not there. shown as a ghost, never dropped.</span></div>'}</div>
+        <div class="rhint">click another node, or the background to clear.</div>`;
+    }
+    svg.addEventListener('click', e => { if (e.target === svg) reset(); });
+
+    return { svg, trace, reset, get selected(){ return selected; }, nodes:Object.keys(N) };
+  }
+  DEMOS['provenance-trace'] = host => {
+    const stage = host;
+    const wrap = h('div'); wrap.style.width = '100%';
+    stage.appendChild(wrap);
+    const g = buildProvenanceGraph(wrap, false);
+    g.svg.style.height = '170px';
+    const ctl = h('div', 'ctl');
+    const read = h('div', 'read'); read.innerHTML = '<span class="mut">click a node — walk it home. the ghost shows its broken route.</span>';
+    const bN = h('button', 'bt', 'trace node'); bN.onclick = () => { const r = g.trace('node'); read.innerHTML = `<span class="ok">node</span> → ${r.lit.join(' → ')} <span class="mut">· ${r.backing}</span>`; };
+    const bG = h('button', 'bt warn', 'trace ghost'); bG.onclick = () => { g.trace('ghost'); read.innerHTML = '<span class="bad">ghost</span> — backing does not resolve; shown, not dropped.'; };
+    const bR = h('button', 'bt', 'clear'); bR.onclick = () => { g.reset(); read.innerHTML = '<span class="mut">cleared.</span>'; };
+    ctl.append(bN, bG, bR);
+    stage.append(ctl, h('div'));
+    const readWrap = h('div'); readWrap.style.padding = '0 14px 12px'; readWrap.appendChild(read); stage.appendChild(readWrap);
+    return { trace:g.trace, reset:g.reset, state:() => g.selected, kind:'provenance-trace' };
+  };
+
+  // 2) pencil-vs-ink  — a draft settles to a record, witnessed
+  DEMOS['pencil-vs-ink'] = stage => {
+    const svg = el('svg', { viewBox:'0 0 300 150' }); svg.style.height = '150px'; stage.appendChild(svg);
+    const cx = 150, cy = 70, r = 30;
+    drawEdge(svg, {x:54,y:cy}, {x:cx-r,y:cy}, { commit:'pencil' });
+    const halo = el('circle', { cx, cy, r:r+8, fill:'none', stroke:STRATA.learned, opacity:.0 });
+    svg.appendChild(halo);
+    const body = el('circle', { cx, cy, r, fill:STRATA.learned, 'fill-opacity':.16 });
+    const pencil = el('circle', { cx, cy, r, fill:'none', stroke:STRATA.learned, 'stroke-width':1.7, 'stroke-dasharray':'7 5', opacity:.92, style:'transition:opacity .8s ease' });
+    const C = 2 * Math.PI * r;
+    const ink = el('circle', { cx, cy, r, fill:'none', stroke:STRATA.learned, 'stroke-width':2.6,
+      'stroke-dasharray':C, 'stroke-dashoffset':C, transform:`rotate(-90 ${cx} ${cy})`, style:'transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.25,1)' });
+    svg.append(body, pencil, ink);
+    const lab = el('text', { class:'nlab', x:cx, y:cy+r+22, 'text-anchor':'middle', 'font-size':13 }); lab.textContent = 'proposal'; svg.appendChild(lab);
+    const badge = el('text', { class:'nid', x:cx, y:cy+r+35, 'text-anchor':'middle', 'font-size':9, fill:'#b07aff' }); badge.textContent = 'PENCIL · awaiting admit'; svg.appendChild(badge);
+    let st = 'pencil';
+    function commit() { if (st === 'ink') return st;
+      ink.setAttribute('stroke-dashoffset', 0); pencil.setAttribute('opacity', .12);
+      body.setAttribute('fill-opacity', .85); lab.textContent = 'record'; badge.textContent = 'INK · admitted'; badge.setAttribute('fill', '#dfe4f4');
+      st = 'ink'; return st; }
+    function reset() { ink.setAttribute('stroke-dashoffset', C); pencil.setAttribute('opacity', .92);
+      body.setAttribute('fill-opacity', .16); lab.textContent = 'proposal'; badge.textContent = 'PENCIL · awaiting admit'; badge.setAttribute('fill', '#b07aff'); st = 'pencil'; }
+    const ctl = h('div', 'ctl');
+    const bC = h('button', 'bt go', 'commit / admit'); bC.onclick = commit;
+    const bR = h('button', 'bt', 'reset to draft'); bR.onclick = reset;
+    const read = h('div', 'read'); read.innerHTML = '<span class="mut">dashed = a draft awaiting its stamp. admit it and watch ink draw in.</span>';
+    bC.addEventListener('click', () => read.innerHTML = '<span class="ok">settled</span> — the append landed; pencil became ink, level-triggered.');
+    bR.addEventListener('click', () => read.innerHTML = '<span class="mut">back to pencil.</span>');
+    ctl.append(bC, bR, read);
+    stage.appendChild(ctl);
+    return { commit, reset, state:() => st, kind:'pencil-vs-ink' };
+  };
+
+  // 3) ghost-vs-record — break a citation, watch a record become a ghost
+  DEMOS['ghost-vs-record'] = stage => {
+    const svg = el('svg', { viewBox:'0 0 300 150' }); svg.style.height = '150px'; stage.appendChild(svg);
+    const cx = 150, cy = 66, r = 28;
+    const src = { x:60, y:cy };
+    const edge = drawEdge(svg, src, { x:cx-r, y:cy }, { commit:'ink' });
+    const srcN = drawNode(svg, src.x, src.y, { strata:'fundamental', commit:'ink', strength:.3, tempo:.3, id:'file:line' });
+    const body = el('circle', { cx, cy, r, fill:STRATA.derived, 'fill-opacity':.85 });
+    const ring = el('circle', { cx, cy, r, fill:'none', stroke:STRATA.derived, 'stroke-width':2.3, opacity:1, style:'transition:opacity .5s' });
+    const crack = el('path', { d:`M ${cx+r*0.5} ${cy-r*0.8} L ${cx-r*0.3} ${cy+r*0.55}`, stroke:'#ff8a8a', 'stroke-width':1.3, opacity:0, fill:'none', style:'transition:opacity .5s' });
+    svg.append(body, ring, crack);
+    const lab = el('text', { class:'nlab', x:cx, y:cy+r+20, 'text-anchor':'middle', 'font-size':13 }); lab.textContent = 'record'; svg.appendChild(lab);
+    const ref = el('text', { class:'nid', x:cx, y:cy+r+33, 'text-anchor':'middle', 'font-size':8.5 }); ref.textContent = 'cites loop/node.py:1 ✓'; svg.appendChild(ref);
+    let st = 'record';
+    function setGhost(on) {
+      if (on) { body.setAttribute('fill-opacity', 0); ring.setAttribute('stroke', '#9aa3bf'); ring.setAttribute('stroke-dasharray', '1.5 6'); ring.setAttribute('opacity', .42);
+        crack.setAttribute('opacity', .5); edge.setAttribute('stroke', '#9aa3bf'); edge.setAttribute('stroke-dasharray', '1.5 6'); edge.setAttribute('opacity', .25);
+        lab.textContent = 'ghost'; ref.textContent = 'cites docs/phase-2/four-registers.md ✗'; ref.setAttribute('fill', '#ff8a8a'); st = 'ghost'; }
+      else { body.setAttribute('fill-opacity', .85); ring.setAttribute('stroke', STRATA.derived); ring.setAttribute('stroke-dasharray', 'none'); ring.setAttribute('opacity', 1);
+        crack.setAttribute('opacity', 0); edge.setAttribute('stroke', '#7d88ad'); edge.setAttribute('stroke-dasharray', 'none'); edge.setAttribute('opacity', .7);
+        lab.textContent = 'record'; ref.textContent = 'cites loop/node.py:1 ✓'; ref.setAttribute('fill', '#6b7593'); st = 'record'; }
+    }
+    const ctl = h('div', 'ctl');
+    const bB = h('button', 'bt warn', 'break citation'); bB.onclick = () => { setGhost(true); read.innerHTML = '<span class="bad">ghost</span> — the backing moved; the node stays on screen, marked broken, never swallowed.'; };
+    const bF = h('button', 'bt go', 'restore backing'); bF.onclick = () => { setGhost(false); read.innerHTML = '<span class="ok">record</span> — citation resolves to committed bytes again.'; };
+    const read = h('div', 'read'); read.innerHTML = '<span class="mut">a solid record cites bytes that resolve. break the link — it becomes a ghost, visibly.</span>';
+    ctl.append(bB, bF, read);
+    stage.appendChild(ctl);
+    return { break:() => setGhost(true), restore:() => setGhost(false), state:() => st, kind:'ghost-vs-record' };
+  };
+
+  // 4) schema-gate-before-draw — validate before a pixel is drawn
+  DEMOS['schema-gate-before-draw'] = stage => {
+    const svg = el('svg', { viewBox:'0 0 300 116' }); svg.style.height = '116px'; stage.appendChild(svg);
+    const place = el('text', { class:'nid', x:150, y:60, 'text-anchor':'middle', 'font-size':10, fill:'#404a66' });
+    place.textContent = 'nothing drawn until a spec passes the gate'; svg.appendChild(place);
+    let drawn = null;
+    function clearDrawn() { if (drawn) { drawn.remove(); drawn = null; } place.setAttribute('opacity', 1); }
+    function parse(text) {
+      const t = (text || '').trim();
+      const m = t.match(/^([A-Za-z][\w-]*)\s+@(\w+)\s+#(\w+)$/);
+      if (!m) return { ok:false, reason:'malformed — expected  label @strata #commitment  (e.g. gateway @learned #pencil)', spec:t };
+      const [, label, strata, commit] = m;
+      if (!STRATA[strata]) return { ok:false, reason:`unknown strata "${strata}" — expected ${Object.keys(STRATA).join(' | ')}`, spec:t };
+      if (commit !== 'ink' && commit !== 'pencil') return { ok:false, reason:`unknown commitment "${commit}" — a node may be authored #ink or #pencil; #ghost is a failure, never a request`, spec:t };
+      return { ok:true, label, strata, commit, spec:t };
+    }
+    function submit(text) {
+      const r = parse(text);
+      if (!r.ok) { clearDrawn(); read.innerHTML = `<span class="bad">refused</span> — ${r.reason}<br><span class="mut">your spec is kept: </span><span class="mono">${r.spec || '∅'}</span>`; return r; }
+      clearDrawn();
+      const wrap = el('g'); svg.appendChild(wrap); drawn = wrap;
+      const tmp = el('svg'); // draw into the live svg via factory
+      const node = drawNode(svg, 150, 50, { strata:r.strata, commit:r.commit, strength:.55, tempo:.5, label:r.label, id:`@${r.strata} #${r.commit}`, clickable:false });
+      drawn = node.g; place.setAttribute('opacity', 0);
+      read.innerHTML = `<span class="ok">valid</span> — instantiated <span class="mono">${r.label}</span> as ${r.strata} ${r.commit}.`;
+      return r;
+    }
+    const ctl = h('div', 'ctl');
+    const inp = h('input', 'spec'); inp.value = 'gateway @learned #pencil'; inp.setAttribute('spellcheck', 'false');
+    const bD = h('button', 'bt go', 'validate & draw'); bD.onclick = () => submit(inp.value);
+    const bBad = h('button', 'bt warn', 'try malformed'); bBad.onclick = () => { inp.value = 'gateway @vibes #ink'; submit(inp.value); };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(inp.value); });
+    ctl.append(inp, bD, bBad);
+    const read = h('div', 'read'); read.innerHTML = '<span class="mut">type a spec. valid → a node renders. malformed → refused with a reason, nothing drawn.</span>';
+    const readWrap = h('div'); readWrap.style.padding = '0 14px 12px'; readWrap.appendChild(read);
+    stage.append(ctl, readWrap);
+    return { submit, parse, state:() => (drawn ? 'drawn' : 'empty'), kind:'schema-gate-before-draw' };
+  };
+
+  // 5) parked-pulse — a wait shown, named, resumable; never dropped
+  DEMOS['parked-pulse'] = stage => {
+    const svg = el('svg', { viewBox:'0 0 300 150' }); svg.style.height = '150px'; stage.appendChild(svg);
+    const A = { x:50, y:70 }, B = { x:150, y:70 }, C = { x:250, y:70 };
+    const eAB = drawEdge(svg, A, B, { commit:'ink' });
+    const eBC = drawEdge(svg, B, C, { commit:'pencil' });
+    const nA = drawNode(svg, A.x, A.y, { strata:'fundamental', commit:'ink', strength:.4, tempo:.7, label:'source', id:'atom' });
+    const nB = drawNode(svg, B.x, B.y, { strata:'derived', commit:'ink', strength:.55, tempo:.15, label:'gate', id:'awaiting node' });
+    const nC = drawNode(svg, C.x, C.y, { strata:'derived', commit:'pencil', strength:.4, tempo:.5, label:'landing', id:'parked dest' });
+    const pulse = el('circle', { cx:A.x, cy:A.y, r:5, fill:'#bff7da', opacity:0 });
+    svg.appendChild(pulse);
+    const parkRing = el('circle', { cx:B.x, cy:B.y, r:24, fill:'none', stroke:'#ffcf6e', 'stroke-width':1.5, 'stroke-dasharray':'3 4', opacity:0 });
+    svg.appendChild(parkRing);
+    const wait = el('text', { class:'nid', x:B.x, y:B.y-30, 'text-anchor':'middle', 'font-size':8.5, fill:'#ffcf6e', opacity:0 });
+    wait.textContent = 'parked · awaiting merge-node.claude.v1'; svg.appendChild(wait);
+    let st = 'idle', raf = 0;
+    function tween(from, to, ms, step, done) {
+      const t0 = performance.now();
+      (function loop(now) { let k = Math.min(1, (now - t0) / ms); k = k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2; step(from + (to-from)*k); if (k < 1) raf = requestAnimationFrame(loop); else done && done(); })(performance.now());
+    }
+    function send() { cancelAnimationFrame(raf); pulse.setAttribute('opacity', 1); pulse.setAttribute('cx', A.x); st = 'travelling';
+      tween(A.x, B.x, 900, x => pulse.setAttribute('cx', x), () => { st = 'parked';
+        parkRing.setAttribute('opacity', 1); wait.setAttribute('opacity', 1); pulse.setAttribute('fill', '#ffcf6e');
+        read.innerHTML = '<span style="color:#ffcf6e">parked</span> — held at the gate, waiting on <span class="mono">merge-node.claude.v1</span>. not dropped, not a spinner.'; }); }
+    function resume() { if (st !== 'parked') return st; st = 'resuming';
+      parkRing.setAttribute('opacity', 0); wait.setAttribute('opacity', 0); pulse.setAttribute('fill', '#bff7da');
+      eBC.setAttribute('stroke-dasharray', 'none'); eBC.setAttribute('opacity', .7);
+      tween(B.x, C.x, 800, x => pulse.setAttribute('cx', x), () => { st = 'resumed'; nC.body.setAttribute('fill-opacity', .85); nC.ring.setAttribute('stroke-dasharray', 'none');
+        read.innerHTML = '<span class="ok">resumed</span> — the node judged; the parked pulse proceeded to landing.'; }); }
+    function reset() { cancelAnimationFrame(raf); st = 'idle'; pulse.setAttribute('opacity', 0); parkRing.setAttribute('opacity', 0); wait.setAttribute('opacity', 0);
+      eBC.setAttribute('stroke-dasharray', '7 5'); eBC.setAttribute('opacity', .65); nC.body.setAttribute('fill-opacity', .16); nC.ring.setAttribute('stroke-dasharray', '7 5');
+      read.innerHTML = '<span class="mut">send a pulse — it parks at the blocked gate, named. then resume it.</span>'; }
+    const ctl = h('div', 'ctl');
+    const bS = h('button', 'bt', 'send pulse'); bS.onclick = send;
+    const bRs = h('button', 'bt go', 'resume'); bRs.onclick = resume;
+    const bRe = h('button', 'bt', 'reset'); bRe.onclick = reset;
+    const read = h('div', 'read'); read.innerHTML = '<span class="mut">send a pulse — it parks at the blocked gate, named. then resume it.</span>';
+    ctl.append(bS, bRs, bRe);
+    const readWrap = h('div'); readWrap.style.padding = '0 14px 12px'; readWrap.appendChild(read);
+    stage.append(ctl, readWrap);
+    return { send, resume, reset, state:() => st, kind:'parked-pulse' };
+  };
+
+  const HERO_IDS = Object.keys(DEMOS);
+
+  // ============================================================
+  //  CARD FRAMEWORK  — every pattern gets the same frame
+  // ============================================================
+  function axisRow(label, val) {
+    const row = h('div', 'axis');
+    row.append(h('span', 'al', label));
+    const bar = h('div', 'bar'); const span = h('span'); span.style.width = (LV[val]*100) + '%';
+    if (val === 'partial') span.style.background = 'linear-gradient(90deg,var(--v-tc),#e8d59a)';
+    if (val === 'none') span.style.opacity = '0';
+    bar.appendChild(span); row.appendChild(bar);
+    row.append(h('span', 'av', val));
+    return row;
+  }
+  function buildCard(p, idx) {
+    const playable = HERO_IDS.includes(p.id);
+    const card = h('div', 'card' + (playable ? ' hero' : ''));
+    card.dataset.pattern = p.id;
+    const top = h('div', 'top');
+    const row1 = h('div', 'row1');
+    row1.append(h('span', 'ix', String(idx).padStart(2,'0') + ' · ' + p._family));
+    const vd = h('span', 'verdict ' + (VERDICT_CLASS[p.verdict] || 'v-dec'), p.verdict);
+    row1.appendChild(vd);
+    top.appendChild(row1);
+    const titleRow = h('div'); titleRow.style.display='flex'; titleRow.style.alignItems='baseline'; titleRow.style.gap='9px'; titleRow.style.flexWrap='wrap';
+    titleRow.appendChild(h('h3', null, p.name));
+    if (playable) titleRow.appendChild(h('span', 'pend-tag', '▶ PLAYABLE'));
+    top.appendChild(titleRow);
+    top.appendChild(h('p', 'intent', intentOf(p)));
+    const axes = h('div', 'axes');
+    axes.append(axisRow('commit', commitOf(p)), axisRow('prov', provOf(p)), axisRow('drive', driveOf(p)));
+    top.appendChild(axes);
+    const meta = h('div', 'meta');
+    meta.appendChild(h('span', 'tag', p._tier));
+    kinOf(p).forEach(k => meta.appendChild(h('span', 'tag kin', '∞ ' + String(k).split('—')[0].split(':').slice(-1)[0].trim().slice(0,22))));
+    top.appendChild(meta);
+    card.appendChild(top);
+
+    // demo stage
+    if (playable) {
+      const stage = h('div', 'stage');
+      stage.appendChild(h('div', 'demolbl', 'live · plays'));
+      card.appendChild(stage);
+      try { const handle = DEMOS[p.id](stage); REGISTRY.cards[p.id].handle = handle; }
+      catch (e) { stage.appendChild(h('div', 'read bad', 'demo error: ' + e.message)); console.error('[demo]', p.id, e); }
+    } else {
+      const stage = h('div', 'stage pending');
+      const pend = h('div', 'pend');
+      pend.append(h('div', 'pdot'), h('div', 'pt', 'demo pending'), h('div', 'ps', 'playable-ready slot'));
+      stage.appendChild(pend);
+      card.appendChild(stage);
+    }
+    return card;
+  }
+
+  // ============================================================
+  //  BOOT
+  // ============================================================
+  const REGISTRY = { patterns:[], families:[], cards:{}, counts:{} };
+
+  async function boot() {
+    // ---- arrival (honest preloader: counts real work) ----
+    const intro = h('div', 'intro');
+    intro.innerHTML = `
+      <div class="eb">pattern commons · evolution v1</div>
+      <div class="stack"><div class="pct">00</div><div class="ttl">The <i>Playable</i> Portfolio</div></div>
+      <div class="isub">fifty-three patterns · each its own piece</div>
+      <div class="foot"><div class="bar"><span></span></div><div class="lab">composing</div></div>`;
+    document.body.appendChild(intro);
+    const pct = intro.querySelector('.pct'), fill = intro.querySelector('.bar span'), lab = intro.querySelector('.lab');
+    const setP = (p, l) => { pct.textContent = String(Math.round(p)).padStart(2,'0'); fill.style.width = p + '%'; if (l) lab.textContent = l; };
+    const t0 = performance.now();
+
+    setP(4, 'typefaces');
+    try { await Promise.all([
+      document.fonts.load('300 88px "Fraunces"'), document.fonts.load('italic 300 60px "Fraunces"'),
+      document.fonts.load('600 24px "Fraunces"'), document.fonts.load('300 12px "IBM Plex Mono"'),
+      document.fonts.load('500 12px "Space Grotesk"'),
+    ]); } catch (e) {}
+    setP(18, 'folding the commons');
+
+    // fetch ONLY the relative data file
+    let data;
+    try { const res = await fetch('./pattern-commons.v1.json'); data = await res.json(); }
+    catch (e) { intro.querySelector('.ttl').innerHTML = 'data did not <i>resolve</i>'; lab.textContent = String(e); console.error(e); return; }
+    REGISTRY.patterns = data.patterns; REGISTRY.families = data.families;
+    setP(40, `${data.patterns.length} patterns`);
+
+    // register card slots up front so demos can attach handles
+    data.patterns.forEach(p => REGISTRY.cards[p.id] = { pattern:p, handle:null, playable:HERO_IDS.includes(p.id) });
+
+    // build the flagship graph
+    REGISTRY.flagship = buildProvenanceGraph($('#fgraph'), true);
+    setP(58, 'flagship assembled');
+
+    // build the catalog, family by family
+    const cat = $('#catalog');
+    let idx = 0;
+    const byFam = {}; data.patterns.forEach(p => { (byFam[p._family] = byFam[p._family] || []).push(p); });
+    data.families.forEach(fam => {
+      const list = byFam[fam.id]; if (!list) return;
+      const playN = list.filter(p => HERO_IDS.includes(p.id)).length;
+      const sect = h('section', 'reveal'); sect.dataset.fam = fam.id;
+      const head = h('div', 'secthead');
+      const lhs = h('div', 'lhs'); lhs.append(h('span', 'fam', fam.name), h('span', 'pin', '“' + fam.pin + '”'));
+      head.appendChild(lhs);
+      head.appendChild(h('span', 'cnt', `${list.length} pattern${list.length>1?'s':''}${playN?' · '+playN+' live':''}`));
+      sect.appendChild(head);
+      const grid = h('div', 'grid');
+      list.forEach(p => { idx++; grid.appendChild(buildCard(p, idx)); });
+      sect.appendChild(grid);
+      cat.appendChild(sect);
+    });
+    setP(86, 'plates set');
+
+    // counts (folded from data)
+    const verdicts = {}; data.patterns.forEach(p => verdicts[p.verdict] = (verdicts[p.verdict]||0)+1);
+    REGISTRY.counts = { patterns:data.patterns.length, families:data.families.length,
+      playable:HERO_IDS.length, pending:data.patterns.length - HERO_IDS.length,
+      verdicts, coverage:+(HERO_IDS.length/data.patterns.length).toFixed(3) };
+    $('#cPat').textContent = REGISTRY.counts.patterns;
+    $('#cFam').textContent = REGISTRY.counts.families;
+    $('#cPlay').textContent = REGISTRY.counts.playable;
+    $('#cAi').textContent = verdicts['ai-native'] || 0;
+
+    // expose the API surface BEFORE reveal (verification probes truth, not pixels)
+    window.__portfolio = {
+      patterns: REGISTRY.patterns,
+      families: REGISTRY.families,
+      cards: REGISTRY.cards,
+      counts: REGISTRY.counts,
+      reveal: false,
+      demo: id => REGISTRY.cards[id] && REGISTRY.cards[id].handle,
+      trace: id => REGISTRY.flagship.trace(id),
+      flagship: REGISTRY.flagship,
+      heroes: HERO_IDS,
+      heroState: () => HERO_IDS.reduce((o,id) => { const hd = REGISTRY.cards[id].handle; o[id] = hd ? hd.state() : 'missing'; return o; }, {}),
+    };
+
+    setP(100, 'ready');
+    await new Promise(r => setTimeout(r, Math.max(0, 700 - (performance.now() - t0))));
+    intro.classList.add('titled');
+    await new Promise(r => setTimeout(r, 1500));
+    intro.classList.add('lift');
+    // the world assembles on cue — staggered entrance
+    const reveals = [...document.querySelectorAll('.reveal')];
+    reveals.forEach((node, i) => setTimeout(() => node.classList.add('in'), 120 + i * 70));
+    window.__portfolio.reveal = true;
+    dispatchEvent(new CustomEvent('portfolio:reveal'));
+    setTimeout(() => intro.remove(), 1000);
+  }
+
+  // ---- inlined craft cursor + grain are CSS; wire the lagged ring ----
+  (function cursor() {
+    if (matchMedia('(pointer: coarse)').matches) return;
+    document.body.classList.add('hidecur');
+    const c = h('div', 'cf-cursor'); c.style.opacity = '0'; document.body.appendChild(c);
+    let tx = innerWidth/2, ty = innerHeight/2, x = tx, y = ty, seen = false;
+    addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; if (!seen){ seen = true; c.style.opacity = '1'; } });
+    addEventListener('pointerdown', () => c.classList.add('down'));
+    addEventListener('pointerup', () => c.classList.remove('down'));
+    addEventListener('mouseover', e => { const t = e.target;
+      const hot = t.closest && t.closest('a,button,input,.card,.node,[style*="cursor:pointer"]'); c.classList.toggle('hov', !!hot); });
+    (function f(){ x += (tx-x)*.22; y += (ty-y)*.22; c.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`; requestAnimationFrame(f); })();
+  })();
+
+  boot();
+})();
+</script>
+</body>
+</html>

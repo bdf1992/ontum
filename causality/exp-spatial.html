@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Causality — spatial · blend</title>
+<script>window.__pageErr=null;addEventListener('error',e=>{if(!window.__pageErr)window.__pageErr=(e.error&&e.error.stack)||e.message;});</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* CREAM ONLY — the established look-and-feel. No dark mode, ever. */
+  :root{--paper:#f6f1e7;--ink:#2b2a33;--dim:#8d8678;--faint:#b8b1a2;--positive:#0e8a7b;--strain:#d4543f;--inference:#7a5ba6;--amber:#b8742c;--blue:#3f7cb6;--mock:#ff2bd6;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--paper);}
+  body{font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);}
+  /* two stacked canvases: the engine draws the graph; ov captures the lasso (BLEND) */
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+  canvas#cv{z-index:1;}
+  canvas#ov{z-index:2;pointer-events:none;}
+  canvas#ov.lasso{pointer-events:auto;cursor:crosshair;}
+
+  /* minimal chrome — quiet wordmark + faint New/Save */
+  .top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:11px;padding:18px 24px;pointer-events:none;}
+  .top .mark{font-family:"Fraunces",serif;font-size:23px;font-weight:300;letter-spacing:.01em;}
+  .top .mark b{color:var(--inference);font-weight:600;}
+  .top .tag{font:300 9.5px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;}
+  .top .scale{font:500 9px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--inference);border:1.2px solid rgba(122,91,166,.45);border-radius:20px;padding:3px 10px;background:rgba(122,91,166,.07);}
+  .top .scale b{color:var(--amber);font-weight:700;}
+  .top .sp{flex:1;}
+  .top .btn{pointer-events:auto;font:500 11px "IBM Plex Mono",monospace;color:var(--ink);background:rgba(255,252,245,.85);border:1.4px solid var(--ink);border-radius:9px;padding:6px 12px;cursor:pointer;margin-left:6px;}
+  .top .btn:hover{background:rgba(122,91,166,.12);}
+
+  /* the sentence skin — grows with the slider; glyph words wear their hue */
+  #sentence{position:fixed;top:60px;left:0;right:0;z-index:9;text-align:center;pointer-events:none;padding:0 40px;}
+  #sentence .line{font:300 23px "Fraunces",serif;color:rgba(43,42,51,.5);line-height:1.45;transition:opacity .45s ease;}
+  #sentence .line.hero{font-weight:400;font-size:27px;color:rgba(43,42,51,.74);letter-spacing:.005em;}
+  #sentence .line b{font-weight:600;}
+  #sentence .line.sub{font-size:14px;opacity:.7;margin-top:3px;letter-spacing:.04em;}
+
+  /* the Lens / context-package panel (right) — conversation THROUGH the graph */
+  .panel{position:fixed;right:22px;top:120px;z-index:13;width:312px;max-height:74vh;overflow:auto;background:rgba(255,252,245,.97);border:1.5px solid var(--inference);border-radius:13px;padding:15px 17px;box-shadow:3px 4px 0 rgba(122,91,166,.14);display:none;opacity:0;transform:translateY(-6px);transition:opacity .26s ease,transform .26s cubic-bezier(.2,.9,.3,1.2);}
+  .panel.on{display:block;}
+  .panel.show{opacity:1;transform:translateY(0);}
+  .panel h4{font:600 10px "IBM Plex Mono",monospace;letter-spacing:.2em;color:var(--inference);text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;}
+  .panel h4 .x{cursor:pointer;color:var(--dim);pointer-events:auto;}
+  .panel .row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .panel .ico{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.4px solid var(--ink);font:600 14px "Caveat",cursive;flex:none;}
+  .panel .ttl{font:300 19px "Fraunces",serif;}
+  .panel .chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px;}
+  .panel .chip{font:400 9.5px "IBM Plex Mono",monospace;border:1.2px solid rgba(43,42,51,.4);border-radius:20px;padding:4px 9px;color:var(--ink);}
+  .panel .sub{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:12px 0 6px;}
+  .panel .conn{font:400 11px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.8;}
+  .panel .conn b{color:var(--ink);font-weight:500;}
+  .panel .item{font:400 11px "IBM Plex Mono",monospace;color:var(--ink);line-height:1.55;margin-bottom:4px;}
+  .panel .item .t{color:var(--dim);}
+  .panel .cite{font:400 10px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.5;margin:1px 0 5px 12px;border-left:2px solid rgba(122,91,166,.3);padding-left:8px;}
+  .panel .cite b{color:var(--positive);font-weight:500;}
+  .panel .ask{width:100%;margin-top:6px;font:400 12px "Space Grotesk",sans-serif;border:1.2px solid rgba(43,42,51,.35);border-radius:8px;padding:8px 9px;resize:vertical;min-height:46px;background:rgba(255,255,255,.5);}
+  .panel .go{width:100%;margin-top:8px;font:600 11px "IBM Plex Mono",monospace;color:#fff;background:var(--inference);border:none;border-radius:8px;padding:9px 4px;cursor:pointer;}
+  .panel .go:hover{background:#6a4d94;}
+  .panel .split{width:100%;margin-top:8px;font:600 10px "IBM Plex Mono",monospace;color:#fff;background:var(--strain);border:none;border-radius:8px;padding:8px 4px;cursor:pointer;letter-spacing:.04em;}
+  .panel .split:hover{filter:brightness(.92);}
+  .panel .split.done{background:var(--positive);cursor:default;}
+  .panel .reply{margin-top:10px;font:400 11px "IBM Plex Mono",monospace;color:#6b6456;line-height:1.7;white-space:pre-wrap;border-left:2px solid var(--inference);padding-left:9px;}
+  .panel .flag{display:inline-block;font:600 7px "IBM Plex Mono",monospace;color:#fff;background:var(--mock);border-radius:3px;padding:1px 4px;letter-spacing:.06em;vertical-align:middle;}
+  .panel .warn{display:inline-block;font:600 7px "IBM Plex Mono",monospace;color:#fff;background:var(--strain);border-radius:3px;padding:1px 4px;letter-spacing:.06em;vertical-align:middle;}
+  .panel .big{display:flex;gap:14px;margin:6px 0 4px;}
+  .panel .big div{text-align:center;}
+  .panel .big .n{font:300 22px "Fraunces",serif;}
+  .panel .big .l{font:400 8px "IBM Plex Mono",monospace;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;}
+
+  /* the Complexity slider — the BACKBONE (cute nucleus -> complex system) */
+  .sliders{position:fixed;left:50%;bottom:72px;transform:translateX(-50%);z-index:12;display:flex;gap:13px;align-items:flex-end;background:rgba(255,252,245,.94);border:1.5px solid var(--ink);border-radius:13px;padding:9px 16px;box-shadow:3px 4px 0 rgba(43,42,51,.14);}
+  .sliders .sl{display:flex;flex-direction:column;gap:4px;width:248px;}
+  .sliders .sl .lab{font:500 8px "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:5px;}
+  .sliders .sl input[type=range]{width:100%;accent-color:var(--positive);cursor:pointer;height:14px;}
+  .sliders .sl .val{font:500 8px "IBM Plex Mono",monospace;color:var(--positive);}
+  /* the missing-texture rule, literal: unbuilt sliders wear the magenta hazard hatch */
+  .sliders .sl.mock{background:repeating-linear-gradient(45deg,rgba(255,43,214,.10),rgba(255,43,214,.10) 4px,transparent 4px,transparent 9px);border-radius:7px;padding:3px 5px 4px;width:104px;}
+  .sliders .sl.mock .lab{color:var(--mock);}
+  .sliders .sl.mock input[type=range]{accent-color:var(--mock);cursor:not-allowed;}
+  .sliders .sl .ftag{font:600 7px "IBM Plex Mono",monospace;color:#fff;background:var(--mock);border-radius:3px;padding:1px 4px;letter-spacing:.06em;}
+
+  /* the gesture toolbar — Lasso is the live BLEND stance; Pan/Voice are flagged */
+  .tools{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:12;display:flex;gap:4px;background:rgba(255,252,245,.94);border:1.5px solid var(--ink);border-radius:13px;padding:7px 9px;box-shadow:3px 4px 0 rgba(43,42,51,.14);}
+  .tools button{position:relative;font:500 11px "IBM Plex Mono",monospace;color:var(--dim);background:none;border:none;border-radius:9px;padding:7px 13px;cursor:pointer;transition:color .2s ease,background .2s ease;}
+  .tools button.on,.tools button:hover{color:var(--inference);background:rgba(122,91,166,.1);}
+  .tools button.mock{background:repeating-linear-gradient(45deg,rgba(255,43,214,.10),rgba(255,43,214,.10) 4px,transparent 4px,transparent 9px);color:var(--mock);}
+  .tools button.mock .ftag{position:absolute;top:-7px;right:-3px;font:600 6px "IBM Plex Mono",monospace;color:#fff;background:var(--mock);border-radius:3px;padding:0 3px;}
+
+  /* the calibration card — the benchmark teeth, on the canvas (reject the trap) */
+  .cal{position:fixed;left:22px;top:92px;z-index:11;width:236px;background:rgba(255,252,245,.95);border:1.5px solid var(--ink);border-radius:12px;padding:11px 13px;box-shadow:3px 4px 0 rgba(43,42,51,.12);display:none;}
+  .cal.on{display:block;}
+  .cal h5{font:600 8px "IBM Plex Mono",monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;}
+  .cal .lead{font:300 12px "Fraunces",serif;color:#6b6456;line-height:1.4;margin-bottom:9px;}
+  .cal .trap{border-top:1px dashed rgba(43,42,51,.2);padding-top:8px;margin-top:8px;}
+  .cal .trap:first-of-type{border-top:none;padding-top:0;margin-top:0;}
+  .cal .tt{font:500 10px "IBM Plex Mono",monospace;color:var(--ink);display:flex;align-items:center;gap:6px;line-height:1.3;}
+  .cal .tt .dot{width:9px;height:9px;border-radius:2px;background:var(--mock);flex:none;}
+  .cal .tt.ok .dot{background:var(--positive);}
+  .cal .ty{font:400 9px "IBM Plex Mono",monospace;color:var(--dim);margin:3px 0 6px 15px;line-height:1.4;}
+  .cal .rej{font:600 9px "IBM Plex Mono",monospace;color:#fff;background:var(--strain);border:none;border-radius:7px;padding:5px 9px;cursor:pointer;margin-left:15px;letter-spacing:.04em;}
+  .cal .rej:hover{filter:brightness(.92);}
+  .cal .rej.done{background:var(--positive);cursor:default;}
+  .cal .score{margin-top:10px;padding-top:8px;border-top:1px solid rgba(43,42,51,.15);font:400 9px "IBM Plex Mono",monospace;color:var(--dim);display:flex;justify-content:space-between;align-items:baseline;}
+  .cal .score b{font:300 17px "Fraunces",serif;color:var(--positive);}
+  /* the REAL recovery_scorer readout — the gesture moves this */
+  .cal .sgrid{display:flex;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(43,42,51,.15);}
+  .cal .st{flex:1;}
+  .cal .sl2{font:400 8px "IBM Plex Mono",monospace;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;}
+  .cal .sv{font:300 16px "Fraunces",serif;color:var(--ink);transition:color .4s ease;}
+  .cal .comp{display:flex;align-items:center;justify-content:space-between;margin-top:7px;gap:9px;}
+  .cal .cl{font:400 8px "IBM Plex Mono",monospace;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;}
+  .cal .cn{font:300 30px "Fraunces",serif;line-height:1;transition:color .45s ease;}
+  .cal .reads{font:600 8px "IBM Plex Mono",monospace;letter-spacing:.06em;border-radius:20px;padding:4px 9px;text-align:center;transition:all .4s ease;}
+  .cal .reads.yes{color:#fff;background:var(--positive);}
+  .cal .reads.no{color:var(--strain);border:1.2px solid rgba(212,84,63,.5);background:rgba(212,84,63,.07);}
+  .cal .prov{font:400 8px "IBM Plex Mono",monospace;color:var(--faint);margin-top:7px;letter-spacing:.04em;}
+  .cal .foot{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(43,42,51,.12);font:400 8.5px "IBM Plex Mono",monospace;color:var(--dim);line-height:1.4;}
+  .cal .foot .sw{width:9px;height:9px;border-radius:2px;background:var(--mock);flex:none;}
+
+  /* dev-grid toggle (the seams + addressed lanes live in dev mode — iterations 0010) */
+  .zoom{position:fixed;left:22px;bottom:22px;z-index:12;display:flex;align-items:center;gap:8px;background:rgba(255,252,245,.9);border:1.5px solid rgba(43,42,51,.4);border-radius:11px;padding:6px 10px;font:500 10px "IBM Plex Mono",monospace;color:var(--ink);}
+  .zoom button{background:none;border:1.2px solid rgba(43,42,51,.4);border-radius:7px;padding:3px 8px;cursor:pointer;font:600 11px "IBM Plex Mono",monospace;color:var(--ink);}
+
+  .hint{position:fixed;left:50%;bottom:118px;transform:translateX(-50%);z-index:9;font:300 10px "IBM Plex Mono",monospace;color:var(--faint);letter-spacing:.12em;pointer-events:none;transition:opacity .5s ease;}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<canvas id="ov"></canvas>
+
+<div class="top">
+  <span class="mark">Causa<b>lity</b></span>
+  <span class="tag">spatial · blend</span>
+  <span class="scale" id="scale"></span>
+  <span class="sp"></span>
+  <button class="btn" id="new">+ New</button>
+  <button class="btn" id="save">Save</button>
+</div>
+
+<div id="sentence"></div>
+<div class="hint" id="hint">drag the Complexity slider · lasso a region to package it</div>
+<div class="panel" id="panel"></div>
+<div class="cal" id="cal"></div>
+
+<div class="sliders" id="sliders"></div>
+<div class="tools">
+  <button data-t="lasso">⬚ Lasso</button>
+  <button class="on" data-t="select">▝ Select</button>
+  <button class="mock" data-t="pan">✋ Pan<span class="ftag">MOCK</span></button>
+</div>
+<div class="zoom"><span>grid</span><button id="devgrid" title="toggle dev seams + lanes (g)">⊞</button></div>
+
+<!-- REUSE the real engine + tokens + coordinate volume. No reimplemented drawing. -->
+<script src="canvas-system.js"></script>
+<script src="space.js"></script>
+<script src="canvas.js"></script>
+<!-- the REAL committed recovery-scorer (done-line 0105). Browser-safe: sets
+     window.CausalityScorer, no require. The gesture moves THIS score, not a count. -->
+<script src="recovery_scorer.js"></script>
+<script>
+(async () => {
+  'use strict';
+  const SYS   = window.CausalitySystem.TOKENS;
+  const FACET = SYS.FACET, BUILD = SYS.BUILD, COL = SYS.COLOR;
+  const SPACE = window.CausalitySpace;
+  const ENG   = window.Causality;                 // the engine (canvas.js)
+  const SCORE = window.CausalityScorer;           // the REAL recovery-scorer (recovery_scorer.js)
+  // palette pinned to the cream tokens (defensive — never a literal skin)
+  const C = { positive:'#0e8a7b', strain:'#d4543f', inference:'#7a5ba6', amber:'#b8742c',
+              blue:'#3f7cb6', dim:'#8d8678', faint:'#b8b1a2', ink:'#2b2a33', paper:'#f6f1e7' };
+  const PIGMENT = ENG.PIGMENT || COL.pigment || ['#0e8a7b','#b8742c','#7a5ba6','#bf4a3e','#3f7cb6','#6b8f3c'];
+  const MOCKCOL = (BUILD && BUILD.mock && BUILD.mock.color) || '#ff2bd6';   // the missing-texture magenta (a token)
+  const MOCKTAG = (BUILD && BUILD.mock && BUILD.mock.tag)   || 'MOCK';
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+  const lerp  = (a,b,k)=>a+(b-a)*k;
+
+  const cv = document.getElementById('cv');
+  const ov = document.getElementById('ov'), oc = ov.getContext('2d');
+  let W = innerWidth, H = innerHeight, DPR = Math.min(2, devicePixelRatio||1);
+  function sizeOv(){ W=innerWidth; H=innerHeight; ov.width=W*DPR; ov.height=H*DPR; oc.setTransform(DPR,0,0,DPR,0,0); }
+  sizeOv();
+
+  // ── the two sources, both REAL on disk — neither invented ────────────────────
+  //   STORY = the cute benchmark corpus (phrases.json), with its surface_traps.
+  //   DIR   = ontum reading its OWN vocabulary: the committed, byte-deterministic
+  //           fold produced by causality/term_economy.py over the whole repo.
+  //           Its `overloaded` terms ARE the surface_trap at directory scale.
+  let STORY, DIR;
+  try { STORY = await (await fetch('phrases.json')).json(); } catch(e){ STORY = { phrases:[], links:[] }; }
+  try { DIR   = await (await fetch('examples/ontum-terms.projection.json')).json(); } catch(e){ DIR = null; }
+  const byId = id => STORY.phrases.find(p=>p.id===id);
+  const CAT  = byId('cat-sunbeam') || (STORY.phrases[0]);
+
+  // ── the spatial vocabulary: a role rank gives each glyph a column, so the mesh
+  //    flows left(emitters) → right(actors) and edges rarely cross (clean order) ──
+  const ROLE_RANK = { source:0, time:0, sink:0, signal:1, gate:1, state:2, place:2, memory:2, action:3, actor:4, objective:4 };
+  const FACET_TYPE = { actor:'source', objective:'stock', source:'source', sink:'sink', signal:'gate', state:'stock', place:'pointer', action:'code', memory:'pen', time:'stock', gate:'gate' };
+  const bandFor = mid => mid==='cat-sunbeam' ? 7 : mid==='bee-flower' ? 2 : 12;
+
+  // a term's class (from the real fold) → its hue + engine disc type. The teeth:
+  // `overloaded` wears strain-rust (it refuses to collapse); a `ghost` (citation
+  // that resolves to nothing) wears the missing-texture magenta — same rule, repo scale.
+  const CLASS_STYLE = {
+    'minted-runtime':  { hue:C.positive,  type:'source',  badge:'minted·runtime' },
+    'minted-doctrine': { hue:C.blue,      type:'stock',   badge:'minted·doctrine' },
+    'minted-workflow': { hue:C.amber,     type:'pen',     badge:'minted·workflow' },
+    'projected':       { hue:C.inference, type:'pointer', badge:'projected' },
+    'proposed':        { hue:C.dim,       type:'pointer', badge:'proposed' },
+    'overloaded':      { hue:C.strain,    type:'gate',    badge:'⚠ overloaded' },
+    'orphaned':        { hue:C.dim,       type:'sink',    badge:'orphaned' },
+    'ghost':           { hue:MOCKCOL,     type:'pen',     badge:'GHOST' },
+    'poetic':          { hue:C.inference, type:'stock',   badge:'poetic' },
+  };
+  const STRATUM_COL = { doctrine:2, code:5, workflow:16, log:15 };
+  const base = p => (p||'').split('/').pop();
+
+  // ── the regimes the ONE slider spans (the magic at two scales) ───────────────
+  //   0..3  story:  cute nucleus → corpus (phrases.json)
+  //   4..6  directory: ontum's own term economy grows from its 5 core terms into
+  //         the full evidence mesh, the overloaded terms splitting apart.
+  const STORY_MAX = 3;
+  const DIR_STEPS = DIR ? 3 : 0;
+  const MAX_LEVEL = STORY_MAX + DIR_STEPS;
+  const regimeOf = lv => lv <= STORY_MAX ? 'story' : 'dir';
+  function scaleLabel(lv){ return lv===0 ? 'nucleus' : lv<=2 ? 'story' : lv===3 ? 'corpus' : '<b>directory</b>'; }
+
+  // calibration state (the teeth): which traps the reader has REJECTED.
+  const rejectedTraps = new Set();   // story: edgeKey of the surface_trap
+  const splitTerms    = new Set();   // directory: terms the reader has split
+
+  // ── the REAL recovery score (recovery_scorer.js) — not a count ───────────────
+  //   The TRUTH mesh is the phrase's full latent structure (the label). The
+  //   RECOVERED mesh is exactly what the canvas currently draws of cat-sunbeam:
+  //   the glyphs the slider has grown, the true edges among them, AND the
+  //   surface_trap edge while the reader has not yet rejected it. So the slider
+  //   raises recall and the reject-gesture clears the trap — both move the
+  //   committed composite, live. Refs use the phrase's own 'word.facet' grammar
+  //   so edgeKeys line up with the scorer's.
+  function truthMesh(){ return { glyphs: CAT.glyphs.map(g=>({word:g.word, facets:g.facets})),
+    relations: CAT.relations.map(r=>({from:r.from, to:r.to})), surface_trap: CAT.surface_trap }; }
+  function recoveredMesh(lv){
+    const stage = Math.min(lv, 2);
+    const present = new Set(CAT.glyphs.filter(g=>(g.stage||0)<=stage).map(g=>g.word));
+    const glyphs = CAT.glyphs.filter(g=>present.has(g.word)).map(g=>({word:g.word, facets:g.facets}));
+    const relations = CAT.relations.filter(r=>present.has(r.from.split('.')[0]) && present.has(r.to.split('.')[0]))
+                                   .map(r=>({from:r.from, to:r.to}));
+    const st=CAT.surface_trap;
+    if(st && stage>=2){ const ek='cat-sunbeam:'+st.edge.from.split('.')[0]+'→cat-sunbeam:'+st.edge.to.split('.')[0];
+      if(!rejectedTraps.has(ek)) relations.push({from:st.edge.from, to:st.edge.to}); }  // the careless edge, drawn until rejected
+    return { glyphs, relations };
+  }
+  function storyScore(lv){ if(!SCORE || !CAT) return null;
+    try{ return SCORE.score(recoveredMesh(lv), truthMesh()); }catch(e){ return null; } }
+  const pct = v => (v==null?'—':(Math.round(v*100)/100).toFixed(2));
+
+  // ── the unified spec builder — both regimes emit the SAME glyph/edge shape ───
+  function mkGlyph(mid, g){ const primary=g.facets[0];
+    return { key:mid+':'+g.word, membrane:mid, word:g.word, icon:g.icon,
+             facets:g.facets.slice(), type:FACET_TYPE[primary]||'stock', kind:'story' }; }
+  function mkEdge(mid, r){ return { fromKey:mid+':'+r.from.split('.')[0], toKey:mid+':'+r.to.split('.')[0],
+    label:r.label, line:r.line, sign:r.line==='feedback'?-1:1, mock:r.build==='mock', cross:false }; }
+
+  function buildStory(level){
+    const membranes=[], glyphs=[], edges=[], traps=[];
+    const catStage = Math.min(level, 2);
+    const catG = CAT.glyphs.filter(g=>(g.stage||0)<=catStage);
+    const present = new Set(catG.map(g=>g.word));
+    membranes.push({ id:'cat-sunbeam', text: CAT.stages ? CAT.stages.texts[catStage] : CAT.text });
+    catG.forEach(g=>glyphs.push(mkGlyph('cat-sunbeam', g)));
+    CAT.relations.forEach(r=>{ const fw=r.from.split('.')[0], tw=r.to.split('.')[0];
+      if(present.has(fw)&&present.has(tw)) edges.push(mkEdge('cat-sunbeam', r)); });
+    // the surface_trap, made visible — a tempting magenta edge you REJECT (the teeth)
+    const st = CAT.surface_trap;
+    if(st && catStage>=2){
+      const fw=st.edge.from.split('.')[0], tw=st.edge.to.split('.')[0];
+      const ek='cat-sunbeam:'+fw+'→cat-sunbeam:'+tw;
+      traps.push({ id:ek, kind:'edge', type:st.type, why:st.why,
+                   label:st.edge.label, from:fw, to:tw, rejected:rejectedTraps.has(ek) });
+      if(!rejectedTraps.has(ek)) edges.push({ fromKey:'cat-sunbeam:'+fw, toKey:'cat-sunbeam:'+tw,
+        label:st.edge.label, line:'relation', sign:1, mock:false, trap:true });
+    }
+    // corpus bloom: the membrane's declared cross-links open neighbouring membranes
+    if(level>STORY_MAX-1){
+      (STORY.links||[]).filter(l=>l.a==='cat-sunbeam'||l.b==='cat-sunbeam').forEach(l=>{
+        const otherId=l.a==='cat-sunbeam'?l.b:l.a, otherGlyph=l.a==='cat-sunbeam'?l.bGlyph:l.aGlyph, catGlyph=l.a==='cat-sunbeam'?l.aGlyph:l.bGlyph;
+        const P=byId(otherId); if(!P) return;
+        if(!membranes.find(m=>m.id===otherId)){ membranes.push({ id:otherId, text:P.text });
+          P.glyphs.forEach(g=>glyphs.push(mkGlyph(otherId,g)));
+          P.relations.forEach(r=>edges.push(mkEdge(otherId,r))); }
+        edges.push({ fromKey:'cat-sunbeam:'+catGlyph, toKey:otherId+':'+otherGlyph, label:'shared · '+l.via, line:'cross-membrane', sign:1, mock:false, cross:true });
+      });
+    }
+    glyphs.forEach((g,i)=>{ g.hue=PIGMENT[i%PIGMENT.length]; g._col=2+((ROLE_RANK[g.facets[0]]==null?2:ROLE_RANK[g.facets[0]]))*3; g._band=bandFor(g.membrane); g.level=0.42; });
+    return { regime:'story', membranes, glyphs, edges, traps,
+             lines:[{text:membranes[0].text,hero:true}].concat(membranes.slice(1).map(m=>({text:m.text,sub:true}))) };
+  }
+
+  // the directory regime: the SAME grammar at module scale. Generated by parsing
+  // the real fold — never hand-authored (§10). dstep 1: the core terms at rest;
+  // 2: the evidence mesh blooms (shared files cross-link the terms); 3: the
+  // overloaded terms split into their incompatible senses (the trap, exposed).
+  function buildDir(level){
+    const dstep = level - STORY_MAX;                 // 1,2,3
+    const terms = (DIR.terms||[]);
+    const glyphs=[], edges=[], traps=[], membranes=[{ id:'ontum', text:'ontum reads its own vocabulary' }];
+    const termNode={};
+    terms.forEach((t,i)=>{ const cs=CLASS_STYLE[t.class]||CLASS_STYLE.proposed;
+      const tev=(DIR.evidence_edges||[]).filter(e=>e.from==='term:'+t.term);
+      const g={ key:'term:'+t.term, membrane:'ontum', word:t.term, icon:null, facets:(t.senses&&t.senses.length?t.senses:[t.class]),
+                type:cs.type, hue:cs.hue, kind:'term', cls:t.class, badge:cs.badge,
+                meaning:t.local_meaning, must:t.must_not_mean||[], senses:t.senses||[], evidence:tev,
+                level: clamp((t.resolved_count||0)/4, .3, .95),
+                _col:9, _row:2+i*2 };
+      termNode[t.term]=g; glyphs.push(g);
+      // the repo-scale trap: an overloaded term tempts you to collapse two senses into one
+      if(t.class==='overloaded'){ const split=splitTerms.has(t.term);
+        traps.push({ id:'term:'+t.term, kind:'term', term:t.term, type:'overloaded-collapse',
+          why: (DIR.gaps||[]).filter(x=>x.term===t.term).map(x=>x.why)[0] || ('two senses share this word: '+t.senses.join(' / ')),
+          senses:t.senses||[], rejected:split }); }
+    });
+    if(dstep>=2){
+      const fileNode={};
+      (DIR.evidence_edges||[]).forEach((e,i)=>{ const t=e.from.replace('term:',''); const tg=termNode[t]; if(!tg) return;
+        const f=e.to.replace('evidence:',''); const resolved=e.resolved!==false && e.file_exists!==false;
+        let fg=fileNode[f];
+        if(!fg){ fg={ key:e.to, membrane:'ontum', word:base(f), icon:null, facets:[e.stratum||'evidence'],
+                      type: resolved?'pointer':'pen', hue: resolved? C.faint : MOCKCOL, kind:'evidence', path:f, resolved,
+                      level:.3, cites:[], _col:(STRATUM_COL[e.stratum]!=null?STRATUM_COL[e.stratum]:7), _row:0 };
+          fileNode[f]=fg; glyphs.push(fg); }
+        fg.cites.push(t); fg.level=clamp(.25+fg.cites.length*0.13,.3,.92);
+        // step 3: re-home the edge onto the SENSE it supports, so the senses pull apart
+        let toKey=e.to, sub=null;
+        if(dstep>=3 && tg.cls==='overloaded' && splitTerms.has(t) && e.sense){ sub='sense:'+t+':'+e.sense; }
+        edges.push({ fromKey: sub||('term:'+t), toKey:e.to, label:e.stratum||'', line:'relation',
+          sign: resolved?1:-1, mock:false, ghost:!resolved, stratum:e.stratum, sense:e.sense, cross:false }); });
+      // lay the file nodes onto rows (stacked per column), terms recentred
+      const cols={}; glyphs.filter(g=>g.kind==='evidence').forEach(g=>{ (cols[g._col]=cols[g._col]||[]).push(g); });
+      Object.values(cols).forEach(arr=>arr.forEach((g,i)=>{ g._row=Math.round(2+i*(11/Math.max(1,arr.length))); }));
+    }
+    if(dstep>=3){
+      // the senses, split out — only for terms the reader chose to split (or all, exposed)
+      Object.values(termNode).forEach(tg=>{ if(tg.cls!=='overloaded') return; const senses=tg.senses||[];
+        senses.forEach((s,k)=>{ const auto = splitTerms.has(tg.word) || true; if(!auto) return;
+          const sg={ key:'sense:'+tg.word+':'+s, membrane:'ontum', word:s.replace(/-/g,' '), icon:null, facets:[s],
+            type:'stock', hue:C.strain, kind:'sense', parent:tg.word, level:.5, _col: 11+(k%2)*2, _row: tg._row + (k? 1:-1) };
+          glyphs.push(sg);
+          edges.push({ fromKey:'term:'+tg.word, toKey:sg.key, label:'sense', line:'relation', sign:-1, mock:false, splitEdge:true }); }); });
+    }
+    glyphs.forEach(g=>{ g._col=clamp(g._col,0,19); g._row=clamp(g._row||7,0,14); });
+    // the sentence skin: the directory's thesis + the vocabulary itself, class-colored
+    const termWords = terms.map(t=>t.term).join('  ·  ');
+    const counts = DIR.class_summary||{}; const over=(DIR.gaps||[]).filter(g=>g.kind==='overloaded-term').length;
+    return { regime:'dir', membranes, glyphs, edges, traps,
+      lines:[ {text:'ontum reads its own vocabulary',hero:true},
+              {text:termWords,sub:true},
+              {text:terms.length+' terms · '+over+' overloaded · folded from examples/ontum-terms.projection.json',sub:true} ] };
+  }
+
+  function buildSpec(level){ return regimeOf(level)==='story' ? buildStory(level) : buildDir(level); }
+
+  // ── lay the spec on the addressed grid (space.js): clean crossing-free order ──
+  function placeSpec(spec){
+    const S = SPACE.Space({ nx:20, ny:15, nz:10 }); S.fit(W, H, 0.06);
+    // resolve row collisions within a column (story uses bands; dir presets rows)
+    if(spec.regime==='story'){
+      const groups={}; spec.glyphs.forEach(g=>{ const k=g.membrane+'|'+g._col; (groups[k]=groups[k]||[]).push(g); });
+      Object.values(groups).forEach(arr=>arr.forEach((g,i)=>{ const off=i-(arr.length-1)/2; g._row=Math.round(g._band+off*2); }));
+    }
+    spec.glyphs.forEach(g=>{ g._col=clamp(g._col,0,S.nx-1); g._row=clamp(g._row,0,S.ny-1); S.place(g.key,g._col,g._row); });
+    return S;
+  }
+
+  // ── stand up the engine. It draws every node/edge/pulse/water/wobble. ────────
+  const S = ENG.canvas(cv, {
+    perms:{ create:false, link:true, flip:true, move:true, rename:false, erase:true, tap:true, type:false, setline:false },
+    onselect: sel => { if(MODE!=='lasso'){ if(sel && sel.kind==='node') showLens(sel.ref); else if(sel && sel.kind==='edge') showEdge(sel.ref); else closePanel(); } },
+  });
+
+  let GRID=null, NODEMETA={}, EDGEMETA=[], CELL={}, SPEC=null, level=0;
+  try { const m=location.search.match(/[?&]c=(\d)/); if(m) level=clamp(+m[1],0,MAX_LEVEL); } catch(e){}
+
+  function rebuild(){
+    const spec = buildSpec(level); SPEC=spec;
+    GRID = placeSpec(spec);
+    const oldPos={}; S.nodes.forEach(n=>{ if(n._key) oldPos[n._key]={x:n.x,y:n.y}; });
+    S.clear(); NODEMETA={}; EDGEMETA=[]; CELL={}; const idByKey={};
+    spec.glyphs.forEach(g=>{ const c=GRID.center(g._col,g._row);
+      const start = oldPos[g.key] || { x:c.x, y:c.y+H*0.2 };          // new glyphs rise into place
+      const n = S.node(start.x, start.y, g.word, { type:g.type, hue:g.hue, level:(g.level!=null?g.level:0.42) });
+      n._key=g.key; n._tx=c.x; n._ty=c.y; NODEMETA[n.id]=g; idByKey[g.key]=n.id; CELL[g.key]={x:g._col,y:g._row}; });
+    spec.edges.forEach(e=>{ const a=idByKey[e.fromKey], b=idByKey[e.toKey]; if(a==null||b==null) return;
+      const kind = e.trap?'impulse' : e.cross?'leak' : e.line==='feedback'?'delayed' : 'impulse';
+      const lk = S.link(a, b, { sign:e.sign, kind }); if(lk){ lk._meta=e; EDGEMETA.push(lk); } });
+    updateSentence(spec); updateScale(); renderCal(spec);
+    if(MODE!=='lasso') closePanel();
+    clearRegion();
+  }
+
+  // ── the sentence skin (grows with the slider) ───────────────────────────────
+  function colorWords(text, hueByWord, strong){
+    return text.split(/(\s+)/).map(w=>{ const c=w.replace(/[.,;:·]/g,'').toLowerCase(); const h=hueByWord[c];
+      if(h && c) return '<b style="color:'+h+(strong?'':';opacity:.85')+'">'+w+'</b>'; return '<span>'+w+'</span>'; }).join('');
+  }
+  function updateSentence(spec){
+    const hueByWord={}; spec.glyphs.forEach(g=>{ if(g.kind!=='evidence') hueByWord[g.word.toLowerCase()]=g.hue; });
+    const el=document.getElementById('sentence'); el.innerHTML='';
+    (spec.lines||[]).forEach((ln,i)=>{ const d=document.createElement('div');
+      d.className='line'+(ln.hero?' hero':'')+(ln.sub?' sub':'');
+      d.innerHTML=colorWords(ln.text, hueByWord, i===0); el.appendChild(d); });
+  }
+  function updateScale(){ const el=document.getElementById('scale'); if(el) el.innerHTML='Lv'+level+' · '+scaleLabel(level); }
+
+  // ── position settling + snap-to-grid (the satisfying SPATIAL order) ──────────
+  function nearestCell(px,py){ if(!GRID) return {x:0,y:0};
+    return { x:clamp(Math.round((px-GRID.ox)/GRID.c-0.5),0,GRID.nx-1), y:clamp(Math.round((py-GRID.oy)/GRID.c-0.5),0,GRID.ny-1) }; }
+  let showGrid=false; try{ showGrid=location.search.indexOf('dev')>=0; }catch(e){}
+
+  // ── the engine's S.draw hook: our overlay — settle to grid, dev seams + LANES,
+  //    edge labels, the magenta trap flag. NOT a reimplemented graph. ──
+  S.draw = (cx) => {
+    S.nodes.forEach(n=>{ if(n._tx==null) return;
+      const dragging = S.drag && S.drag.node===n && S.drag.kind==='move'; if(dragging) return;
+      n.x = lerp(n.x, n._tx, 0.16); n.y = lerp(n.y, n._ty, 0.16); });
+    // dev seams + the addressed lanes the edges route through (space.js A*) — my signature order
+    if(showGrid && GRID){ cx.strokeStyle='rgba(43,42,51,.07)'; cx.lineWidth=1;
+      GRID.gridLines().forEach(l=>{ cx.beginPath(); cx.moveTo(l[0][0],l[0][1]); cx.lineTo(l[1][0],l[1][1]); cx.stroke(); });
+      try{ GRID.used && GRID.used.clear && GRID.used.clear();
+        cx.strokeStyle='rgba(122,91,166,.22)'; cx.lineWidth=1.4; cx.setLineDash([3,4]);
+        S.links.forEach(e=>{ const m=e._meta; if(!m) return; const ca=CELL[m.fromKey], cb=CELL[m.toKey]; if(!ca||!cb) return;
+          const cells=GRID.route(ca,cb); cx.beginPath();
+          cells.forEach((c,i)=>{ const p=GRID.center(c.x,c.y); i?cx.lineTo(p.x,p.y):cx.moveTo(p.x,p.y); }); cx.stroke(); });
+        cx.setLineDash([]); }catch(err){}
+      cx.fillStyle=C.faint; cx.font='400 8px "IBM Plex Mono",monospace'; cx.textAlign='center';
+      S.nodes.forEach(n=>{ const g=NODEMETA[n.id]; if(g) cx.fillText('['+g._col+','+g._row+']', n.x, n.y+S.NODE_R+22); }); }
+    // edge labels + the trap / ghost flags
+    cx.textAlign='center'; cx.textBaseline='middle';
+    S.links.forEach(e=>{ const m=e._meta; if(!m) return; const g=S.geom(e); const mid=g.q(0.5);
+      const flagged = m.trap || m.ghost;
+      const col = flagged?MOCKCOL : m.cross?C.inference : m.splitEdge?C.strain : e.sign>0?C.positive:C.strain;
+      if(m.label){ cx.font=(m.stratum?'400 10px "IBM Plex Mono",monospace':'400 12px "Caveat",cursive');
+        const w=cx.measureText(m.label).width; cx.fillStyle='rgba(246,241,231,.9)'; cx.fillRect(mid[0]-w/2-3, mid[1]-9, w+6, 16);
+        cx.fillStyle=col; cx.fillText(m.label, mid[0], mid[1]); }
+      if(flagged){ const tag=m.trap?'TRAP':'GHOST'; cx.font='600 8px "IBM Plex Mono",monospace'; const tw=cx.measureText(tag).width;
+        cx.fillStyle=MOCKCOL; cx.fillRect(mid[0]-tw/2-4, mid[1]-26, tw+8, 13); cx.fillStyle='#fff'; cx.fillText(tag, mid[0], mid[1]-19); } });
+    // creature-charm: each term wears a hand-pencilled specimen tag (a naturalist's
+    // field note) in its class hue — the directory end sings as warmly as it reasons.
+    if(SPEC && SPEC.regime==='dir'){ cx.textAlign='center'; cx.textBaseline='alphabetic';
+      S.nodes.forEach(n=>{ const g=NODEMETA[n.id]; if(!g) return;
+        if(g.kind==='term'){ const tag=(g.badge||'').replace(/^[^a-zA-Z]+/,'').replace(/·/g,' · ');
+          cx.globalAlpha=.78; cx.fillStyle=g.hue; cx.font='600 12px "Caveat",cursive';
+          cx.fillText(tag, n.x, n.y+S.NODE_R+15); cx.globalAlpha=1; }
+        else if(g.kind==='sense'){ cx.globalAlpha=.7; cx.fillStyle=C.strain; cx.font='500 11px "Caveat",cursive';
+          cx.fillText('a sense', n.x, n.y+S.NODE_R+13); cx.globalAlpha=1; } });
+    }
+    cx.textBaseline='alphabetic';
+  };
+
+  // ── BLEND: lasso a region = a context package, then act over it ──────────────
+  let MODE='select', lasso=null, region=null, capturing=false;
+  function ovPos(e){ const r=ov.getBoundingClientRect(); return { x:e.clientX-r.left, y:e.clientY-r.top }; }
+  function drawOverlay(){ oc.clearRect(0,0,W,H);
+    const path = region || (capturing && lasso ? lasso : null); if(!path || path.length<2){ requestAnimationFrame(drawOverlay); return; }
+    oc.save(); oc.fillStyle='rgba(122,91,166,.08)'; oc.beginPath(); oc.moveTo(path[0].x,path[0].y);
+    for(let i=1;i<path.length;i++) oc.lineTo(path[i].x,path[i].y); oc.closePath(); oc.fill();
+    oc.strokeStyle=C.inference; oc.lineWidth=1.8; oc.setLineDash([6,6]); oc.stroke(); oc.setLineDash([]); oc.restore();
+    requestAnimationFrame(drawOverlay); }
+  drawOverlay();
+  function inPoly(x,y,poly){ let inside=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y;
+    if(((yi>y)!==(yj>y)) && (x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside; } return inside; }
+  function clearRegion(){ region=null; }
+  ov.addEventListener('pointerdown', e=>{ if(MODE!=='lasso') return; capturing=true; region=null; lasso=[ovPos(e)]; });
+  ov.addEventListener('pointermove', e=>{ if(!capturing) return; lasso.push(ovPos(e)); });
+  ov.addEventListener('pointerup', e=>{ if(!capturing) return; capturing=false;
+    if(lasso.length<3){ lasso=null; return; } region=lasso.slice(); lasso=null;
+    const inside = S.nodes.filter(n=>inPoly(n.x,n.y,region)); showPackage(inside); });
+
+  // ── the panels (Lens for a glyph/edge; the context package for a lasso) ──────
+  const P = document.getElementById('panel');
+  function openPanel(html){ P.innerHTML=html; P.classList.add('on'); requestAnimationFrame(()=>P.classList.add('show'));
+    const x=P.querySelector('.x'); if(x) x.onclick=()=>{ closePanel(); clearRegion(); S.select && S.select(null); }; }
+  function closePanel(){ P.classList.remove('show'); setTimeout(()=>P.classList.remove('on'),260); }
+
+  function showLens(id){ const g=NODEMETA[id]; if(!g) return;
+    if(g.kind==='term') return showTermLens(g);
+    if(g.kind==='evidence') return showFileLens(g);
+    const chips=g.facets.map(f=>`<span class="chip">${(FACET[f]||{}).icon||'·'} ${f}</span>`).join('');
+    const conns=S.links.filter(e=>e._meta && (e.a===id||e.b===id)).map(e=>{ const o=e.a===id?e.b:e.a; const on=NODEMETA[o];
+      return `<div><b>${g.word}</b> ${e._meta.label||''} <b>${on?on.word:'?'}</b>${e._meta.trap?' <span class="flag">TRAP</span>':''}</div>`; }).join('')||'<div>—</div>';
+    openPanel(`<h4>Lens<span class="x">✕</span></h4><div class="row"><span class="ico" style="border-color:${g.hue};color:${g.hue}">${g.word[0]}</span><span class="ttl">${g.word}</span></div><div class="chips">${chips}</div><div class="sub">connected through</div><div class="conn">${conns}</div>`);
+  }
+  function showTermLens(g){
+    const chips=g.senses.length ? g.senses.map(s=>`<span class="chip" style="border-color:${C.strain};color:${C.strain}">${s}</span>`).join('')
+                                : `<span class="chip">${g.badge}</span>`;
+    const cites=g.evidence.map(e=>{ const f=e.ref?e.ref.file:'?'; const ln=e.ref&&e.ref.line?(':'+e.ref.line):'';
+      return `<div class="cite"><b>${f}${ln}</b> — ${e.claim||''}</div>`; }).join('');
+    const over = g.cls==='overloaded';
+    const splitBtn = over ? (splitTerms.has(g.word)
+        ? `<button class="split done">split ✓ — two senses, named</button>`
+        : `<button class="split" id="splitbtn">reject the collapse → split term</button>`) : '';
+    openPanel(`<h4>Term · ${g.badge}<span class="x">✕</span></h4>
+      <div class="row"><span class="ico" style="border-color:${g.hue};color:${g.hue}">${g.word[0]}</span><span class="ttl">${g.word}</span></div>
+      <div class="chips">${chips}</div>
+      <div class="sub">means here</div><div class="conn">${g.meaning||''}</div>
+      ${over?`<div class="sub">the trap (repo scale)</div><div class="conn">two senses share this word and each resolves on disk — they cannot both be "the" meaning. <span class="warn">overloaded</span></div>`:''}
+      <div class="sub">evidence (folded, file:line)</div>${cites||'<div class="cite">—</div>'}
+      ${splitBtn}`);
+    const sb=document.getElementById('splitbtn'); if(sb) sb.onclick=()=>{ splitTerms.add(g.word); if(level<MAX_LEVEL){ level=MAX_LEVEL; syncSlider(); } rebuild(); rippleTerm(g.word); setTimeout(()=>{ const n=Object.keys(NODEMETA).find(k=>NODEMETA[k].key==='term:'+g.word); if(n!=null) showTermLens(NODEMETA[n]); },40); };
+  }
+  function showFileLens(g){
+    const cites=(g.cites||[]).map(t=>`<div class="item">${t} <span class="t">cites this</span></div>`).join('');
+    openPanel(`<h4>Evidence ${g.resolved?'':'<span class="flag">GHOST</span>'}<span class="x">✕</span></h4>
+      <div class="row"><span class="ico" style="border-color:${g.hue};color:${g.hue}">${(g.facets[0]||'·')[0]}</span><span class="ttl" style="font-size:15px">${g.path}</span></div>
+      <div class="chips"><span class="chip">${g.facets[0]||'evidence'}</span></div>
+      <div class="sub">cited by ${(g.cites||[]).length} term(s)</div>${cites||'<div class="item">—</div>'}`);
+  }
+  function showEdge(e){ const m=e._meta; if(!m){ closePanel(); return; } const a=NODEMETA[e.a], b=NODEMETA[e.b];
+    if(m.trap){ const t=(SPEC.traps||[]).find(x=>x.kind==='edge'); return showTrapEdge(t,a,b); }
+    openPanel(`<h4>Relation<span class="x">✕</span></h4><div class="conn"><b>${a?a.word:'?'}</b><br>&nbsp;&nbsp;${m.label||''} →<br><b>${b?b.word:'?'}</b></div><div class="sub">${m.line}${m.ghost?' · <span class="flag">GHOST</span> citation does not resolve':''}${m.mock?' · <span class="flag">MOCK</span> hand-authored, not yet composition-generated':''}</div>`);
+  }
+  function showTrapEdge(t,a,b){
+    openPanel(`<h4>Surface trap · ${t?t.type:''}<span class="x">✕</span></h4>
+      <div class="conn">the surface tempts <b>${a?a.word:'?'} → ${b?b.word:'?'}</b><br><span class="flag">TRAP</span> a plausible misreading</div>
+      <div class="sub">why it is wrong</div><div class="conn">${t?t.why:''}</div>
+      <button class="split" id="rejtrap">reject the trap → recover the mechanism</button>`);
+    const r=document.getElementById('rejtrap'); if(r&&t) r.onclick=()=>rejectEdgeTrap(t.id);
+  }
+
+  // ── the calibration card (the teeth, on canvas) ──────────────────────────────
+  const CAL=document.getElementById('cal');
+  function renderCal(spec){
+    const traps=spec.traps||[];
+    if(!traps.length){ CAL.classList.remove('on'); return; }
+    CAL.classList.add('on');
+    const lead = spec.regime==='story'
+      ? 'a cute story hides a tempting-but-wrong edge — reject it to recover the mechanism.'
+      : 'at directory scale, an overloaded term is the same trap — split it to recover the meaning.';
+    let recovered=0;
+    const rows=traps.map(t=>{ const ok = t.rejected; if(ok) recovered++;
+      const verb = t.kind==='edge' ? 'reject' : 'split';
+      const head = t.kind==='edge' ? `${t.from} → ${t.to}` : t.term+' · '+(t.senses||[]).length+' senses';
+      return `<div class="trap"><div class="tt${ok?' ok':''}"><span class="dot"></span>${head}</div>
+        <div class="ty">${(t.type||'').replace(/-/g,' ')} — ${ok?'recovered ✓':'tempting'}</div>
+        ${ok?'' : `<button class="rej" data-id="${t.id}" data-kind="${t.kind}" data-term="${t.term||''}">${verb} it</button>`}</div>`; }).join('');
+    // the REAL recovery_scorer composite (story) — the gesture moves THIS number.
+    // (directory: senses-split is a genuine count, framed honestly — not the composite.)
+    let teeth;
+    if(spec.regime==='story'){ const s=storyScore(level);
+      if(s){ const reads=s.reads_mechanism;
+        teeth=`<div class="sgrid">
+            <div class="st"><div class="sl2">facet F1</div><div class="sv">${pct(s.facet.f1)}</div></div>
+            <div class="st"><div class="sl2">relation F1</div><div class="sv">${pct(s.relation.f1)}</div></div></div>
+          <div class="comp"><div><div class="cl">composite</div><div class="cn" style="color:${reads?C.positive:C.strain}">${pct(s.composite)}</div></div>
+            <div class="reads ${reads?'yes':'no'}">${reads?'reads mechanism ✓':(s.trap.hit?'trap drawn ✕':'partial')}</div></div>
+          <div class="prov">via recovery_scorer.js — real, committed</div>`;
+      } else { teeth=`<div class="score"><span>mechanism recovered</span><b>${recovered}/${traps.length}</b></div>`; }
+    } else {
+      teeth=`<div class="score"><span>senses split (count)</span><b>${recovered}/${traps.length}</b></div>`;
+    }
+    CAL.innerHTML=`<h5>Calibration <span>recover the mechanism</span></h5><div class="lead">${lead}</div>${rows}${teeth}
+      <div class="foot"><span class="sw"></span>magenta = mock · TRAP · GHOST (the missing-texture rule)</div>`;
+    CAL.querySelectorAll('.rej').forEach(btn=>btn.onclick=()=>{ if(btn.dataset.kind==='edge') rejectEdgeTrap(btn.dataset.id);
+      else { splitTerms.add(btn.dataset.term); if(level<MAX_LEVEL){ level=MAX_LEVEL; syncSlider(); } rebuild(); rippleTerm(btn.dataset.term); } });
+  }
+  function rejectEdgeTrap(id){ rejectedTraps.add(id); rebuild();
+    // recover the mechanism: pulse the true mediator path green (the engine's beat)
+    try{ S.nodes.forEach(n=>{ const g=NODEMETA[n.id]; if(g && (g.word==='warmth'||g.word==='shadow')) S.firePulse(n.id,0.2,g.word); }); }catch(e){}
+  }
+  function rippleTerm(term){ try{ const id=Object.keys(NODEMETA).find(k=>NODEMETA[k].key==='term:'+term); if(id!=null) S.firePulse(+id,0.2,term); }catch(e){} }
+
+  // ── the context package (BLEND): a region → a real context bundle, then act ──
+  function showPackage(nodes){
+    if(!nodes.length){ openPanel(`<h4>Context package<span class="x">✕</span></h4><div class="conn">empty region — lasso around some glyphs.</div>`); return; }
+    const ids=new Set(nodes.map(n=>n.id));
+    const dir = SPEC && SPEC.regime==='dir';
+    const items=nodes.map(n=>{ const g=NODEMETA[n.id];
+      if(g.kind==='term'){ const cites=g.evidence.map(e=>`<div class="cite"><b>${e.ref?e.ref.file:'?'}${e.ref&&e.ref.line?(':'+e.ref.line):''}</b></div>`).join('');
+        return `<div class="item">${g.word} <span class="t">· ${g.badge}${g.senses.length?' · '+g.senses.length+' senses':''}</span></div>${cites}`; }
+      if(g.kind==='evidence') return `<div class="item">${g.path} <span class="t">· ${g.facets[0]} · cited ×${(g.cites||[]).length}</span></div>`;
+      return `<div class="item">${g.word} <span class="t">· ${g.type} · ${g.facets.join(', ')}</span></div>`; }).join('');
+    const rels=S.links.filter(e=>e._meta && ids.has(e.a) && ids.has(e.b));
+    const over = dir ? nodes.filter(n=>NODEMETA[n.id].cls==='overloaded').length : 0;
+    const relHtml = rels.length ? rels.map(e=>{ const a=NODEMETA[e.a], b=NODEMETA[e.b];
+        return `<div class="item"><span class="t">${a.word} → ${b.word}</span> ${e._meta.label||''}${e._meta.trap?' <span class="flag">TRAP</span>':''}${e._meta.ghost?' <span class="flag">GHOST</span>':''}</div>`; }).join('')
+      : '<div class="item t">no internal relations</div>';
+    openPanel(`<h4>Context package${dir?' · directory':''}<span class="x">✕</span></h4>
+      <div class="big"><div><div class="n">${nodes.length}</div><div class="l">${dir?'subjects':'glyphs'}</div></div><div><div class="n">${rels.length}</div><div class="l">relations</div></div>${over?`<div><div class="n" style="color:${C.strain}">${over}</div><div class="l">overloaded</div></div>`:''}</div>
+      <div class="sub">in the region</div>${items}
+      <div class="sub">relations</div>${relHtml}
+      <div class="sub">act over this region</div>
+      <textarea class="ask" id="ask" placeholder="${dir?'e.g. which of these terms needs splitting, and why?':'e.g. what would break this loop?'}"></textarea>
+      <button class="go" id="go">act ↩</button>
+      <div class="reply" id="reply" style="display:none"></div>`);
+    document.getElementById('go').onclick=()=>actOverRegion(nodes, rels);
+  }
+  // the deterministic FLOOR assembles a REAL package from the region — for the
+  // directory regime it carries real file:line citations from the fold (RepoPrompt,
+  // realized as a gesture). The local inference bridge enriches it when up.
+  function packageText(nodes, rels){
+    const dir = SPEC && SPEC.regime==='dir';
+    const L=['# context package — '+nodes.length+(dir?' terms from ontum\'s own vocabulary (folded, not authored)':' glyphs from the living graph')];
+    nodes.forEach(n=>{ const g=NODEMETA[n.id];
+      if(g.kind==='term'){ L.push(''); L.push('- '+g.word+'  ['+g.badge+']'+(g.senses.length?'  senses: '+g.senses.join(', '):''));
+        if(g.meaning) L.push('    meaning: '+g.meaning);
+        g.evidence.forEach(e=>{ const f=e.ref?e.ref.file:'?'; const ln=e.ref&&e.ref.line?(':'+e.ref.line):''; L.push('    evidence '+f+ln+'  — '+(e.claim||'')); });
+      } else if(g.kind==='evidence'){ L.push('- '+g.path+'  ['+g.facets[0]+']  cited by: '+(g.cites||[]).join(', '));
+      } else { L.push('- '+g.word+' ['+g.type+'] facets: '+g.facets.join(', ')); } });
+    if(rels.length){ L.push(''); L.push('## relations'); rels.forEach(e=>{ const a=NODEMETA[e.a], b=NODEMETA[e.b];
+      L.push('- '+a.word+' → '+b.word+' : '+(e._meta.label||'')+(e._meta.trap?'  (TRAP — reject)':'')+(e._meta.ghost?'  (GHOST — unresolved)':'')); }); }
+    if(dir){ const over=nodes.map(n=>NODEMETA[n.id]).filter(g=>g.cls==='overloaded').map(g=>g.word);
+      if(over.length){ L.push(''); L.push('## overloaded in this region (the teeth): '+over.join(', ')); L.push('   move: split the term, or name one sense the owner'); } }
+    return L.join('\n');
+  }
+  async function actOverRegion(nodes, rels){
+    const ask=(document.getElementById('ask').value||'').trim();
+    const pkg=packageText(nodes, rels);
+    const reply=document.getElementById('reply'); reply.style.display='block'; reply.textContent=pkg+'\n\n— assembling…';
+    const bridge=window.CAUSALITY_BRIDGE || 'http://localhost:8378/infer';
+    try{ const r=await fetch(bridge,{ method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ prompt:(ask||'Summarise this region of the graph.')+'\n\nCONTEXT:\n'+pkg, backend:'ollama', timeout:120 }) });
+      const j=await r.json(); reply.textContent=pkg+'\n\n— '+(j.result||j.error||'(no reply)');
+    }catch(e){ reply.innerHTML=pkg.replace(/&/g,'&amp;').replace(/</g,'&lt;')+
+        '\n\n<span class="flag">NEEDS BRIDGE</span> the local inference bridge is offline — the package above is the deterministic floor; an answer arrives when the bridge is up.'; }
+  }
+
+  // ── chrome: the Complexity slider (live backbone) + four flagged siblings ────
+  const SLIDERS=document.getElementById('sliders'); let cSlider=null;
+  function syncSlider(){ if(cSlider) cSlider.value=level; const cv=document.getElementById('cval'); if(cv) cv.textContent='Lv'+level+'/'+MAX_LEVEL+' · '+scaleLabel(level).replace(/<\/?b>/g,''); }
+  // ONE control — the backbone, undiluted (iterations 0002: remove before adding;
+  // the four decorative siblings of turn 2 are gone). The slider IS the magic.
+  function buildSliders(){ SLIDERS.innerHTML='';
+    const c=document.createElement('div'); c.className='sl';
+    c.innerHTML=`<div class="lab"><span>Complexity — cute nucleus → directory</span><span class="val" id="cval"></span></div>`;
+    const r=document.createElement('input'); r.type='range'; r.min=0; r.max=Math.max(1,MAX_LEVEL); r.step=1; r.value=level; cSlider=r;
+    r.oninput=()=>{ const was=regimeOf(level); level=+r.value; rebuild(); syncSlider();
+      if(was!=='dir' && regimeOf(level)==='dir') nudgeHint('ontum now reads its OWN vocabulary — folded from disk, not authored'); };
+    c.appendChild(r); SLIDERS.appendChild(c);
+    syncSlider();
+  }
+
+  // gesture toolbar
+  document.querySelectorAll('.tools button').forEach(b=>b.onclick=()=>{
+    const t=b.dataset.t; if(t==='pan'||t==='voice') return;
+    document.querySelectorAll('.tools button').forEach(z=>z.classList.remove('on')); b.classList.add('on');
+    MODE=t; ov.classList.toggle('lasso', MODE==='lasso'); if(MODE!=='lasso') clearRegion();
+    nudgeHint(MODE==='lasso' ? 'draw a loop around glyphs → a real context package, then act over it' : 'drag the Complexity slider · lasso a region to package it');
+  });
+
+  // dev grid
+  const dg=document.getElementById('devgrid');
+  const toggleGrid=()=>{ showGrid=!showGrid; dg.style.background=showGrid?'rgba(122,91,166,.16)':'none'; };
+  dg.onclick=toggleGrid; addEventListener('keydown',e=>{ if((e.key==='g'||e.key==='G')&&!/input|textarea/i.test((e.target.tagName||''))) toggleGrid(); });
+
+  // New / Save
+  document.getElementById('new').onclick=()=>{ level=0; rejectedTraps.clear(); splitTerms.clear(); rebuild(); buildSliders(); MODE='select';
+    document.querySelectorAll('.tools button').forEach(z=>z.classList.toggle('on', z.dataset.t==='select')); ov.classList.remove('lasso'); };
+  document.getElementById('save').onclick=()=>{ try{ localStorage.setItem('causality.spatial', JSON.stringify({ level, graph:S.toJSON() })); }catch(e){} };
+
+  // snap-to-grid on drop (added alongside the engine's own pointer handling)
+  cv.addEventListener('pointerup', e=>{ const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+    let nn=null; S.nodes.forEach(n=>{ if(Math.hypot(x-n.x,y-n.y)<S.NODE_R) nn=n; });
+    if(nn && GRID){ const cell=nearestCell(nn.x,nn.y); const c=GRID.center(cell.x,cell.y); nn._tx=c.x; nn._ty=c.y; if(nn._key) CELL[nn._key]=cell; } });
+
+  // a gentle heartbeat: pulses travel the mesh; it grows with complexity.
+  let beat=0;
+  setInterval(()=>{ if(document.hidden) return; const srcs=S.nodes.filter(n=>n.type==='source'); if(!srcs.length) return;
+    const k=Math.min(srcs.length, 1+Math.min(level,4)); for(let i=0;i<k;i++){ const n=srcs[(beat+i)%srcs.length]; try{ S.firePulse(n.id,0.13,n.label); }catch(e){} } beat++; }, 1700);
+
+  addEventListener('resize', ()=>{ sizeOv(); if(SPEC){ GRID=placeSpec(SPEC);
+    SPEC.glyphs.forEach(g=>{ const id=Object.keys(NODEMETA).find(k=>NODEMETA[k].key===g.key); if(id!=null){ const n=S.byId(+id); if(n){ const c=GRID.center(g._col,g._row); n._tx=c.x; n._ty=c.y; } } }); } });
+
+  // the hint fades after orientation — minimal chrome that gets out of the way
+  const HINT=document.getElementById('hint'); let hintT=null;
+  function nudgeHint(txt){ if(!HINT) return; if(txt) HINT.textContent=txt; HINT.style.opacity='1';
+    clearTimeout(hintT); hintT=setTimeout(()=>{ HINT.style.opacity='0'; }, 4200); }
+
+  rebuild(); buildSliders(); nudgeHint();
+})();
+</script>
+</body>
+</html>

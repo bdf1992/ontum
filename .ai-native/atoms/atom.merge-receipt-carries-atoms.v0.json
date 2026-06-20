@@ -1,0 +1,31 @@
+{
+  "atom": {
+    "id": "atom.merge-receipt-carries-atoms.v0",
+    "story": {
+      "text": "GitHub must be only a deterministic reflection of local truth (bdo, 2026-06-18), and the pens prove it by being write-through carbon copies. The merge-node's landing receipt broke that: it recorded THAT a PR landed (pr, epic, head) but not WHICH atoms reached main, so the pipeline namespace (per-atom) and the git-merge namespace (per-PR) could not join, and the loop could never confirm a judged-good piece was actually on main (the terminal-pull gateway's namespace gap, done-line 0123). This is the fix: the doctrine gains D-13 (external surfaces are deterministic reflections; the writing pen carries enough to re-derive the local truth it reflects), and the merge receipt carries landed_atoms — the artifact_ids the PR's range adds, computed by reusing the same _range_atom_facts reach the off-log gate uses, so the receipt cannot disagree with what the gate counted. A pure join fold (digest.atoms_on_main) reads them, so 'did atom X reach main?' is answerable from the log alone. Value: the merge stops being a lossy summary and becomes a faithful carbon copy of local truth; the two namespaces join going forward; and the terminal-pull gateway gains a real signal to drain on (its passed-but-unpulled patrol becomes computable). Phase A of bdo's two-phase direction — Phase B (the pipeline seams updated with the gateway implementations) depends on this join and is its own later arc.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "merge",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0124-gh-reflection-write-through.md",
+        "ai-native-loop-substrate.md:D-13"
+      ],
+      "receipts": []
+    }
+  }
+}

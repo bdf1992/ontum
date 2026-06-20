@@ -14,3 +14,7 @@ that is a scope error and gets reported, not coded around.
   information-theoretic spine under the glyph-field direction.
 - `rosetta-creole.md` — ontum is a living third language between code and
   models, not a finished translation key; what the language surface is *for*.
+- `repoprompt-context-engineering.md` — an independent tool that makes
+  "what context reaches the model" a reviewable handoff; the same instinct as
+  the envoy surface, arrived at from the other end (human-as-curator vs.
+  log-as-curator).

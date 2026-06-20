@@ -1,0 +1,36 @@
+{
+  "atom": {
+    "id": "atom.confirm-new-arc-bootstrap.v0",
+    "story": {
+      "text": "Confirming a brand-new arc could fail confusingly. `cmd_confirm` (the PR pen) spins a worktree off origin/main and calls `confirm_arc`, which validates the epic against the trunk; `--from-ref` (issue #245, done-line 0130) lets it read the epic from the introducing PR's branch instead, so a new arc's first piece can land. But a new arc confirmed with NO `--from-ref` fell through to `confirm_arc` returning None, then an empty `git commit` aborting -- bdo saw a raw 'nothing to commit / not currently on any branch' git error, not the paved path. This hardens that seam: a pure `establish_plan(epic_on_trunk, source_ref)` decision (confirm | establish | refuse) is wired into `cmd_confirm`, so a forward confirm of an unestablished arc with no ref is refused with `--from-ref` named, while the on-trunk and `--from-ref` paths stay byte-unchanged and `--off` (withdrawal) is unaffected. Value: the owner's arc-confirmation seam fails with the paved path, never a raw git error -- the teeth (the value this stakes): a brand-new arc with no definition source is refused, not silently waved through to a confusing failure.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        ".claude/skills/branch-ritual/pr.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        ".claude/skills/arc-intake/SKILL.md"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_merge_land.py"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A session+bdo follow-through to the herald landing (2026-06-19): the optional hardening bdo asked to complete. It serves epic.owner-harness (the owner's arc-confirmation flow), already confirmed on the trunk, so it lands via the merge-node with no bootstrap. The value gate judges the story; the value-confirm gate verifies the establish_plan helper + its tests are real on disk. Never mutated -- the fold over .ai-native/log/ is the live state (D-5)."
+}

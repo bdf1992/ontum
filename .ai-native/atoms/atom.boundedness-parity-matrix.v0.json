@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.boundedness-parity-matrix.v0",
+    "story": {
+      "text": "As the owner steering epic.repoprompt-parity, I need the arc's first deliverable on the record — the requirements mine itself (bdo: 'mine it for requirements'). RepoPrompt CE is the human-driven, app-centric tool that keeps its agents bounded; ontum is building the AI-driven counterpart (a typed meshed graph with a fibral substrate). Before any of that, the system needs one honest, machine-checkable answer to 'for each way RepoPrompt keeps an agent bounded, does ontum HAVE it, must it BUILD it, or does it live in another epic?' — so the rest of the arc is ordered by evidence, not vibes. A matrix whose citations point at nothing would be worse than none: it would read as 'covered' when it isn't. So the teeth are the term-economy/gaps grip rule — a citation that points to nothing is a ghost, and the check fails on it.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the RepoPrompt boundedness parity matrix: the requirements mine that orders the arc",
+      "value": "loop/parity.py — a pure, stdlib, read-only fold that mines RepoPrompt CE (docs/sources/repoprompt-context-engineering.md, read-only inspiration) as a catalogue of agent-BOUNDEDNESS techniques, not a feature list. Each of 11 capabilities is read as 'how does this keep an agent bounded?' and answered with exactly one verdict: have (cites a resolvable repo file), build (names an atom in epic.repoprompt-parity), or dont-double-build (cites a real owning epic). Today: 3 have, 6 build, 2 dont-double-build. It is the sibling of gaps/census on a new axis — what a neighbouring system forces us to account for.",
+      "why_now": "bdo authored epic.repoprompt-parity this session (2026-06-17) and named the first move: 'mine it for requirements'. The arc is confirmed (adm.5fa5caafba13). The matrix is the durable asset that turns the survey into an ordered backlog and refuses to double-build what other epics already own (§10).",
+      "if_accepted": "The arc has its requirements mine on the record: 6 genuine gaps to build (context-fold, context-hash, context-budget-dial, served-fold-surface, worktree-include), 2 capabilities named as already-owned elsewhere (orchestration -> epic.virtual-fleet, provider plugins -> epic.inference-gateway), 3 already had. python -m loop.parity renders it; the §10 test guarantees no ghost citation can hide in it.",
+      "if_rejected": "The parity survey stays prose in a source entry — no machine-checkable map, so the arc's later pieces get ordered by impression, and a citation can rot to a ghost with nothing to catch it.",
+      "cost_of_wrong_call": "Low and fail-safe: loop/parity.py is read-only (writes nothing, judges nothing, D-4), additive (a new module beside gaps/census/retro), and reuses docs/sources + the epics on disk rather than introducing a second truth. Reverting is deleting the module; nothing depends on it.",
+      "mechanism": "loop/parity.py: a MATRIX of rows (capability, the boundedness technique, verdict, citation); validate() resolves every citation against disk — a have path must exist, a dont-double-build epic must exist, a build atom must be named in epic.repoprompt-parity.json — and returns the ghosts. tests/test_parity.py joins the suite with §10 teeth: the committed matrix has zero ghosts, AND a fabricated ghost row of each verdict (have/build/dont/unknown) is caught (a vacuous validator would fail these), with a positive control (a real have citation resolves). loop/CLAUDE.md registers the module. Done-line 0115.",
+      "reading": [
+        "loop/parity.py",
+        "tests/test_parity.py",
+        ".ai-native/done/0115-boundedness-parity-matrix.md",
+        ".ai-native/epics/epic.repoprompt-parity.json",
+        "docs/sources/repoprompt-context-engineering.md",
+        "loop/CLAUDE.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.repoprompt-parity"],
+      "touches": ["loop/parity.py", "tests/test_parity.py", "loop/CLAUDE.md", ".ai-native/epics/epic.repoprompt-parity.json", "docs/sources/CLAUDE.md", "docs/sources/repoprompt-context-engineering.md", "docs/sources/README.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/gaps.py", "loop/census.py", "causality/term_economy.py", "docs/sources/repoprompt-context-engineering.md"]
+    }
+  }
+}

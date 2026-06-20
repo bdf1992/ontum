@@ -71,6 +71,40 @@ def resolve_evidence(root, ev):
     return out
 
 
+def site_id(rel):
+    """A deterministic SiteNode id for a repo-relative address."""
+    slug = "".join(c.lower() if c.isalnum() else "-" for c in str(rel)).strip("-")
+    while "--" in slug:
+        slug = slug.replace("--", "-")
+    return f"site:{slug or 'unknown'}"
+
+
+def site_kind(rel, stratum=None):
+    """Classify an evidence address into the contract's SiteNode kinds.
+
+    The path is the stronger signal; stratum is a fallback for unusual seeds.
+    This is descriptive only: the file bytes still decide existence/resolution.
+    """
+    rel = str(rel or "")
+    if rel.startswith(".ai-native/log/"):
+        return "log"
+    if rel.startswith("docs/phase-2/") or rel.startswith("docs/sources/"):
+        return "vault"
+    if rel.startswith("causality/") or stratum == "causality":
+        return "surface"
+    if rel.startswith(".claude/") or rel.startswith(".ai-native/"):
+        return "workflow"
+    if rel.endswith((".py", ".js", ".html", ".json")):
+        return "code"
+    return {
+        "code": "code",
+        "log": "log",
+        "workflow": "workflow",
+        "causality": "surface",
+        "doctrine": "doctrine",
+    }.get(stratum, "doctrine")
+
+
 # ---------------------------------------------------------------------------
 # classification: the economy class, derived from resolved evidence
 # ---------------------------------------------------------------------------
@@ -133,12 +167,12 @@ def classify(term, resolved_evs):
 # ---------------------------------------------------------------------------
 
 def build_projection(root, seed):
-    """Fold a seed into a ProjectionView: TermNodes wired to EvidenceEdges,
+    """Fold a seed into a ProjectionView: TermNodes, SiteNodes, EvidenceEdges,
     plus a class summary and gap findings. Deterministic: terms sorted by
     name, evidence kept in declared order, no timestamps. Re-running over the
     same committed bytes yields byte-identical output (the reproducibility
     property the test pins)."""
-    terms_out, edges_out, gaps = [], [], []
+    terms_out, sites, edges_out, gaps = [], {}, [], []
     terms = sorted(seed.get("terms", []), key=lambda t: t["term"])
 
     for t in terms:
@@ -163,10 +197,23 @@ def build_projection(root, seed):
 
         for i, e in enumerate(resolved_evs):
             ref = {k: e[k] for k in ("file", "contains", "line") if k in e}
+            rel = e.get("file", "?")
+            sid = site_id(rel)
+            if sid not in sites:
+                sites[sid] = {
+                    "id": sid,
+                    "address": rel,
+                    "kind": site_kind(rel, e.get("stratum")),
+                    "exists": e.get("file_exists", False),
+                    "_terms": set(),
+                    "record_kind": "projected",
+                }
+            sites[sid]["exists"] = sites[sid]["exists"] or e.get("file_exists", False)
+            sites[sid]["_terms"].add(f"term:{name}")
             edges_out.append({
                 "id": f"edge:{name}:{i}",
                 "from": f"term:{name}",
-                "to": f"evidence:{e.get('file', '?')}",
+                "to": sid,
                 "stratum": e.get("stratum"),
                 "sense": e.get("sense"),
                 "claim": e.get("claim", ""),
@@ -212,14 +259,21 @@ def build_projection(root, seed):
     summary = {}
     for tn in terms_out:
         summary[tn["class"]] = summary.get(tn["class"], 0) + 1
+    sites_out = []
+    for s in sorted(sites.values(), key=lambda x: x["id"]):
+        out = dict(s)
+        out["inbound_term_count"] = len(out.pop("_terms"))
+        sites_out.append(out)
 
     return {
         "view": "term-economy",
         "generator": "causality.term_economy",
         "source": "the repo is truth; this is a fold, not a record",
         "term_count": len(terms_out),
+        "site_count": len(sites_out),
         "class_summary": summary,
         "terms": terms_out,
+        "sites": sites_out,
         "evidence_edges": edges_out,
         "gaps": gaps,
     }
@@ -274,7 +328,7 @@ _CLASS_SHAPE = {
 
 
 def mermaid(projection):
-    """A flowchart of terms -> evidence, shaped by class. Deterministic text,
+    """A flowchart of terms -> sites, shaped by class. Deterministic text,
     in the repo's text-first Mermaid grain (envoy, the-field). Overloaded and
     ghost terms get a rhombus so a reader spots the trouble without reading
     the log."""
@@ -283,16 +337,21 @@ def mermaid(projection):
         op, cl = _CLASS_SHAPE.get(tn["class"], ('["', '"]'))
         label = f"{tn['term']} :: {tn['class']}"
         out.append(f"  {_nid(tn['id'])}{op}{label}{cl}")
+    site_labels = {}
+    for site in projection.get("sites", []):
+        nid = _nid(site["id"])
+        label = f"{site['address']} :: {site['kind']}"
+        if not site.get("exists", False):
+            label += " (MISSING)"
+        site_labels[site["id"]] = nid
+        out.append(f'  {nid}["{label}"]')
     for e in projection["evidence_edges"]:
         arrow = "-->" if e["resolved"] else "-.->"
         tag = e["stratum"] or "?"
         if e.get("sense"):
             tag += f"/{e['sense']}"
-        ev_node = _nid(e["to"]) + "_" + _nid(e["id"])
-        ref = e["ref"].get("file", "?")
-        mark = "" if e["resolved"] else " (UNRESOLVED)"
-        out.append(f'  {ev_node}["{ref}{mark}"]')
-        out.append(f"  {_nid(e['from'])} {arrow}|{tag}| {ev_node}")
+        site_node = site_labels.get(e["to"], _nid(e["to"]))
+        out.append(f"  {_nid(e['from'])} {arrow}|{tag}| {site_node}")
     return "\n".join(out)
 
 

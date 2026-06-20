@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.landing-throughput-resp-terminal-pull-gateway.v0",
+    "story": {
+      "text": "The throughput fix the reviewer puts above all else: a terminal-pull gateway (next_landable_slice) that CONSUMES ready, receipt-complete slices and pulls them to main. Its guard asks 'can this slice be pulled now?' \u2014 all required receipts present, dependencies landed or in-slice, workspace binding valid, merge authority present, slice small enough for current capacity, age/churn within threshold. Directly attacks the binding constraint: 5 arcs at zero landings, 27 confirmed-but-unpulled pieces. Value: work that is judged-good actually reaches main instead of accumulating.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/landing-throughput/",
+        "seal:46fa30be0089"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'landing-throughput' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.landing-throughput-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}
