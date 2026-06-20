@@ -43,6 +43,9 @@ python -m loop.web serve                   # localhost inbox with verdict forms
 
 python -m loop.census                      # the organ census: which organs carry weight, which are dormant
 
+python -m loop.activity                     # the activity-accounting fold: every wired hook's data collection + usage, read-only, refuses an undeclared collector
+python -m loop.activity --json              # the raw dataset (machine-readable)
+
 python -m loop.gaps                        # the gap backlog, pressure-ordered — the top one is the work
 
 python -m loop.parity                      # the RepoPrompt boundedness parity matrix — read-only, fails on a ghost citation
@@ -330,6 +333,26 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the log (provenance) after the proof passes; it refuses anything this
   checker rejects. The cut between "phrasing" and "work" stays bright: the
   door is for prose only — syntax or schema is routed back to the pipeline.
+- [activity.py](activity.py) — the activity-accounting fold (done-line 0143):
+  the loop accounting for its own hooks. bdo, 2026-06-20: *"account for all
+  activity, even Claude hooks like session start and tool call, and start
+  auditing their data collection and usage for a shared gateway."* The hooks are
+  the gateway's sensors, but their *own* data collection is the one activity the
+  gateway never witnesses — they collect command strings, spawn prompts, full
+  raw stdin/argv/env (the codex probe) and gh poll results, mostly silently into
+  gitignored sinks, and most do not record that they fired. Sibling of
+  `census`/`gaps`/`heal` on the *data-practice* axis: a declared register
+  (`.claude/activity-register.json`) states per hook what it **collects**, what
+  it **uses** that for, where the data **goes**, and whether its firing is
+  **witnessed**; the fold reconciles it against the live `.claude/settings.json`
+  wiring and the §10 teeth refuse an **undeclared collector** (a wired hook
+  accounted nowhere) or a **ghost** (an entry no longer wired — a `codex`-wired
+  entry verified against `.codex/hooks.json` when present). The accounting is
+  enforceable: no silent collector can be wired without declaring its
+  data-practice. Read-only, propose-grain; the cut and the wider shared-gateway
+  unification stay bdo's (D-4). The unwitnessed count is the bridge to organ 2,
+  the runtime witness (every firing → a first-class receipt, the sibling of
+  `tool-use.jsonl` the git/gh-gateway proposal deferred).
 - [herald.py](herald.py) — the herald (epic.landing-throughput-response): agents are an open set, so registration and reputation are FOLDS over logged `herald_introduction` admissions, never a table — a herald `introduce`s a named/titled agent (the dumb pen mints a content-hash `credential` at the trust-ladder floor rank, read from `loop.trust`), `roster` folds who is registered (superseding, never erasing), and `reputation` derives distributed value from the log's provenance edges (exemplars net against notorieties per credential, and a herald earns a meta-reputation over the standing of whom it vouched, so a bad voucher is visible by construction); read-only but for the one pen, standing only ever earned forward (§10: standing is recomputed from records, never asserted; D-4).
 
 ### Invariants the code is built around (firm)

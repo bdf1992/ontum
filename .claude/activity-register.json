@@ -1,0 +1,130 @@
+{
+  "_doc": "The data-practices register — what every wired harness hook COLLECTS, what it USES that for, where the data GOES, and whether its own firing is WITNESSED (recorded). bdo, 2026-06-20: 'account for all activity, even Claude hooks like session start and tool call, and start auditing their data collection and usage for a shared gateway.' This is the declared half; loop/activity.py reconciles it against the live .claude/settings.json wiring and REFUSES an undeclared collector (a wired hook absent here) or a ghost (an entry no longer wired) — done-line 0143. The 'collects' field names the data each hook reads; 'witnessed' is whether the hook records THAT IT FIRED (most are false today — that gap is what organ 2, the runtime witness, closes). Authored declaration, version-controlled, human-legible; a new entry is added by the session that wires a new hook, never silently.",
+  "wiring_sources": {
+    "claude": ".claude/settings.json — the Claude Code hook wiring; this layer is the fold's floor and its teeth bite here",
+    "codex": ".codex/hooks.json — the rendered Codex layer; reconciled only if present (deferred, done-line 0143 not-in-scope)",
+    "prototype": "built but not yet wired into any settings file — declared so it cannot be wired as a silent collector later"
+  },
+  "hooks": {
+    "command_guard": {
+      "wiring": "claude",
+      "events": ["PreToolUse:Bash|PowerShell", "PostToolUse:Bash|PowerShell"],
+      "collects": ["command", "intent", "session", "bins"],
+      "uses_for": "deny raw git/gh mutations (fence registry); watch every other external command for wrapper-pressure",
+      "sink": ".ai-native/log/tool-use.jsonl",
+      "witnessed": true
+    },
+    "spawn_guard": {
+      "wiring": "claude",
+      "events": ["PreToolUse:Bash|PowerShell", "PreToolUse:Agent", "PostToolUse:Bash|PowerShell", "PostToolUse:Agent"],
+      "collects": ["spawn-kind", "node", "prompt_hash", "session"],
+      "uses_for": "gate branded node-spawns against the trust rung; surface an unbranded spawn once per session",
+      "sink": ".ai-native/log/tool-use.jsonl",
+      "witnessed": true
+    },
+    "write_guard": {
+      "wiring": "claude",
+      "events": ["PreToolUse:Write"],
+      "collects": ["file_path", "content", "rule"],
+      "uses_for": "a new file lands only under a governing CLAUDE.md; a penned-dir write must be a carbon copy",
+      "sink": ".ai-native/log/tool-use.jsonl (denials only)",
+      "witnessed": false
+    },
+    "freeze_guard": {
+      "wiring": "claude",
+      "events": ["PreToolUse:Write", "PreToolUse:Edit|MultiEdit|NotebookEdit"],
+      "collects": ["file_path", "rule"],
+      "uses_for": "refuse any in-place edit/overwrite of a frozen done-line",
+      "sink": ".ai-native/log/tool-use.jsonl (denials only)",
+      "witnessed": false
+    },
+    "change_guard": {
+      "wiring": "claude",
+      "events": ["PreToolUse:Write", "PreToolUse:Edit|MultiEdit|NotebookEdit"],
+      "collects": ["file_path", "rule", "dropped"],
+      "uses_for": "refuse a change that breaks a declared change-policy invariant",
+      "sink": ".ai-native/log/tool-use.jsonl (denials only)",
+      "witnessed": false
+    },
+    "summon": {
+      "wiring": "claude",
+      "events": ["SessionStart", "UserPromptSubmit"],
+      "collects": ["log-fold", "open-summons", "owner-backlog", "outcome-pressure"],
+      "uses_for": "hand the session its open summons, owner backlog, and top gap ambiently",
+      "sink": "stdout (read-only; writes nothing)",
+      "witnessed": false
+    },
+    "git:sync": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["worktree-list", "branch-status", "fetch-state"],
+      "uses_for": "fast-forward the viewport to origin/main; restore a stranded viewport when its work is safe",
+      "sink": "git worktree state + stdout",
+      "witnessed": false
+    },
+    "git:garden": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["worktree-list", "branch-merged-status", "tree-cleanliness"],
+      "uses_for": "report worktree chores and stranded branches; cut only provably-merged clean branches",
+      "sink": "git worktree state + stdout",
+      "witnessed": false
+    },
+    "gesture_surface": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["admissions-fold", "intake-pen-json"],
+      "uses_for": "surface pending owner gestures (realness / rung / policy confirms) at session open",
+      "sink": "stdout (read-only)",
+      "witnessed": false
+    },
+    "standing_surface": {
+      "wiring": "claude",
+      "events": ["SessionStart", "UserPromptSubmit"],
+      "collects": ["gh-issue-list", "gh-pr-list", "baseline-ids", "last-poll"],
+      "uses_for": "show the standing external surface and the delta since last poll",
+      "sink": ".ai-native/standing-state.json + stdout",
+      "witnessed": false
+    },
+    "reflect_auto": {
+      "wiring": "claude",
+      "events": ["Stop"],
+      "collects": ["log-fold", "enabled-rules"],
+      "uses_for": "apply what enabled reflection rules name to registered external surfaces, every act receipted",
+      "sink": "via the reflect pen -> the log (receipts)",
+      "witnessed": false
+    },
+    "continue_beat": {
+      "wiring": "claude",
+      "events": ["Stop"],
+      "collects": ["session_id", "patrol-decision"],
+      "uses_for": "decide whether to surface a continuation nudge at turn end",
+      "sink": "via the patrol pen + stdout",
+      "witnessed": false
+    },
+    "mock_shame": {
+      "wiring": "claude",
+      "events": ["UserPromptSubmit"],
+      "collects": ["effective-mocks-fold", "turns-tally"],
+      "uses_for": "scream every effective mock, louder the longer the set sits",
+      "sink": ".ai-native/mock-shame.json + stdout",
+      "witnessed": false
+    },
+    "owner_ask_shame": {
+      "wiring": "claude",
+      "events": ["UserPromptSubmit"],
+      "collects": ["unsurfaced-owner-asks-fold", "turns-tally"],
+      "uses_for": "scream every unsurfaced owner-ask, louder the longer it sits",
+      "sink": ".ai-native/owner-ask-shame.json + stdout",
+      "witnessed": false
+    },
+    "probe_codex": {
+      "wiring": "codex",
+      "events": ["PreToolUse", "PostToolUse", "PermissionRequest"],
+      "collects": ["argv", "cwd", "raw-stdin", "CODEX-env"],
+      "uses_for": "record the undocumented Codex hook contract to design the Codex watcher against real readings",
+      "sink": ".ai-native/log/codex-hook-probe.jsonl",
+      "witnessed": true
+    }
+  }
+}

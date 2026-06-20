@@ -1,0 +1,61 @@
+{
+  "atom": {
+    "id": "atom.activity-accounting.v0",
+    "story": {
+      "from": "bdo, 2026-06-20 (chat): 'We need to account for all activity, even Claude hooks like session start and tool call, and start auditing their data collection and usage for a shared gateway.' He then chose 'both, register first' when asked which first organ to build.",
+      "framing": "Every major seam in ontum is already a governed gateway, and the hooks are its sensors — command_guard watches every tool, spawn_guard every spawn, the codex probe every Codex firing with full raw stdin/argv/env. But the sensors' OWN data collection is the one activity the gateway never accounts for: 15 hook scripts collect command strings, spawn prompts, gh poll results and raw stdin/env, mostly silently into gitignored sinks, and most do not even record that they fired. Who watches the watchers. This is the accounting layer the git/gh-gateway proposal deferred ('the witness-log home and its fold'), widened from git/gh reads to all activity — the declared half of the gateway's standing asymmetry (reads get witnessed, not authorized) turned on the harness's own metabolism.",
+      "work": "Organ 1 (register first, bdo's choice): (1) the declared data-practices register .claude/activity-register.json — per wired hook, what it COLLECTS, what it USES that for, where the data GOES (sink), and whether its firing is WITNESSED; (2) loop/activity.py — a pure read-only fold (sibling of census/gaps/heal, stdlib, no network, no git) that derives the live wiring from .claude/settings.json and reconciles the register against it; (3) the §10 teeth — it REFUSES an undeclared collector (a wired hook accounted nowhere) and a ghost (a declared entry no longer wired; a codex-wired entry verified against .codex/hooks.json when present); (4) tests/test_activity.py proving the committed register is honest AND the check is not vacuous (a fabricated undeclared hook, a ghost, and a codex-ghost are each caught). Organ 2 (the runtime witness — every firing into a first-class receipt) is named as the next done-line, not built here: the unwitnessed count (12 of 14) is the bridge.",
+      "need": "bdo's naming of the wider arc — whether the shared-gateway accounting is its own epic or rides owner-harness/substrate — stays his (D-4); and his go for organ 2 once this organ's receipt lands. The organ itself is read-only, local, stdlib and reversible, so it was built without waiting (the offloading hard rule: a session does safe reversible work).",
+      "value": "You can answer 'what does my harness collect, and why' from one read-only fold instead of by hand-reading 15 scripts — and the accounting is ENFORCEABLE: no one can wire a new silent collector without declaring its data-practice, because the fold refuses an undeclared collector. The harness's own metabolism stops being the gateway's blind spot. It is the first organ of the shared gateway you named, and it tees up the runtime witness that makes every hook firing attributable.",
+      "text": "From bdo's direction to account for all activity — the harness's own hooks included — and audit their data collection and usage for a shared gateway, I need a read-only fold that reconciles a declared data-practices register against the live hook wiring and refuses an undeclared collector, because the gateway's own sensors collect data silently and nothing today could ever say 'this hook collects data it never declared.'",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "cheap",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "A pure read-only fold + a declared JSON register + a test, all stdlib, no network, no git, no log writes. It only reads .claude/settings.json, .claude/activity-register.json and .codex/hooks.json and prints a verdict. Built before the stamp because it is safe and reversible by deletion (the offloading hard rule: do the safe work). The wider shared-gateway arc naming and organ 2 stay bdo's.",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "account for what the harness's own hooks collect",
+      "value": "Your hooks are the gateway's eyes, but no one ever audited what the eyes themselves collect. This makes it one read-only fold — and refuses any future hook that collects data without declaring it.",
+      "why_now": "You named it directly today and chose 'both, register first'. The git/gh-gateway proposal already deferred exactly this witness-fold; this starts it, narrow and tested.",
+      "if_accepted": "The register becomes the harness's record-of-processing; organ 2 (the runtime witness) rides next, making every firing attributable; the shared-gateway accounting has its first organ.",
+      "if_rejected": "The harness keeps collecting command strings, spawn prompts and raw stdin/env into gitignored sinks with no declared account of what or why — the gateway's blind spot stays.",
+      "cost_of_wrong_call": "Low: read-only, local, reversible by deletion. The only standing decision is the arc naming, which stays yours.",
+      "mechanism": "loop/activity.py folds .claude/settings.json into live hook keys, reconciles the declared register against them, and refuses an undeclared collector or a ghost (§10 teeth, proven not-vacuous in tests/test_activity.py). Read-only; the cut and the arc stay yours (D-4).",
+      "reading": [
+        ".ai-native/done/0143-activity-accounting-register.md",
+        "git-gh-gateway.proposal.md",
+        ".claude/activity-register.json",
+        "loop/activity.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.substrate"],
+      "touches": ["loop/", ".claude/", "tests/"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "bdo's chat direction, 2026-06-20",
+        "git-gh-gateway.proposal.md (the deferred witness-fold this starts)",
+        "done-line 0143"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record and content-hash source; never mutated (D-5). Organ 1 of the shared-gateway activity accounting bdo named 2026-06-20; organ 2 (the runtime witness) is the next done-line. The work is read-only/local/reversible and was built before the stamp per the offloading hard rule."
+}
