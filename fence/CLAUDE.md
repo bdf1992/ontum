@@ -8,7 +8,8 @@ native enforcement shape.
 
 ```sh
 python fence/render_codex.py          # regenerate the .codex/ layer
-python -m unittest tests.test_fence -v
+python fence/barrier.py               # the gate/fence primitive + the trunk reading
+python -m unittest tests.test_fence tests.test_barrier -v
 ```
 
 - [policy.py](policy.py) — the registry. Each rule is one record: the
@@ -16,6 +17,24 @@ python -m unittest tests.test_fence -v
   justification written as a story for a cold reader (the why and the
   paved path inline — a session reading only the refusal knows what to
   do instead), and inline `match`/`not_match` examples.
+- [barrier.py](barrier.py) — the gate/fence primitive (done-line 0148).
+  bdo's shape: we have *gateways* (policy — they decide "is this *actor*
+  permitted?"), but no deterministic *gate* that closes one and no *fence*
+  around the route. A gate and a fence are physical, not political — "you can
+  see through it, you can't pass it, you can't climb it, and touching it
+  bites." The atom is a **barrier-link**: a pure, **actor-blind** predicate
+  over an act's observable form (the discriminator from a gateway — it never
+  reads who acts). A **fence** is a *closed loop* of links around a
+  **territory**, validated for **closure** across the front/seam/top route
+  taxonomy (the **meshed** seams and **tall** top, not just the front),
+  **barbed**-ness (a blocked act is witnessed), and **non-opacity** (every link
+  carries a cold-reader reason); a **gate** is a link at a sanctioned opening
+  in it. `validate_link`/`validate_fence` are the §10 teeth, and
+  `tests/test_barrier.py` proves each one bites on the real trunk-mutation
+  territory — including that `command_guard`'s own perimeter is **torn at the
+  seam** (a `python` that shells `git push` slips its quote-stripping front
+  link), sealed by one raw-command link. The contract; the *installed* fences
+  (sealing that seam, fencing the inference surface) are later increments.
 - [render_codex.py](render_codex.py) — the deterministic renderer:
   emits `.codex/rules/ontum.rules` (native `prefix_rule` entries,
   Starlark) and `.codex/hooks.json` (the ambient summons + the hook

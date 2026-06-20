@@ -1,0 +1,37 @@
+{
+  "atom": {
+    "id": "atom.gate-fence-primitive.v0",
+    "story": {
+      "text": "The gate/fence primitive (bdo's shape, this thread): we have *gateways* (policy -- they decide 'is this *actor* permitted?' from admitted who-may records: RBAC, a trust rung, the owner's stamp), but no deterministic *gate* that closes a gateway and no *fence* around the route, so the gateways are signs, not doors -- a policy 'deny' that nothing physical enforces. A gate and a fence are physical, not political, and must not be: 'you can see through it, you can't pass it, you can't climb it, and touching it bites.' The atom is a barrier-link -- a pure decide(link, act) that is deterministic, model-free, and ACTOR-BLIND: it reads only the act and the object (argv, the raw command, a path, an object flag), never who acts. Actor-blindness is the discriminator from a gateway and it is structural -- there is no predicate kind that can read the actor, and validate_link refuses any link that smuggles an authorization concept in. A fence is a CLOSED LOOP of barrier-links around a named territory; an open fence accomplishes nothing (you walk around it). validate_fence enforces bdo's physical adjectives as teeth: CLOSED across the front/seam/top route taxonomy (the meshed seams between links and the tall over-it route, not only the obvious front), BARBED (a blocked act is witnessed, never a silent deflection), and NOT-OPAQUE (every link carries a cold-reader reason). A gate is a barrier-link at a sanctioned opening in a fence. The S10 teeth bite on the real trunk-mutation territory: command_guard covers the front (git push) and the top (gh pr merge) but its quote-stripping leaves the SEAM open -- a `python -c \"...subprocess...git push...\"` slips it, because the git lives in the stripped-out quotes -- so our own git fence is proven TORN, sealed by one raw-command link. tests/test_barrier.py proves each law bites and that none is vacuous (1122-test suite green). Value: a deterministic vocabulary that makes a gateway's 'no' binding and rings its routes, distinguishes physical enforcement from political policy by a testable line (actor-blind), and on day one finds a real gap in our own perimeter. This is the CONTRACT; the installed fences (sealing the git seam, fencing the inference surface) are later increments -- instances of the primitive, not the primitive.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.physical-barriers"
+      ],
+      "touches": [
+        "fence/barrier.py",
+        "tests/test_barrier.py",
+        "fence/CLAUDE.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0149-gate-fence-primitive.md",
+        "fence/policy.py",
+        ".claude/hooks/command_guard.py",
+        "loop/observe.py"
+      ],
+      "receipts": []
+    }
+  }
+}
