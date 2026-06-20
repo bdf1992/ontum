@@ -1,0 +1,41 @@
+{
+  "atom": {
+    "id": "atom.gate-policy-facts.v0",
+    "story": {
+      "text": "As the loop, I should make the value gate's input fully fit bdo's principle stated this session: judgement should be non-deterministic, but the data being judged should be compiled and composed from configuration and policy. The gate already composes the criteria (the versioned node prompt) and the arc membership (from the epic records) deterministically — but it still hands the atom's SELF-CLAIMS (incidence.serves) to the judge as raw JSON beside the composed truth, leaving the reconciliation to the model's reading. That is exactly the seam where the recent panel fault lived (an atom claimed an arc no epic confirms). This composes those facts deterministically so the only non-deterministic step is the value call. (Honesty, applied to this very atom: it serves no confirmed arc yet — no epic names it as a piece — so incidence.serves is empty; the owner direction it serves is recorded in frozen done-line 0146. Attaching the gate-economy work to an arc is bdo's gesture, surfaced as a needs-you.)",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the value gate judges deterministically-composed policy facts",
+      "value": "gate.py gains policy_facts(atom_id): a pure fold over the epic records and the admissions log composing the atom's arc membership (from the epics, never its self-claim), whether each such arc is confirmed (from the log), and a reconciliation of the atom's self-claimed serves against the policy truth (naming any unbacked self-claim). compose() presents these as a 'composed policy facts (deterministic — judge these, not the atom's self-claims)' section, so every fact the judge weighs is config+policy-composed and judgment is the only non-deterministic step.",
+      "why_now": "bdo stated the principle this session (judgement non-deterministic, data composed from configuration and policy) and asked to amend the work to fit. It also fixes, at the right layer, the fault the gate panel surfaced: an atom self-claiming an arc no epic confirms is now a composed, deterministic fact rather than a model's reading.",
+      "if_accepted": "The gate's variance is isolated to judgment; the facts are reproducible. A self-claimed arc with no policy backing is flagged deterministically (the panel fault, caught at the data layer). The composed facts are the foundation a fault-deliberation layer can ride.",
+      "if_rejected": "The judge keeps reconciling the atom's self-claims against policy by reading, so some 'data' variance leaks into what should be pure judgment variance.",
+      "cost_of_wrong_call": "Low and bounded: a pure read-only fold added to compose()'s input assembly; it changes no verdict set, no prompt lineage, no trust-rail, no one-pen write (D-4). Reverting is removing the policy_facts section.",
+      "mechanism": "gate.py: _arc_confirmed (latest enabled arc_confirmed admission per epic) and policy_facts (arc_membership from epics, serves_confirmed_arc from the log, reconciliation + unbacked_self_claims vs the atom's incidence.serves); compose() renders the composed-facts section and marks unbacked self-claims. tests/test_gate_policy_facts.py: membership read from the epic records (a self-claimed-but-unnamed epic resolves unbacked; a real naming epic resolves backed), confirmed vs unconfirmed (and withdrawn) distinguished from the log, a constant fold fails. Done-line 0146.",
+      "reading": [
+        ".claude/skills/gate/gate.py",
+        "tests/test_gate_policy_facts.py",
+        ".ai-native/done/0146-gate-policy-facts.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [],
+      "touches": [".claude/skills/gate/gate.py", "tests/test_gate_policy_facts.py", ".ai-native/done/0146-gate-policy-facts.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/gate/gate.py", ".ai-native/done/0146-gate-policy-facts.md"]
+    }
+  }
+}

@@ -123,6 +123,53 @@ def surface_address(surface="github-issues"):
     return addr
 
 
+def _arc_confirmed(epic_id):
+    """Whether an epic's arc is confirmed — the latest enabled `arc_confirmed`
+    admission for it on the log wins (the arc_confirmation shape, done-line
+    0028). Pure fold; bdo's standing stamp is policy, read deterministically."""
+    confirmed = False
+    for adm in _jsonl(LOG / "admissions.jsonl"):
+        if adm.get("type") == "arc_confirmed" and adm.get("epic") == epic_id:
+            confirmed = bool(adm.get("enabled", True))
+    return confirmed
+
+
+def policy_facts(atom_id, atom=None):
+    """The deterministic policy facts the judge weighs (done-line 0146, bdo's
+    principle: the data is composed from configuration + policy; only the
+    judgment is non-deterministic). A pure fold over the epic records and the
+    admissions log — never the atom's self-claims.
+
+    Composes: (1) arc MEMBERSHIP — the epics whose pieces name this atom; (2)
+    for each, whether that arc is CONFIRMED on the log; (3) a RECONCILIATION of
+    the atom's self-claimed `incidence.serves` against the policy-composed
+    membership, naming any discrepancy (a self-claim that no epic backs)."""
+    serves = []
+    for ep in sorted(EPICS.glob("epic.*.json")):
+        data = json.loads(ep.read_text(encoding="utf-8")).get("epic", {})
+        if any(p.get("atom") == atom_id for p in data.get("pieces", [])):
+            serves.append({
+                "id": data.get("id"), "arc": data.get("arc"),
+                "confirmed": _arc_confirmed(data.get("id")),
+                "glue": next((p.get("glue") for p in data.get("pieces", [])
+                              if p.get("atom") == atom_id), None),
+            })
+    naming = {s["id"] for s in serves}
+    self_claimed = list(((atom or {}).get("atom", {}).get("incidence", {}) or {}).get("serves", []))
+    reconciliation = [
+        {"self_claimed_epic": e, "backed_by_policy": e in naming}
+        for e in self_claimed
+    ]
+    return {
+        "arc_membership": serves,  # composed from the epic records
+        "serves_confirmed_arc": any(s["confirmed"] for s in serves),
+        "self_claimed_serves": self_claimed,
+        "reconciliation": reconciliation,
+        "unbacked_self_claims": [r["self_claimed_epic"] for r in reconciliation
+                                 if not r["backed_by_policy"]],
+    }
+
+
 def compose(atom_id, node_id):
     """Compose the judging context from the ambient state of the log. This IS
     the gate's intelligence: not a fixed verdict, but a prompt assembled from
@@ -141,14 +188,9 @@ def compose(atom_id, node_id):
     artifact_hash = "sha256:" + hashlib.sha256(atom_bytes).hexdigest()
     atom = json.loads(atom_bytes)
 
-    # the arc it serves: the epic whose pieces name this atom
-    serves = []
-    for ep in EPICS.glob("epic.*.json"):
-        data = json.loads(ep.read_text(encoding="utf-8")).get("epic", {})
-        if any(p.get("atom") == atom_id for p in data.get("pieces", [])):
-            serves.append({"id": data.get("id"), "arc": data.get("arc"),
-                           "glue": next((p.get("glue") for p in data.get("pieces", [])
-                                         if p.get("atom") == atom_id), None)})
+    # composed policy facts: deterministic, from the epic records + the log,
+    # NEVER the atom's self-claims (done-line 0146, bdo's principle)
+    facts = policy_facts(atom_id, atom)
 
     # the hesitations it inherits: receipts on THIS version of the atom
     prior = [r for r in _jsonl(LOG / "receipts.jsonl")
@@ -159,10 +201,20 @@ def compose(atom_id, node_id):
         "\n---\n",
         "## The atom under judgment (the claim)\n",
         "```json", json.dumps(atom, indent=2, ensure_ascii=False), "```",
-        "\n## The arc it serves\n",
-        json.dumps(serves, indent=2, ensure_ascii=False) if serves
-        else "_(this atom is not named by any epic's pieces — it serves no "
-             "confirmed arc, which is itself a signal)_",
+        "\n## Composed policy facts (deterministic — judge THESE, not the atom's self-claims)\n",
+        "_Composed from the epic records and the admissions log by a pure fold. "
+        "Your judgment is the only non-deterministic step; these facts are not. "
+        "Where the atom's `incidence.serves` disagrees with the composed arc "
+        "membership, the composed facts are authoritative — the self-claim is a "
+        "claim under judgment._\n",
+        "```json", json.dumps(facts, indent=2, ensure_ascii=False), "```",
+        ("\n_⚠ this atom serves no confirmed arc (no epic names it as a piece, "
+         "or its arc is unconfirmed) — itself a signal._"
+         if not facts["serves_confirmed_arc"] else ""),
+        ("\n_⚠ self-claimed serves NOT backed by policy: "
+         + ", ".join(facts["unbacked_self_claims"])
+         + " — the atom asserts an arc no epic confirms._"
+         if facts["unbacked_self_claims"] else ""),
         "\n## Receipts already on this exact atom version (hesitations you inherit)\n",
         json.dumps([{k: r.get(k) for k in ("node", "verdict", "reason")} for r in prior],
                    indent=2, ensure_ascii=False) if prior else "_(none — you are first)_",
