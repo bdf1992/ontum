@@ -71,8 +71,15 @@ def remember(state_path, session, count):
     except (OSError, ValueError, json.JSONDecodeError):
         data = {}
     data[session] = count
+    # write atomically (temp + replace) so a torn write never leaves a corrupt
+    # state file. This is lock-free nag state (the watch log is truth), so two
+    # sessions persisting at once can still lose one entry — exactly as the
+    # sibling beats (mock_shame/owner_ask_shame) do; the cost is one self-healing
+    # extra shame line next turn, never a corrupted file or a blocked prompt.
     try:
-        state_path.write_text(json.dumps(data), encoding="utf-8")
+        tmp = state_path.with_suffix(state_path.suffix + f".{os.getpid()}.tmp")
+        tmp.write_text(json.dumps(data), encoding="utf-8")
+        os.replace(tmp, state_path)
     except OSError:
         pass  # nag state; failing to persist never blocks a turn
 
