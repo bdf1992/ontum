@@ -1,9 +1,19 @@
 # Proposal — The Outcome-Pressure Fold
 
+> **Status (updated 2026-06-18): ADOPTED — the core is built and on `main`.**
+> `loop/pressure.py` (done-line 0069, PR #132) is the fold this proposal
+> named; the `outcomes/` directory carries the evidence-bearing probe-sets
+> (`causality-outcome-pressure.probes.json`, `ontum-models-its-own-nodes.probes.json`)
+> and its `CLAUDE.md` is the directory contract. The single-outcome limit the
+> first build shipped with was named in memory and is being addressed by
+> `loop.pressure.compose()` across all `outcomes/*.probes.json`. This file
+> stands as the design record; the open questions in the last section are
+> partly answered by what landed. Kept in root as history, not as a live ask.
+
 *A substrate proposal: give ontum a way to carry the **tension of an
 outcome** across mortal sessions, so a waking session inhabits a world
 instead of visiting a repository. Written for bdo to react to, from the
-discussion of 2026-06-13. Not adopted — a proposal.*
+discussion of 2026-06-13.*
 
 ## The problem, exactly
 

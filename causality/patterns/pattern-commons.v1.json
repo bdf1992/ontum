@@ -1,0 +1,1109 @@
+{
+  "name": "pattern-commons",
+  "version": 1,
+  "evolved": "2026-06-16",
+  "provenance": "Evolved from v0 via the evolution SDLC loop (RUBRIC + RECONCILIATION): 10 family agents, an independent review gate (18 issues), and a round-1 revision on the reconciled commitment model (register=commitment/line, strata=epistemic/colour, anima=felt/motion). v0 patterns honestly re-tagged; new ai-native patterns authored for the three new families. PROPOSED tier — promotion past proposed is bdo's (D-4).",
+  "axes": {
+    "register": "COMMITMENT on the propose->admit lifecycle (ink=admitted / pencil=proposed|simulated) -> line-treatment + badge",
+    "strata": "EPISTEMIC origin (fundamental/derived/learned) -> colour / layer",
+    "anima": "FELT field (strength x tempo) -> size / motion"
+  },
+  "families": [
+    {
+      "id": "living",
+      "name": "Living Data Maps",
+      "pin": "data as inhabitable weather",
+      "ai_native_pin": "weather you can trust: every drop sources itself, and the pencil never passes for ink"
+    },
+    {
+      "id": "topo",
+      "name": "Curated Topologies",
+      "pin": "position is meaning",
+      "ai_native_pin": "position is DERIVED meaning with a path home — an arrangement must resolve to a backing (file:line / record / classifier verdict) or it is decoration shaped like a map. Near must be provably near; a continent must be a computed class; a lineage edge must walk to a record."
+    },
+    {
+      "id": "spatial",
+      "name": "Spatial Navigation",
+      "pin": "the camera is the narrator",
+      "ai_native_pin": "the camera descends the record — altitude is a fold over source, not a cached thumbnail, and descent is the provenance path home"
+    },
+    {
+      "id": "play",
+      "name": "Playable Systems",
+      "pin": "understanding by poking",
+      "ai_native_pin": "poking that carries truth: the poke distinguishes a committed record (ink) from a proposed or simulated draft (pencil), and asks for each element's route home — a route register:provenance-trace owns and play surfaces. Play that bears commitment and triggers provenance, not just motion. The most AI-native of the v0 families: pulse-propagation and direct-manipulation make cause and control physical, not chrome.",
+      "axis_note": "Axis #1 scored as COMMITMENT (RECONCILIATION.md, 2026-06-16): does the gesture distinguish an admitted record (ink) from a proposed/simulated draft (pencil) on the propose->admit lifecycle? It is NOT a four-enum. RUNTIME/'liveness' is process (anima-tempo + activation), off this axis."
+    },
+    {
+      "id": "instr",
+      "name": "Generative Instruments",
+      "pin": "creation as play",
+      "ai_native_pin": "A generative instrument earns AI-native only when the machine plays in pencil: every generated take sits on the COMMITMENT register as pencil (proposed/simulated, never admitted ink), carries the provenance of the model/seed that made it, and becomes a RECORD only by an explicit human keep-gesture. Creation-as-play that never launders SIMULATION into the record. The pencil->ink mechanic itself is the register family's (register:pencil-vs-ink + register:settle-on-commit, reconciled 2026-06-16); this family's seam is the keep-gesture in performance, not a re-derivation of the register."
+    },
+    {
+      "id": "hud",
+      "name": "Ambient HUD Craft",
+      "pin": "the chrome that whispers",
+      "ai_native_pin": "the chrome that whispers which truths are ink and which are pencil, renders a route home behind every glyph (register's, not its own), and stays quiet enough for a glance yet typed enough for a model to read"
+    },
+    {
+      "id": "edit",
+      "name": "Editorial Craft",
+      "pin": "the difference between demo and portfolio",
+      "ai_native_pin": "Editorial Craft bears no commitment register of its own — on the AI-native axis its v0 patterns are honest decoration, and that is the finding, not a failure. Its role is the inverse of the truth-bearing families: where they carry commitment (propose->admit), strata, and anima, this family makes whatever they carry look authored rather than machine-emitted. It answers the aesthetic half of the 'You're Not AI Native' critique — generated surfaces look generated — by being the discipline that refuses slop. Decoration that protects truth from reading as noise. Its validation teeth are not its own: where a finish must be checked before it renders, that gate lives in interface-ai:schema-gate-before-draw, and this family rides it as kin."
+    },
+    {
+      "id": "register",
+      "name": "Register & Provenance",
+      "pin": "truth tells itself",
+      "ai_native_pin": "ink and pencil never blur and every projection keeps a path home — the surface cannot lie about what is a committed record (admitted/minted, or a fundamental append) versus a proposed or simulated draft, nor about where a claim resolves. Register is COMMITMENT on the propose→admit lifecycle, carried on line-treatment + a badge; it is not a four-enum and never owns colour (strata) or motion (anima).",
+      "reconciliation": "REGISTER = COMMITMENT on the generative-typing lifecycle propose→ground→grade→admit (RECONCILIATION.md, bdo 2026-06-16). The 'four registers' (record/runtime/request/simulation) are NOT a free enum and do NOT come from display-system.md — that was a ghost citation, now dropped. RECORD = ink (an admitted/minted type, or a fundamental append on the only free layer); REQUEST = pencil (a proposed, pen-bound draft awaiting admission); SIMULATION = pencil (a dry-run/preview, or a learned datum not yet graded vs its oracle). RUNTIME ('happening / parked now') is NOT a register — it is process, carried by anima-tempo + node activation + the async edge register. Re-grounded on the lifecycle, the C4 DivergenceComparator verdict taxonomy, term_economy.py's verdict classes, and the append-only log — never on a four-enum.",
+      "owns": "the commitment primitive (ink vs pencil on propose→admit) and the provenance-trace 'route home'. These are this family's to own; sibling patterns cite them as kin, never re-derive them — play:poke-to-route and hud:provenance-tooltip ride provenance-trace; play:simulate-before-commit and instr:provisional-take ride pencil-vs-ink + settle-on-commit.",
+      "channel": "line-treatment (solid = ink / dashed = pencil) + the discrete register-badge ONLY. Register is denied hue (strata's channel, display-system H4) and size/motion (anima's channel, C18). Three orthogonal facets, three channels, no collision (RECONCILIATION.md)."
+    },
+    {
+      "id": "interface-ai",
+      "name": "Interface as AI",
+      "pin": "the model is the medium",
+      "ai_native_pin": "You describe what you want; local inference proposes a typed graph-spec; the system validates it against the live schema before anything renders. Natural language produces typed drafts, never truth — durable change still lands only through governed seams. The interface is not a thing the AI helps you use; the AI is the surface, and the schema is its conscience.",
+      "owns": "This family is the Commons home of two built mechanisms — the schema-gate-before-draw (the 0083 front door, with its negative-control test) and dry-run-preview (pencil-before-ink). Other families cite these as kin rather than re-owning them: edit:authored-finish rides the schema gate for editorial finish; play:simulate-before-commit and register:settle-on-commit cite dry-run-preview; instr:provisional-take cites the register mechanic. The virtual-request-node is kin to async:parked-pulse — they are two lifecycle stages of one unit (REQUEST pre-submit, RUNTIME post-submit).",
+      "axis_note": "Axis #1 'register' is read as commitment-bearing per RECONCILIATION.md (2026-06-16): ink = admitted/minted, pencil = proposed/simulated, bound to the generative-typing lifecycle. The JSON key stays 'register' for tally consistency across families."
+    },
+    {
+      "id": "async",
+      "name": "Honest Async",
+      "pin": "a process that doesn't lie",
+      "ai_native_pin": "in-flight is an honest PROCESS state, not a spinner: a wait is shown not faked, what it waits on is named with a route home, and a dropped pulse is a refused lie — the honest runtime that replaces 'consume a pulse, emit a pulse, drop the second one mid-think'. Per RECONCILIATION.md (2026-06-16): runtime ('happening-but-blocked') lives on the anima/process side (tempo fast<->slow + node activation + the async edge register C11), NOT on the commitment axis — it is not a register. The one exception is a wait on the owner, which IS a commitment state: a REQUEST sitting in pencil awaiting admission (D-4)."
+    }
+  ],
+  "patterns": [
+    {
+      "id": "particle-globe",
+      "name": "Particle Globe",
+      "current_intent": "A planet-scale feed becomes weather you can watch — volume reads as atmosphere, anomaly as a flare.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Gains a register by rendering settled RECORD motes (ink) distinctly from live RUNTIME flux and pencil SIMULATION flares, each flare clickable to its backing log record — i.e. the de-mocked surface becomes the new 'provenance-field' sibling below; as written it is gorgeous craft whose own pin ('individual records matter less than the field') is the negation of provenance.",
+      "non_example": "NOT a sourced map — it is explicitly the field over the record; a flare here names nothing and clicks to nothing.",
+      "exemplars": [
+        "https://cybermap.kaspersky.com/",
+        "foundry:01-living-loop"
+      ],
+      "_family": "living",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "flow-field",
+      "name": "Flow Field",
+      "current_intent": "Continuous data rendered as a wind you stand inside; direction and speed carry the number.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Stays decoration, honestly: its pin is that the individual element is illegible and 'local arrows lie' — the exact opposite of a traceable route to source. Provenance cannot be bolted onto a pattern whose thesis is that no single element carries truth. Keep it for craft (earth.nullschool.net grade), label it decoration.",
+      "non_example": "NOT an inspectable vector store — it is motion-as-truth; clicking a streamline yields a feeling, not a record.",
+      "exemplars": [
+        "https://earth.nullschool.net/",
+        "foundry:03-flow"
+      ],
+      "_family": "living",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "feed-choreo",
+      "name": "Live Feed Choreography",
+      "current_intent": "Events arrive as staged motion — entrance, travel, consequence — so the stream reads as story, not log.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "The closest of the four to earning it: give the choreography a register so a WITNESSED event (ink, a receipt on the log) and a PROPOSED one (pencil, an unstamped request/simulation) arrive with unconfusable motion-grammars, and let any staged event be clicked back to its log substring. That single move (register + provenance) flips it to ai-native — it is the living-family expression of causality's witnessed-vs-proposed distinction.",
+      "non_example": "NOT a register-bearing stream today — every event is staged identically; a proposal and a fact dance the same dance, which is the confusion the AI-native axis refuses.",
+      "exemplars": [
+        "https://cybermap.kaspersky.com/",
+        "foundry:01-living-loop"
+      ],
+      "_family": "living",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "ambient-telemetry",
+      "name": "Ambient Telemetry",
+      "current_intent": "The system's vital signs live at the edge of attention — legible in a glance, silent until they matter.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Inherently a RUNTIME surface, but showing only 'now' is not distinguishing the four registers — it is one register with the others absent. Earns truth-capable if a vital can be clicked to the fold/record it summarizes (provenance), and earns more if it co-displays a pencil SIMULATION projection ('this gauge, if the trend holds') unconfusable from the live RUNTIME reading. Until then it is ambient craft, labeled decoration.",
+      "non_example": "NOT a provenance surface — a gauge that summarizes but cannot be opened to its source fold is a mood, not a witness.",
+      "exemplars": [
+        "https://earth.nullschool.net/"
+      ],
+      "_family": "living",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "provenance-field",
+      "name": "Provenanced Field",
+      "current_intent": "The living field keeps its weather, but every mote carries a route home: click any particle and it resolves to the record that emitted it — and the field refuses to draw a drop it cannot source. The de-mocked particle-globe — atmosphere you can interrogate.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "evolution": "Authored as the AI-native answer to particle-globe and flow-field: it proves a living surface can stay ambient AND hold the holographic rule (no projection without a path home). Register is partial — witnessed motes (ink) read distinctly from unsettled ones (pencil) — and earns full when it co-renders RUNTIME flux against RECORD settle unconfusably. Provenance is full: this is causality's inspector ('click a node/route -> its backing record / file:line / log substring') applied to a weather field. Agent-drivable is partial: the field is fed by a typed seed the schema validates, with a toJSON/fromJSON spec equivalent, render only after validation.",
+      "non_example": "NOT a heatmap of uninspectable aggregates, and NOT particle-globe with tooltips bolted on: if a mote cannot name its source record, it is not drawn at all. The refusal is the pattern.",
+      "exemplars": [
+        "causality:canvas",
+        "causality:term_economy",
+        "foundry:01-living-loop"
+      ],
+      "_family": "living",
+      "_tier": "new"
+    },
+    {
+      "id": "pencil-forecast",
+      "name": "Pencil Forecast",
+      "current_intent": "A simulation layer drawn in pencil over the live field: 'what might happen' rendered in the same weather grammar as 'what is happening', but unconfusably provisional and co-resident, so an operator never mistakes a projection for a record.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "Authored, not evolved — the living family's first true pencil register. It exists because a weather map that cannot mark a drop as 'might' lies about its own certainty. Register is full: RECORD (settled ink), RUNTIME (live flux), and REQUEST/SIMULATION (the pencil overlay) made visible in one field, the ink/pencil boundary being the whole pattern. Agent-drivable is full: the forecast is authored by a typed sim-spec validated against the schema before it renders (causality's describe -> validate -> render front door), driven by a model, never hand-painted. Provenance is partial: a forecast mote traces to the sim-spec/seed that generated it (a route to its generating request), though not to a settled record — it hasn't happened yet.",
+      "non_example": "NOT a styled 'preview mode' screen-toggle: the pencil register is per-element and co-resident with ink, never a separate view — and a forecast mote that cannot name its generating spec is refused.",
+      "exemplars": [
+        "causality:authoring",
+        "causality:canvas"
+      ],
+      "_family": "living",
+      "_tier": "new"
+    },
+    {
+      "id": "semantic-adjacency",
+      "name": "Semantic Adjacency",
+      "current_intent": "Near things are related things — the map's first promise, kept everywhere, or the map lies.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Becomes provenance-bearing when each unit of nearness cites the math that placed it — click the gap between two nodes and the surface shows the computed similarity (embedding distance, shared-citation count) that made them neighbors; adjacency that can show its work stops being an assertion and becomes a route to source.",
+      "non_example": "Nodes hand-placed for visual balance where proximity is purely aesthetic, and clicking the space between two close nodes yields nothing — an adjacency that cannot produce the number behind 'near' is the exact lie the family pin forbids.",
+      "_family": "topo",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "stable-layout",
+      "name": "Stable Layout",
+      "current_intent": "The same data lands in the same place every visit, so spatial memory compounds into expertise.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "partial"
+      },
+      "verdict": "truth-capable",
+      "evolution": "The deterministic seed graduates from 'looks the same' to 'position is a pure function of identity' — the same content-hash that gives an atom its pipeline identity (loop reconcile grain) gives it its coordinate, so any agent reproduces the layout from the log alone, no browser physics in the loop. That makes position a typed, reproducible function: the agent-drivable axis it already half-touches.",
+      "non_example": "A force-directed graph re-simulated live on every load that merely memoizes the first result to a cache — stability by stored snapshot, not by a derivable function; a fresh agent handed only the data cannot reproduce the coordinates, so the 'stability' is a cache artifact, not a property of identity.",
+      "_family": "topo",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "region-taxonomy",
+      "name": "Region as Taxonomy",
+      "current_intent": "Categories become continents: membership is drawn, not labeled, and borders admit ambiguity.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Regions stop being painted and start being computed: a node's continent is the output of a classifier (causality's term taxonomy — minted / projected / proposed / ghost), so membership routes to the verdict and its evidence, and an overloaded node visibly straddles two borders instead of being filed once. Gains provenance AND register at once — a 'proposed' region renders in pencil, a 'minted' region in ink.",
+      "non_example": "Continents drawn by a designer and nodes dropped into them by a content editor — borders that admit ambiguity for aesthetic softness while encoding no classifier verdict, so a genuinely overloaded node has no way to surface its two incompatible memberships; the map is honest-looking and truth-blind.",
+      "_family": "topo",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "genealogy-trails",
+      "name": "Genealogy Trails",
+      "current_intent": "Influence is drawn as a walkable path; hovering one node lights its ancestry and descendants.",
+      "axis": {
+        "register": "partial",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "truth-capable",
+      "evolution": "The strongest topo pattern, but still one axis until its edges resolve. Its one real leg today is commitment: a lineage edge can draw confirmed influence in solid ink and proposed influence in dashed pencil on the line channel (partial — the treatment exists, the binding to admitted records does not). Provenance is none today, not partial: the path is drawn but not yet resolved to a backing, so it is shaped like provenance without being grounded in it (the inverse claim would be the ghost the rubric refuses). It graduates to ai-native only when hovering a node lights ancestry as ACTUAL records — this commit derived from that done-line, this term cites that file:line — the holographic rule made walkable: no node without a path home. That is what would carry provenance none -> full and clear the two-axis bar; until a record resolves under the hover, the table must read provenance=none to match the truth-capable verdict.",
+      "non_example": "A hand-curated 'influences' graph where every arrow encodes a curator's opinion and hovering a node reveals more curated opinion — a genealogy with no resolvable backing at any node is decoration in the shape of provenance, the ghost citation the rubric sends back.",
+      "_family": "topo",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "backing-bound-topology",
+      "name": "Backing-Bound Topology",
+      "current_intent": "Every node's existence and position resolve to a backing record: click any node and walk home to its file:line / log substring / commit, and a node whose citation does NOT resolve renders as a ghost — visibly hollow — instead of as a solid claim. The holographic rule given a shape: no projection without a path home.",
+      "axis": {
+        "register": "none",
+        "provenance": "full",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "This is the family pin in its AI-native form — 'position is meaning' becomes 'position is derived meaning, and the meaning can be walked back to truth.' It is the one topo pattern where the AI is substantive, not bolted on: the seed is a typed spec an agent authors, the fold resolves each citation against committed bytes before anything renders, and an unresolvable backing is refused (classed ghost) rather than drawn. The teeth are PROVENANCE, not commitment: resolving a backing tells you a node has a path home, not where it sits on propose->admit — a resolved citation can still back a proposed (pencil) atom, and a ghost is unresolvable rather than un-admitted. So register (commitment) scores none honestly; the pattern earns ai-native on provenance=full + agent-drivable=full alone, not on a register read it does not make. Grounded in causality:term_economy.py (evidence = file:line or log substring, ghost on a citation that points to nothing), causality:canvas.js (click node -> inspector -> backing), and causality/contracts/schemas/evidence-edge.schema.json.",
+      "non_example": "A node-link diagram where node.source is a URL string shown in a tooltip but never fetched or checked — a citation displayed is not a citation resolved; a node with a dead backing that still renders as solid is precisely the ghost this pattern exists to expose, the term_economy refusal turned into a visual.",
+      "exemplars": [
+        "causality/term_economy.py — the read-only fold: evidence is a file:line or log substring, and a citation that points to nothing is classed `ghost` (the resolve-or-refuse teeth this pattern renders).",
+        "causality/canvas.js — schema-driven inspector: click a node -> its config, the seam where a backing would be walked home (verified: SCHEMA + inspector resolve).",
+        "causality/contracts/schemas/evidence-edge.schema.json — the typed contract for an evidence edge (node -> backing record), the spec an agent authors before anything renders."
+      ],
+      "_family": "topo",
+      "_tier": "new"
+    },
+    {
+      "id": "register-strata",
+      "name": "Register and Strata (two channels, not one)",
+      "current_intent": "A node carries commitment and epistemic origin as TWO independent facets on two channels (RECONCILIATION.md, 2026-06-16): register (commitment, propose->admit) reads on the LINE channel — admitted in solid ink, proposed/simulated in dashed pencil; strata (epistemic origin: fundamental/derived/learned) reads on the COLOUR channel. The pattern's discipline is keeping them apart: a learned datum can be inked and a fundamental address can be penciled — commitment and stratum do not move together, and reading one off the other is the bug this pattern exists to forbid.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "partial"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Held at truth-capable, honestly recut from an earlier inflation that mapped 'settled RECORD -> fundamental stratum' (RECONCILIATION.md retired that conflation — commitment and stratum are orthogonal). One real leg stands today: agent-drivable=partial — causality:canvas.js carries the strata{fundamental,derived,learned} fields in its SCHEMA and the inspector edits them through a typed spec, so a model can drive the epistemic facet. But that field is the EPISTEMIC channel; the canvas has no commitment/register field at all (verified: `ink` in canvas.js is the hand-drawn render style, not an admission state), and no binding from real admission state to line-treatment exists. So register=none (the commitment rendering is unbuilt and was previously mis-grounded onto the strata field) and provenance=none (the same unbuilt binding). It graduates to ai-native only when a use-trace shows a real admission moving a node pencil->ink on the line channel — a populated commitment binding, distinct from the strata colour it no longer borrows from.",
+      "non_example": "A diagram that derives a node's line-treatment FROM its stratum — inking every fundamental node and penciling every learned one — so commitment is read off epistemic origin instead of off admission state; that is the exact two-facets-collapsed-into-one conflation this pattern is recut to refuse. (Also decoration: layers that encode parallax / z-index camera depth rather than any truth facet.)",
+      "exemplars": [
+        "causality/canvas.js — SCHEMA fields strata.fundamental / strata.derived / strata.learned (lines 71-73, 139) plus the schema-driven inspector: the real, agent-drivable epistemic-channel leg (verified to resolve).",
+        "evolution/RECONCILIATION.md — the decision record separating register (commitment, line) from strata (epistemic, colour) and retiring the 'settled record -> fundamental stratum' mapping.",
+        "causality/term_economy.py — the C4 verdict classes (minted/projected/proposed/ghost) the commitment read would resolve against once a binding is built (cited as the grounding target, not a claim of a built binding)."
+      ],
+      "_family": "topo",
+      "_tier": "new"
+    },
+    {
+      "id": "semantic-zoom",
+      "name": "Semantic Zoom",
+      "current_intent": "Zoom changes meaning, not just scale: galaxy to cluster to object, each altitude its own honest summary.",
+      "axis": {
+        "register": "none",
+        "provenance": "partial",
+        "agent_drivable": "none"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Each altitude becomes a fold over the backing record rather than a hand-authored summary — zoom-out re-derives the level from source so a higher view can never silently drift from the data it claims to summarize.",
+      "non_example": "Showing the same dots bigger at every level (scale without a change of meaning), or a per-altitude summary cached at build time that the underlying record can contradict without the view ever knowing.",
+      "exemplars": [
+        "https://stars.chromeexperiments.com/",
+        "foundry:02-constellation"
+      ],
+      "_family": "spatial",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "dive-scale",
+      "name": "Dive Through Scale",
+      "current_intent": "A continuous camera fall from the whole to the one — scale itself becomes the story's arc.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Gate the fall on real nesting depth — the camera descends only as far as the record actually nests, so the awe of the dive never outruns the evidence underneath it.",
+      "non_example": "A scale-fall staged where no real hierarchy exists — spectacle that implies a depth the data does not have, the fall as set-dressing.",
+      "exemplars": [
+        "https://stars.chromeexperiments.com/"
+      ],
+      "_family": "spatial",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "cinematic-easing",
+      "name": "Cinematic Easing",
+      "current_intent": "The camera never teleports and never lags: every transit is eased, oriented, and interruptible.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Stays pure craft (there is no AI axis to earn here, and it should not pretend otherwise) — its evolved job is to serve the register-bearing patterns above it: never cut between a RECORD view and a SIMULATION view without a felt transit, so the user always feels which kind of truth they moved into.",
+      "non_example": "A teleport dressed as a transition, or an easing that cannot be interrupted — the camera holding the user hostage to its own animation.",
+      "exemplars": [
+        "https://www.phantom.land/",
+        "foundry:02-constellation"
+      ],
+      "_family": "spatial",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "altitude-breadcrumb",
+      "name": "Altitude Breadcrumb",
+      "current_intent": "You always know how high you are and how to get back down — the zoom level is named, visible, reversible.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "partial"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Today the crumb is a route back to a viewport state, not yet a route home to the record that gives the level meaning — so provenance is shaped, not grounded (axis honest at none). The lift that earns provenance: make each crumb cite the record that defines its level, so clicking a crumb resolves to its backing file:line / log substring exactly as the term-economy fold resolves a citation. The agent-drivable half is real now — altitude is a named, addressable level a model can set without a mouse — but a breadcrumb scoring on one axis is truth-capable, not ai-native, until the citation lands.",
+      "non_example": "A breadcrumb that names a screen but not a source — a path back to a camera position with no route home to the record that makes that level mean anything.",
+      "exemplars": [
+        "foundry:02-constellation",
+        "causality:canvas.js"
+      ],
+      "_family": "spatial",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "interior-card-sphere",
+      "name": "Interior Card Sphere",
+      "current_intent": "The collection wraps around you: the gallery is a place you stand inside, and browsing is looking around — no end, no fold, no scroll.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Stays craft and is labeled so honestly; it earns a half-axis only if each card carries its provenance route (click-through to backing record) — until then the sphere is inhabitable spectacle, not a truth surface.",
+      "non_example": "A flat grid bent onto a sphere for the effect — geometry that adds motion and motion-sickness without adding any adjacency or provenance meaning.",
+      "exemplars": [
+        "https://www.phantom.land/",
+        "foundry:06-card-sphere"
+      ],
+      "_family": "spatial",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "fixed-camera-moving-world",
+      "name": "Fixed Camera, Moving World",
+      "current_intent": "The viewer never tilts: the world rotates and flows past a level, planted camera, so cards stay upright and the horizon never lies.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Stays craft; the level horizon can be loaned to the register axis (ink-world of RECORD below the line, pencil-world of REQUEST/SIMULATION above) but that is a tint serving a register-bearing pattern, not a truth claim this pattern makes on its own.",
+      "non_example": "A tilting camera that lets the horizon lie, or world-motion that carries no semantic axis — parallax for its own sake, movement with no data inside it.",
+      "exemplars": [
+        "https://www.phantom.land/",
+        "foundry:06-card-sphere"
+      ],
+      "_family": "spatial",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "derived-altitude",
+      "name": "Re-Derived Altitude",
+      "current_intent": "Semantic zoom where every altitude is a live fold over the backing record, not a cached thumbnail: descending re-resolves the level from source, so the summary at any height can never disagree with the truth beneath it.",
+      "use_when": "A view summarizes data at more than one altitude and a higher level must never be allowed to drift from the record it claims to summarize — reach for it instead of caching per-altitude thumbnails.",
+      "axis": {
+        "register": "none",
+        "provenance": "full",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "New pattern — the AI-native lift of semantic-zoom: the holographic rule applied to altitude (no level without a path home), in the grain of term_economy.py's resolve-then-classify fold. Its earned axes are provenance (the fold home) and agent-drivable (resolve-then-classify is a typed spec, not a browser gesture). Commitment is NOT its claim: a level can loan its line-channel to the register facet (ink for an admitted level, pencil for a proposed/simulated one), but the pattern derives altitude from source, it does not decide propose-vs-admit — so the commitment axis is none, not a borrowed full.",
+      "non_example": "A pre-rendered overview image baked at build time — a summary that cannot be re-derived from the current record, so it drifts from truth and never knows it; a beautiful zoom-out that is a screenshot, not a fold.",
+      "exemplars": [
+        "causality:canvas.js",
+        "causality:term_economy.py",
+        "foundry:02-constellation"
+      ],
+      "_family": "spatial",
+      "_tier": "new"
+    },
+    {
+      "id": "recursion-as-inspection",
+      "name": "Recursive Interior",
+      "current_intent": "Opening a node IS descending into it: a node is itself a graph of nodes (a holon), the inspector and the canvas are the same surface at two altitudes, and the camera-fall into a node is the act of reading its record — schema-driven, so the interior is data the model can compose and drive, not a bespoke panel.",
+      "use_when": "A node has internal structure worth reading and you want 'inspect' and 'zoom in' to be the same act — reach for it instead of pasting a modal inspector panel with its own chrome over the canvas.",
+      "axis": {
+        "register": "none",
+        "provenance": "full",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "New pattern — born from the canvas recursion prototype (a node made of nodes; inspector as zoom/recursion). The zoom path and the provenance path are the same path: to look inside is to follow the route home — so provenance is full. It is agent-drivable because the interior is schema-driven data (canvas.js SCHEMA), not a hand-built form. Commitment is not its claim: descending into a node reads structure, it does not move that node propose→admit, so the register axis is none — the strength is provenance + agent-drivable.",
+      "non_example": "A modal inspector panel pasted over the canvas — opening a node as a separate form with its own chrome instead of descending into it as the same graph one altitude deeper; an 'interior' that is a different surface rather than the node itself.",
+      "exemplars": [
+        "causality:mock-recursion.html",
+        "causality:inspector.js",
+        "causality:canvas.js"
+      ],
+      "_family": "spatial",
+      "_tier": "new"
+    },
+    {
+      "id": "direct-manipulation",
+      "name": "Direct Manipulation",
+      "current_intent": "The thing itself is the control: drag the node, bend the link — no inspector panel in between.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "partial"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Make every gesture round-trip to a typed mutation spec — drag = {op:'move', node, to} validated against SCHEMA before it renders — so the object of touch IS the object an agent emits; the 'no inspector' principle becomes 'the inspector is the schema', and human and model drive the same surface through one validated operation set.",
+      "non_example": "A drag handle that mutates DOM directly with no spec, no validation, and no API equivalent — pretty and responsive, but a model can't drive it and nothing records what the drag meant.",
+      "_family": "play",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "pulse-propagation",
+      "name": "Pulse Propagation",
+      "current_intent": "Cause visibly travels: a change is a particle moving down the wire, so causality is witnessed, not inferred.",
+      "axis": {
+        "register": "partial",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Make the pulse commitment-bearing: a committed pulse replays an actual log event in ink and carries that event's id, a what-if pulse renders in pencil and is unmistakably a proposal/simulation — so the wire stops conflating 'this is on the record' with 'this might happen', and clicking a pulse opens its backing event (provenance). Whether the pulse is firing live is PROCESS (anima-tempo + node activation), off the commitment axis — not a register (RECONCILIATION.md). Crosses commitment partial->full and adds provenance.",
+      "non_example": "Every edge animating an identical glowing dot on a timer, real consequence and hypothetical consequence indistinguishable — the animation says 'something flows' but can't say what, or whether it is on the record or only imagined.",
+      "_family": "play",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "sign-flip",
+      "name": "Sign-Flip Affordance",
+      "current_intent": "The smallest possible edit — one click flips more-begets-more into more-begets-less — keeps play frictionless.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "partial"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Let the flip be a first-class proposal: one click emits {op:'set-sign', edge, value:-1} as pencil (proposed, uncommitted), schema-validated, previewed as a simulation on the live graph, and inked to a record only on commit — the frictionless toggle and its typed-op equivalent become the same act, so a model flips signs exactly as a novice does, and the proposed->admitted (pencil->ink) gap stays visible the whole time.",
+      "non_example": "A toggle that silently mutates a hidden model variable with no typed op, no preview, no committed/uncommitted distinction — frictionless for the human, opaque to the system and unreachable by an agent.",
+      "_family": "play",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "sketch-permission",
+      "name": "Sketchy Permission",
+      "current_intent": "Hand-drawn lines tell the user this is a draft world: wobble grants permission to experiment.",
+      "axis": {
+        "register": "partial",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Bind the wobble to COMMITMENT instead of mood: pencil/hand-drawn rendering becomes the literal, enforced signal for a proposed/simulated mark (uncommitted, might-happen), clean ink the signal for an admitted record (committed, happened) — so visual style is no longer decoration over a draft, it is the commitment-register the user (and a model) can read and the surface can't lie about. This is the line-treatment channel the reconciliation assigns to register (solid=ink / dashed=pencil), kept clear of strata's colour and anima's motion. Pairs with simulate-before-commit.",
+      "non_example": "A sketchy filter applied to the whole canvas as an aesthetic — committed records and live drafts both wobble identically, so the 'draft world' look reassures while hiding which marks are already permanent.",
+      "_family": "play",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "simulate-before-commit",
+      "name": "Simulate Before Commit",
+      "current_intent": "Play's gesture, narrowed: a pending edit runs on the LIVE GRAPH as pencil — you watch its full propagated consequence ripple through the actual nodes and edges (simulation) before a commit inks it to a record. Sub-100ms: the pencil<->ink toggle on the canvas IS the play act, not a separate dialog. Play owns only the on-canvas, sub-100ms propagated-consequence rendering — the generic preview-before-commit primitive is interface-ai:dry-run-preview's, and the pencil->ink transition is register:settle-on-commit's.",
+      "use_when": "Use when an edit's consequence is graph-shaped — it propagates through neighbours — and the user must feel the ripple on the live canvas before committing. Not for non-propagating field edits (those are dry-run-preview's plain before/after), and not as the owner of the commit transition (that is settle-on-commit's).",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "Already crosses on play's narrowed slice: pencil-vs-ink is the whole gesture (commitment full), the pending edit is a validated typed spec (agent full), and the previewed pulse can open its would-be event (provenance partial). Next reach — a rejected commit (gate refusal) replays as a pencil pulse on the graph showing why it would not fit, so refusal is witnessed the same way consequence is (the simulate side of register:settle-on-commit's refusal).",
+      "non_example": "An optimistic-UI edit that renders as final immediately and reconciles in the background — there is no pencil/ink gap, so the user can't tell a previewed possibility from a committed fact, and a bad edit is already 'ink' before anything validates it.",
+      "kin": [
+        "register:settle-on-commit — owns the pencil->ink-on-commit transition; simulate-before-commit is its live-graph play surface, not a re-owner.",
+        "interface-ai:dry-run-preview — owns the generic preview-the-consequence-before-commit primitive (reconcile.py --status, digest --json, term_economy project); play owns only the on-canvas propagated-ripple form of it."
+      ],
+      "exemplars": [
+        "causality:canvas-authoring (authoring.js validates a returned graph-spec against SCHEMA before anything renders — simulate-before-commit at authoring scale)",
+        "https://ncase.me/loopy/ (edit a loop and watch consequence propagate live before you trust it)",
+        "foundry:04-causality"
+      ],
+      "_family": "play",
+      "_tier": "new"
+    },
+    {
+      "id": "poke-to-route",
+      "name": "Poke to Route",
+      "current_intent": "Play's embodied gesture for asking provenance: poke any element and its route home lights up — the backing record, file:line, or log substring it resolves to. Play does NOT own the route-home primitive; that is register:provenance-trace (grounded in term_economy.py's file:line / log-substring evidence and display-system C15, the most-grounded home — round-1 dedup, most-grounded-home-wins). Play owns the POKE: the sub-100ms, agent-emittable 'where does this come from' query as a direct-manipulation act, plus the ghost-on-no-route reach that is play's own.",
+      "use_when": "Use when 'understanding by poking' should resolve to a verifiable source, not an authored label — the canvas poke that triggers register:provenance-trace and renders its result in play. Not a standalone provenance store: it surfaces register's route, never re-derives one.",
+      "axis": {
+        "register": "none",
+        "provenance": "partial",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "evolution": "Narrowed to a lens of register:provenance-trace (round-1 dedup): the route-home it lights up is register's, not a re-owned primitive. Play's own reach is the ghost — a poke that finds no resolvable route renders the element as a ghost (term-economy's ghost class made pokeable), so absence of provenance is itself pokeable. That ghost-in-play behaviour is play's to own; without it this pattern would be truth-capable, a pure lens. The route-home it rides stays register's (D-4: no second source of truth).",
+      "non_example": "A tooltip that shows a hand-written label or a hard-coded description on hover — informative, but the text is authored prose with no resolvable backing, so poking teaches a story the system can't trace or verify.",
+      "kin": [
+        "register:provenance-trace — owns the route-home primitive (term_economy.py file:line / log substring, display-system C15); poke-to-route is its play-gesture surface, not a re-owner.",
+        "hud:provenance-tooltip — the HUD-chrome lens of the same register:provenance-trace primitive; three families, one 'click/hover/poke -> path home' primitive, register-owned."
+      ],
+      "exemplars": [
+        "causality:term-economy (evidence is file:line or a log substring, never prose — poke a term, get its route)",
+        "causality:canvas-inspector",
+        "https://ncase.me/loopy/"
+      ],
+      "_family": "play",
+      "_tier": "new"
+    },
+    {
+      "id": "instrument-surface",
+      "name": "Instrument Surface",
+      "current_intent": "Input is performance: the surface responds in rhythm, and using it is indistinguishable from playing it.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Keep it as pure responsiveness craft, but have the surface emit a typed, timestamped gesture-event stream so a model can play it headlessly — performance an agent can also drive (axis 3 none->partial), without pretending the sub-100ms feel is itself AI. No commitment claim: a responsive control settles nothing.",
+      "non_example": "A form with a Submit button and a 200ms spinner: latency polish is not performance, and a responsive control is not an instrument.",
+      "exemplars": [
+        "https://experiments.withgoogle.com/ai/drum-machine/view/"
+      ],
+      "_family": "instr",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "ml-duet",
+      "name": "Machine Duet",
+      "current_intent": "The model answers your gesture with a musical reply — call and response, neither side fully in charge.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "none",
+        "agent_drivable": "partial"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Render the machine's reply in PENCIL (proposed on the commitment register) and stamp it with its generating model/seed, so the duet never confuses what you played (ink) with what the model proposed (pencil) — lifts commitment none->full and provenance none->partial. That full discipline is the new Provisional Take; ml-duet stays the distinct two-player interaction shape that carries it.",
+      "non_example": "The model's reply rendered in ink, indistinguishable from your own notes: that silently admits SIMULATION as RECORD, and an oracle that returns one authoritative answer is an answer machine, not a duet.",
+      "exemplars": [
+        "https://experiments.withgoogle.com/ai/drum-machine/view/"
+      ],
+      "_family": "instr",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "constraint-play",
+      "name": "Constraint as Toy",
+      "current_intent": "A tight rule-set turns infinite possibility into a game with edges you can feel.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "Express the felt rule-set as a machine-checkable constraint schema so a generated take that breaks the edges is refused, not drawn — the same teeth as F9's schema-validation, applied to live play (axis 3 none->partial); kin to Interface-as-AI, but here the schema validates takes, it does not author a surface. No commitment claim of its own: it gates what may be played, it does not settle pencil->ink.",
+      "non_example": "An unbounded free-draw canvas (infinite possibility, no felt edge — the blank-canvas paralysis the pattern exists to cure); or a constraint enforced only in the UI with no machine-readable schema — a felt edge a model cannot read is not a contract.",
+      "exemplars": [
+        "https://experiments.withgoogle.com/ai/drum-machine/view/"
+      ],
+      "_family": "instr",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "provisional-take",
+      "name": "Provisional Take",
+      "current_intent": "The instrument's keep-gesture: a played take stays pencil (proposed/simulated) while you audition it in the loop, and settles to ink only when you KEEP it — the one moment of admission, in performance. Each kept take carries the provenance (model, seed, prompt) of what produced it.",
+      "use_when": "A live generative-performance surface offers machine takes the human must be able to audition and then deliberately keep or drop — and you need the kept-vs-auditioned line to be the commitment register, not a silent auto-accept.",
+      "axis": {
+        "commitment": "full",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "evolution": "Narrowed (round 1 dedup): this pattern is ONLY the instrument-flavored keep-gesture seam — a played take is pencil until you keep it, then it settles to ink. The pencil->ink mechanic itself is register:pencil-vs-ink, and the settle-on-keep IS register:settle-on-commit's admit step in a performance surface; both are cited as kin and NOT re-derived here. It is also the full form ml-duet's reply-in-pencil points at. Next move is the typed take-spec (axis 3 partial->full) so an external agent can offer a take through the same validated seam a human plays.",
+      "non_example": "The model's beat dropped straight into the committed timeline: auto-accepting generated content admits SIMULATION as RECORD and erases the keep-gesture the pattern is built on. Also not register:settle-on-commit itself (that is the canonical pencil->ink admit, which this rides) and not Interface-as-AI/F9 (which authors a whole surface from a description); this is the keep-gesture located in a live performance seam, citing both as kin rather than re-owning their mechanics.",
+      "exemplars": [
+        "https://experiments.withgoogle.com/ai/drum-machine/view/",
+        "foundry:04-causality"
+      ],
+      "kin": [
+        "register:settle-on-commit",
+        "register:pencil-vs-ink",
+        "interface-ai",
+        "ml-duet"
+      ],
+      "_family": "instr",
+      "_tier": "new"
+    },
+    {
+      "id": "glass-panel",
+      "name": "Glass Panel HUD",
+      "current_intent": "Chrome floats above the world on frosted glass — present when read, invisible when the world moves.",
+      "axis": {
+        "register": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "The glass declares its COMMITMENT through its frame's line-treatment — a solid, ink-weighted edge for an admitted RECORD (ink: it happened), a dashed/pencil border for a REQUEST or SIMULATION (pencil: only a maybe) — so a panel's frame tells you whether it holds ink or pencil before you read a word. It RENDERS the one canonical commitment vocabulary owned by the register family on register's channel (line-treatment + badge); colour stays strata's, size and motion stay anima's (RECONCILIATION.md's three-facet cut). A live pulse on the rim is the panel's RUNTIME — but 'happening now' is anima-tempo / process, not a register, so the pulse rides the motion channel, never the frame. (lifts register none -> partial, becoming commitment-capable)",
+      "non_example": "A frosted panel whose blur radius is the whole point — opacity tuned for beauty while an admitted RECORD and a what-might-happen SIMULATION wear the exact same glass. It whispers, but never says which marks are ink and which are pencil. Honest decoration; do not inflate it.",
+      "_family": "hud",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "ticker-feed",
+      "name": "Ticker Feed",
+      "current_intent": "The raw stream scrolls at the edge like a stock tape: ignorable, but proof the pulse is real — show actual records, in motion, unsummarized.",
+      "axis": {
+        "register": "none",
+        "provenance": "partial",
+        "agent_drivable": "none"
+      },
+      "verdict": "truth-capable",
+      "evolution": "Each scrolling line keeps its route home — click a row and it resolves to its backing log line / file:line — but route-home is register:provenance-trace's owned primitive (the term_economy.py resolve-citation-to-committed-bytes move); the ticker RENDERS it in motion, it does not re-own it (cite-as-kin). Each line also wears its commitment: solid/ink for an admitted RECORD, dashed/pencil for a proposed-but-unsettled row — the register family's canonical ink/pencil, cited not re-declared. A now-happening row pulses on the motion channel (anima-tempo; RUNTIME = process, not a register). Proof-of-pulse becomes proof-with-provenance (provenance partial -> full, register none -> partial: crosses into ai-native).",
+      "non_example": "A curated highlight reel or a summarized 'top events' band scrolling by: the moment it editorializes the stream it stops being evidence and becomes another opinion. Equally a tape of fabricated demo rows — motion with nothing real behind it is the lie this pattern exists to refuse.",
+      "_family": "hud",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "legend-story",
+      "name": "Legend as Story",
+      "current_intent": "The legend doesn't define symbols, it narrates stakes: 'red is a refusal' teaches the world in one line.",
+      "axis": {
+        "register": "partial",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "truth-capable",
+      "evolution": "The same narrate-the-stakes craft, pointed at COMMITMENT: a register legend that RENDERS the one canonical ink/pencil vocabulary owned by the register family (it does not invent its own) — 'ink already happened: an admitted RECORD; pencil is only a maybe: a proposed REQUEST or a SIMULATION' — and shows the register-badge beside each, making ink vs pencil impossible to confuse in one read (register partial -> full; ai-native-capable). RUNTIME is deliberately absent from this legend: 'happening now' is process (anima-tempo), not a commitment, so it is narrated on its own channel, never as a register (RECONCILIATION.md). The legend is a renderer of register's schema, never a second declaration of it — which answers this family's old Q1: one canonical commitment vocabulary, owned by register, rendered here.",
+      "non_example": "A glossary table ('● = node, ■ = edge') that defines symbols without naming stakes — and, on the other side, a legend that re-declares its OWN ink/pencil meanings instead of rendering register's canonical one (the overloaded failure: two legends, two drifting definitions of the same word). Vibe without the commitment distinction, or a private redefinition of it, is craft, not truth.",
+      "_family": "hud",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "provenance-tooltip",
+      "name": "Provenance Tooltip",
+      "current_intent": "Hover any element on the ambient chrome — a node, a ticker row, a gauge value — and the HUD whispers its source at the edge of attention without taking you anywhere: the backing record id, file:line, or log substring it was folded from. The route-home primitive is register:provenance-trace (register OWNS route-home); this pattern is its HUD-chrome SURFACING — the ambient hover affordance, distinct only in that it renders the route as a glance-level whisper rather than a click that navigates away.",
+      "use_when": "Use when an ambient surface must let a human or an agent confirm any glanced value's source without leaving the surface — the whisper-level expression of route-home, for when a full click-to-navigate would break the glance.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "evolution": "Surfaces ai-native, does not author it: every rendered element carries a resolvable route to source, refused at render if the citation dead-ends (term_economy's ghost refusal) — but that resolve-and-refuse lives in register:provenance-trace, which this tooltip CITES as kin and renders, never re-implements (the dedup this narrowing settles: HUD surfaces register's primitive, it does not ship a second route-home). Distinct HUD contribution: the route arrives as an ambient whisper (hover, no navigation), and the same hover names the element's COMMITMENT (ink/pencil) inline. Next reach: the route resolves through register's typed API so an agent gets the backing without the hover.",
+      "non_example": "A tooltip that re-declares its own route-home mechanism instead of citing register:provenance-trace — a second, drifting copy of the one primitive (the dup this narrowing refuses). Also a hover card that shows a prettified label or a derived score with no way back to the bytes, or that invents a plausible-looking source it never resolved (the fabricated citation term_economy.py sends back).",
+      "kin": [
+        "register:provenance-trace"
+      ],
+      "exemplars": [
+        "register:provenance-trace",
+        "causality:term_economy.py",
+        "causality:canvas.js",
+        "foundry:01-living-loop"
+      ],
+      "_family": "hud",
+      "_tier": "new"
+    },
+    {
+      "id": "speakable-hud",
+      "name": "Speakable HUD",
+      "current_intent": "The ambient gauge a human reads at the edge of attention has a typed-spec equal a model can poll: the 73% the operator glances at is the same value an agent reads through an API, not a number trapped in pixels. The chrome whispers to the model too.",
+      "use_when": "Use when a human-glance gauge must also be machine-pollable — when the same ambient value an operator reads at the edge of attention has to be readable and drivable by an agent through a typed spec, not trapped in rendered pixels.",
+      "axis": {
+        "register": "partial",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "Authored ai-native: the HUD's state serializes to and rehydrates from a typed spec (canvas.js toJSON/fromJSON), so reading and driving the surface is browser-optional. Next reach: every ambient value names the fold it came from (provenance partial -> full, route-home via register:provenance-trace, cited not re-owned) and tags its COMMITMENT — pencil for a proposed/simulated value, ink for a settled RECORD — rendering the register family's canonical ink/pencil (register partial -> full). A now-updating value is marked on the process/anima side, not as a register (RUNTIME is not a commitment; RECONCILIATION.md).",
+      "non_example": "A gauge whose only output is rendered pixels — screenshot-only, so the human sees a dial and the model sees an image with no value behind it. And the canonical 30-day anti-pattern: a chat box bolted beside a static dashboard, calling the bolt-on 'AI-native' while the HUD itself stays unreadable to any agent.",
+      "kin": [
+        "register:provenance-trace"
+      ],
+      "exemplars": [
+        "causality:canvas.js",
+        "causality:authoring.js",
+        "foundry:01-living-loop"
+      ],
+      "_family": "hud",
+      "_tier": "new"
+    },
+    {
+      "id": "typography-leads",
+      "name": "Typography Leads",
+      "current_intent": "Type is the art direction: display serif for moments, tracked micro-labels for chrome, tabular numerals for indices.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "As written it ranks importance, not commitment — but the RUBRIC's own ink/pencil metaphor is typographic: a later upgrade could promote register to a required type-role (ink = an admitted RECORD set in the display face, pencil = a proposed/simulated draft set lighter/dashed) so the type system renders the commitment axis unconfusably. That single move would carry it from decoration toward commitment-bearing. Held as decoration today — the honest v0 verdict — not claimed upgraded.",
+      "non_example": "A default utility type scale applied uniformly — hierarchy by font-size alone, every register in the same ink. Legible, but unauthored and commitment-blind.",
+      "_family": "edit",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "the-arrival",
+      "name": "The Arrival",
+      "current_intent": "The piece opens with a held breath: a counter, a title moment, then the world assembles on cue.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "none",
+        "agent_drivable": "none"
+      },
+      "verdict": "decoration",
+      "evolution": "The latent AI-native seed is its own honesty rule — 'never fake the wait, choreograph it'. A later upgrade could bind the counter to a real load/build signal (atoms resolved, citations checked) so the held breath becomes an honest readout of work happening instead of theater — but that is the process/anima side (runtime is not the commitment axis, per RECONCILIATION.md), so it would lift on agent-drivable/provenance, not commitment. Held as decoration today.",
+      "non_example": "A fixed-duration splash that animates a fake progress bar to 90% and stalls — choreography divorced from any real work. The arrival must time something true, not perform a wait that isn't happening.",
+      "_family": "edit",
+      "_tier": "v0-retag"
+    },
+    {
+      "id": "authored-finish",
+      "name": "Authored Finish (Earned, Not Generated)",
+      "current_intent": "Every model-generated surface element is finished through a typed editorial spec — a type-role, a declared register (ink for an admitted RECORD, pencil for a PROPOSED/SIMULATED draft), and a spacing scale — and each rendered element retains the spec clause that shaped it. The authored look is earned by the discipline of the spec, not sprayed on after: type leads, the arrival is choreographed, chrome whispers, and the ink/pencil register is set typographically so commitment is unconfusable on the surface. The spec is what makes AI-authored output read as authored craft instead of slop. Validating that a spec is well-formed BEFORE it renders is deliberately NOT this pattern's mechanism — that gate is interface-ai:schema-gate-before-draw (authoring.js#validateSpec + authoring.test.js, the actually-built validator), which this finish rides as kin. This pattern owns the editorial contract; the gate owns the refusal.",
+      "axis": {
+        "commitment": "partial",
+        "provenance": "none",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "evolution": "The validation teeth moved to their grounded home (interface-ai:schema-gate-before-draw); what stays here is the editorial discipline, scored on its own legs. commitment=partial because the spec renders the ink/pencil distinction typographically but does not itself move a unit propose->admit (the lifecycle lives in the log + interface-ai). agent_drivable=partial because the typed editorial spec is model-fillable and authoring runs through a validated spec — but the validator is kin, not owned. provenance=none honestly: retaining the spec clause routes back to a style decision, not to a backing record/file:line/log substring (the holographic rule wants a path to a SOURCE, which the finish does not carry). To strengthen: make the register type-role required everywhere so commitment is always rendered, and share the ink/pencil treatment with the register family's commitment facet so the editorial finish and the truth layer cannot drift apart.",
+      "non_example": "Pointing a brand font, drop-shadows, and a gradient at raw model output as a post-hoc 'polish pass' — no spec, no register type-role, no route back to what authored each element. That decoration-sprayed-on-top is precisely the slop this pattern refuses; nice fonts are not an authored finish.",
+      "use_when": "Any surface whose elements are model-generated and must read as portfolio-grade — where the risk is not ugliness but slop: output that is competent and characterless because nothing made it earn its look.",
+      "kin": [
+        "interface-ai:schema-gate-before-draw"
+      ],
+      "exemplars": [
+        "interface-ai:schema-gate-before-draw",
+        "causality:canvas.js#SCHEMA",
+        "foundry:06-card-sphere",
+        "https://www.phantom.land/"
+      ],
+      "_family": "edit",
+      "_tier": "new"
+    },
+    {
+      "id": "pencil-vs-ink",
+      "name": "Pencil vs Ink",
+      "intent": "What is committed is drawn in ink — solid, weighted, settled; what is merely proposed or simulated is drawn in pencil — light, dashed, provisional. The eye sorts admitted record from might-be before it reads a word. This is the ambient field read of commitment: the whole canvas sorted at a glance.",
+      "use_when": "Any surface where committed records and uncommitted proposals/simulations share one canvas and a viewer must never mistake a pen-bound draft for an admitted fact.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:term_economy.py — the verdict taxonomy is ink-vs-pencil made literal: minted-* terms (code/log/fold produce or enforce them) are ink; proposed/poetic terms carry no authority and must read as pencil. No resolvable evidence, no mint — the same refusal that keeps a draft from drawing itself as a fact.",
+        "causality:display-system.md — the generative-typing lifecycle propose→ground→grade→admit (proposed→minted, D-4): a unit is pencil until its Admit step and ink after. The line weight tracks the lifecycle stage, not the mood.",
+        "ontum:.ai-native/log — the append-only log is the only free layer (display-system C1 · FundamentalDatum, append_only:true): a fundamental append lands as ink; a pen-bound proposal still awaiting its admission is pencil.",
+        "foundry:04-causality — sketch-permission (ncase.me/loopy wobble) is the craft ancestor, here bound to a meaning (commitment) instead of mere charm."
+      ],
+      "non_example": "NOT skeuomorphic wobble for charm. A hand-drawn look that does not mean 'uncommitted on the lifecycle' is decoration; pencil that backs an admitted record, or ink with no admission behind it, is the exact lie this pattern refuses. The line weight must track the commitment (propose→admit), not the mood — and must not poach hue (strata's) or motion (anima's).",
+      "_family": "register",
+      "_tier": "new"
+    },
+    {
+      "id": "register-badge",
+      "name": "Register Badge",
+      "intent": "Every node and edge wears one unmistakable mark for its commitment — where it sits on propose→admit: PROPOSED (a pen-bound draft), SIMULATED (a dry-run or ungraded-learned datum), ADMITTED (minted — ink), or GHOST (a claimed backing that does not resolve). One badge, the precise per-element read; pencil-vs-ink is the ambient field read. RUNTIME ('happening now') is deliberately absent — that is process (anima-tempo + activation), not commitment.",
+      "use_when": "Mixed-commitment graphs where the same shape can mean an admitted fact or a pending proposal, and confusing them would corrupt the user's model of the system.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:display-system.md C4 · DivergenceComparator — its verdict taxonomy (minted-* | projected | proposed | poetic | overloaded | orphaned | ghost) is the commitment-grade label set the badge carries one-to-one; the badge names which class a unit has reached on the lifecycle.",
+        "causality:term_economy.py — those verdict classes are computed from which evidence strata resolve on disk, so a model authoring a seed sets a unit's class through the fold; the badge value is driven by a typed spec, not a click (resolve→classify→project).",
+        "causality:canvas.js SCHEMA — the agnostic mechanism: a new facet ships as a SCHEMA entry, not code (today the schema carries strata + anima; commitment is the proposed C19 sibling, RECONCILIATION.md). The badge would render from that field once admitted — capability present, the SCHEMA field pending bdo's bless."
+      ],
+      "non_example": "NOT a generic status chip ('draft' / 'published' / 'archived'): workflow state is not commitment — a published doc can still be a SIMULATION of an outcome. And NOT a process state dressed as a register: 'happening / parked' is anima-tempo + activation, not a point on propose→admit. A badge that maps to anything other than a commitment stage on the lifecycle is a different facet wearing this one's clothes.",
+      "_family": "register",
+      "_tier": "new"
+    },
+    {
+      "id": "provenance-trace",
+      "name": "Provenance Trace",
+      "intent": "Click any element and its route home opens — backing record, file:line, log substring. The holographic rule made interactive: no projection is allowed on screen without a resolvable path to the source it claims. This is the family's spine and the canonical 'route home' primitive — the play poke-gesture and the HUD hover-tooltip are its surfaces, not separate inventions.",
+      "use_when": "Any derived or projected surface where a viewer must be able to ask 'says who?' of anything and get an address back, not an assurance.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:term_economy.py — evidence is a file:line or a log-record substring, never prose; the fold resolves each citation against committed bytes before it classifies",
+        "causality:display-system.md C15 · Query / provenance trace — 'every projection carries a traceable route to source' (holographic), requiring a provenance edge back to the C1 fundamental; the component this pattern is the surface of",
+        "causality:term_economy.py mermaid — the static terms→evidence render is the read-only ancestor; the interactive trace is the same route, walkable"
+      ],
+      "non_example": "NOT a tooltip with a human description, and NOT a 'source: AI' stamp. A route that bottoms out in narrative instead of a resolvable address is a ghost dressed as provenance. The trace must end at bytes that exist (a C1 fundamental), or it has not traced anything.",
+      "_family": "register",
+      "_tier": "new"
+    },
+    {
+      "id": "ghost-vs-record",
+      "name": "Ghost vs Record",
+      "intent": "A citation that resolves and one that does not are drawn differently — a ghost (the C4 `ghost` verdict class: a claimed backing that points to nothing) is shown as a ghost, never quietly dropped. Broken provenance is a visible commitment state, not a swallowed error.",
+      "use_when": "Surfaces over evidence that can rot — moved files, deleted records, hallucinated citations — where hiding a broken link would let a false claim pass as grounded.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:term_economy.py — the `ghost` class: a citation pointing to bytes that do not resolve; the §10 teeth fail the build if a ghost is classified as minted",
+        "causality:display-system.md — the closure rule (teeth, §10): 'a type with no resolvable grounding can never be minted — it stays proposed or surfaces as ghost', the same refusal loop/gaps.py makes",
+        "causality:term_economy.py audit — gap findings name their own broken backings rather than absorbing them"
+      ],
+      "non_example": "NOT an error toast that flashes and vanishes, and NOT graceful degradation that hides the break to keep the picture clean. A ghost that is silently removed becomes invisible rot. The whole pattern is that the break stays on screen, marked as the C4 ghost class, until it resolves or is cut on purpose.",
+      "_family": "register",
+      "_tier": "new"
+    },
+    {
+      "id": "settle-on-commit",
+      "name": "Settle on Commit",
+      "intent": "A pencil element becomes ink the instant its admission lands — the surface witnesses commitment happen. The proposal you made or the outcome you simulated darkens into fact only when, and exactly when, the append that backs it exists. This is the Admit step of the lifecycle, rendered.",
+      "use_when": "Live authoring and pipeline surfaces where a proposal moves to committed in front of the user, and the transition itself is the thing they need to trust.",
+      "axis": {
+        "register": "full",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "ontum:loop/reconcile.py + .ai-native/log — settling is the Admit step of the generative-typing lifecycle (display-system.md, 'how a new type is minted': propose→ground→grade→admit; Admit = a D-4 stamp promotes proposed→minted). A pencil unit becomes ink the instant its admission/receipt is appended to the only free layer (C1 · FundamentalDatum, append_only) — level-triggered, re-derived by the fold, never faked ahead of the append.",
+        "causality:authoring.js (Interface as AI) — a description yields a schema-valid draft (pencil) that only becomes a durable graph through a governed pen (ink); the validate→instantiate seam is the settling moment",
+        "foundry:04-causality — pulse-propagation is the motion ancestor: cause visibly travels; here what travels is the pencil→ink transition on the real append"
+      ],
+      "non_example": "NOT optimistic UI that flips to ink before the record exists — ink ahead of its backing is the precise lie pencil-vs-ink and provenance-trace exist to prevent. NOT a loading spinner standing in for a commit. Settling is triggered by the real append (level-triggered, re-derived), never faked to feel fast.",
+      "_family": "register",
+      "_tier": "new"
+    },
+    {
+      "id": "describe-to-canvas",
+      "name": "Describe to Canvas",
+      "intent": "A sentence becomes a typed, rendered graph — the prompt is the authoring surface, and the schema is what it's authoring against.",
+      "use_when": "Any typed-graph or structured surface where hand-placing nodes is the slow path; the user knows the shape they want in words before they know it in clicks.",
+      "axis": {
+        "register": "partial",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js — generate(S, description): describe → local inference → validateSpec → S.fromJSON; the description is the only input, the typed spec is the output",
+        "causality:authoring.js#buildPrompt — the live SCHEMA (TYPES + per-type config fields) is serialized into the model's contract, so NL is generated against the type system, not free-form",
+        "causality:display-system.md#interface-as-ai — 'AI as medium': the human's primary channel is natural language over a fully API-first product",
+        "foundry:04-causality"
+      ],
+      "non_example": "A chatbot sidebar bolted onto a click-ops editor: the chat answers questions but the surface is still built by hand, elements aren't API-addressable, and nothing the AI says is typed against a schema. NL-as-help is not NL-as-medium.",
+      "_family": "interface-ai",
+      "_tier": "new"
+    },
+    {
+      "id": "schema-gate-before-draw",
+      "name": "Schema Gate Before Draw",
+      "intent": "The proposed spec is checked against the live schema before a pixel is drawn — valid instantiates, invalid is refused with its divergence named, never rendered. The teeth of the medium, and the spine of this family.",
+      "use_when": "Anywhere a model (or a human) authors structure that will be trusted downstream; the moment generated output can reach a canvas, a gate must stand between the proposal and the render.",
+      "owns": "Canonical home of schema-validate-before-draw. edit:authored-finish rides this gate for its editorial-finish spec and cites it as kin; instr:provisional-take's schema-checked takes are the same teeth applied to live performance. None of those re-own the mechanism — this pattern is it, because it is the one actually built and negative-control tested.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js#validateSpec — returns {ok, errors[]}; unknown type, non-schema field, duplicate id, dangling link, and incompatible-port edges are each refused before render (generate() returns the spec unrendered on !ok: 'refused — nothing renders, no slop')",
+        "causality:authoring.test.js — the §10 validate→instantiate check: a valid spec lands, a malformed one is refused; a fabricated pass-through is the negative control (the test that makes register=full real, not analogized)",
+        "ontum:causality/term_economy.py — the same refusal on a ghost citation: no resolvable evidence, no mint",
+        "causality:canvas.js#SCHEMA — one schema drives defaults, inspector, persistence, AND the gate; the validator reads the same source the renderer does"
+      ],
+      "non_example": "Optimistic render-then-validate: draw the model's output immediately and show a red toast if it later fails. The slop already reached the canvas; the user already trusted it. A gate that fires after the draw is decoration, not a gate.",
+      "_family": "interface-ai",
+      "_tier": "new"
+    },
+    {
+      "id": "virtual-request-node",
+      "name": "Virtual Request Node",
+      "intent": "A change in pencil, not yet ink — a pending request that carries its kind, required fields, typed ports, and target pen, and walks a lifecycle (draft → valid/invalid → submitted → accepted/refused/landed) before it ever becomes a record. Honest state today: the request lives as a validated spec object (authoring.js) bound to a pen; the request as a node *rendered on the canvas, walking its lifecycle visibly*, is the family's least-built surface — proposed, not built.",
+      "use_when": "Surfaces where a change must be authored, inspected, and routed through a governed seam rather than mutated directly — the request deserves to be a first-class, addressable object the whole time it is pending.",
+      "kin": "async:parked-pulse — the same unit, one stage later: a virtual-request-node becomes a parked-pulse on submit (REQUEST/pencil pre-submit → RUNTIME/parked post-submit). They cite each other as kin, not as overlapping inventions.",
+      "axis": {
+        "register": "partial",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "axis_honesty": "agent-drivable is full and earned — the request routes through a pen (authoring.js → validateSpec → fromJSON), API-addressable end to end. register and provenance are partial, not full: the commitment lifecycle and route-home are real as a CONCEPT in ontum's atom→pen→receipt pipeline, but the pattern's distinctive claim — a visible request node walking that lifecycle on the canvas — is analogized, not built. The built slice is the draft→valid/invalid spec transition; the submitted→accepted/refused/landed states rendered as a node are not on disk. Scoring those axes full would claim an unbuilt UX. Lowered to partial per ISSUES round-1.",
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js — the generated spec IS the request in flight; validateSpec is its draft→valid/invalid transition before fromJSON makes it real (the built slice of the lifecycle)",
+        "ontum:reconcile.PIPELINE — grounds the lifecycle as a CONCEPT: an atom is a pending unit that walks value-gate → owner-stamp → placement → handoff → confirm, its state a fold over the log, never a direct mutation — the analogy the canvas node would render",
+        "ontum:loop/node.py — the one pen: a request lands only through judge()/admit; 'a node propels work, it never authorizes it' — why agent-drivable is full (the request routes through the admitted seam, never around it)",
+        "causality:display-system.md#C5 — TypedNode carries id, type, label, config, sites[], space, strata, divergence: the schema the request node would instantiate (declared, the visible-node UX not yet populated)"
+      ],
+      "non_example": "An optimistic-UI row that appears instantly and silently reconciles in the background. It shows the result before the request is judged, collapses REQUEST into RECORD, and offers no handle to the pending intention — the opposite of making the ask a visible, routable object.",
+      "_family": "interface-ai",
+      "_tier": "new"
+    },
+    {
+      "id": "dry-run-preview",
+      "name": "Dry-Run Preview",
+      "intent": "Show what would happen — the simulated result of the request — before submit. Pencil before ink, and the pencil is computed from the same fold that will draw the ink.",
+      "use_when": "Any mutating action whose blast radius isn't obvious from the gesture; the user (or agent) deserves to see the consequence in the SIMULATION register before committing it to the RECORD register.",
+      "owns": "Canonical home of pencil-before-ink preview. play:simulate-before-commit (consequence rendered on the live graph) and register:settle-on-commit (the pencil→ink transition) cite this as kin; they narrow to their family-specific surface and do not re-own the generic preview, which is grounded here in real read-only folds.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "ontum:reconcile.py --status — a read-only fold summary: what the next pass would do, computed but not committed",
+        "ontum:loop/digest.py --json + loop/orchestrate.py --status — the field's would-be behaviour emitted as a dataset, no write",
+        "ontum:causality/term_economy.py project — resolves and classifies without ever minting; the projection is the preview, the seed is the would-be commit",
+        "causality:authoring.js#generate — on !ok it returns the spec without rendering: the failed dry-run is legible before any draw"
+      ],
+      "non_example": "A confirm dialog that only restates the verb ('Submit? Cancel?') without computing the actual diff. It asks for consent without showing the consequence — ceremony, not simulation; the user is no better informed than before the click.",
+      "_family": "interface-ai",
+      "_tier": "new"
+    },
+    {
+      "id": "refusal-with-reason",
+      "name": "Refusal With Reason",
+      "intent": "The system declines a malformed or unsafe request in place, names exactly why, and keeps the original request attached — so the path from refusal back to its cause is never broken.",
+      "use_when": "Every authoring seam a model can drive; a refusal that drops the request or hides its reason forces a human turn to re-supply context the system already had.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:authoring.js#validateSpec — each error names its locus: node[i] \"label\", the offending field, the unknown type with the valid set, the incompatible ports with direction; generate() returns {ok:false, errors, spec} carrying the refused spec",
+        "ontum:causality/term_economy.py — a citation that points to nothing is classed `ghost`, named, never silently dropped; two incompatible senses surface as `overloaded`",
+        "memory:ai-native-ux-error-carries-prompt — bdo's principle: the error response must contain the prompt/query that triggered it, so the user need not re-supply it",
+        "ontum:RUBRIC.md — 'sent back with the divergence named', the same refusal applied to patterns that overclaim"
+      ],
+      "non_example": "A generic 'Invalid input' toast with no field, no reason, and no echo of what was sent. The agent or user must reconstruct the request from memory to retry; the refusal threw away the one thing that made repair cheap.",
+      "_family": "interface-ai",
+      "_tier": "new"
+    },
+    {
+      "id": "parked-pulse",
+      "name": "Parked Pulse",
+      "intent": "A unit of work that cannot proceed is shown parked — held, named, and waiting on a specific thing (a node, a gate, an owner) — never vanished into a spinner. The wait is a first-class state with an address, not the absence of one.",
+      "use_when": "Any surface where a request hands off to slow async work (local inference, a gate, a long agent run) and the honest answer to 'where is my thing' is 'parked, on X' — not 'loading' and not silence.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "evolution": "The family's spine and the direct repair of the flagged concurrency lie ('a second pulse mid-think dropped'). Commitment is none, and that is the corrected reading (RECONCILIATION.md, 2026-06-16): a parked pulse is RUNTIME — happening-but-blocked — which is PROCESS state (anima-tempo fast<->slow + node activation + the async edge register C11), not a point on the propose->admit commitment axis. It carries no ink-vs-pencil distinction, and scoring it as one was exactly the 'in-flight is a register' error this round corrects. Its real strength is provenance, full: causality's inspector law applied to a wait — click a parked pulse and it resolves to its atom (file:line / content-hash) and to the exact admitted-real node it waits on, with that node's prompt hash. Nothing parks anonymously; the route home of a parked unit is the whole point. Agent-drivable is partial: the parked set is a pure read-only fold over the log (loop.summon), machine-readable and handed to a session ambiently via the hook, and the pulse itself is authored through a typed seed the schema validates — but the park transition is derived, not an authored gesture, so it falls short of full. Kin (round-1 nit): a unit arrives here as a parked-pulse (RUNTIME, post-submit) out of interface-ai:virtual-request-node (the REQUEST object, pre-submit, draft->valid->submitted) — the seam between the two patterns is submit.",
+      "non_example": "NOT a spinner, a skeleton screen, or a 'processing...' toast: those say work is happening and hide where it is. A parked pulse that cannot name what it waits on is refused — an unaddressed wait is exactly the lie this pattern exists to refuse.",
+      "exemplars": [
+        "causality:loop-summon",
+        "causality:loop-node",
+        "causality:canvas",
+        "foundry:04-causality"
+      ],
+      "_family": "async",
+      "_tier": "new"
+    },
+    {
+      "id": "backpressure-visible",
+      "name": "Visible Backpressure",
+      "intent": "When the system is at capacity or cooling, the surface shows it — queue depth, max-in-flight, the dial in play — instead of silently dropping work or stalling behind a frozen frame. The limit is drawn, so a refused or deferred unit reads as governed, not broken.",
+      "use_when": "Bounded-throughput surfaces — an inference plane with a concurrency cap, a loop with a per-tick step budget, any queue with a human bottleneck — where the alternative to showing the pressure is a dropped pulse or an unexplained hang.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "Authored as the honest answer to 'consume one, emit one, drop the rest mid-think'. Commitment is none (RECONCILIATION.md): visible backpressure renders the RUNTIME field — current queue depth, in-flight count, heat/cool behaviour — which is process state (anima-tempo + activation), not a propose->admit commitment distinction. It co-renders that field against the admitted setpoint card (step_budget_per_tick, max_inflight_atoms, human_queue_cap), and that card is itself an ink record, but the pattern's content is showing live pressure honestly against the governing dial — not drawing pencil-vs-ink — so it does not score on the commitment axis. Its strength is agent-drivable, full: the field state is a machine-readable status fold (loop.orchestrate --status) and the bound is a typed, signed admitted record (--admit-setpoint, a JSON spec with --by), so a model both reads the pressure and turns the dial through a validated seam. Provenance is partial: a cap-breach or a cooled tick traces to the setpoint admission that set the bound and to the tick record that hit it, though the aggregate pressure is a fold over many records rather than one clickable element.",
+      "non_example": "NOT a generic 'system busy, try again' banner, and NOT silently dropping the overflow: that hides both the depth and the rule. If the queue cap and the live depth are not both on the surface, capacity is being faked, and a unit shed without a reason is the refused lie.",
+      "exemplars": [
+        "causality:loop-orchestrate",
+        "causality:loop-digest",
+        "causality:display-system",
+        "foundry:04-causality"
+      ],
+      "_family": "async",
+      "_tier": "new"
+    },
+    {
+      "id": "latency-expectation",
+      "name": "Declared Latency",
+      "intent": "A node that takes time declares its expected duration up front, and the surface choreographs the wait against that promise — elapsed shown beside expected, slippage made visible — so a 30-second inference is an announced arrival, not a frozen lie pretending to be instant.",
+      "use_when": "Any node whose work is slow and variable (model inference, a fold over a large corpus, an awaited gate) where the user deserves to know roughly how long before they commit attention — kin to editorial:the-arrival, but for live runtime instead of a one-time load.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "Authored to make a wait choreographed, not faked — the runtime sibling of The Arrival. Commitment is none (RECONCILIATION.md): elapsed-against-expected is anima-tempo / process, not the propose->admit axis. The declared estimate is a pencil guess and the receipt's real ms is ink, but the pattern's actual work is choreographing the live wait so a slow node reads as an announced arrival — it does not draw a commitment distinction, so it scores its strength elsewhere, honestly. Agent-drivable is full: expected duration is a typed schema field on the node (the baseline latency / temporal-expectation, actual-vs-expected ms, already on the causality board), so a model authoring a node declares the promise as data and the surface renders it without bespoke code. Provenance is partial: the expectation traces to the node's declared config and the actual to its latency readout/receipt, a route home for both the promise and the measurement.",
+      "non_example": "NOT an indeterminate spinner that spins the same for 200ms and 40s, and NOT a fake progress bar that fills on a timer unrelated to the work: a declared latency with no measured actual to check it against is a guess wearing a number, refused.",
+      "exemplars": [
+        "causality:display-system",
+        "causality:canvas",
+        "editorial:the-arrival",
+        "foundry:04-causality"
+      ],
+      "_family": "async",
+      "_tier": "new"
+    },
+    {
+      "id": "waiting-on-owner",
+      "name": "Waiting on the Owner",
+      "intent": "Work blocked on a human stamp is visibly distinct from work blocked on the system: the owner's queue is honest about exactly what needs them, why, and under which arc — so a human bottleneck reads as 'awaiting you', never as a system that has merely gone quiet.",
+      "use_when": "Surfaces with a human-in-the-loop authority gate — an owner stamp, an arc confirmation, a realness grant — where the worst failure is flooding the human with undifferentiated items or leaving their queue silent while work waits on them.",
+      "axis": {
+        "commitment": "full",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "evolution": "Authored as the REQUEST register made concrete — and the one async pattern that genuinely scores on the commitment axis (RECONCILIATION.md's named exception: a wait on the owner is NOT mere tempo). Commitment is full: a unit blocked on the owner is a REQUEST sitting in pencil awaiting admission (D-4) — a proposed unit bound to a pen that becomes ink only when the owner stamps. That is a real point on the propose->admit lifecycle, drawn unmistakably apart from a unit blocked on the system (a RUNTIME process state, scored none on commitment in the sibling patterns) and from settled verdicts (the admitted RECORD). The distinction between 'the machine is working' and 'the machine is waiting on YOU to admit' is the whole pattern, and it lives on commitment, not on anima — burying it in tempo would be the lie this pattern refuses. Provenance is full: each owner item resolves to its atom and the arc it serves, mirrored with an arc-first briefing onto the owner's real surface and closed with the verdict's receipt id — every ask traceable to what it is asking about. Agent-drivable is partial by design and honestly so: the queue is a read-only fold a model composes and even mirrors outward (loop.node inbox, the reflector pen), but the stamp itself is owner-only (D-4) — the surface is agent-drivable, the admission is not, and pretending otherwise would be the lie.",
+      "non_example": "NOT a generic notification badge or an undifferentiated 'pending' bucket that mixes system waits with human waits: if the owner cannot tell at a glance which items are theirs to move and what each is asking, the queue is dishonest about what needs them. Manufacturing an 'only you can do' item to fill the queue is the same lie inverted.",
+      "exemplars": [
+        "causality:loop-node",
+        "causality:loop-reflect",
+        "causality:loop-digest",
+        "foundry:04-causality"
+      ],
+      "_family": "async",
+      "_tier": "new"
+    },
+    {
+      "id": "cancellable-inflight",
+      "name": "Cancellable In-Flight",
+      "intent": "Any in-flight unit can be killed or retried, and that state is visible: a hard stop mid-work is safe and re-derivable, a retry is a new versioned attempt while the old one stands as history — so the operator can always intervene without corrupting the record.",
+      "use_when": "Long autonomous runs where a unit may need to be abandoned or re-tried (a wrong-path inference, a stuck gate, a long agent loop) and the surface must make cancel/retry a safe, visible action rather than a 'force quit and hope' gamble.",
+      "axis": {
+        "commitment": "none",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "evolution": "Authored on the substrate's real mortality model, not aspiration: a hard kill mid-run is safe because a partially-written line is dropped by the fold ('it never happened') and the next pass re-derives — the property the tests actually exercise. Commitment is none (RECONCILIATION.md): cancel is RUNTIME being erased (process state), and although a retry mints a new content-hash version that restarts the pipeline (touching the lifecycle at one remove), the pattern's content is the safe, re-derivable intervention property — not a pencil-vs-ink distinction the surface draws — so it scores its strength on provenance and agent-drivable, not commitment. Agent-drivable is full: cancel is mortality (a session is disposable) and retry is a new atom version (edited bytes the schema validates, restarting the pipeline from scratch), both first-class machine gestures. Provenance is partial: the new attempt and the superseded one are both on the log and clickable, though cancellation today is the re-derive property rather than a single named 'cancel' admission — the honest gap, the family's sharpest open fork below.",
+      "non_example": "NOT a cancel button that leaves a half-written record behind, and NOT a retry that silently overwrites the prior attempt: if a kill can corrupt the log or a retry can erase its own history, the intervention is unsafe and the pattern is faked. History is never retro-invalidated — superseded, never erased.",
+      "exemplars": [
+        "causality:loop-reconcile",
+        "causality:loop-node",
+        "foundry:04-causality"
+      ],
+      "_family": "async",
+      "_tier": "new"
+    }
+  ],
+  "landmarks_note": "v0 landmarks retained; 2026 AI-native landmark refresh DEFERRED (30-day pull too thin to mint credibly — absence recorded, not faked)."
+}

@@ -1,0 +1,114 @@
+{
+  "family": {
+    "id": "register",
+    "name": "Register & Provenance",
+    "pin": "truth tells itself",
+    "ai_native_pin": "ink and pencil never blur and every projection keeps a path home — the surface cannot lie about what is a committed record (admitted/minted, or a fundamental append) versus a proposed or simulated draft, nor about where a claim resolves. Register is COMMITMENT on the propose→admit lifecycle, carried on line-treatment + a badge; it is not a four-enum and never owns colour (strata) or motion (anima).",
+    "reconciliation": "REGISTER = COMMITMENT on the generative-typing lifecycle propose→ground→grade→admit (RECONCILIATION.md, bdo 2026-06-16). The 'four registers' (record/runtime/request/simulation) are NOT a free enum and do NOT come from display-system.md — that was a ghost citation, now dropped. RECORD = ink (an admitted/minted type, or a fundamental append on the only free layer); REQUEST = pencil (a proposed, pen-bound draft awaiting admission); SIMULATION = pencil (a dry-run/preview, or a learned datum not yet graded vs its oracle). RUNTIME ('happening / parked now') is NOT a register — it is process, carried by anima-tempo + node activation + the async edge register. Re-grounded on the lifecycle, the C4 DivergenceComparator verdict taxonomy, term_economy.py's verdict classes, and the append-only log — never on a four-enum.",
+    "owns": "the commitment primitive (ink vs pencil on propose→admit) and the provenance-trace 'route home'. These are this family's to own; sibling patterns cite them as kin, never re-derive them — play:poke-to-route and hud:provenance-tooltip ride provenance-trace; play:simulate-before-commit and instr:provisional-take ride pencil-vs-ink + settle-on-commit.",
+    "channel": "line-treatment (solid = ink / dashed = pencil) + the discrete register-badge ONLY. Register is denied hue (strata's channel, display-system H4) and size/motion (anima's channel, C18). Three orthogonal facets, three channels, no collision (RECONCILIATION.md)."
+  },
+  "patterns": [],
+  "new_patterns": [
+    {
+      "id": "pencil-vs-ink",
+      "name": "Pencil vs Ink",
+      "intent": "What is committed is drawn in ink — solid, weighted, settled; what is merely proposed or simulated is drawn in pencil — light, dashed, provisional. The eye sorts admitted record from might-be before it reads a word. This is the ambient field read of commitment: the whole canvas sorted at a glance.",
+      "use_when": "Any surface where committed records and uncommitted proposals/simulations share one canvas and a viewer must never mistake a pen-bound draft for an admitted fact.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:term_economy.py — the verdict taxonomy is ink-vs-pencil made literal: minted-* terms (code/log/fold produce or enforce them) are ink; proposed/poetic terms carry no authority and must read as pencil. No resolvable evidence, no mint — the same refusal that keeps a draft from drawing itself as a fact.",
+        "causality:display-system.md — the generative-typing lifecycle propose→ground→grade→admit (proposed→minted, D-4): a unit is pencil until its Admit step and ink after. The line weight tracks the lifecycle stage, not the mood.",
+        "ontum:.ai-native/log — the append-only log is the only free layer (display-system C1 · FundamentalDatum, append_only:true): a fundamental append lands as ink; a pen-bound proposal still awaiting its admission is pencil.",
+        "foundry:04-causality — sketch-permission (ncase.me/loopy wobble) is the craft ancestor, here bound to a meaning (commitment) instead of mere charm."
+      ],
+      "non_example": "NOT skeuomorphic wobble for charm. A hand-drawn look that does not mean 'uncommitted on the lifecycle' is decoration; pencil that backs an admitted record, or ink with no admission behind it, is the exact lie this pattern refuses. The line weight must track the commitment (propose→admit), not the mood — and must not poach hue (strata's) or motion (anima's)."
+    },
+    {
+      "id": "register-badge",
+      "name": "Register Badge",
+      "intent": "Every node and edge wears one unmistakable mark for its commitment — where it sits on propose→admit: PROPOSED (a pen-bound draft), SIMULATED (a dry-run or ungraded-learned datum), ADMITTED (minted — ink), or GHOST (a claimed backing that does not resolve). One badge, the precise per-element read; pencil-vs-ink is the ambient field read. RUNTIME ('happening now') is deliberately absent — that is process (anima-tempo + activation), not commitment.",
+      "use_when": "Mixed-commitment graphs where the same shape can mean an admitted fact or a pending proposal, and confusing them would corrupt the user's model of the system.",
+      "axis": {
+        "register": "full",
+        "provenance": "partial",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:display-system.md C4 · DivergenceComparator — its verdict taxonomy (minted-* | projected | proposed | poetic | overloaded | orphaned | ghost) is the commitment-grade label set the badge carries one-to-one; the badge names which class a unit has reached on the lifecycle.",
+        "causality:term_economy.py — those verdict classes are computed from which evidence strata resolve on disk, so a model authoring a seed sets a unit's class through the fold; the badge value is driven by a typed spec, not a click (resolve→classify→project).",
+        "causality:canvas.js SCHEMA — the agnostic mechanism: a new facet ships as a SCHEMA entry, not code (today the schema carries strata + anima; commitment is the proposed C19 sibling, RECONCILIATION.md). The badge would render from that field once admitted — capability present, the SCHEMA field pending bdo's bless."
+      ],
+      "non_example": "NOT a generic status chip ('draft' / 'published' / 'archived'): workflow state is not commitment — a published doc can still be a SIMULATION of an outcome. And NOT a process state dressed as a register: 'happening / parked' is anima-tempo + activation, not a point on propose→admit. A badge that maps to anything other than a commitment stage on the lifecycle is a different facet wearing this one's clothes."
+    },
+    {
+      "id": "provenance-trace",
+      "name": "Provenance Trace",
+      "intent": "Click any element and its route home opens — backing record, file:line, log substring. The holographic rule made interactive: no projection is allowed on screen without a resolvable path to the source it claims. This is the family's spine and the canonical 'route home' primitive — the play poke-gesture and the HUD hover-tooltip are its surfaces, not separate inventions.",
+      "use_when": "Any derived or projected surface where a viewer must be able to ask 'says who?' of anything and get an address back, not an assurance.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "full"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:term_economy.py — evidence is a file:line or a log-record substring, never prose; the fold resolves each citation against committed bytes before it classifies",
+        "causality:display-system.md C15 · Query / provenance trace — 'every projection carries a traceable route to source' (holographic), requiring a provenance edge back to the C1 fundamental; the component this pattern is the surface of",
+        "causality:term_economy.py mermaid — the static terms→evidence render is the read-only ancestor; the interactive trace is the same route, walkable"
+      ],
+      "non_example": "NOT a tooltip with a human description, and NOT a 'source: AI' stamp. A route that bottoms out in narrative instead of a resolvable address is a ghost dressed as provenance. The trace must end at bytes that exist (a C1 fundamental), or it has not traced anything."
+    },
+    {
+      "id": "ghost-vs-record",
+      "name": "Ghost vs Record",
+      "intent": "A citation that resolves and one that does not are drawn differently — a ghost (the C4 `ghost` verdict class: a claimed backing that points to nothing) is shown as a ghost, never quietly dropped. Broken provenance is a visible commitment state, not a swallowed error.",
+      "use_when": "Surfaces over evidence that can rot — moved files, deleted records, hallucinated citations — where hiding a broken link would let a false claim pass as grounded.",
+      "axis": {
+        "register": "partial",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "causality:term_economy.py — the `ghost` class: a citation pointing to bytes that do not resolve; the §10 teeth fail the build if a ghost is classified as minted",
+        "causality:display-system.md — the closure rule (teeth, §10): 'a type with no resolvable grounding can never be minted — it stays proposed or surfaces as ghost', the same refusal loop/gaps.py makes",
+        "causality:term_economy.py audit — gap findings name their own broken backings rather than absorbing them"
+      ],
+      "non_example": "NOT an error toast that flashes and vanishes, and NOT graceful degradation that hides the break to keep the picture clean. A ghost that is silently removed becomes invisible rot. The whole pattern is that the break stays on screen, marked as the C4 ghost class, until it resolves or is cut on purpose."
+    },
+    {
+      "id": "settle-on-commit",
+      "name": "Settle on Commit",
+      "intent": "A pencil element becomes ink the instant its admission lands — the surface witnesses commitment happen. The proposal you made or the outcome you simulated darkens into fact only when, and exactly when, the append that backs it exists. This is the Admit step of the lifecycle, rendered.",
+      "use_when": "Live authoring and pipeline surfaces where a proposal moves to committed in front of the user, and the transition itself is the thing they need to trust.",
+      "axis": {
+        "register": "full",
+        "provenance": "full",
+        "agent_drivable": "partial"
+      },
+      "verdict": "ai-native",
+      "exemplars": [
+        "ontum:loop/reconcile.py + .ai-native/log — settling is the Admit step of the generative-typing lifecycle (display-system.md, 'how a new type is minted': propose→ground→grade→admit; Admit = a D-4 stamp promotes proposed→minted). A pencil unit becomes ink the instant its admission/receipt is appended to the only free layer (C1 · FundamentalDatum, append_only) — level-triggered, re-derived by the fold, never faked ahead of the append.",
+        "causality:authoring.js (Interface as AI) — a description yields a schema-valid draft (pencil) that only becomes a durable graph through a governed pen (ink); the validate→instantiate seam is the settling moment",
+        "foundry:04-causality — pulse-propagation is the motion ancestor: cause visibly travels; here what travels is the pencil→ink transition on the real append"
+      ],
+      "non_example": "NOT optimistic UI that flips to ink before the record exists — ink ahead of its backing is the precise lie pencil-vs-ink and provenance-trace exist to prevent. NOT a loading spinner standing in for a commit. Settling is triggered by the real append (level-triggered, re-derived), never faked to feel fast."
+    }
+  ],
+  "open_questions": [
+    "The commitment facet is PROPOSED, not yet built: RECONCILIATION.md amends display-system.md with a C18-sibling — C19 · RegisterFacet (ink/pencil on the line channel, bound to propose→admit) — but that awaits bdo's bless (D-4, his spec) and is not yet a canvas.js SCHEMA field (the schema carries strata + anima today). Until C19 lands and the field ships, pencil/ink + badge render by hand, not from the spec: register's agent-drivability is capability-present, use-trace-pending. Top remaining open question.",
+    "ghost-vs-record's resolution check is a deterministic fold (term_economy resolving a citation against bytes), not a model judgment — so its agent_drivable is partial by construction. Is there an authoring move (a model proposing a citation it must then resolve through the fold) that would raise it to full, or is partial the honest ceiling for a pattern whose verdict the fold owns?"
+  ],
+  "resolved_questions": [
+    "RESOLVED (RECONCILIATION.md): which of two colour systems owns a node — the registers vs the strata. There is no contest: strata (fundamental/derived/learned, epistemic) owns colour/layer (display-system H4); register (commitment) owns line-treatment + badge; anima owns size/motion (C18). Three orthogonal facets, three channels.",
+    "RESOLVED: register-badge vs pencil-vs-ink is load-bearing reinforcement, not redundancy — pencil/ink is the ambient field read (sorts the whole canvas), the badge is the precise per-element read (names the verdict class). Different channels, both ship.",
+    "RESOLVED: RUNTIME ('what is happening now') has no ink-or-pencil home because it is NOT a register — it is process (anima-tempo + node activation + the async edge register). The ink/pencil binary stays clean; 'now' renders on the anima/process side, not as a third texture on the commitment line."
+  ]
+}
