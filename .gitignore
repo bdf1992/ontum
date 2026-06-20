@@ -42,3 +42,7 @@ __pycache__/
 # Jekyll/Pages build output — rebuilt from source on every `jekyll build`
 # and by the Pages workflow; never truth, never tracked.
 _site/
+
+# session-ephemeral nag state, not truth: the idle continue-probe's
+# last-activity clock + nudge decay count (done-line 0128)
+.ai-native/idle-reminder.json
