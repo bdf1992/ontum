@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.model-free-mode-resp-relation-ledger.v0",
+    "story": {
+      "text": "Add relation-ledger.v0 holding relation_claim, relation_probe, consequence_receipt, model_candidate, and bucket_coherence_report, beginning with logged relation claims and consequence receipts rather than embeddings, which are admitted later once consequence-grounded relation data exists to train or evaluate against.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.model-free-mode-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/model-free-mode/",
+        "seal:0f65955903fc"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'model-free-mode' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.model-free-mode-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}
