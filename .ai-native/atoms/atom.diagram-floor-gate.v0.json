@@ -1,0 +1,55 @@
+{
+  "atom": {
+    "id": "atom.diagram-floor-gate.v0",
+    "story": {
+      "text": "As the loop's owner, I need ontum to draw architecture diagrams that can REFUSE a dishonest picture with a cited reason — because every generic drawing tool (draw.io, raw Mermaid) will faithfully render an orphan node, an edge through an unrelated node, or an invented shape, and a diagram that lies is worse than no diagram. The organ is one work-particle, not three: a deterministic spec->SVG floor (compose.py), a named architecture-diagramming canon (canon.md: Moody + graph-drawing aesthetics + C4), and a refusing gate (qa.py) — the gate imports the floor's closed node-type vocabulary (I-4, one source) and every refusal cites the canon by name, so none of the three can be judged apart from the others. The §10 test is the proof: the honest pipeline state-machine renders and passes; a locally-fine variant differing by exactly one node (an orphan) is refused, exit 2, citing [graph-drawing: no orphans].",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "A diagram organ that refuses a dishonest picture with a cited canon principle",
+      "value": "A diagram in ontum becomes an act on the record, not a drawing: it carries which canon governed it and what it refused. The load-bearing good idea three independent repo reviewers agreed on (the gate-with-teeth that REFUSES) is made real on a real ontum content shape — the pipeline state machine — with the smallest honest slice: a byte-deterministic explicit-position renderer, a named SME the gate cites, and a refusing gate in the off-log-gate / mock-shame grain (deny = exit 2 + reason on stderr, fail-open on its own error).",
+      "why_now": "epic.diagram is confirmed (adm.399f90e086fd). Wave 1 was built, green, and independently verified in the session that wrote report 0100 — but it never carried an atom, so it could not land (the off-log gate refuses a PR with no atom-backed receipt). This atom is the missing work-particle: it gives the built floor+canon+gate one identity on the log so the confirmed arc's first PR can pass its own invariant and land.",
+      "if_accepted": "ontum gains diagrams/ — a governed diagramming surface sibling to causality/ (never an extension of canvas.js, §10). compose.py renders byte-identical SVG; qa.py refuses with a named principle; canon.md is the cited SME. The honest/dishonest §10 pair holds in tests/test_diagram.py (16 tests). Later waves (grid-snap, the first earned genre, the generative pole, projection-from-truth, the served surface) ride as their own atoms on this floor.",
+      "if_rejected": "The built, verified wave-1 work stays stranded and unlandable; ontum keeps having no honest diagramming organ, and architecture pictures keep going stale because nothing folds them from truth or refuses a lie.",
+      "cost_of_wrong_call": "Low. The renderer is pure stdlib and explicit-position (no auto-layout to mislead diffs); the gate enforces toward legibility/honesty only and fails open on its own error, so a false positive is an honest refusal surfaced on stderr, never a silent block. No pipeline stage changes; no realness is asserted.",
+      "mechanism": "diagrams/compose.py (deterministic spec->SVG, NODE_TYPES the single closed vocabulary), diagrams/canon.md (Moody's nine principles + Purchase's graph-drawing aesthetics + C4, each mapped to a gate tooth with a non-example), diagrams/qa.py (the refusing gate, importing NODE_TYPES from compose so renderer and gate never disagree), diagrams/examples/ (the honest pipeline state-machine spec + its byte-pinned SVG, and the one-orphan dishonest variant), tests/test_diagram.py (the §10 pair + per-tooth bite tests), .gitattributes (diagrams/examples/*.svg -text, byte-determinism). Done-line 0139.",
+      "reading": [
+        "diagrams/CLAUDE.md",
+        "diagrams/canon.md",
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "tests/test_diagram.py",
+        ".ai-native/done/0139-diagram-floor-and-gate.md",
+        ".ai-native/epics/epic.diagram.json"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.diagram"],
+      "touches": [
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "diagrams/canon.md",
+        "tests/test_diagram.py"
+      ],
+      "must_not_collide_with": ["causality/canvas.js", "causality/term_economy.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "diagrams/canon.md"
+      ]
+    }
+  },
+  "_note": "Birth record for epic.diagram wave 1 (done-line 0139): the deterministic floor + the named canon + the refusing gate, authored as ONE atom because the three files compose into one work-particle — the gate imports the floor's NODE_TYPES (I-4) and cites the canon by name, so none can be judged in isolation (bdo's grain note, 2026-06-20). grid-snap and the first earned genre are separate atoms; they add capability this floor does not need. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

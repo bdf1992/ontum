@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360">
+<rect width="1200" height="360" fill="#0B0B0C"/>
+<defs>
+  <pattern id="halftone" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+    <rect width="5" height="5" fill="#0F1011"/>
+    <circle cx="1" cy="1" r="0.6" fill="#1F2123"/>
+  </pattern>
+  <filter id="glow-cool" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#5EB7A1" flood-opacity="0.6"/>
+  </filter>
+  <filter id="glow-warm" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#C97A55" flood-opacity="0.6"/>
+  </filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5C5C60"/>
+  </marker>
+</defs>
+<text x="32" y="38" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="18" font-weight="600" fill="#E6E6E6">Ontum pipeline · the state machine an atom moves through</text>
+<polygon points="130.0,160 220,195.0 130.0,230 40,195.0" fill="url(#halftone)" stroke="#C97A55" stroke-width="1.5" filter="url(#glow-warm)"/>
+<text x="130.0" y="195.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="130.0" dy="-0.00em">value gate</tspan></text>
+<polygon points="289.6,160 430.4,160 450,195.0 430.4,230 289.6,230 270,195.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="360.0" y="195.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="360.0" dy="-0.00em">owner stamp</tspan></text>
+<polygon points="519.6,160 660.4,160 680,195.0 660.4,230 519.6,230 500,195.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="590.0" y="195.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="590.0" dy="-0.00em">placement</tspan></text>
+<polygon points="749.6,160 890.4,160 910,195.0 890.4,230 749.6,230 730,195.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="820.0" y="195.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="820.0" dy="-0.00em">handoff</tspan></text>
+<rect x="960" y="160" width="180" height="70" rx="35.0" ry="35.0" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="1050.0" y="195.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1050.0" dy="-0.00em">confirm</tspan></text>
+<line x1="220.0" y1="195.0" x2="270.0" y2="195.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="245.0" y="184.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">pass</text>
+<line x1="450.0" y1="195.0" x2="500.0" y2="195.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="475.0" y="184.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">pass</text>
+<line x1="680.0" y1="195.0" x2="730.0" y2="195.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="705.0" y="184.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">placed</text>
+<line x1="910.0" y1="195.0" x2="960.0" y2="195.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="935.0" y="184.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">handed off</text>
+<polyline points="1050.0,160.0 1050.0,110.0 130.0,110.0 130.0,160.0" fill="none" stroke="#5C5C60" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<text x="590.0" y="171.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">refuse · re-derive</text>
+<text x="32" y="342" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">Deliberately not shown: the mock-vs-real lifecycle of each node, the setpoint dial, and the merge-node landing leg. See the loop/ reconcile PIPELINE for the live stage table.</text>
+</svg>
