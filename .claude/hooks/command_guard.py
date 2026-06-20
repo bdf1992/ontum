@@ -230,18 +230,45 @@ def _payload():
 DENY_RULES = _deny_rules()  # compiled once per process, after record exists
 
 
+def _load_seam():
+    """barrier.SEAM_LINK + its pure `decide`, loaded once — the raw-command seam
+    tooth (done-line 0150). The prefix DENY_RULES above all read the
+    quote-stripped command, so a `git push` reached by shelling out — an argv
+    list like ['git','push'] — survives them: strip_quoted removes the very
+    quotes the git lives in (the seam the gate/fence primitive named). This tooth
+    reads the RAW command through that primitive (fence/barrier.py), so the live
+    guard's seal IS an instance of the primitive, not a twin of it. Fail-open
+    like the fence load: a failure leaves the seam unsealed but the guard
+    running, loud on the watch log."""
+    try:
+        sys.path.insert(0, str(ROOT))
+        from fence import barrier
+        return barrier.SEAM_LINK, barrier.decide
+    except Exception as exc:  # noqa: BLE001 — any load failure degrades, none crashes
+        record({"status": "degraded", "rule": "seam-load", "error": repr(exc)})
+        return None, None
+
+
+SEAM_LINK, _seam_decide = _load_seam()
+
+
 TRUNK_MESSAGE = (
     "denied, firm: never push to main — push the session's claude/* "
     "branch and PR it through the pen (branch-ritual)."
 )
 
 
-def first_deny(acting):
-    """The first deny rule this command would hit — the trunk carve-out
-    (a push naming main deserves the firm line, not the generic git-push
-    refusal the registry also carries), then the fence registry — or
-    (None, None). One match, the way normal mode returns on the first hit;
+def first_deny(acting, raw_command=""):
+    """The first deny rule this command would hit — the raw-command seam tooth
+    (the shelled push the quote-stripped view below structurally loses), then
+    the trunk carve-out (a push naming main deserves the firm line, not the
+    generic git-push refusal the registry also carries), then the fence registry
+    — or (None, None). One match, the way normal mode returns on the first hit;
     train reads the same first hit to name what it would have denied."""
+    if SEAM_LINK is not None and raw_command:
+        verdict = _seam_decide(SEAM_LINK, {"command": raw_command})
+        if not verdict["allow"]:
+            return "shelled-git-trunk", verdict["reason"]
     if pushes_to_trunk(acting):
         return "git-push-trunk", TRUNK_MESSAGE
     for rule, pattern, message in DENY_RULES:
@@ -277,7 +304,7 @@ def hook():
     posture, train_session = read_mode(session)
     training = posture == "train"
 
-    rule, message = first_deny(acting)
+    rule, message = first_deny(acting, command)
     if rule is not None:
         if not training:
             # normal: the firm line — block, explain, exit 2 (unchanged)

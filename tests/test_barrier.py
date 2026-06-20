@@ -81,31 +81,31 @@ class BarrierLinkLaws(unittest.TestCase):
 
 
 class FenceClosure(unittest.TestCase):
-    def test_our_real_git_fence_is_torn_at_the_seam(self):
-        # command_guard reads the quote-stripped command, so the shelled git
-        # push (its git lives in the stripped-out quotes) walks straight
-        # through. The fence is open at the seam — the finding, made a test.
-        torn = barrier.command_guard_fence()
+    def test_the_prefix_registry_alone_is_torn_at_the_seam(self):
+        # command_guard's prefix rules read the quote-stripped command, so the
+        # shelled git push (its git lives in the stripped-out quotes) walks
+        # straight through the registry. The finding, made a test.
+        torn = barrier.prefix_rules_fence()
         self.assertFalse(barrier.is_closed(torn))
         gaps = barrier.validate_fence(torn)
         self.assertTrue(any("shelled-git-push" in g and "seam" in g for g in gaps),
                         f"the seam tear was not detected: {gaps}")
 
-    def test_command_guard_still_bites_the_front_and_top(self):
+    def test_the_prefix_registry_still_bites_the_front_and_top(self):
         # the seam tear is a real gap, not a vacuous always-fail: the front and
-        # top routes ARE covered by command_guard today.
-        fence = barrier.command_guard_fence()
+        # top routes ARE covered by the prefix registry.
+        fence = barrier.prefix_rules_fence()
         front = next(r for r in barrier.TRUNK_MUTATION_ROUTES if r["class"] == "front")
         top = next(r for r in barrier.TRUNK_MUTATION_ROUTES if r["class"] == "top")
         self.assertTrue(barrier.covered(fence, front["example_breach"]))
         self.assertTrue(barrier.covered(fence, top["example_breach"]))
 
-    def test_sealing_the_seam_closes_the_fence(self):
-        # adding one link that reads the RAW command seals the seam — the
-        # perimeter loops closed. This is the fix the finding points at.
-        sealed = barrier.closed_trunk_fence()
+    def test_the_live_command_guard_seals_the_seam(self):
+        # the live command_guard adds the raw seam tooth (SEAM_LINK) over the
+        # raw command — the perimeter loops closed. This is the installed seal.
+        sealed = barrier.command_guard_fence()
         self.assertEqual(barrier.validate_fence(sealed), [],
-                         f"the sealed fence should be closed: "
+                         f"the live command_guard fence should be closed: "
                          f"{barrier.validate_fence(sealed)}")
         self.assertTrue(barrier.is_closed(sealed))
 
@@ -126,7 +126,7 @@ class FenceClosure(unittest.TestCase):
     def test_an_unbarbed_link_taints_the_whole_fence(self):
         # a fence is only as physical as its links: one opaque/unbarbed link
         # fails the whole perimeter (the link laws compose into the fence law).
-        fence = barrier.closed_trunk_fence()
+        fence = barrier.command_guard_fence()
         fence["links"][0]["witness"] = ""
         self.assertFalse(barrier.is_closed(fence))
 
@@ -224,20 +224,33 @@ class SeamLinkPrecision(unittest.TestCase):
     """The seam-seal link must catch the shelled push without blocking the git
     pen's own commit traffic (the false positive the review caught)."""
 
-    def test_seals_the_shelled_and_plain_push(self):
+    def test_seals_the_shelled_push_in_its_argv_list_forms(self):
         seam = barrier.SEAM_LINK
-        shelled = ("python -c \"import subprocess;subprocess.run("
-                   "['git','push','origin','main'])\"")
-        self.assertFalse(barrier.decide(seam, {"command": shelled})["allow"])
-        self.assertFalse(barrier.decide(seam, {"command": "git push origin main"})["allow"])
+        for shelled in (
+            "python -c \"import subprocess;subprocess.run(['git','push','origin','main'])\"",
+            "python -c 'import subprocess;subprocess.run([\"git\", \"push\"])'",
+            "python -c \"subprocess.run(('git','push'))\"",
+        ):
+            self.assertFalse(barrier.decide(seam, {"command": shelled})["allow"],
+                             f"the seam link missed a shelled form: {shelled!r}")
 
-    def test_does_not_block_git_commit_mentioning_push(self):
+    def test_leaves_the_plain_push_to_the_front_link(self):
+        # the seam link is NOT the plain-push rule — `git push` (space) is the
+        # front link's job (command_guard's existing git-push rule); the seam
+        # link keys only on the argv-list shape, so it (correctly) abstains.
+        self.assertTrue(barrier.decide(
+            barrier.SEAM_LINK, {"command": "git push origin main"})["allow"])
+
+    def test_does_not_block_prose_that_mentions_git_push(self):
         seam = barrier.SEAM_LINK
-        for ok in ("git commit -m \"fix the push bug\"",
-                   "git log --oneline | grep push",
-                   "git status # ready to push later"):
+        for ok in (
+            "git commit -m \"fix the push bug\"",
+            'python .claude/skills/branch-ritual/git.py commit -m "seal shelled git push"',
+            "git log --oneline | grep push",
+            "git status # ready to push later",
+        ):
             self.assertTrue(barrier.decide(seam, {"command": ok})["allow"],
-                            f"the seam link false-blocked: {ok!r}")
+                            f"the seam link false-blocked prose: {ok!r}")
 
 
 if __name__ == "__main__":

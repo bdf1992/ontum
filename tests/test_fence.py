@@ -108,6 +108,47 @@ class ClaudeParity(unittest.TestCase):
         expected = {(r["id"], r["justification"]) for r in FORBIDDEN}
         self.assertEqual(derived, expected)
 
+
+class SeamSeal(unittest.TestCase):
+    """The raw-command seam tooth (done-line 0150): command_guard now blocks a
+    git push reached by shelling out — the form the quote-stripping prefix rules
+    structurally lose — WITHOUT false-blocking prose that merely mentions it.
+    The §10 test that matters: the seal bites the seam AND lets the pen's own
+    commit-message traffic through (the false positive that would have made it
+    unusable)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.watch_log = pathlib.Path(self.tmp.name) / "watch.jsonl"
+        self.addCleanup(self.tmp.cleanup)
+
+    def test_shelled_git_push_is_denied(self):
+        for shelled in (
+            "python -c \"import subprocess;subprocess.run(['git','push','origin','main'])\"",
+            "python -c 'import subprocess;subprocess.run([\"git\", \"push\"])'",
+        ):
+            with self.subTest(cmd=shelled):
+                proc = run_guard(shelled, self.watch_log)
+                self.assertEqual(proc.returncode, 2,
+                                 f"the seam tooth let a shelled push through: "
+                                 f"{shelled!r} ({proc.stderr.decode()})")
+
+    def test_pen_commit_mentioning_git_push_is_allowed(self):
+        # the load-bearing non-false-positive: committing this very work, whose
+        # message mentions "git push", must NOT be blocked by the seam tooth.
+        ok = ('python .claude/skills/branch-ritual/git.py commit '
+              '-m "seal the shelled git push seam"')
+        proc = run_guard(ok, self.watch_log)
+        self.assertEqual(proc.returncode, 0,
+                         f"the seam tooth false-blocked the pen's own commit: "
+                         f"({proc.stderr.decode()})")
+
+    def test_shelled_non_push_git_is_not_caught_by_the_seam(self):
+        # the seam tooth is scoped to push (the trunk route), not every shelled
+        # git — a shelled `git status` is not its concern.
+        ok = "python -c \"import subprocess;subprocess.run(['git','status'])\""
+        self.assertEqual(run_guard(ok, self.watch_log).returncode, 0)
+
     def test_degraded_fence_is_loud_not_silent(self):
         # _deny_rules() under a broken registry: empty list, a degraded
         # entry on the watch log — never an exception, never quiet

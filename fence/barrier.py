@@ -45,11 +45,16 @@ Three terms, the atom first (bdo: "Barrier might be an atomic example"):
   later increment like the installed fences. The fence is the loop; the gate is
   the opening in it.
 
-This module is the CONTRACT + its validators, not yet an installed fence. It is
-read-only and stdlib-only (fence/'s law): the gate is a predicate, deterministic
-and side-effect-free. `validate_link` / `validate_fence` are the §10 teeth, and
-`tests/test_barrier.py` proves each one bites on the real trunk-mutation
-territory — including that our *own* git fence is torn at the seam.
+This module is the CONTRACT + its validators, and — since done-line 0150 — the
+home of the first INSTALLED instance: `SEAM_LINK` is the raw-command seam tooth
+that `command_guard` now imports and runs to seal the shelled-git-push the
+prefix registry cannot reach. It is read-only and stdlib-only (fence/'s law):
+the gate is a predicate, deterministic and side-effect-free. `validate_link` /
+`validate_fence` are the §10 teeth, and `tests/test_barrier.py` proves each one
+bites on the real trunk-mutation territory — including that command_guard's
+prefix-rule REGISTRY alone is torn at the seam (a prefix rule runs over the
+quote-stripped command; it structurally cannot read the raw command where the
+shelled git lives), and that the raw seam tooth seals it.
 
 CLI:
   python fence/barrier.py            the contract + the trunk-mutation reading
@@ -323,11 +328,13 @@ TRUNK_MUTATION_ROUTES = [
     },
 ]
 
-# What command_guard ACTUALLY covers today, modelled as barrier-links: it
-# reads the quote-stripped command, so it bites the front and the top — and
-# misses the seam, because the shelled git lives in the stripped-out quotes.
+# command_guard's PREFIX-RULE registry (fence/policy.py), modelled as
+# barrier-links: each prefix rule is compiled to a regex over the QUOTE-STRIPPED
+# command, so it bites the front and the top — and structurally misses the seam,
+# because the shelled git lives in the stripped-out quotes a prefix rule never
+# sees. This is the torn-perimeter the seam tooth (SEAM_LINK) was built to seal.
 _GIT_PEN = "the PR pen / git pen (.claude/skills/branch-ritual)"
-COMMAND_GUARD_LINKS = [
+PREFIX_RULE_LINKS = [
     {
         "id": "cg-git-push",
         "predicate": {"kind": "command-regex", "over": "command_guard_sees",
@@ -352,38 +359,45 @@ COMMAND_GUARD_LINKS = [
 # longer hide in the quotes. Adding it to the command_guard links is what turns
 # the torn perimeter into a closed fence.
 SEAM_LINK = {
-    "id": "raw-git-push",
-    # bounded between git and push: only quotes, commas, and whitespace may sit
-    # between them — enough to match the shelled `['git','push']` and the plain
-    # `git push`, but NOT `git commit -m "fix the push bug"` (letters between
-    # them break the match). A greedy `[\s\S]*` here would block the git pen's
-    # own commit traffic — the false positive the review caught.
+    "id": "shelled-git-push",
+    # The prose-safe key to the shelled push: the argv-LIST shape — git and push
+    # as separate quoted tokens joined by a comma (`['git','push']`,
+    # `("git", "push")`). A commit message that merely mentions "git push" uses a
+    # SPACE between unquoted words, never quote-comma-quote, so this never
+    # false-blocks the git pen's own traffic (the trap a `git[\s'",]+push`
+    # pattern fell into — it matched the space form in prose too). The plain
+    # `git push` is the FRONT link's job (command_guard's existing git-push
+    # rule); this link seals only the seam the quote-strip opens.
     "predicate": {"kind": "command-regex", "over": "command",
-                  "pattern": r"\bgit\b['\"\s,]+push\b"},
+                  "pattern": r"""['"]git['"]\s*,\s*['"]push"""},
     "on_match": "block",
-    "reason": "a `git push` reached by shelling out (subprocess, a script) is "
-              "still a push to trunk; it is denied however it is spelled. Land "
-              f"through {_GIT_PEN}.",
+    "reason": "a `git push` reached by shelling out (subprocess with an argv "
+              "list like ['git','push']) is still a push to trunk; it is denied "
+              f"however it is spelled. Land through {_GIT_PEN}.",
     "witness": ".ai-native/log/tool-use.jsonl",
 }
 
 
-def command_guard_fence():
-    """The trunk-mutation fence as command_guard constitutes it today — torn
-    at the seam (the kill-test and the CLI both read this). A deep copy, so a
-    caller that edits a returned link (even a nested predicate) can never reach
-    back and mutate the module constants — purity is structural, not by luck."""
+def prefix_rules_fence():
+    """The trunk-mutation fence as command_guard's PREFIX-RULE registry covers
+    it ALONE — torn at the seam (a prefix rule reads the quote-stripped command
+    and structurally cannot reach the shelled git). This is the BEFORE: the
+    finding that motivated the seam tooth. A deep copy, so a caller that edits a
+    returned link (even a nested predicate) can never reach back and mutate the
+    module constants — purity is structural, not by luck."""
     return copy.deepcopy({
         "territory": "trunk-mutation",
         "routes": TRUNK_MUTATION_ROUTES,
-        "links": list(COMMAND_GUARD_LINKS),
+        "links": list(PREFIX_RULE_LINKS),
     })
 
 
-def closed_trunk_fence():
-    """The same fence with the seam sealed — the reference for what a closed
-    trunk-mutation perimeter looks like."""
-    fence = command_guard_fence()
+def command_guard_fence():
+    """The LIVE command_guard since done-line 0150: the prefix registry PLUS the
+    raw seam tooth (SEAM_LINK) it now runs over the RAW command. Closed — the
+    seam is sealed. Installed reality, not a reference: command_guard imports
+    SEAM_LINK and enforces exactly this."""
+    fence = prefix_rules_fence()
     fence["links"].append(copy.deepcopy(SEAM_LINK))
     return fence
 
@@ -413,15 +427,14 @@ CONTRACT = {
 
 
 def trunk_reading():
-    """The read-only finding: is our real git fence (command_guard) a closed
-    fence around trunk-mutation? Returns the territory, the gaps, and the
-    closed reference."""
-    torn = command_guard_fence()
+    """The read-only reading of the trunk-mutation perimeter: the prefix
+    registry alone (torn — the finding) versus the live command_guard with the
+    seam tooth installed (closed — the seal)."""
     return {
         "territory": "trunk-mutation",
-        "command_guard_fence_closed": is_closed(torn),
-        "gaps": validate_fence(torn),
-        "with_seam_sealed_closed": is_closed(closed_trunk_fence()),
+        "prefix_registry_closed": is_closed(prefix_rules_fence()),
+        "prefix_registry_gaps": validate_fence(prefix_rules_fence()),
+        "live_command_guard_closed": is_closed(command_guard_fence()),
     }
 
 
@@ -437,12 +450,13 @@ def render():
     for cls in ROUTE_CLASSES:
         print(f"  {cls:6s} {ROUTE_GLOSS[cls]}")
     reading = trunk_reading()
-    print(f"\nreading the real trunk-mutation fence (command_guard today):")
-    print(f"  closed? {reading['command_guard_fence_closed']}")
-    for gap in reading["gaps"]:
-        print(f"  - {gap}")
-    print(f"  with the seam sealed (a raw-command link): "
-          f"closed? {reading['with_seam_sealed_closed']}")
+    print(f"\nreading the trunk-mutation perimeter:")
+    print(f"  prefix-rule registry alone — closed? "
+          f"{reading['prefix_registry_closed']}")
+    for gap in reading["prefix_registry_gaps"]:
+        print(f"    - {gap}")
+    print(f"  live command_guard (prefix registry + the raw seam tooth) — "
+          f"closed? {reading['live_command_guard_closed']}")
 
 
 def main(argv=None):

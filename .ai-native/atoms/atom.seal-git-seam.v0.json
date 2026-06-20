@@ -1,0 +1,36 @@
+{
+  "atom": {
+    "id": "atom.seal-git-seam.v0",
+    "story": {
+      "text": "Seal the git seam — the first INSTALLED instance of the gate/fence primitive (atom.gate-fence-primitive.v0), on bdo's pick. The primitive's reading found a real, live gap: command_guard's prefix-rule registry reads the QUOTE-STRIPPED command (strip_quoted exists so a commit message that mentions a forbidden verb does not act), so a `git push` reached by shelling out -- an argv list like subprocess.run(['git','push']) -- survives every prefix rule, because strip_quoted removes the very quotes the git lives in. The trunk-mutation perimeter was torn at the seam. The trap: a blind raw-command scan for 'git push' would false-block the git pen's own commit traffic (a message merely mentioning it) -- the exact reason strip_quoted exists. The prose-safe key is the argv-LIST shape: git and push as separate quoted tokens joined by a comma (['git','push'], (\"git\",\"push\")), which prose never uses (it uses a space between unquoted words). The seal dogfoods the primitive: command_guard.first_deny imports fence/barrier.py's SEAM_LINK and runs decide() over the RAW command BEFORE the quote-stripped prefix rules, so the live enforcement IS an instance of the primitive, not a twin of it; the seam load is fail-open like the fence load (a failure leaves the seam unsealed but the guard running, loud on the watch log). The teeth (S10): tests/test_fence.py::SeamSeal runs the LIVE guard as a subprocess and proves the seal denies a shelled push (exit 2) while leaving the pen's own commit-message traffic and a shelled `git status` untouched (exit 0) -- the bite AND the non-false-positive, the two locally-fine cases that must not collide; and barrier.command_guard_fence() (registry + seam tooth) validates CLOSED while prefix_rules_fence() (registry alone) stays torn. A documented residual: a single-string shell form (os.system('git push origin main')) cannot be regex-sealed without colliding with a -m 'git push' message; it needs a deeper mechanism than command_guard's string view and is named, not hidden. Value: a live security gap in our own perimeter is closed, the primitive is proven to install (not just describe), and the seam tooth is the meshed-closure discipline made real.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.physical-barriers"
+      ],
+      "touches": [
+        ".claude/hooks/command_guard.py",
+        "fence/barrier.py",
+        "tests/test_fence.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0153-seal-the-git-seam.md",
+        "fence/barrier.py",
+        ".claude/hooks/command_guard.py",
+        "atom.gate-fence-primitive.v0"
+      ]
+    }
+  }
+}

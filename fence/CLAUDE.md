@@ -31,10 +31,15 @@ python -m unittest tests.test_fence tests.test_barrier -v
   carries a cold-reader reason); a **gate** is a link at a sanctioned opening
   in it. `validate_link`/`validate_fence` are the §10 teeth, and
   `tests/test_barrier.py` proves each one bites on the real trunk-mutation
-  territory — including that `command_guard`'s own perimeter is **torn at the
-  seam** (a `python` that shells `git push` slips its quote-stripping front
-  link), sealed by one raw-command link. The contract; the *installed* fences
-  (sealing that seam, fencing the inference surface) are later increments.
+  territory — including that `command_guard`'s prefix-rule **registry** alone is
+  **torn at the seam** (a `python` that shells `git push` slips the
+  quote-stripping prefix rules). The **first installed instance** (done-line
+  0153) seals it: `SEAM_LINK` is the raw-command seam tooth that
+  `command_guard.first_deny` now imports and runs over the RAW command — the
+  live seal IS an instance of the primitive, prose-safe by keying on the
+  argv-list shape (`['git','push']`), so it never false-blocks a commit message
+  that merely mentions `git push`. The next instance (fencing the inference
+  surface, which has no fence today) is a later increment.
 - [render_codex.py](render_codex.py) — the deterministic renderer:
   emits `.codex/rules/ontum.rules` (native `prefix_rule` entries,
   Starlark) and `.codex/hooks.json` (the ambient summons + the hook
