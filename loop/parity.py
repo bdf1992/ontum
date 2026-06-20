@@ -6,14 +6,20 @@ capabilities as "how does this keep an agent bounded?" and answers it in
 ontum's idiom with exactly one verdict —
 
   have               ontum already does this; cites a resolvable repo file
+                     AND an `evidence` substring that file must contain
   build              ontum lacks it; names an atom in epic.repoprompt-parity
   dont-double-build  it lives elsewhere; cites a real owning epic
 
 The teeth (§10, the term-economy/gaps grip rule — a citation that points to
 nothing is a ghost): `validate()` fails if any `have` path or
 `dont-double-build` epic does not resolve on disk, or any `build` names an atom
-absent from the epic. tests/test_parity.py proves the check is not vacuous by
-showing a fabricated ghost row is caught.
+absent from the epic. And the sharper tooth (done-line 0132): a `have` must
+carry `evidence` — a substring its cited file actually contains — so a row
+cannot stand on a real file that does not do the claimed thing (the
+ghost-in-spirit a file-exists check alone cannot see; it is what let the
+multi-root row falsely claim field.py folds three repos). tests/test_parity.py
+proves the check is not vacuous: a fabricated ghost row, and a `have` whose
+evidence is absent from a real file, are both caught.
 
     python -m loop.parity            the matrix + validation, read-only
     python -m loop.parity --json     the raw dataset (machine-readable)
@@ -33,7 +39,9 @@ VERDICTS = ("have", "build", "dont-double-build")
 
 # The mine. Each row: the RepoPrompt capability, the boundedness technique it
 # represents, the verdict, and what that verdict cites (a file for `have`, an
-# atom id for `build`, an epic id for `dont-double-build`).
+# atom id for `build`, an epic id for `dont-double-build`). A `have` also
+# carries `evidence`: a substring its cited file must contain, so the row
+# proves the file does the thing — not merely that it exists (done-line 0132).
 MATRIX = (
     {
         "capability": "Context Builder — explore, then assemble within a token budget",
@@ -75,6 +83,7 @@ MATRIX = (
         "bounds": "blast radius: each run isolated on its own branch/tree",
         "verdict": "have",
         "cites": ".claude/skills/branch-ritual/git.py",
+        "evidence": "worktree",
         "note": "+ the Agent tool's isolation:worktree",
     },
     {
@@ -87,9 +96,11 @@ MATRIX = (
     {
         "capability": "Multi-root workspaces — unify related repos and docs",
         "bounds": "the working set across repositories",
-        "verdict": "have",
-        "cites": "loop/field.py",
-        "note": "field.py --all folds ontum + odysseus + holonsearch",
+        "verdict": "build",
+        "cites": "atom.multi-root-fold.v0",
+        "note": "field.py --all folds every ARC within ontum, never across the "
+                "three sibling repos (ontum / odysseus-sacrificial / holonsearch) "
+                "— cross-repo is the genuine gap; the prior `have` claim was false",
     },
     {
         "capability": "Agent orchestration / lifecycle — run & coordinate CLI agents",
@@ -110,6 +121,7 @@ MATRIX = (
         "bounds": "concurrency: how many runs are in flight at once",
         "verdict": "have",
         "cites": "loop/orchestrate.py",
+        "evidence": "max_inflight_atoms",
         "note": "no runtime daemon (hard rule); the level-triggered tick + max_inflight setpoint is the bounded analog",
     },
 )
@@ -124,10 +136,24 @@ def epic_atom_ids(epic_id=EPIC_ID, repo=REPO):
     return {p.get("atom") for p in data.get("epic", {}).get("pieces", [])}
 
 
-def _resolves(verdict, cites, repo, atoms):
-    """Does this row's citation point at something real? -> None ok, else why."""
+def _resolves(verdict, cites, repo, atoms, evidence=None):
+    """Does this row's citation point at something real — and, for a `have`,
+    does the cited file actually PROVE the claim? -> None ok, else why."""
     if verdict == "have":
-        return None if (repo / cites).exists() else f"file not found: {cites}"
+        path = repo / cites
+        if not path.exists():
+            return f"file not found: {cites}"
+        if not evidence:
+            return ("a have must carry `evidence` (a substring the cited file "
+                    "contains) — file-exists is not proof the file does the thing")
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            return f"cannot read {cites}: {exc}"
+        if evidence not in text:
+            return (f"evidence absent from {cites}: {evidence!r} — the file "
+                    "exists but does not prove the claim (a ghost-in-spirit)")
+        return None
     if verdict == "dont-double-build":
         target = repo / ".ai-native" / "epics" / f"{cites}.json"
         return None if target.exists() else f"epic not found: {cites}"
@@ -155,7 +181,7 @@ def validate(matrix=MATRIX, repo=REPO):
         if not cites:
             problems.append(f"{where}: a {verdict} row must cite something")
             continue
-        why = _resolves(verdict, cites, repo, atoms)
+        why = _resolves(verdict, cites, repo, atoms, row.get("evidence"))
         if why:
             problems.append(f"{where}: {why}")
     return problems

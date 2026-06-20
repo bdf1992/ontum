@@ -1,0 +1,20 @@
+{
+  "title": "Ontum pipeline · the state machine an atom moves through (dishonest variant)",
+  "size": [1200, 360],
+  "caption": "Locally fine, globally dishonest: identical to pipeline-state-machine.json plus one node ('audit') that participates in no edge. It claims to belong to the pipeline but is wired to nothing — the gate refuses it on graph-drawing: no orphans.",
+  "nodes": [
+    {"id": "value_gate",  "type": "rhombus", "x": 40,  "y": 160, "w": 180, "h": 70, "label": "value gate", "accent": "warm"},
+    {"id": "owner_stamp", "type": "hex",     "x": 270, "y": 160, "w": 180, "h": 70, "label": "owner stamp", "accent": "cool"},
+    {"id": "placement",   "type": "hex",     "x": 500, "y": 160, "w": 180, "h": 70, "label": "placement", "accent": "cool"},
+    {"id": "handoff",     "type": "hex",     "x": 730, "y": 160, "w": 180, "h": 70, "label": "handoff", "accent": "cool"},
+    {"id": "confirm",     "type": "pill",    "x": 960, "y": 160, "w": 180, "h": 70, "label": "confirm"},
+    {"id": "audit",       "type": "rect",    "x": 500, "y": 280, "w": 180, "h": 60, "label": "audit"}
+  ],
+  "edges": [
+    {"from": "value_gate",  "to": "owner_stamp", "label": "pass"},
+    {"from": "owner_stamp", "to": "placement",   "label": "pass"},
+    {"from": "placement",   "to": "handoff",     "label": "placed"},
+    {"from": "handoff",     "to": "confirm",     "label": "handed off"},
+    {"from": "confirm",     "to": "value_gate",  "style": "dashed", "label": "refuse · re-derive", "via": [[1050, 110], [130, 110]]}
+  ]
+}
