@@ -1,6 +1,9 @@
 # cache, never truth (§14.1): a fold over .ai-native/log/ — rebuilt by replay
 .ai-native/queues/
 .ai-native/offsets/
+# ephemeral runtime coordination: the inference admission semaphore's slot
+# leases (done-line 0149). Live-only, self-healing, never history.
+.ai-native/inference-slots/
 .ai-native/inbox.html
 causality/welcome.html
 causality/welcome-preview.png
