@@ -160,6 +160,13 @@ reopen_condition:
 
 Without Prune, Scout creates unmanaged growth.
 
+**Prune is the weakest organ by design-confidence** (bdo, 2026-06-20): retiring
+open possibility is a judgment about *intent* — "is this conjecture spent, or
+just early?" — that a single fold cannot make safely. So when Prune is built it
+**requisitions a panel review for intent** (the gate-panel / charades room — a
+share of runs judged by multiple minds and compiled) before any prune is
+trusted, rather than a single-judge verdict. Its done-line carries that bar.
+
 ## 9. Resource model — pricing motion
 
 The strategy layer must **price motion**, or Scout always generates more
