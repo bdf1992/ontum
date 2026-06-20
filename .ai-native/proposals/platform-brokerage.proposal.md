@@ -274,6 +274,19 @@ clauses are already negotiable in the reach). The doctrine amendment:
    the very consequence-gate this serves), or can the signal be expressed as a *fold
    over the log's own verdict history* and stay native? This decides whether
    model-free operation is *first-class* here or bolted on.
+   - *Proposed resolution (a session's engineering cut, bdo to confirm —
+     2026-06-20): **native fold first.*** Sauce starts as a pure fold over the log's
+     own verdict/relation history — the rate at which verdicts stop flipping = the
+     derivative of prediction-error = learning-progress — built in the exact grain of
+     `retro.py` (churn), `heal.py`, and `relation_ledger.py`. Determinism and
+     log-is-truth stay intact; model-free operation is *first-class*, not bolted on,
+     and it is buildable in a single session. The locality-sensitive / meaning-hash
+     **embedding** over atom content (T7's organ) is the more powerful but out-of-fold
+     path — non-deterministic, via the inference gateway — preserved as a **named
+     later reach, admitted by the very consequence-gate this layer serves**, and built
+     *only if* the native fold provably cannot separate the regimes (the doctrine's
+     deceptive-environment falsification). The cut points toward the substrate, not
+     against it.
 
 ## CTAs (the first links, in order — none to build before the cuts above)
 
