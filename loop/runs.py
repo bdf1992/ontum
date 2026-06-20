@@ -62,7 +62,8 @@ def in_span(ts, since, until):
     return True
 
 
-def record(root, kind, by, arc=None, moved=None, note=None, model=None, cost=None):
+def record(root, kind, by, arc=None, moved=None, note=None, model=None, cost=None,
+           atom=None, verdict=None):
     """Append one `run` event: a headless/ambient run's own trace. The write
     seam so a run stops being invisible. The id hashes the trace, not just the
     clock, so two distinct runs in one second stay distinct.
@@ -70,11 +71,15 @@ def record(root, kind, by, arc=None, moved=None, note=None, model=None, cost=Non
     `model` and `cost` (done-line 0142): a gate run carries the model it drew
     and what that draw cost (usd + tokens), so `loop.runs` can fold cost by
     model — the economy of who-judges-for-how-much. A run with no priced cost
-    omits `usd`; the audit reads that as unpriced, never as $0."""
+    omits `usd`; the audit reads that as unpriced, never as $0.
+
+    `atom` and `verdict` (done-line 0143): the run names the atom (snapshot) it
+    judged and the verdict it produced, so a panel — many models on one atom —
+    folds into a per-snapshot model comparison (the impact data)."""
     moved = {k: int((moved or {}).get(k, 0)) for k in MOVED_KEYS}
     evt = {
         "id": "evt.run." + short_hash(kind, str(by), str(arc), canon(moved),
-                                      str(note), str(model), now_ts()),
+                                      str(note), str(model), str(verdict), now_ts()),
         "type": "run",
         "kind": kind,
         "by": by,
@@ -83,6 +88,8 @@ def record(root, kind, by, arc=None, moved=None, note=None, model=None, cost=Non
         "note": note,
         "model": model,
         "cost": cost,  # {usd, input_tokens, output_tokens} or None
+        "atom": atom,
+        "verdict": verdict,
         "ts": now_ts(),
     }
     append_line(root / "log" / "events.jsonl", evt)
@@ -140,6 +147,8 @@ def _from_event(e):
         "note": e.get("note"),
         "model": e.get("model"),
         "cost": e.get("cost"),
+        "atom": e.get("atom"),
+        "verdict": e.get("verdict"),
         "standing": _classify(total, held=False),
     }
 
@@ -210,6 +219,43 @@ def model_economy(events):
     return out
 
 
+def snapshot_comparisons(events):
+    """The per-snapshot model comparison (done-line 0143, bdo's direction): an
+    atom judged by ≥2 models is a natural comparison — the impact data the
+    cost-only economy deferred. Per such atom: each model's verdict + cost, and
+    whether the room AGREED (all verdicts equal). A split is the signal (where
+    the cheap model diverges from the room); it is surfaced, never smoothed.
+
+    Read-only over the same `run` events; impact is read from real comparisons,
+    never fabricated. Only atoms with two or more DISTINCT models qualify — a
+    single-model atom is not a comparison."""
+    by_atom = {}
+    for r in events:
+        atom = r.get("atom")
+        model = r.get("model")
+        if not atom or not model:
+            continue
+        by_atom.setdefault(atom, {})[model] = {
+            "model": model,
+            "verdict": r.get("verdict"),
+            "usd": (r.get("cost") or {}).get("usd"),
+        }
+    out = []
+    for atom, per_model in by_atom.items():
+        rows = sorted(per_model.values(), key=lambda x: x["model"])
+        if len(rows) < 2:
+            continue  # one model is not a comparison
+        verdicts = {x["verdict"] for x in rows}
+        out.append({
+            "atom": atom,
+            "models": rows,
+            "agreed": len(verdicts) == 1,
+            "verdicts": sorted(v for v in verdicts if v is not None),
+        })
+    out.sort(key=lambda c: (c["agreed"], c["atom"]))  # disagreements first
+    return out
+
+
 def runs(root, since=None, until=None):
     """The pure fold: every fast-loop tick and headless run event in span,
     each judged moved / held / barren, ticks rolled into sessions."""
@@ -236,6 +282,7 @@ def runs(root, since=None, until=None):
         "sessions": sessions,
         "events": events,
         "model_economy": model_economy(events),
+        "snapshot_comparisons": snapshot_comparisons(events),
         "total": total,
         "moved": standings["moved"],
         "held": standings["held"],
@@ -311,6 +358,22 @@ def render(d):
                      "cost-only first). Surfaces through the run/sourcing stats._")
         lines.append("")
 
+    sc = d.get("snapshot_comparisons") or []
+    if sc:
+        agreed = sum(1 for c in sc if c["agreed"])
+        lines.append(f"## Snapshot comparisons — {len(sc)} atom(s) judged by ≥2 "
+                     f"models ({agreed} agreed, {len(sc) - agreed} split)")
+        for c in sc:
+            mark = "✓ agreed" if c["agreed"] else "✗ SPLIT"
+            cells = ", ".join(
+                f"{m['model']}={m['verdict'] or 'FAILED'}"
+                + (f" ${m['usd']:.4f}" if m["usd"] is not None else "")
+                for m in c["models"])
+            lines.append(f"- `{c['atom']}` — {mark}: {cells}")
+        lines.append("_a split is where the cheaper model diverged from the room "
+                     "— the impact signal, surfaced not smoothed (bdo)._")
+        lines.append("")
+
     s = d["sessions"]
     if s:
         moved_steps = sum(x["advanced"] for x in s)
@@ -361,6 +424,8 @@ def main(argv=None):
                      help="the run's total_cost_usd from the claude -p envelope")
     rec.add_argument("--input-tokens", type=int, dest="input_tokens", help="usage input tokens")
     rec.add_argument("--output-tokens", type=int, dest="output_tokens", help="usage output tokens")
+    rec.add_argument("--atom", help="the atom (snapshot) this run judged (panel comparison, 0143)")
+    rec.add_argument("--verdict", help="the verdict this run produced (panel comparison, 0143)")
     args = ap.parse_args(argv)
 
     if args.verb == "record":
@@ -371,7 +436,8 @@ def main(argv=None):
             cost = {"usd": args.cost_usd, "input_tokens": args.input_tokens,
                     "output_tokens": args.output_tokens}
         evt = record(args.root, kind=args.kind, by=args.by, arc=args.arc,
-                     moved=moved, note=args.note, model=args.model, cost=cost)
+                     moved=moved, note=args.note, model=args.model, cost=cost,
+                     atom=args.atom, verdict=args.verdict)
         standing = _classify(sum(moved.values()), held=False)
         print(f"result: report — recorded {evt['id']} ({evt['kind']}, {standing})")
         return 0
