@@ -162,6 +162,43 @@ class TestAuthorize(_TempLog):
         self.assertIn("own backing", reason)
 
 
+class TestPolicyScope(_TempLog):
+    """The tier-2 lever (done-line 0135): a permit grants a tool-scope, and a
+    denied call has none. The scope must be *derived* from the policy, not a
+    constant — default-deny → None, a default permit → propose-only, an
+    explicit stamp → full."""
+
+    def test_denied_has_no_scope(self):
+        # default-deny: no policy → no scope at all (None), not a floor value
+        self.assertIsNone(
+            inference.policy_scope(Fold(self.root), "session", "continue-probe", "self"))
+
+    def test_permit_defaults_to_propose_only(self):
+        inference.set_policy(self.root, "session", "continue-probe", "*", True, "bdo")
+        self.assertEqual(
+            inference.policy_scope(Fold(self.root), "session", "continue-probe", "self"),
+            inference.PROPOSE_ONLY)
+
+    def test_explicit_full_scope_widens(self):
+        inference.set_policy(self.root, "session", "continue-probe", "*", True, "bdo",
+                             scope=inference.FULL)
+        self.assertEqual(
+            inference.policy_scope(Fold(self.root), "session", "continue-probe", "self"),
+            inference.FULL)
+
+    def test_deny_overrides_scope(self):
+        inference.set_policy(self.root, "*", "*", "*", True, "bdo", scope=inference.FULL)
+        inference.set_policy(self.root, "intruder", "*", "*", False, "bdo")
+        self.assertIsNone(
+            inference.policy_scope(Fold(self.root), "intruder", "continue-probe", "self"))
+
+    def test_bad_scope_is_refused(self):
+        # a permit may only grant a known scope (the floor is propose-only)
+        self.assertIsNone(
+            inference.set_policy(self.root, "session", "continue-probe", "*", True,
+                                 "bdo", scope="root"))
+
+
 class TestNormalizeBacking(unittest.TestCase):
     def test_each_scheme_resolves_to_an_http_target(self):
         self.assertEqual(inference.normalize_backing("http://h:1/v1", "m")["base_url"],
