@@ -1017,6 +1017,37 @@ def checks_green(rollup):
     return True
 
 
+def info_from_api(api_pr, check_runs=None):
+    """Normalize a GitHub REST/MCP pull-request object into the exact `info`
+    dict land_refusal consumes — so the gh-less remote land (done-line 0131)
+    runs the *identical* guards. The teeth live in the mapping: a `dirty`
+    mergeable_state becomes CONFLICTING (a conflicted PR cannot be laundered
+    landable through the adapter), and a non-success check stays non-green
+    (checks_green reads `conclusion`, falling back to the run's status). Pure:
+    one blob in, one dict out — no gh, no network."""
+    merged = bool(api_pr.get("merged"))
+    state = "MERGED" if merged else (api_pr.get("state") or "").upper()
+    ms = (api_pr.get("mergeable_state") or "").lower()
+    mergeable = "CONFLICTING" if ms in ("dirty", "conflicting") else "MERGEABLE"
+    rollup = []
+    for c in (check_runs or []):
+        rollup.append({
+            "conclusion": (c.get("conclusion") or "").upper(),
+            "state": (c.get("status") or c.get("state") or "").upper(),
+        })
+    return {
+        "state": state,
+        "baseRefName": (api_pr.get("base") or {}).get("ref"),
+        "headRefName": (api_pr.get("head") or {}).get("ref"),
+        "isDraft": bool(api_pr.get("draft")),
+        "mergeable": mergeable,
+        "title": api_pr.get("title") or "",
+        "body": api_pr.get("body") or "",
+        "statusCheckRollup": rollup,
+        "merged": merged,
+    }
+
+
 def land_refusal(info, confirmation, by, by_admitted=False):
     """Why the merge-node may not land this PR on main, or None. Default is
     refuse: it lands only a confirmed-arc, green, written, non-draft,
@@ -1128,11 +1159,92 @@ def _push_receipt_to_trunk(receipt):
             shutil.rmtree(wt, ignore_errors=True)
 
 
+def _read_pr_blob(path):
+    """The PR state the agent fetched through its authenticated GitHub surface
+    (MCP pull_request_read), saved to a file for the gh-less land. Accepts
+    either {"pr": <get>, "checks": <check_runs>} or a bare get object; the
+    check list is optional (an empty list reads as 'no checks', which is green
+    by checks_green's own rule)."""
+    data = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    if isinstance(data, dict) and "pr" in data:
+        api_pr = data["pr"]
+        checks = data.get("checks") or data.get("check_runs") or []
+    else:
+        api_pr = data
+        checks = data.get("check_runs") or [] if isinstance(data, dict) else []
+    return api_pr, checks
+
+
+def cmd_land_via_api(ns):
+    """The gh-less land for a remote session (done-line 0131): a standalone pen
+    cannot perform the merge mutation here (no REST token in-process — git
+    reaches origin only through a local auth proxy), so the merge runs on the
+    agent's authenticated surface (the GitHub MCP tool). The two parts that
+    must not leave the loop stay in the pen: the *decision* (the same
+    land_refusal guards) and the *receipt* (the record pushed to the trunk).
+    Two phases — decide, then --record after the agent merges — under the
+    identical default-refuse gate (D-4). The decide phase computes the
+    `landed_atoms` while origin/{head} still exists and carries them to the
+    record phase (the D-13 write-through, parity with cmd_land)."""
+    _assert_invocation_root()
+    api_pr, checks = _read_pr_blob(ns.via_api)
+    info = info_from_api(api_pr, checks)
+    trunk = _trunk_admissions()
+    confirmation = arc_confirmed_in(trunk, ns.epic) if trunk is not None else None
+    by_admitted = node_admitted_in(trunk, ns.by) if trunk is not None else False
+    head = info.get("headRefName")
+    base = info.get("baseRefName") or "main"
+    if ns.record:
+        # Phase 2: write the receipt — but only for a PR the blob shows actually
+        # merged, and only under the same arc-confirm + admitted-node gate, so a
+        # `landed` receipt can never be minted for an un-landed or unauthorized PR.
+        if not info.get("merged"):
+            _refuse(f"PR #{ns.number} is not merged on the supplied blob — merge "
+                    "it on your authenticated surface, then re-fetch its state "
+                    "and re-run --record (no receipt for an un-landed PR)")
+        if not confirmation:
+            _refuse("the arc is not confirmed by bdo on the trunk — no merge "
+                    "receipt for an unauthorized land (D-4)")
+        if not by_admitted:
+            _refuse(f"--by {ns.by!r} is not an admitted node on the trunk — a "
+                    "self-asserted identity does not record a land (done-line 0049)")
+        landed = sorted({a for a in (ns.landed_atoms or "").split(",") if a.strip()})
+        receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head,
+                                 landed_atoms=landed)
+        if _push_receipt_to_trunk(receipt):
+            print(f"result: done — recorded the land of PR #{ns.number} "
+                  f"({head} -> main) on bdo's confirmed arc {ns.epic}; receipt "
+                  f"{receipt['id']} on the trunk. bdo was not asked — he confirmed "
+                  "the arc, the node landed it.")
+        else:
+            print(f"result: needs-you — PR #{ns.number} is MERGED to main, but its "
+                  f"receipt {receipt['id']} did not reach the trunk (push failed). "
+                  "The merge stands; the log is missing the record — reconcile it.")
+        return
+    # Phase 1: decide. Run the identical guards; mutate nothing.
+    reason = land_refusal(info, confirmation, ns.by, by_admitted)
+    if reason:
+        _refuse(reason)
+    # Compute landed_atoms while origin/{head} still exists (GitHub deletes it on
+    # merge) — the same reach cmd_land uses, so the receipt cannot disagree.
+    _run(["git", "fetch", "origin", base, head])
+    landed_atoms, _ids, _phrasing = _range_atom_facts(f"origin/{base}", f"origin/{head}")
+    atoms_arg = ",".join(landed_atoms)
+    print(f"result: done — guards pass: PR #{ns.number} ({head} -> main) is safe to "
+          f"land on bdo's confirmed arc {ns.epic} ({confirmation}); atoms "
+          f"{landed_atoms or '(none)'}. No gh here, so merge it on your "
+          "authenticated surface (MCP merge_pull_request, squash), then record:\n"
+          f"  {PEN} land {ns.number} --epic {ns.epic} --by {ns.by} "
+          f"--via-api <post-merge.json> --record --landed-atoms '{atoms_arg}'")
+
+
 def cmd_land(ns):
     """The merge-node's hand: land a confirmed-arc PR on main. bdo no longer
     merges — he confirms arcs and reads the digest; this lands what he
     confirmed, refuses by default, and records every land. Run it as a node
     that did not author the PR (the merge-node SKILL is explicit)."""
+    if getattr(ns, "via_api", None):
+        return cmd_land_via_api(ns)
     _assert_invocation_root()
     info = json.loads(_run(
         ["gh", "pr", "view", str(ns.number), "--json",
@@ -1310,6 +1422,19 @@ def main(argv=None):
                       help="the merge-node's identity, e.g. merge-node.claude.v0")
     land.add_argument("--dry-run", dest="dry_run", action="store_true",
                       help="run every guard and print the decision; merge nothing")
+    land.add_argument("--via-api", dest="via_api", metavar="PATH",
+                      help="gh-less land for a remote session (done-line 0131): "
+                           "read the PR state from a GitHub-API JSON blob the "
+                           "agent fetched (MCP pull_request_read) instead of gh. "
+                           "The merge itself runs on the agent's authenticated "
+                           "surface; the guards and the receipt stay in the pen")
+    land.add_argument("--record", action="store_true",
+                      help="phase 2 of --via-api: the PR is merged — write and "
+                           "push the merge receipt to the trunk")
+    land.add_argument("--landed-atoms", dest="landed_atoms", default="",
+                      metavar="A,B", help="phase 2 of --via-api: the atom ids the "
+                           "decide phase computed (carried so the receipt's "
+                           "landed_atoms matches what the gate counted, D-13)")
     land.set_defaults(func=cmd_land)
 
     confirm = verbs.add_parser(

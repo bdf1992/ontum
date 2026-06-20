@@ -306,5 +306,99 @@ class ConfirmFromRefValidatesNeverBypasses(unittest.TestCase):
             self.assertFalse(pr.epic_id_in_blob(blob, self.EPIC))
 
 
+class InfoFromApiAdapter(unittest.TestCase):
+    """The gh-less remote land (done-line 0131) feeds land_refusal through
+    info_from_api instead of `gh pr view`. The §10 bar: the adapter must not
+    be a laundering seam — a PR the API marks conflicted or red still refuses
+    to fit once normalized, exactly as the gh path would have refused it."""
+
+    def _api_pr(self, **over):
+        """A GitHub-API/MCP pull object that, normalized, would land."""
+        pr_obj = {
+            "state": "open",
+            "draft": False,
+            "merged": False,
+            "mergeable_state": "clean",
+            "title": "the merge-node's hand lands confirmed-arc work",
+            "body": "A real written story for a cold reader.",
+            "base": {"ref": "main"},
+            "head": {"ref": "claude/merge-node"},
+        }
+        pr_obj.update(over)
+        return pr_obj
+
+    def test_clean_open_pr_normalizes_to_landable(self):
+        info = pr.info_from_api(self._api_pr(),
+                                [{"conclusion": "success", "status": "completed"}])
+        # state lowercased by the API is cased back up; everything maps through
+        self.assertEqual(info["state"], "OPEN")
+        self.assertEqual(info["baseRefName"], "main")
+        self.assertEqual(info["headRefName"], "claude/merge-node")
+        self.assertFalse(info["isDraft"])
+        self.assertIsNone(pr.land_refusal(info, CONF, BY, True))
+
+    def test_dirty_mergeable_state_refuses(self):
+        # the teeth: a conflicted PR must not be laundered landable by the adapter
+        info = pr.info_from_api(self._api_pr(mergeable_state="dirty"),
+                                [{"conclusion": "success"}])
+        self.assertEqual(info["mergeable"], "CONFLICTING")
+        self.assertIsNotNone(pr.land_refusal(info, CONF, BY, True))
+
+    def test_failing_check_refuses(self):
+        info = pr.info_from_api(self._api_pr(),
+                                [{"conclusion": "failure", "status": "completed"}])
+        self.assertIsNotNone(pr.land_refusal(info, CONF, BY, True))
+
+    def test_pending_check_refuses(self):
+        # a run still in progress carries no conclusion — not green, must wait
+        info = pr.info_from_api(self._api_pr(),
+                                [{"conclusion": None, "status": "in_progress"}])
+        self.assertIsNotNone(pr.land_refusal(info, CONF, BY, True))
+
+    def test_no_checks_is_green(self):
+        info = pr.info_from_api(self._api_pr(), [])
+        self.assertIsNone(pr.land_refusal(info, CONF, BY, True))
+
+    def test_draft_refuses(self):
+        info = pr.info_from_api(self._api_pr(draft=True), [{"conclusion": "success"}])
+        self.assertTrue(info["isDraft"])
+        self.assertIsNotNone(pr.land_refusal(info, CONF, BY, True))
+
+    def test_merged_blob_carries_flag_and_decide_refuses(self):
+        # an already-merged PR is MERGED, not OPEN — the decide phase refuses it
+        # (only an open PR is decided); the record phase reads the merged flag.
+        info = pr.info_from_api(
+            self._api_pr(state="closed", merged=True), [{"conclusion": "success"}])
+        self.assertTrue(info["merged"])
+        self.assertEqual(info["state"], "MERGED")
+        self.assertIsNotNone(pr.land_refusal(info, CONF, BY, True))
+
+
+class RemoteLandPhases(unittest.TestCase):
+    """cmd_land_via_api splits the pen's pure halves from the merge transport
+    (done-line 0131): the --record phase refuses to mint a `landed` receipt for
+    a PR the supplied blob does not show merged — no record for an un-landed PR."""
+
+    def test_record_refuses_unmerged_blob(self):
+        import json as _json
+        import tempfile
+        pr_obj = {
+            "state": "open", "draft": False, "merged": False,
+            "mergeable_state": "clean", "title": "lands confirmed-arc work",
+            "body": "A real story.", "base": {"ref": "main"},
+            "head": {"ref": "claude/x"},
+        }
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "pr.json"
+            p.write_text(_json.dumps({"pr": pr_obj, "checks": [{"conclusion": "success"}]}))
+            ns = argparse.Namespace(
+                number=246, epic="epic.owner-harness", by=BY,
+                via_api=str(p), record=True, landed_atoms="", dry_run=False)
+            # _assert_invocation_root runs first; the test root is the repo, so it
+            # passes, and the unmerged-blob refusal is what exits.
+            with self.assertRaises(SystemExit):
+                pr.cmd_land_via_api(ns)
+
+
 if __name__ == "__main__":
     unittest.main()
