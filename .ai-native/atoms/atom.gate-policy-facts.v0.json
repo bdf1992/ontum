@@ -2,7 +2,7 @@
   "atom": {
     "id": "atom.gate-policy-facts.v0",
     "story": {
-      "text": "As the loop, I should make the value gate's input fully fit bdo's principle stated this session: judgement should be non-deterministic, but the data being judged should be compiled and composed from configuration and policy. The gate already composes the criteria (the versioned node prompt) and the arc membership (from the epic records) deterministically — but it still hands the atom's SELF-CLAIMS (incidence.serves) to the judge as raw JSON beside the composed truth, leaving the reconciliation to the model's reading. That is exactly the seam where the recent panel fault lived (an atom claimed an arc no epic confirms). This composes those facts deterministically so the only non-deterministic step is the value call. (Honesty, applied to this very atom: it serves no confirmed arc yet — no epic names it as a piece — so incidence.serves is empty; the owner direction it serves is recorded in frozen done-line 0146. Attaching the gate-economy work to an arc is bdo's gesture, surfaced as a needs-you.)",
+      "text": "As the loop, I should make the value gate's input fully fit bdo's principle stated this session: judgement should be non-deterministic, but the data being judged should be compiled and composed from configuration and policy. The gate already composes the criteria (the versioned node prompt) and the arc membership (from the epic records) deterministically — but it still hands the atom's SELF-CLAIMS (incidence.serves) to the judge as raw JSON beside the composed truth, leaving the reconciliation to the model's reading. That is exactly the seam where the recent panel fault lived (an atom claimed an arc no epic confirms). This composes those facts deterministically so the only non-deterministic step is the value call. (This atom serves epic.inference-gateway — bdo's home choice for the gate-economy series, 2026-06-20, whose confirmed horizon is 'the loop runs its gates against minds it chose from its own measurements'; the epic now names it as a piece, so its arc membership is backed by policy, not self-asserted. The owner direction is recorded in frozen done-line 0146.)",
       "value_confidence": "high",
       "owner_stamp": "pending"
     },
@@ -22,7 +22,7 @@
     },
     "concern_surface": "systems",
     "incidence": {
-      "serves": [],
+      "serves": ["epic.inference-gateway"],
       "touches": [".claude/skills/gate/gate.py", "tests/test_gate_policy_facts.py", ".ai-native/done/0146-gate-policy-facts.md"],
       "must_not_collide_with": [],
       "hands_off_to": ["seam.value-to-owner-stamp"]
