@@ -1,0 +1,22 @@
+{
+  "size": [1240, 420],
+  "title": "Ontum pipeline · stages grouped into declared regions",
+  "regions": [
+    {"id": "ingress", "label": "ingress", "x": 40, "y": 70, "w": 520, "h": 300},
+    {"id": "body", "label": "body", "x": 600, "y": 70, "w": 600, "h": 300}
+  ],
+  "nodes": [
+    {"id": "value-gate", "type": "rhombus", "region": "ingress", "x": 80, "y": 190, "w": 200, "h": 80, "label": "value gate"},
+    {"id": "owner-stamp", "type": "hex", "region": "ingress", "x": 320, "y": 190, "w": 200, "h": 80, "label": "owner stamp"},
+    {"id": "placement", "type": "hex", "region": "body", "x": 640, "y": 190, "w": 160, "h": 80, "label": "placement"},
+    {"id": "handoff", "type": "hex", "region": "body", "x": 840, "y": 190, "w": 160, "h": 80, "label": "handoff"},
+    {"id": "confirm", "type": "pill", "region": "body", "x": 1020, "y": 190, "w": 160, "h": 80, "label": "confirm"}
+  ],
+  "edges": [
+    {"from": "value-gate", "to": "owner-stamp"},
+    {"from": "owner-stamp", "to": "placement"},
+    {"from": "placement", "to": "handoff"},
+    {"from": "handoff", "to": "confirm"}
+  ],
+  "caption": "Deliberately not shown: region nesting, the node-is-a-subdiagram move, and the holonic attribute model — later cells of epic.diagram."
+}
