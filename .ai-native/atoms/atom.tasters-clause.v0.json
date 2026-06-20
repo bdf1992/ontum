@@ -1,0 +1,33 @@
+{
+  "atom": {
+    "id": "atom.tasters-clause.v0",
+    "story": {
+      "text": "Add D-14, the Taster's Clause, to the doctrine: when a node puts a choice to a peer it serves a shaped read — organized, reasoned, its pick named, the riskiest option flagged — never a raw dump of options. The active discipline behind owner-harness's 'the queue refuses to flood you'.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "doctrine",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        "ai-native-loop-substrate.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "ai-native-loop-substrate.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "The Taster's Clause (D-14), named and shaped by bdo 2026-06-20 over several reshaping passes — his restaurant example and casual words were the SHAPE, not the spec. Serves epic.owner-harness (already confirmed). The value gate judges the story; the merge-node lands it under the confirmed arc."
+}

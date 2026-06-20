@@ -190,4 +190,9 @@
 {"by":"bdo","enabled":true,"epic":"epic.diagram","id":"adm.399f90e086fd","supersedes":null,"ts":"2026-06-20T03:35:58Z","type":"arc_confirmed"}
 {"branch":"claude/diagram-floor-gate","by":"claude","claim":"atom.diagram-floor-gate.v0","id":"adm.426cf4465c44","supersedes":null,"ts":"2026-06-20T16:44:49Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.diagram","id":"adm.20c3e241484f","supersedes":null,"ts":"2026-06-20T17:09:00Z","type":"arc_confirmed"}
+{"by":"bdo","enabled":true,"epic":"epic.model-free-mode-response","id":"adm.1598520adba6","supersedes":null,"ts":"2026-06-20T20:55:53Z","type":"arc_confirmed"}
+{"branch":"claude/relation-governed-exploration","by":"claude","claim":"epic.model-free-mode-response","id":"adm.80836534bd96","supersedes":null,"ts":"2026-06-20T20:56:16Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.model-free-mode-response","id":"adm.0023a81367cd","supersedes":null,"ts":"2026-06-20T21:11:18Z","type":"arc_confirmed"}
+{"branch":"claude/relation-governed-exploration","by":"claude","claim":"epic.model-free-mode-response","id":"adm.2bd8f4148be3","supersedes":"adm.80836534bd96","ts":"2026-06-20T21:35:38Z","type":"workspace_claimed"}
+{"by":"bdo","enabled":true,"epic":"epic.strategy","id":"adm.bc55d43121f8","supersedes":null,"ts":"2026-06-20T22:08:38Z","type":"arc_confirmed"}
+{"branch":"claude/tasters-clause","by":"claude","claim":"atom.tasters-clause.v0","id":"adm.e55cd121ec9c","supersedes":null,"ts":"2026-06-20T22:13:15Z","type":"workspace_claimed"}
