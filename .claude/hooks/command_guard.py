@@ -401,6 +401,11 @@ def hook():
         return 0
     command = (payload.get("tool_input") or {}).get("command") or ""
     session = payload.get("session_id") or ""
+    # the SESSION's working dir, from the payload — NOT os.getcwd(): the harness
+    # runs the hook from the project dir (the primary tree), so the process cwd
+    # is the viewport for every session; only the payload knows where the
+    # session actually stands (session_register.py trusts it the same way).
+    session_cwd = payload.get("cwd") or os.getcwd()
     acting = strip_quoted(command)  # prose mentions a verb; only this acts
 
     # the posture in force for this session, read fresh from the truth log
@@ -436,8 +441,13 @@ def hook():
         # from a worktree is caught, and `git -C <worktree>` from the viewport
         # is allowed (a worker editing its own bench by path).
         targets = dash_c_paths(acting)
-        hits_viewport = (any(in_primary_viewport(p) for p in targets)
-                         if targets else in_primary_viewport())
+        if targets:
+            # -C paths are relative to where the session stands
+            resolved = [p if os.path.isabs(p) else os.path.join(session_cwd, p)
+                        for p in targets]
+            hits_viewport = any(in_primary_viewport(p) for p in resolved)
+        else:
+            hits_viewport = in_primary_viewport(session_cwd)
         if hits_viewport:
             if not training:
                 record({"status": "denied", "rule": "viewport-flip", "verb": flip,

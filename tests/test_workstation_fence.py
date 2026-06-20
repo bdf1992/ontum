@@ -32,11 +32,15 @@ def run_guard(command, cwd, watch_log):
         "tool_name": "Bash",
         "tool_input": {"command": command},
         "session_id": "test-workstation-fence",
+        "cwd": str(cwd),  # the SESSION's cwd travels in the payload, as in prod
     })
     env = dict(os.environ, ONTUM_TOOL_WATCH_LOG=str(watch_log))
+    # run the guard process from a NEUTRAL dir (the primary tree) to prove the
+    # verdict comes from the payload cwd, not the process cwd — the prod wiring,
+    # where the hook always runs from the project dir.
     proc = subprocess.run(
         [sys.executable, str(GUARD)],
-        input=payload, text=True, capture_output=True, cwd=str(cwd), env=env,
+        input=payload, text=True, capture_output=True, cwd=str(REPO), env=env,
     )
     return proc.returncode, proc.stderr
 
