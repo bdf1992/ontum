@@ -89,7 +89,7 @@ def admit_setpoint(root, value, by, supersedes=None, authorized_by=None,
     return adm
 
 
-def next_action(fold, atom, ahash, real_map=None, epics=None):
+def next_action(fold, atom, ahash, real_map=None, epics=None, on_main=None):
     """The one step pass_once would take for this atom — classified read-only,
     in pass_once's exact order (seed, then derive, then judge), so the
     controller can budget steps without acting. A pure fold.
@@ -99,9 +99,31 @@ def next_action(fold, atom, ahash, real_map=None, epics=None):
     for (D-2, D-10). With `epics` given, the owner's stamp on a confirmed arc
     is the loop's to take, not his — it classifies as "judge", not "await"
     (done-line 0028), so a confirmed arc's pieces never sit in his queue.
+
+    `on_main` is the per-atom↔per-PR join (D-13: `digest.atoms_on_main`),
+    computed lazily when not supplied; callers folding many atoms pass it once.
+    An atom that reached main settles here regardless of which interior stage
+    it last touched — see the settle-on-main note below.
     """
     if real_map is None:
         real_map = real_nodes(fold)
+    if on_main is None:
+        from loop.digest import atoms_on_main
+        on_main = atoms_on_main(fold)
+    # Settle-on-main (D-13 join × D-2, the two-acceptances doctrine): the
+    # independent merge-node lands a PR it did NOT author, so its `landed`
+    # receipt IS the deciding acceptance for the piece — the author earned its
+    # own acceptance and drove the work; the lander cast the second. An atom
+    # whose id reached main (its `landed_atoms` join) and whose current bytes
+    # are that landed version (the SEED event is on the record for THIS hash)
+    # is therefore settled, and stops counting as inflight — the road that lets
+    # work close in the wild instead of dying one step past the value-gate. A
+    # fresh in-place edit (new hash, no seed yet) is NOT settled: an un-landed
+    # version never rides a sibling version's landing (§10 — the teeth). A
+    # landed-but-refused atom stays a divergence the digest fold surfaces
+    # independently of this accounting (it reads receipts, not next_action).
+    if atom["id"] in on_main and fold.event(SEED_EVENT, ahash):
+        return None
     if not fold.event(SEED_EVENT, ahash):
         return ("seed", SEED_EVENT)
     for stage in PIPELINE:
@@ -150,8 +172,10 @@ def sense(fold, atoms, epics=None):
     pressure = {"unborn": 0, "inflight": 0, "settled": 0, "parked": 0,
                 "awaiting": 0, "human_backlog": 0, "queue_depth": 0}
     real_map = real_nodes(fold)
+    from loop.digest import atoms_on_main
+    on_main = atoms_on_main(fold)
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash, real_map, epics)
+        action = next_action(fold, atom, ahash, real_map, epics, on_main)
         if action is None:
             pressure["settled"] += 1
         elif action[0] == "seed":
@@ -203,9 +227,11 @@ def control(pressure, setpoint, fold, atoms, human_rate, epics=None):
     human_spent = 0
 
     real_map = real_nodes(fold)
+    from loop.digest import atoms_on_main
+    on_main = atoms_on_main(fold)
     field = []
     for atom, ahash in atoms:
-        action = next_action(fold, atom, ahash, real_map, epics)
+        action = next_action(fold, atom, ahash, real_map, epics, on_main)
         if action is None or action[0] in ("parked", "await"):
             continue  # settled, held for a human, or held for a summoned node
         field.append((atom, ahash, action))

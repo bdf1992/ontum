@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.production-gate.v0",
+    "story": {
+      "text": "As the loop, I need the live surface bdo judges on to stop changing without him. Today `.github/workflows/pages.yml` deploys main's HEAD to bdf1992.github.io/ontum on every push, with no owner stamp — the one promotion that escapes him (epic.environments glue). This is the first buildable slice of his confirmed arc: the production gate, smallest real teeth. The spine is non-circular by deploying the STAMPED snapshot, never HEAD — so the act of recording a stamp can never become unstamped live content. A `production_promotion` admission (by: bdo, a snapshot commit sha, supersedable) is his stamp, the same authority as confirm-arc: the gate executes his gesture, it never invents a verdict (the .github/ law, the arc's second guardrail). Before his first stamp the gate is in loud unstamped passthrough so landing it never dark-takes the live site — the teeth engage on his first promotion, the way atom-invariant engages on his branch-protection gesture.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the production gate: the live URL only moves on bdo's stamp",
+      "value": "loop/deploy.py — a stdlib, read-only fold over the committed log that names the current production snapshot (the latest non-superseded bdo-authored production_promotion) and a gate verdict for a candidate commit (promote iff it is the stamped snapshot, else hold serving the stamped one), plus the one pen verb `promote` that refuses every non-bdo signer. .github/workflows/pages.yml now serves the snapshot the gate names instead of unconditionally serving HEAD.",
+      "why_now": "epic.environments is confirmed and landed (PR #277). The production gate is its wave-1 first buildable slice (the epic names it `atom.production-gate.v0`, 'smallest real teeth') and closes the unstamped-live gap directly — the recurring failure the arc was authorized to fix.",
+      "if_accepted": "bdo's stamp reaches the one promotion it never reached: the live surface he judges on stops changing without him. The promotion record is the deployment-ledger groundwork the staging-rung piece (wave 2) builds on.",
+      "if_rejected": "the live URL keeps auto-deploying every push with no owner stamp — the gap the arc exists to close stays open.",
+      "cost_of_wrong_call": "Low and fail-safe: the fold is read-only and deterministic; the only writer is bdo's stamp through one pen; before the first stamp the gate is loud passthrough, so landing it cannot take the live site down. Reverting is deleting loop/deploy.py and the workflow steps.",
+      "mechanism": "loop/deploy.py: production_promotion / production_snapshot / gate / promote, CLI for read-only status, the `gate --candidate` CI seam (exit 0 promote/passthrough, non-zero hold), and the bdo-only `promote` stamp. pages.yml gains a gate step that names the deploy target and a checkout-the-stamped-snapshot step. tests/test_deploy.py joins the suite with §10 teeth: a stamped snapshot promotes and is served, an un-stamped candidate is HELD (the two locally-fine records refuse to fit), a superseding promotion moves the live snapshot, a non-bdo promote is refused at the pen, a forged non-bdo promotion is ignored by the fold, and a constant gate cannot pass both the held and promoted case. Done-line 0137.",
+      "reading": [
+        "loop/deploy.py",
+        "tests/test_deploy.py",
+        ".github/workflows/pages.yml",
+        ".ai-native/done/0137-production-gate.md",
+        ".ai-native/epics/epic.environments.json"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.environments"],
+      "touches": ["loop/deploy.py", "tests/test_deploy.py", ".github/workflows/pages.yml", ".ai-native/done/0137-production-gate.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/pull.py", "loop/phrasing.py", "loop/node.py", ".github/workflows/atom-invariant.yml"],
+      "receipts": []
+    }
+  }
+}

@@ -159,5 +159,68 @@ class OrchestrateTest(unittest.TestCase):
         self.assertEqual(before, after, "a settled field was written to")
 
 
+def _landed_receipt(atom_ids, rid="rcp.merge.test"):
+    """A merge-node landing receipt carrying the D-13 per-atom join — the
+    independent lander's `landed_atoms`."""
+    return {"id": rid, "kind": "merge", "node": "merge-node.claude.v1",
+            "verdict": "landed", "epic": "epic.test", "pr": 999,
+            "landed_atoms": list(atom_ids), "ts": "2026-06-20T00:00:00Z"}
+
+
+class SettleOnMainTest(unittest.TestCase):
+    """The follow-through road (done-line for the landing-throughput arc): an
+    atom whose work the independent merge-node landed on main is settled — it
+    stops counting as inflight — so work closes in the wild instead of dying one
+    step past the value-gate. The teeth: an un-landed new version never rides a
+    sibling version's landing (§10)."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_landed_atom_with_seed_settles_and_drains_inflight(self):
+        root = make_root(self.tmp, 1)
+        (atom, ahash), = reconcile.load_atoms(root)
+        # the atom has only been announced (seed) and stalled — the clog shape:
+        # a derivable next step, so it counts as inflight, never settled.
+        reconcile.append_line(root / "log" / "events.jsonl",
+                              {"type": orchestrate.SEED_EVENT, "artifact_hash": ahash,
+                               "id": "evt.seed", "ts": "2026-06-20T00:00:00Z"})
+        fold = reconcile.Fold(root)
+        self.assertIsNotNone(
+            orchestrate.next_action(fold, atom, ahash, on_main=set()),
+            "an un-landed announced atom must still have a step — it is inflight")
+        # the independent merge-node lands it; its landed_atoms join names the id
+        reconcile.append_line(root / "log" / "receipts.jsonl",
+                              _landed_receipt([atom["id"]]))
+        fold = reconcile.Fold(root)
+        self.assertIsNone(
+            orchestrate.next_action(fold, atom, ahash),
+            "a landed atom must settle — the merge-node's landing is the "
+            "deciding acceptance (D-13 join x D-2)")
+        # and the whole-field fold counts it settled, not inflight (clog drains)
+        pressure = orchestrate.sense(fold, reconcile.load_atoms(root))
+        self.assertEqual(pressure["inflight"], 0, "the landed atom still clogs inflight")
+        self.assertEqual(pressure["settled"], 1)
+
+    def test_unlanded_new_version_refuses_to_ride_a_landing(self):
+        """§10 teeth: the id reached main, but the current bytes are a fresh
+        in-place edit (no seed for THIS hash). The un-landed version must NOT be
+        settled by its sibling's landing — a landed id is not a blank cheque."""
+        root = make_root(self.tmp, 1)
+        (atom, ahash), = reconcile.load_atoms(root)
+        # a prior version landed (the id is in landed_atoms) ...
+        reconcile.append_line(root / "log" / "receipts.jsonl",
+                              _landed_receipt([atom["id"]]))
+        # ... but the current bytes never got a seed event (a new, un-landed hash)
+        fold = reconcile.Fold(root)
+        self.assertEqual(
+            orchestrate.next_action(fold, atom, ahash),
+            ("seed", orchestrate.SEED_EVENT),
+            "an un-landed version rode its sibling's landing — the join is too loose")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -24,7 +24,8 @@ from pathlib import Path
 from loop.reconcile import (DEFAULT_ROOT, PIPELINE, Fold, append_line,
                             arc_confirmation, epic_of, glue_of, load_atoms,
                             load_epics, make_receipt, node_prompt, now_ts,
-                            real_nodes, receipt_for_stage, short_hash)
+                            real_nodes, receipt_for_stage, short_hash,
+                            superseded_atom_ids)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
 from loop import trust
 
@@ -132,8 +133,17 @@ def inbox(root):
     real_map = real_nodes(fold)
     human = real_map.get(HUMAN_NODE)
     epics = load_epics(root)
+    # a version a higher sibling replaces is history, not live work (done-line
+    # 0056): its parked receipt stands on the log but it must not surface as an
+    # open owner item — the stale-park phantom heal.py names. gaps/digest/pull/
+    # field already apply this same canonical filter; the inbox was the one
+    # owner surface missing it, so a healed-then-superseded version (e.g. a
+    # value-confirm miss whose .v1 then confirmed) still showed as a live park.
+    superseded = superseded_atom_ids({a["id"] for a, _ in atoms})
     mine, summons, parked = [], [], []
     for atom, ahash in atoms:
+        if atom["id"] in superseded:
+            continue
         # epics passed so a confirmed arc's pieces are the loop's to stamp,
         # not yours — they never land in your queue (done-line 0028)
         action = next_action(fold, atom, ahash, real_map, epics)

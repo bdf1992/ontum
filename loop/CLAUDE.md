@@ -43,6 +43,9 @@ python -m loop.web serve                   # localhost inbox with verdict forms
 
 python -m loop.census                      # the organ census: which organs carry weight, which are dormant
 
+python -m loop.activity                     # the activity-accounting fold: every wired hook's data collection + usage, read-only, refuses an undeclared collector
+python -m loop.activity --json              # the raw dataset (machine-readable)
+
 python -m loop.gaps                        # the gap backlog, pressure-ordered — the top one is the work
 
 python -m loop.parity                      # the RepoPrompt boundedness parity matrix — read-only, fails on a ghost citation
@@ -305,7 +308,12 @@ so a prompt edit can't reopen a settled verdict (I-2).
   an atom in the epic), `dont-double-build` (cites a real owning epic). The
   §10 teeth are the term-economy/gaps grip rule: `validate()` fails on a ghost
   citation, and `tests/test_parity.py` proves the check is not vacuous (a
-  fabricated row of each verdict is caught). The requirements mine that orders
+  fabricated row of each verdict is caught). The sharper tooth (done-line
+  0132): a `have` must carry `evidence` — a substring its cited file actually
+  contains — so a row cannot stand on a real file that does not do the claimed
+  thing (the ghost-in-spirit that let the multi-root row falsely claim
+  `field.py` folds three sibling repos; it folds every *arc within ontum*, and
+  is now re-verdicted `build` -> `atom.multi-root-fold.v0`). The requirements mine that orders
   the rest of the arc — sibling of `gaps`/`census` on a new axis (what a
   neighbouring system forces us to account for), the cut and the build stay a
   session's or bdo's (D-4).
@@ -330,13 +338,42 @@ so a prompt edit can't reopen a settled verdict (I-2).
   the log (provenance) after the proof passes; it refuses anything this
   checker rejects. The cut between "phrasing" and "work" stays bright: the
   door is for prose only — syntax or schema is routed back to the pipeline.
+- [activity.py](activity.py) — the activity-accounting fold (done-line 0143):
+  the loop accounting for its own hooks. bdo, 2026-06-20: *"account for all
+  activity, even Claude hooks like session start and tool call, and start
+  auditing their data collection and usage for a shared gateway."* The hooks are
+  the gateway's sensors, but their *own* data collection is the one activity the
+  gateway never witnesses — they collect command strings, spawn prompts, full
+  raw stdin/argv/env (the codex probe) and gh poll results, mostly silently into
+  gitignored sinks, and most do not record that they fired. Sibling of
+  `census`/`gaps`/`heal` on the *data-practice* axis: a declared register
+  (`.claude/activity-register.json`) states per hook what it **collects**, what
+  it **uses** that for, where the data **goes**, and whether its firing is
+  **witnessed**; the fold reconciles it against the live `.claude/settings.json`
+  wiring and the §10 teeth refuse an **undeclared collector** (a wired hook
+  accounted nowhere) or a **ghost** (an entry no longer wired — a `codex`-wired
+  entry verified against `.codex/hooks.json` when present). The accounting is
+  enforceable: no silent collector can be wired without declaring its
+  data-practice. Read-only, propose-grain; the cut and the wider shared-gateway
+  unification stay bdo's (D-4). The unwitnessed count is the bridge to organ 2,
+  the runtime witness (every firing → a first-class receipt, the sibling of
+  `tool-use.jsonl` the git/gh-gateway proposal deferred).
 - [herald.py](herald.py) — the herald (epic.landing-throughput-response): agents are an open set, so registration and reputation are FOLDS over logged `herald_introduction` admissions, never a table — a herald `introduce`s a named/titled agent (the dumb pen mints a content-hash `credential` at the trust-ladder floor rank, read from `loop.trust`), `roster` folds who is registered (superseding, never erasing), and `reputation` derives distributed value from the log's provenance edges (exemplars net against notorieties per credential, and a herald earns a meta-reputation over the standing of whom it vouched, so a bad voucher is visible by construction); read-only but for the one pen, standing only ever earned forward (§10: standing is recomputed from records, never asserted; D-4).
+- [observe.py](observe.py) — the Observable-as-gate (epic.model-free-mode-response, wave 1): the consequence-gate's forced-first invariant. A peer review of the smart-mashing doctrine reordered the four invariants — Observable is the substrate reversibility, boundedness and learning-progress are all *computed from*, so it gates first. Before an autonomous **exploratory** act runs it must DECLARE actor, intended action, expected receipt, touched scope, attribution path, rollback path, and a probe id; if it cannot NAME the receipt path that ties effect back to actor, the act HALTS — it does not run. The §10 kill-test runs the **real `command_guard`** as a subprocess: an act the *action-gate* allows (`git status`) is REFUSED by `observe.gate()` when under-declared — the consequence-gate catching what the action-gate cannot (the doctrine's central claim, in a passing test). Pure stdlib, read-only. Soft tooth on record: the attribution check is substring-based, to harden before it gates real acts.
+- [relation_ledger.py](relation_ledger.py) — relation-ledger.v0 (epic.model-free-mode-response, wave 1): the record substrate for the **relational middle band** — representation without mechanism, the corrected spectrum raw → relational → mechanistic. Declares five record kinds (relation_claim, relation_probe, consequence_receipt, model_candidate, bucket_coherence_report) and a pure read-only fold that, per bucket, reads whether a claim's predicted consequence MATCHES observed receipts (PREDICTIVE) or not (TRIVIAL/refuted). The coherence rate is the learning-progress proxy — the rate buckets stabilize into predictive coherence (compression progress), not raw surprise. v0 is logged claims+receipts; embeddings are a later *admitted* organ ([relation-organ-admission contract](../causality/contracts/relation-organ-admission.md)). Declared at zero records (the cool-valve grain).
+- [over_containment.py](over_containment.py) — the over-containment counter-test (epic.model-free-mode-response, wave 1): the shared shadow of T6 (over-containment in *action* space — the gate refuses so little nothing risky reaches it) and T7 (over-containment in *representation* space — equivalence classes collapse until real signal is averaged away). One shadow, two layers, one discriminator: is a stabilization PREDICTIVE (coherence rose under test) or merely TRIVIAL (stable because never tested)? The load-bearing leg is `tested` — a signal stable+rising but never tested reads as over-containment. The doctrine's "the clauses that buy safety can erase the signal that justified the freedom," made a detector.
 
 ### Invariants the code is built around (firm)
 
-- **No one signs their own line.** A node never judges its own writer's
-  output; the owner (bdo) is the last stop. Anything self-approving is
-  a design bug.
+- **Earn your own acceptance first; you just can't cast the deciding one.** Judge,
+  validate, and accept your own work before you share it — that conviction is your case
+  and your standing, and it keeps slop on your side of the wall. But your acceptance never
+  lands it: a different reader accepts it into the record, the owner (bdo) is the last stop.
+  Two gates, yours then theirs. Skipping your own judgment is the slop bug; making your own
+  judgment final is the self-dealing bug. And when no independent judge for your kind of
+  work exists yet, forge one — within policy, toward the second set of eyes, never around
+  them (the §7 node prompt, the spawn rail, `admit-real`, the herald are the forge).
+  Abandoning work at a gate you cannot pass — or could forge — is the design bug.
 - **The owner is the last stop — at arc scale (done-line 0028).** bdo
   may *confirm an arc* (`loop.node confirm-arc --epic <id> --by bdo`),
   an admitted record that is his standing stamp for every piece under
