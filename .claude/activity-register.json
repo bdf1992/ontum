@@ -94,12 +94,20 @@
       "sink": "via the reflect pen -> the log (receipts)",
       "witnessed": false
     },
-    "continue_beat": {
+    "session_register": {
       "wiring": "claude",
-      "events": ["Stop"],
-      "collects": ["session_id", "patrol-decision"],
-      "uses_for": "decide whether to surface a continuation nudge at turn end",
-      "sink": "via the patrol pen + stdout",
+      "events": ["SessionStart"],
+      "collects": ["session_id", "cwd", "ts"],
+      "uses_for": "record this session into the watch registry so the external watcher can resume an idle one (done-line 0135)",
+      "sink": "~/.claude/ontum-sessions.json (outside the repo, gitignored-by-location)",
+      "witnessed": false
+    },
+    "idle_reminder": {
+      "wiring": "claude",
+      "events": ["UserPromptSubmit"],
+      "collects": ["gap-since-last-exchange", "gateway-scope"],
+      "uses_for": "softly inject a gateway-bounded continue reminder after an idle gap (the retired continue-beat block's replacement)",
+      "sink": ".ai-native/idle-reminder.json (nag-state) + stdout",
       "witnessed": false
     },
     "mock_shame": {
