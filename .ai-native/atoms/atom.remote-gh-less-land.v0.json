@@ -1,0 +1,49 @@
+{
+  "atom": {
+    "id": "atom.remote-gh-less-land.v0",
+    "story": {
+      "text": "As the loop's own merge-node running from the web/mobile Claude Code environment, I need `pr.py land` to land a confirmed-arc PR without `gh` — because the remote execution environment has no `gh` and no REST token in-process (git reaches origin only through a local auth proxy), so the merge-node's hand could not move there and confirmed, green, atom-backed PRs piled up unreachable (5 of 10 arcs at zero landings). I want the merge to run on the agent's already-authenticated GitHub surface while the land *decision* and the merge *receipt* — the two parts that must never leave the loop — stay in the pen and on the trunk.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "gh-less remote land — the merge-node lands a confirmed-arc PR from a tokenless session",
+      "value": "The landing logjam unblocked at the seam: `pr.py land --via-api <blob>` reads PR state from the GitHub-API JSON the agent fetched (MCP pull_request_read) through a pure `info_from_api` adapter, runs the identical `land_refusal` guards, and — since a standalone pen cannot perform the merge mutation with no in-process token — splits into two phases: decide (guards, plus computing the PR's landed_atoms while origin/head still exists, the D-13 write-through) and --record (writes rcp.merge through the existing pure-git trunk push, only for a blob that shows the PR merged). The merge runs on the agent's authenticated surface between the pen's two pure halves.",
+      "why_now": "bdo named the logjam the pressing thing (2026-06-19, the ask surface) and chose to build this now. The merge-node's `land` shelled out to `gh`, absent in every web/mobile session, so the whole fleet's confirmed work could not reach main from where the sessions actually run.",
+      "if_accepted": "Any remote session admitted as the merge-node can land confirmed-arc PRs: the guards still gate the trunk (a self-asserted lander, an unconfirmed arc, a red or conflicted PR all still refuse), the receipt still reaches the trunk, and bdo never returns to the merge seat. Proven end-to-end: PR #246 landed to main through this path (rcp.merge.246), unblocking epic.three-marks (#244).",
+      "if_rejected": "Remote sessions stay unable to land; confirmed work keeps accumulating off-main, and the only escape is a human-run gh-capable merge-node session — exactly the dependency the owner-harness arc is retiring.",
+      "cost_of_wrong_call": "Low: --via-api is opt-in and additive — `land` without it behaves exactly as before (gh path unchanged). The same `land_refusal` decides both paths, so the gh-less route cannot land anything the gh route would refuse; the adapter is pure and cannot launder a conflicted or red PR landable (pinned by tests). Reverting is dropping one branch and one adapter.",
+      "mechanism": "pr.py gains info_from_api (pure: GitHub REST/MCP shape -> the info dict land_refusal consumes, mapping mergeable_state:dirty -> CONFLICTING and a non-success check -> non-green), _read_pr_blob, and cmd_land_via_api (the two-phase decide/record flow); cmd_land dispatches to it when --via-api is set. The §10 teeth live in tests/test_merge_land.py (InfoFromApiAdapter, RemoteLandPhases): a dirty/failing/pending/merged blob each still refuses, and --record refuses to mint a landed receipt for an un-merged blob.",
+      "reading": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_merge_land.py",
+        ".ai-native/done/0131-remote-merge-node-lands-without-gh.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_merge_land.py",
+        ".ai-native/done/0131-remote-merge-node-lands-without-gh.md"
+      ],
+      "must_not_collide_with": ["loop/node.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/branch-ritual/pr.py",
+        ".ai-native/done/0131-remote-merge-node-lands-without-gh.md"
+      ]
+    }
+  },
+  "_note": "Birth record for the gh-less remote land (--via-api), done-line 0131. Authored to back the PR on the log (the off-log gate's atom invariant); the work it records stands on disk and is proven end-to-end by rcp.merge.246. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
