@@ -1,0 +1,51 @@
+{
+  "atom": {
+    "id": "atom.mark-label.v0",
+    "story": {
+      "text": "As bdo steering epic.three-marks (sketch → ink → paint), I need the cheapest possible proof that the three-mark framework reads true against the live system before any doctrine sentence is minted — so wave 1 attaches a mark (sketch/ink/paint) to every gap the loop's own gap fold yields, derived from the gap's kind by one fixed mapping, by the STAGE its failure lives at and never by spelling. The value is owner-asked and framework-first: a flaw is a mark made in the wrong stage, and labelling the live backlog by stage is the test of whether that sentence is worth minting at all (decision 1: prove the label before the doctrine).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "mark-label on the gap fold — epic.three-marks wave 1 (done-line 0129)",
+      "value": "Every gap loop.gaps yields now carries a mark — sketch / ink / paint — by the stage its failure lives at (KIND_MARK), and render shows it. A pure relabel of an existing read-only fold: no write path touched (decision 1). The teeth (§10): the mapping is by stage, never by spelling — a `.mock` WRITING actor is an ink-authority leak (`ink`), not `sketch`, though its name carries `.mock`; a naive name-based rule mislabels it, and the fixture test (tests/test_gaps.py) catches the planted mis-mark.",
+      "why_now": "epic.three-marks's first wave: the cheapest proof the sketch/ink/paint framework reads true against the live backlog before any one-sentence doctrine extension is minted (bdo's decision 1, recorded in the epic and the proposal). Wave 2 does not open until wave 1 lands.",
+      "if_accepted": "The mark framework gets its first real reading against the live gaps; if the labels read true, the doctrine sentence becomes mintable in a later wave. The gap fold gains a stage diagnosis (which stage a flaw lives at) at zero write-path risk.",
+      "if_rejected": "epic.three-marks stays an unproven proposal — the framework never meets the live backlog, and any doctrine sentence about it would be minted on faith rather than on a label that read true.",
+      "cost_of_wrong_call": "Low: a pure relabel of a read-only fold (loop.gaps), no write path touched; mark_for KeyErrors loudly on an unmapped kind rather than defaulting. Reverting is dropping KIND_MARK/mark_for and the render column. It is explicitly a fold label, not doctrine, until it reads true.",
+      "mechanism": "loop/gaps.py gains MARKS, KIND_MARK (kind → sketch/ink/paint), and mark_for(kind); every gap the fold yields carries its mark and render/the tally show it. tests/test_gaps.py pins the mapping across the gap kinds, including the planted §10 case a naive 'name contains .mock → sketch' rule would mislabel (a `.mock` writing actor is `ink`). Birth record authored retroactively to back PR #244 on the log (the off-log gate's atom invariant); the work it records already stands on the branch.",
+      "reading": [
+        "loop/gaps.py",
+        "tests/test_gaps.py",
+        ".ai-native/done/0129-mark-label-on-gaps.md",
+        ".ai-native/epics/epic.three-marks.json",
+        "sketch-ink-paint.proposal.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.three-marks"],
+      "touches": [
+        "loop/gaps.py",
+        "tests/test_gaps.py",
+        ".ai-native/done/0129-mark-label-on-gaps.md"
+      ],
+      "must_not_collide_with": ["loop/census.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "sketch-ink-paint.proposal.md",
+        ".ai-native/epics/epic.three-marks.json"
+      ]
+    }
+  },
+  "_note": "Birth record for mark-label on the gap fold, epic.three-marks wave 1 (done-line 0129). Authored retroactively to back PR #244 on the log (the off-log gate's atom invariant); the wave-1 work it records already stands on this branch. Cross-branch backing authorized by bdo (2026-06-19). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
