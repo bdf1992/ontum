@@ -118,15 +118,26 @@ GIT_MUTATING = {
 # whole point.
 GIT_VIEWPORT_FLIP = {
     "checkout", "switch", "reset", "restore", "clean", "merge", "rebase",
-    "cherry-pick", "revert", "am", "apply", "stash",
-}
+    "cherry-pick", "revert", "am", "apply",
+}  # always flips; `branch` and `stash` are conditional (see git_viewport_flip)
 # `git branch` reads when it lists; it flips when it deletes, renames, forces,
-# or creates. These flags mark the flip; an explicit list flag marks a read.
+# copies, or creates. These flags mark the flip; an explicit list flag a read.
 GIT_BRANCH_FLIP_FLAGS = {"-d", "-D", "-m", "-M", "-f",
-                         "--delete", "--move", "--force", "-c", "-C", "--copy"}
+                         "--delete", "--move", "--force", "--copy"}
 GIT_BRANCH_READ_FLAGS = {"-l", "--list", "-a", "--all", "-v", "-vv", "-r",
                          "--remotes", "--show-current", "--contains",
                          "--merged", "--no-merged", "--points-at"}
+# `git stash list`/`show` read; bare `git stash`, push/pop/apply/drop/clear/save
+# mutate the working tree.
+GIT_STASH_READ_SUBCMDS = {"list", "show"}
+# git's own global options that sit BEFORE the subcommand; the verb parser must
+# skip them so `git -C <path> switch` is seen as `switch`, not `-C` (the -C
+# bypass the independent review of done-line 0145 caught). `-C <path>` also
+# RETARGETS the tree, so the guard evaluates that path, not cwd.
+GIT_GLOBAL_OPTS_WITH_VALUE = {
+    "-C", "-c", "--git-dir", "--work-tree", "--namespace",
+    "--exec-path", "--super-prefix",
+}
 # PowerShell cmdlets are Verb-Noun shaped and local by default; these
 # reach the network and stay visible to the watcher.
 PS_NETWORK_CMDLETS = {"invoke-webrequest", "invoke-restmethod", "send-mailmessage"}
@@ -270,38 +281,78 @@ VIEWPORT_FLIP_MESSAGE = (
 )
 
 
+def _git_verb_and_args(tokens):
+    """The subcommand and its args from the tokens after `git`, skipping git's
+    global options so `git -C <path> switch` reads as `switch`, not `-C`. An
+    option that takes a value (`-C <path>`, `-c <kv>`) consumes the next token;
+    `--git-dir=...` and bare global flags (`--paginate`) consume one."""
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
+        if t in GIT_GLOBAL_OPTS_WITH_VALUE:
+            i += 2  # option + its value
+            continue
+        if t.startswith("-"):
+            i += 1  # `--git-dir=...`, `--paginate`, `-p`, ... — one token
+            continue
+        return t, tokens[i + 1:]
+    return None, []
+
+
 def git_viewport_flip(acting):
     """The flipping git verb in `acting`, or None.
 
-    Reads (status/log/diff/show) and workstation management (worktree) return
-    None. `git branch` returns the verb only when it deletes, renames, forces,
-    copies, or creates a branch — a bare list or an explicit list flag is a
-    read. Quoted prose is already stripped by the caller."""
-    for match in re.finditer(r"\bgit\s+([\w-]+)((?:\s+[^|;&\n]+)?)", acting):
-        sub = match.group(1)
-        if sub in GIT_VIEWPORT_FLIP:
-            return sub
-        if sub == "branch":
-            args = match.group(2).split()
+    Reads (status/log/diff/show), workstation management (worktree), and the
+    branded pen return None. `git branch` flips only when it deletes, renames,
+    forces, copies, or creates (a list is a read); `git stash` flips unless it
+    is `list`/`show`. Quoted prose is already stripped by the caller."""
+    for seg in re.split(r"[|;&\n]+", acting):
+        toks = seg.split()
+        if "git" not in toks:
+            continue
+        verb, args = _git_verb_and_args(toks[toks.index("git") + 1:])
+        if verb in GIT_VIEWPORT_FLIP:
+            return verb
+        if verb == "branch":
             if any(a in GIT_BRANCH_FLIP_FLAGS for a in args):
                 return "branch"
             if any(a in GIT_BRANCH_READ_FLAGS for a in args):
                 continue  # an explicit read form
             if any(not a.startswith("-") for a in args):
                 return "branch"  # `git branch <newname> [start]` — creating
+        if verb == "stash":
+            first = next((a for a in args if not a.startswith("-")), "")
+            if first in GIT_STASH_READ_SUBCMDS:
+                continue  # `git stash list` / `show` — a read
+            return "stash"  # bare / push / pop / apply / drop / clear / save
     return None
 
 
-def in_primary_viewport():
-    """True when the working dir is the repo's PRIMARY worktree — bdo's
-    viewport — where the per-worktree git-dir equals the shared common dir.
-    In a linked worktree the git-dir lives under .git/worktrees/<name> and
+def dash_c_paths(acting):
+    """The paths a command retargets git at via `git -C <path>` — the tree it
+    actually touches, which may not be cwd (the -C bypass the review caught)."""
+    paths = []
+    for seg in re.split(r"[|;&\n]+", acting):
+        toks = seg.split()
+        for i, t in enumerate(toks):
+            if t == "-C" and i + 1 < len(toks):
+                paths.append(toks[i + 1].strip("'\""))
+    return paths
+
+
+def in_primary_viewport(path=None):
+    """True when `path` (or cwd when None) is the repo's PRIMARY worktree —
+    bdo's viewport — where the per-worktree git-dir equals the shared common
+    dir. In a linked worktree the git-dir lives under .git/worktrees/<name> and
     differs. Fails OPEN (False) when git cannot answer: a guard never gates on
-    a guess, and a non-repo cwd is not the viewport."""
+    a guess, and a non-repo path is not the viewport. (A determined retarget via
+    `--git-dir=`/`--work-tree=` is not resolved here — a named residual of
+    done-line 0145; `-C`, the natural form, is.)"""
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--git-dir", "--git-common-dir"],
             capture_output=True, text=True, timeout=5,
+            cwd=path or None,
         )
     except Exception:
         return False
@@ -378,16 +429,26 @@ def hook():
     # registry (like the trunk-push carve-out). Same train-mode courtesy as the
     # registry rules: observe and record, block nothing.
     flip = git_viewport_flip(acting)
-    if flip is not None and in_primary_viewport():
-        if not training:
-            record({"status": "denied", "rule": "viewport-flip", "verb": flip,
-                    "command": command, "session": session})
-            print(VIEWPORT_FLIP_MESSAGE, file=sys.stderr)
-            return 2
-        record({"status": "would-deny", "rule": "viewport-flip", "mode": "train",
-                "train_session": train_session, "verb": flip, "surface": "git",
-                "intent": classify_intent(command), "command": command,
-                "session": session})
+    if flip is not None:
+        # The tree this command touches: a `-C <path>` retargets git there, so
+        # evaluate those paths; otherwise it acts on cwd. A flip hits the
+        # viewport if ANY targeted tree is the primary — so `git -C <primary>`
+        # from a worktree is caught, and `git -C <worktree>` from the viewport
+        # is allowed (a worker editing its own bench by path).
+        targets = dash_c_paths(acting)
+        hits_viewport = (any(in_primary_viewport(p) for p in targets)
+                         if targets else in_primary_viewport())
+        if hits_viewport:
+            if not training:
+                record({"status": "denied", "rule": "viewport-flip", "verb": flip,
+                        "command": command, "session": session})
+                print(VIEWPORT_FLIP_MESSAGE, file=sys.stderr)
+                return 2
+            record({"status": "would-deny", "rule": "viewport-flip",
+                    "mode": "train", "train_session": train_session,
+                    "verb": flip, "surface": "git",
+                    "intent": classify_intent(command), "command": command,
+                    "session": session})
 
     bins = external_bins(command)
     if bins:

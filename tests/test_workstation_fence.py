@@ -76,6 +76,22 @@ class FlipParsing(unittest.TestCase):
         self.assertEqual(g.git_viewport_flip("git branch newbranch"), "branch")
         self.assertIsNone(g.git_viewport_flip("git branch --list feature/*"))
 
+    def test_stash_flips_only_when_it_mutates(self):
+        # the false-positive the review caught: list/show are reads
+        self.assertIsNone(g.git_viewport_flip("git stash list"))
+        self.assertIsNone(g.git_viewport_flip("git stash show -p"))
+        self.assertEqual(g.git_viewport_flip("git stash"), "stash")
+        self.assertEqual(g.git_viewport_flip("git stash pop"), "stash")
+        self.assertEqual(g.git_viewport_flip("git stash drop"), "stash")
+
+    def test_global_options_do_not_hide_the_verb(self):
+        # the -C bypass the review caught: -C/-c must not be read as the verb
+        self.assertEqual(g.git_viewport_flip("git -C /some/path switch main"), "switch")
+        self.assertEqual(g.git_viewport_flip("git -c user.name=x reset --hard"), "reset")
+        self.assertEqual(g.git_viewport_flip("git --no-pager switch main"), "switch")
+        self.assertEqual(g.dash_c_paths("git -C ../wt switch main"), ["../wt"])
+        self.assertEqual(g.dash_c_paths("git switch main"), [])
+
 
 class ViewportVsWorktree(unittest.TestCase):
     """The gate's discriminating teeth: same command, two locations."""
@@ -121,6 +137,24 @@ class ViewportVsWorktree(unittest.TestCase):
         rc, err = run_guard(
             "git worktree add -b claude/y ../ontum-wt/y origin/main",
             self.primary, self.watch)
+        self.assertEqual(rc, 0, err)
+
+    def test_dash_C_at_the_viewport_from_a_worktree_is_denied(self):
+        # the -C bypass: standing in a worktree, retargeting git at the
+        # viewport must still be refused — the tree touched, not cwd, decides
+        rc, err = run_guard(
+            f"git -C {self.primary} switch main", self.wt, self.watch)
+        self.assertEqual(rc, 2, err)
+
+    def test_dash_C_at_a_worktree_from_the_viewport_is_allowed(self):
+        # the mirror: standing in the viewport, retargeting git at a worktree
+        # is a worker editing its own bench by path — allowed
+        rc, err = run_guard(
+            f"git -C {self.wt} switch main", self.primary, self.watch)
+        self.assertEqual(rc, 0, err)
+
+    def test_stash_read_allowed_in_the_viewport(self):
+        rc, err = run_guard("git stash list", self.primary, self.watch)
         self.assertEqual(rc, 0, err)
 
 
