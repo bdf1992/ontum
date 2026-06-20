@@ -84,7 +84,7 @@ auto-run for a non-read intent. See [policy.md](policy.md) RC7.
 two-way, user<->agent **structured-communication channel** — the same primitives
 used for `configure`, `survey`, `report`, `summon`, and more, each a contextual
 tap-form with an NL escape. That channel is **specified, not built**, in
-[`structured-communication-channel.proposal.md`](../../../structured-communication-channel.proposal.md);
+[`structured-communication-channel.proposal.md`](../../../.ai-native/proposals/structured-communication-channel.proposal.md);
 the grammar stays PROPOSED until a second real render exists (it is *derived*
 from instances, never authored top-down). `/recommend` is the first instance.
 
