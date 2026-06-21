@@ -223,6 +223,22 @@ def owner_override_findings(fold):
         orc = max(sides["owner_adv"], key=lambda r: r.get("ts") or "")
         if (orc.get("ts") or "") <= (grc.get("ts") or ""):
             continue  # the owner stamped before the gate refused — not an override
+        # Hash-aware healed-bite check (identity is the content hash, not the
+        # .vN id string): if the SAME gate that refused later ADVANCED a
+        # DIFFERENT-hash version of this atom, the gate itself relented — the
+        # work was fixed and re-judged. That is a healed bite (stale-park's
+        # job), never an owner override. The real fixture: the herald, edited
+        # in place under one .v0 id (two hashes) and confirmed — was falsely
+        # read as "bdo overruled a tooth" because the .vN string hid the
+        # second version the gate passed.
+        neg_hash, base = grc.get("artifact_hash"), _base(aid)
+        if any(rc.get("node") == gnode
+               and rc.get("verdict") in ADVANCING_VERDICTS
+               and _base(rc.get("artifact_id") or "") == base
+               and rc.get("artifact_hash") != neg_hash
+               and (rc.get("ts") or "") > (grc.get("ts") or "")
+               for rc in fold.receipts):
+            continue
         out.append({
             "kind": "owner-override",
             "subject": aid,

@@ -525,7 +525,8 @@ def _range_atom_facts(base, head):
         if rc.get("artifact_id"):
             receipt_ids.add(rc["artifact_id"])
     phrasing_clean = _range_phrasing_clean(base, head, names)
-    return atom_ids, sorted(receipt_ids), phrasing_clean
+    records_only = pr_audit.records_only(names)
+    return atom_ids, sorted(receipt_ids), phrasing_clean, records_only
 
 
 def cmd_audit(ns):
@@ -545,19 +546,22 @@ def cmd_audit(ns):
     rng = getattr(ns, "range", None)
     if rng:
         base, head = rng
-        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(base, head)
+        atom_ids, receipt_ids, phrasing_clean, recs_only = _range_atom_facts(
+            base, head)
         result = pr_audit.audit([{
             "number": getattr(ns, "pr", None) or "(this PR)", "headRefName": head,
             "added_atom_ids": atom_ids, "receipt_artifact_ids": receipt_ids,
-            "phrasing_clean": phrasing_clean,
+            "phrasing_clean": phrasing_clean, "records_only": recs_only,
         }])
         pr_audit.render(result)
         if result["orphans"]:
-            _refuse("this PR adds no atom on the log and is not a phrasing-only "
-                    "edit — open it through the PR pen so it becomes a unit the "
-                    "loop can see and land (§15/D-5); a PR is not a place to put "
-                    "work the machinery never gated. (If it is purely prose, the "
-                    "phrasing door — `pr.py phrasing` — lands it without an atom.)")
+            _refuse("this PR adds no atom on the log and is neither a "
+                    "phrasing-only nor a records-only edit — open it through the "
+                    "PR pen so it becomes a unit the loop can see and land "
+                    "(§15/D-5); a PR is not a place to put work the machinery "
+                    "never gated. (Purely prose? the phrasing door — `pr.py "
+                    "phrasing`. Only a report/done-line? the records door lands "
+                    "it without an atom.)")
         print("result: done — this PR is atom-backed")
         return
     _run(["git", "fetch", "origin"])
@@ -566,7 +570,7 @@ def cmd_audit(ns):
          "--json", "number,headRefName,author"]))
     facts = []
     for pr in prs:
-        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(
+        atom_ids, receipt_ids, phrasing_clean, recs_only = _range_atom_facts(
             "origin/main", f"origin/{pr['headRefName']}")
         facts.append({
             "number": pr["number"],
@@ -575,6 +579,7 @@ def cmd_audit(ns):
             "added_atom_ids": atom_ids,
             "receipt_artifact_ids": receipt_ids,
             "phrasing_clean": phrasing_clean,
+            "records_only": recs_only,
         })
     result = pr_audit.audit(facts)
     if getattr(ns, "as_json", False):
@@ -1205,7 +1210,7 @@ def cmd_land(ns):
     # reach fails we do not land a lossy receipt — the land raises and retries,
     # never records a merge it cannot describe.
     _run(["git", "fetch", "origin", base, head])
-    landed_atoms, _receipt_ids, _phrasing_clean = _range_atom_facts(
+    landed_atoms, _receipt_ids, _phrasing_clean, _records_only = _range_atom_facts(
         f"origin/{base}", f"origin/{head}")
     if ns.dry_run:
         print(f"result: report — DRY RUN: would land PR #{ns.number} "

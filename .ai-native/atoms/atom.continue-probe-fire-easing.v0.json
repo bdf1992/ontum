@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.continue-probe-fire-easing.v0",
+    "story": {
+      "text": "As bdo, I opened the continue-probe gateway (adm.980b2a34983d, full scope) so idle sessions could be softly resumed — and that single stamp made a whole backlog of idle sessions eligible at once: 21 due on the very first read, 23 a few minutes later. The firing pen (probe.py) had no fleet-wide bound: its standing tick would resume every due session simultaneously, spawning 21+ `claude --resume` processes in one burst. That is the exact shape of the llama-server kill — except these are full CLI sessions, which the inference-queue concurrency semaphore does not govern. This atom puts the orchestrate heat/cool law on the probe-fire plane: the per-tick fire budget EASES. Below a pool-depth threshold firing flows freely; above it the budget opens between a floor and a ceiling against recent egress (fires still draining), so a deep backlog drains in eased waves and never bursts. The bound is an ADMITTED setpoint (continue-probe.easing), default-safe when unset, never a code constant — I tune the dial, the loop reads it. While in there, the staleness ceiling (open-window) became part of that same setpoint instead of a hardcoded 12h, and selection was split from ledger accounting so a session the budget defers this tick is never falsely marked fired and starved.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the probe-fire plane gets the orchestrate heat/cool law: an admitted, default-safe easing setpoint so a deep idle backlog drains in waves, never a burst",
+      "value": "Opening the continue-probe gateway made 21+ idle sessions due at once; probe.py.run() fired every due session with no fleet bound, so the standing schtasks tick would resume them all simultaneously. eased_budget(due_depth, egress, easing) bounds the per-tick fire count: free below a pool-depth threshold (ingress), and above it eased between min_per_tick and max_per_tick by subtracting recent egress (fires still draining, read from the continue-probe-fires.jsonl trace). The bound is an admitted setpoint continue-probe.easing (watcher.read_easing folds latest-wins, per-key fallback, default-safe DEFAULT_EASING when unset) — the setpoints law, never a constant. probe.run() now fires only the eased, freshest-idle-first slice; advance_ledger advances ONLY the sessions actually fired, so a deferred session keeps its prior ledger entry and is first in line next tick (the slice-after-advance starvation bug, closed by splitting selection from accounting). The open-window staleness ceiling moved from a watcher constant into the same setpoint.",
+      "why_now": "bdo, 2026-06-21: he made the gateway-opening gesture (the policy admission) this session, and asked for 'setpoint, that activate with easing based on egress and ingress and a threshold.' The 21-session burst is live and real the moment the standing tick is stood up; this makes it safe to stand up. Proven live: probe.py dry-run now reports '23 eligible, fire budget 3 this tick (20 eased back),' freshest-first — no burst.",
+      "if_accepted": "The continue-probe standing tick is safe to stand up: a backlog drains a few sessions per tick under an eased, owner-tunable bound instead of bursting. bdo tunes the rate with one stamp (python -m loop.watcher --admit-setpoint '{...}' --by bdo); default-safe holds until he does.",
+      "if_rejected": "The fleet-burst stays: standing up the tick resumes the whole idle backlog at once — the llama-server-kill shape, ungoverned by the inference-queue semaphore because these are spawned CLI sessions.",
+      "cost_of_wrong_call": "Low and default-safe throughout. The dial is conservative when unset (threshold 3, min 1, max 3) — it can only ever throttle, never widen past the admitted ceiling; a bad setpoint read falls back to DEFAULT_EASING and never bursts. The pen stays dry-run unless --fire. loop/ stays no-network (the spawn lives only in the pen). Reverting is removing the easing call from run(); the per-session cooldown/streak budget is unchanged.",
+      "mechanism": "watcher.py: EASING_DIAL + DEFAULT_EASING (default-safe fallback) + read_easing(admissions) (latest-wins, per-key fallback) + admit_easing(root, value, by) (mirrors orchestrate.admit_setpoint); idle_sessions reads open_window from the setpoint; main gains --admit-setpoint/--by and shows the active dial. probe.py: due_targets is now pure SELECTION (annotates fires_if_fired, never writes the ledger); advance_ledger(ledger, fired, now) is the accounting (only fired advance); recent_egress(now, window, trace) counts launched fires in the window (torn-tolerant, missing=0); eased_budget(due_depth, egress, easing) is the law (free below threshold, eased by hi-egress floored at lo above it, never beyond the backlog); run() reads the setpoint, bounds the due to the budget, fires the freshest-idle-first slice, and advances the ledger only for fired. Tests (test_continue_probe, test_watcher): the load-bearing tooth caps a synthetic 21-deep backlog (a no-op returning due_depth fails it), eases on egress, flows free below threshold, the floor never stalls, a misconfigured min>max never bursts, advance_ledger only-fired/deferred-untouched, recent_egress window/torn/missing, read_easing latest-wins/per-key/default-safe, and run() end-to-end caps the fleet freshest-first. Done-line 0171.",
+      "reading": [
+        ".claude/skills/continue-probe/probe.py",
+        "loop/watcher.py",
+        "tests/test_continue_probe.py",
+        "tests/test_watcher.py",
+        ".ai-native/done/0171-continue-probe-fire-easing.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [".claude/skills/continue-probe/probe.py", "loop/watcher.py", "tests/test_continue_probe.py", "tests/test_watcher.py", ".ai-native/done/0171-continue-probe-fire-easing.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/orchestrate.py", "loop/inference_queue.py", "loop/watcher.py", ".claude/skills/continue-probe/probe.py"],
+      "receipts": []
+    }
+  }
+}

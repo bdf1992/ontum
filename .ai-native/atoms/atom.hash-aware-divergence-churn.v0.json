@@ -1,0 +1,37 @@
+{
+  "atom": {
+    "id": "atom.hash-aware-divergence-churn.v0",
+    "story": {
+      "text": "The follow-up to atom.heal-override-hash-aware.v0 (landed rcp.merge.424): the SAME id-string-vs-hash root cause lived in two more self-sensing folds. digest's divergence detector and retro's churn detector both split atom versions by the .vN id string, but identity is the content hash — so atom.landing-throughput-resp-the-herald.v0, edited in place (one .v0 id, dead bytes 0af65e8 refused, live bytes 03948a9 value_confirmed), was surfaced to bdo as TWO false divergences (a confirmed arc 'harbouring a refused piece', off the dead-bytes send_back) AND counted as churn (negating verdicts on dead bytes). One shared helper in loop/digest.py — live_hash_by_base() reads the live version's content hash from the most recent atom.created event, and on_superseded_bytes() marks any verdict on dead bytes as healed history (fail-safe: an unknown live hash never hides a live record) — is now used by both _divergences (skips a refusal on superseded bytes) and retro.churn_findings (skips a negation on superseded bytes). Teeth (§10): herald-shaped fixtures in tests/test_digest.py and tests/test_retro.py FAIL on the receipt-blind count and PASS hash-aware, while the existing integer-version supersession and genuine-churn tests still fire. Verified on the live log: digest divergences 2 -> 0, retro churn x5 -> x4, the false herald gone from both owner surfaces. Value: the digest banner and the retro fold stop crying wolf on settled work; with the heal fix this completes the bite/divergence/churn sensors' move from id-string versioning to the doctrine's content-hash identity.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.the-field"
+      ],
+      "touches": [
+        "loop/digest.py",
+        "loop/retro.py",
+        "tests/test_digest.py",
+        "tests/test_retro.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/digest.py",
+        "loop/retro.py",
+        "atom.heal-override-hash-aware.v0"
+      ],
+      "receipts": []
+    }
+  }
+}
