@@ -114,6 +114,55 @@ class TestAtomsOnMain(_Temp):
         self.assertIn("confirmed on main", digest.render(d))
 
 
+class TestLandingNarrative(_Temp):
+    """The span must narrate, not just tally: each landing named (PR, atoms,
+    arc, who), not folded into a bare count. The §10 teeth here are the cap —
+    an honest overflow note, proven non-vacuous by a span that overflows it."""
+
+    def test_landings_are_itemized_with_pr_atoms_and_arc(self):
+        _append_merge(self.root, 7, landed_atoms=["atom.a.v0", "atom.b.v0"])
+        d = digest.digest(self.root)
+        self.assertEqual(len(d["landed_in_span"]), 1)
+        ev = d["landed_in_span"][0]
+        self.assertEqual(ev["atoms"], ["atom.a.v0", "atom.b.v0"])
+        self.assertEqual(ev["pr"], 7)
+        self.assertEqual(ev["epic"], "epic.test")
+        out = digest.render(d)
+        self.assertIn("Shipped", out)
+        self.assertIn("PR #7", out)
+        self.assertIn("atom.a.v0", out)
+
+    def test_most_recent_landing_leads(self):
+        _append_merge(self.root, 1, landed_atoms=["atom.old.v0"],
+                      ts="2026-06-05T10:00:00Z")
+        _append_merge(self.root, 2, landed_atoms=["atom.new.v0"],
+                      ts="2026-06-07T10:00:00Z")
+        order = [e["pr"] for e in digest.digest(self.root)["landed_in_span"]]
+        self.assertEqual(order, [2, 1], "the narrative must lead with the latest")
+
+    def test_a_landing_outside_the_span_is_not_narrated(self):
+        _append_merge(self.root, 3, landed_atoms=["atom.x.v0"],
+                      ts="2026-06-01T10:00:00Z")
+        d = digest.digest(self.root, since="2026-06-05", until="2026-06-10")
+        self.assertEqual(d["landed_in_span"], [])
+
+    def test_cap_folds_the_overflow_and_names_it_never_silently(self):
+        # more landings than the cap: the surface shows exactly the cap, and the
+        # remainder is *named* in an overflow line — a silent truncation would
+        # read as "this is all of it". Non-vacuous: it overflows by construction.
+        n = digest.LANDING_NARRATIVE_CAP + 4
+        for i in range(n):
+            _append_merge(self.root, 100 + i, landed_atoms=[f"atom.x{i}.v0"],
+                          ts=f"2026-06-06T10:{i:02d}:00Z")
+        d = digest.digest(self.root)
+        self.assertEqual(len(d["landed_in_span"]), n, "the dataset keeps them all")
+        out = digest.render(d)
+        shown = out.count("PR #")
+        self.assertEqual(shown, digest.LANDING_NARRATIVE_CAP,
+                         "render shows exactly the cap, no more")
+        self.assertIn(f"+{n - digest.LANDING_NARRATIVE_CAP} earlier landing", out)
+
+
 class TestArcGrouping(_Temp):
     def test_arc_present_with_confirmation_status(self):
         d = digest.digest(self.root)
@@ -340,7 +389,7 @@ class TestRenderAndCli(_Temp):
         node.confirm_arc(self.root, "epic.test", "bdo")
         _append_receipt(self.root, "collision", "2026-06-05T10:00:00Z")
         text = digest.render(digest.digest(self.root))
-        self.assertIn("Divergences", text)
+        self.assertIn("Frictions", text)
         self.assertIn("collision", text)
         self.assertIn(SKELETON_ID, text)
 
@@ -377,7 +426,7 @@ class TestGestureSurface(_Temp):
         self.assertEqual(digest.owner_gestures(d), [],
                          "session work must not be folded into 'your move'")
         text = digest.render(d)
-        self.assertIn("**Your move:** nothing", text)
+        self.assertIn("**Your call:** nothing", text)
         self.assertNotIn("these need you", text)
 
     def test_unconfirmed_arc_with_built_work_is_an_owner_gesture(self):
@@ -385,7 +434,9 @@ class TestGestureSurface(_Temp):
         # exactly the gesture bdo should see at the top — confirm to unblock.
         d = digest.digest(self.root)
         self.assertEqual([a["epic"] for a in digest.owner_gestures(d)], ["epic.test"])
-        self.assertIn("**Your move — confirm 1 arc", digest.render(d))
+        out = digest.render(d)
+        self.assertIn("## → Your call (1)", out)
+        self.assertIn("Confirm `epic.test`", out)
 
     def test_confirmed_arc_is_never_a_gesture(self):
         # crying wolf the other way: never tell bdo to confirm what he has.
@@ -412,9 +463,46 @@ class TestGestureSurface(_Temp):
                         "awaiting": False, "parked": False}],
              "landings": 0, "refusals": 0, "divergences": []}
         text = digest.render(d)
-        self.assertIn("**Your move:** nothing on you", text)
+        self.assertIn("**Your call:** nothing on you", text)
         self.assertIn("1 loose atom(s) are outside an arc", text)
         self.assertIn("atom.loose.v0", text)
+
+
+class TestPatchNotesSurface(_Temp):
+    """bdo, 2026-06-21 (issue #410): the digest was 'boring to read and hard for
+    reading cold' and should read like great patch notes — 'interactive with
+    CTAs and places for me to comment on'. The teeth: the patch-notes grammar is
+    actually rendered (a progress bar, a tickable CTA, a `▸ your note:` anchor),
+    and the bar is honest (pure from the counts, never divides by zero)."""
+
+    def test_progress_bar_is_honest_and_total_width(self):
+        # all-empty arc: every cell unfilled, no divide-by-zero; a half-done arc
+        # fills proportionally. The bar is a fact, not decoration.
+        self.assertEqual(digest._bar(0, 0), "▱" * 10)
+        self.assertEqual(digest._bar(0, 8), "▱" * 10)
+        self.assertEqual(digest._bar(4, 8), "▰" * 5 + "▱" * 5)
+        self.assertEqual(digest._bar(8, 8), "▰" * 10)
+        # never overflows the width even on a malformed over-count
+        self.assertEqual(len(digest._bar(99, 8)), 10)
+
+    def test_arc_line_carries_a_bar(self):
+        d = digest.digest(self.root)
+        line = digest._arc_line(d["arcs"][0])
+        self.assertIn("▱", line)              # 0/1 landed → an empty bar
+        self.assertIn("0/1 landed", line)
+
+    def test_gesture_renders_a_tickable_cta_and_a_note_anchor(self):
+        # an unconfirmed arc with built work is bdo's move — it must render as a
+        # checkbox CTA carrying the exact verb, plus a place to weigh in.
+        out = digest.render(digest.digest(self.root))
+        self.assertIn("- [ ] **Confirm `epic.test`**", out)
+        self.assertIn("confirm-arc --epic epic.test --by bdo", out)
+        self.assertIn("▸ _your note:_", out)
+
+    def test_tuning_section_offers_a_redial_cta(self):
+        out = digest.render(digest.digest(self.root))
+        self.assertIn("## ◉ Tuning", out)
+        self.assertIn("**Re-dial?**", out)
 
 
 class TestEndLineVerdict(_Temp):

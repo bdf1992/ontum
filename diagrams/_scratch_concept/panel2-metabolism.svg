@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 480" width="1240" height="480">
+<rect width="1240" height="480" fill="#0B0B0C"/>
+<defs>
+  <pattern id="halftone" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+    <rect width="5" height="5" fill="#0F1011"/>
+    <circle cx="1" cy="1" r="0.6" fill="#1F2123"/>
+  </pattern>
+  <filter id="glow-cool" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#5EB7A1" flood-opacity="0.6"/>
+  </filter>
+  <filter id="glow-warm" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#C97A55" flood-opacity="0.6"/>
+  </filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5C5C60"/>
+  </marker>
+</defs>
+<text x="32" y="38" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="18" font-weight="600" fill="#E6E6E6">Panel 2 · the metabolism — the button-masher loop</text>
+<polygon points="158.0,48 244,89.0 158.0,130 72,89.0" fill="url(#halftone)" stroke="#C97A55" stroke-width="1.5" filter="url(#glow-warm)"/>
+<text x="158.0" y="89.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="158.0" dy="-0.00em">energy</tspan></text>
+<rect x="485" y="48" width="270" height="82" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="620.0" y="89.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="620.0" dy="-0.00em">systems-matter</tspan></text>
+<polygon points="1008.96,48 1145.04,48 1168,89.0 1145.04,130 1008.96,130 986,89.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="1077.0" y="89.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1077.0" dy="-0.00em">operate</tspan></text>
+<polygon points="997.96,196 1145.04,196 1168,237.0 1145.04,278 997.96,278 975,237.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="1071.5" y="237.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1071.5" dy="-0.00em">observe</tspan></text>
+<rect x="953" y="344" width="215" height="84" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="1060.5" y="386.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1060.5" dy="-0.00em">coherence</tspan></text>
+<rect x="514" y="344" width="212" height="84" rx="42.0" ry="42.0" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="620.0" y="386.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="620.0" dy="-0.00em">field</tspan></text>
+<rect x="72" y="324" width="282" height="104" rx="14" ry="14" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="213.0" y="376.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="213.0" dy="-0.00em">owner</tspan></text>
+<rect x="587" y="177" width="66" height="120" rx="4" ry="4" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="620.0" y="237.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="620.0" dy="-0.00em">pole</tspan></text>
+<line x1="244.0" y1="89.0" x2="485.0" y2="89.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="364.5" y="78.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">feeds</text>
+<line x1="755.0" y1="89.0" x2="986.0" y2="89.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="1075.5" y1="130.0" x2="1073.0" y2="196.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="1068.5" y1="278.0" x2="1063.6" y2="344.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="953.0" y1="386.0" x2="726.0" y2="386.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="514.0" y1="383.4" x2="354.0" y2="379.5" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<polyline points="147.6,324.0 130.0,310.0 130.0,150.0 485.0,105.8" fill="none" stroke="#5C5C60" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<text x="198.0" y="235.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">elevates</text>
+<line x1="953.0" y1="349.6" x2="653.0" y2="248.2" stroke="#3A3A3D" stroke-width="1"/>
+<text x="818.0" y="305.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">measured-against</text>
+<text x="32" y="447" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">Clockwise metabolism: energy feeds the systems-matter substrate; the system operates and observes; coherence reads the friction (measured against the fixed pole) and</text>
+<text x="32" y="462" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">surfaces to the field; the owner elevates it back (dashed return). Coherence scores an act PREDICTIVE vs TRIVIAL; an act names its consequence-receipt or HALTs.</text>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 720" width="1240" height="720">
+<rect width="1240" height="720" fill="#0B0B0C"/>
+<defs>
+  <pattern id="halftone" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+    <rect width="5" height="5" fill="#0F1011"/>
+    <circle cx="1" cy="1" r="0.6" fill="#1F2123"/>
+  </pattern>
+  <filter id="glow-cool" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#5EB7A1" flood-opacity="0.6"/>
+  </filter>
+  <filter id="glow-warm" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#C97A55" flood-opacity="0.6"/>
+  </filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5C5C60"/>
+  </marker>
+</defs>
+<text x="32" y="38" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="18" font-weight="600" fill="#E6E6E6">Panel 4 · the gateway, opened up — the per-directory governance stack</text>
+<rect x="150" y="250" width="1010" height="220" rx="6" ry="6" fill="url(#halftone)" stroke="none"/>
+<rect x="120" y="80" width="200" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#C97A55" stroke-width="1.5" filter="url(#glow-warm)"/>
+<text x="220.0" y="123.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="220.0" dy="-0.00em">authN</tspan></text>
+<rect x="500" y="80" width="220" height="86" rx="14" ry="14" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="610.0" y="123.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="610.0" dy="-0.00em">policy</tspan></text>
+<rect x="945" y="80" width="185" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#C97A55" stroke-width="1.5" filter="url(#glow-warm)"/>
+<text x="1037.5" y="123.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1037.5" dy="-0.00em">authZ</tspan></text>
+<polygon points="215.8,305 339.2,305 370,360.0 339.2,415 215.8,415 185,360.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="277.5" y="360.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="277.5" dy="-0.00em">fence</tspan></text>
+<polygon points="475.8,305 599.2,305 630,360.0 599.2,415 475.8,415 445,360.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="537.5" y="360.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="537.5" dy="-0.00em">guard</tspan></text>
+<polygon points="735.8,305 859.2,305 890,360.0 859.2,415 735.8,415 705,360.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="797.5" y="360.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="797.5" dy="-0.00em">threshold</tspan></text>
+<polygon points="975.8,305 1099.2,305 1130,360.0 1099.2,415 975.8,415 945,360.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="1037.5" y="360.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1037.5" dy="-0.00em">gate</tspan></text>
+<rect x="180" y="545" width="200" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#C97A55" stroke-width="1.5" filter="url(#glow-warm)"/>
+<text x="280.0" y="588.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="280.0" dy="-0.00em">attribution</tspan></text>
+<rect x="460" y="545" width="150" height="86" rx="2" ry="2" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<line x1="468" y1="545" x2="468" y2="631" stroke="#3A3A3D" stroke-width="1"/>
+<line x1="602" y1="545" x2="602" y2="631" stroke="#3A3A3D" stroke-width="1"/>
+<text x="535.0" y="588.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="535.0" dy="-0.00em">pen</tspan></text>
+<rect x="660" y="545" width="170" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="745.0" y="588.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="745.0" dy="-0.00em">patrol</tspan></text>
+<rect x="880" y="545" width="170" height="86" rx="43.0" ry="43.0" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="965.0" y="588.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="965.0" dy="-0.00em">ledger</tspan></text>
+<rect x="1090" y="545" width="130" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="1155.0" y="588.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1155.0" dy="-0.00em">heal</tspan></text>
+<line x1="320.0" y1="123.0" x2="500.0" y2="123.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="410.0" y="112.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">admits</text>
+<line x1="720.0" y1="123.0" x2="945.0" y2="123.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="832.5" y="112.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">decides</text>
+<line x1="1037.5" y1="166.0" x2="1037.5" y2="305.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="1048.5" y="235.5" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">enters</text>
+<line x1="945.0" y1="360.0" x2="890.0" y2="360.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="705.0" y1="360.0" x2="630.0" y2="360.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="445.0" y1="360.0" x2="370.0" y2="360.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="278.1" y1="415.0" x2="279.5" y2="545.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="289.8" y="479.9" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">attributes</text>
+<line x1="380.0" y1="588.0" x2="460.0" y2="588.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="420.0" y="577.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">writes</text>
+<line x1="610.0" y1="588.0" x2="660.0" y2="588.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="830.0" y1="588.0" x2="880.0" y2="588.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="855.0" y="577.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">logs</text>
+<line x1="1050.0" y1="588.0" x2="1090.0" y2="588.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="1070.0" y="577.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">audits</text>
+<rect x="150" y="250" width="1010" height="220" rx="6" ry="6" fill="none" stroke="#3A3A3D" stroke-width="1"/>
+<text x="164" y="272" text-anchor="start" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F" letter-spacing="1.2">PHYSICAL ENFORCEMENT</text>
+<text x="32" y="672" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">Gateway stack — a fidelity draft of bdo&#x27;s model, for his correction. A request&#x27;s journey runs top to bottom: authN, policy, authZ, into the physical-enforcement band</text>
+<text x="32" y="687" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">(gate, threshold, guard, fence — co-present perimeter mechanisms, threaded right-to-left), then attribution, pen, patrol, ledger, heal. Warm marks the three A&#x27;s</text>
+<text x="32" y="702" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">running across the stack — authenticated (authN), authorized (authZ), attributed (attribution); cool is the enforcement layer.</text>
+</svg>

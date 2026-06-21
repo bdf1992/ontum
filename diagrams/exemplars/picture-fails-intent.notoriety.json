@@ -1,0 +1,10 @@
+{
+  "id": "picture-fails-intent",
+  "kind": "notoriety",
+  "title": "the topology is right but the picture fails to carry it",
+  "named_consequence": "Every node is a noun and every edge a verb — the words are clean — but the PICTURE does not carry the informative intent. The reader's eye sags into a dead band, or hunts for the subject because the titular thing is the smallest/faintest element, or doubles back across a tangle of crossing lines, or reads a shape that fights its own word. The reader can technically reconstruct the parts, but the diagram does not INFORM at a glance — it is a correct list pretending to be a diagram. The intent (grasp this system, fast, from the picture) does not transmit.",
+  "evidence": "a top dead-band over ~0.25 with content sagging low; the subject of the diagram rendered as the smallest or faintest element while peripheral nodes carry the visual weight; flow that backtracks or crosses beyond what the topology forces; a shape whose geometry contradicts its label (an 'axis' as a wide lozenge).",
+  "source": "bdo, 2026-06-21 — after the topology cure, the pictures still sucked; composition is part of carrying informative intent, not a separate 'is it pretty' score.",
+  "remedy_shape": "Compose so the picture itself carries the intent: fill the frame, put the visual weight on the subject, let the flow read in one pass, make each shape suggest its meaning. This is the SHAPE of the cure, not a checklist — the judge judges whether the picture carries the intent, and this notoriety is one named way it fails to.",
+  "intent_violated": "a reader grasps the system's informative intent from the picture at a glance, not only by decoding a correct parts-list"
+}

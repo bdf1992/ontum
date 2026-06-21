@@ -1,0 +1,10 @@
+{
+  "id": "prose-for-topology",
+  "kind": "notoriety",
+  "title": "names prose, not the system topology",
+  "named_consequence": "A reader uses the diagram cold and reads narrative phrases on the nodes and edges — 'world pushes · friction', 'agent propels · explore', 'goal · winning ▲ the + end', an edge labelled 'real vs fake'. They cannot tell which words NAME a part of the system and which merely DESCRIBE one. The topology never transmits: they come away with a mood, not a system they could reconstruct, name back, or act on. The diagram failed the only thing a diagram is for.",
+  "evidence": "node labels carry prose glosses where an entity name belongs; edge labels carry prose fragments where a relation verb belongs; at least one label ('goal · winning ▲ the + end') is not parseable at all. A stranger cannot recover the parts-and-relations.",
+  "source": "bdo, 2026-06-21 — flagged the climbed panel-1 labels, after the experience-judge had passed them at 4/5 on composition. The judge graded the picture and never asked what a cold reader would reconstruct from the words.",
+  "remedy_shape": "An entity is named by a noun; a relation by a verb; narration lives in the caption. This is the SHAPE of the cure, NOT a checklist the judge runs — the judge judges the consequence (does the topology transmit?), and this notoriety is one named way it fails to.",
+  "intent_violated": "a reader with little or no prior context reconstructs the system's named parts and relations"
+}

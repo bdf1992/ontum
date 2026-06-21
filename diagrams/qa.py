@@ -43,12 +43,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 try:
-    from compose import NODE_TYPES, ACCENTS
+    from compose import NODE_TYPES, ACCENTS, wrap_caption
 except Exception:  # pragma: no cover - the gate fails open if its sibling moves
     NODE_TYPES = frozenset(
         {"pill", "rect", "rounded", "dashed", "subroutine", "hex", "rhombus", "chips"}
     )
     ACCENTS = frozenset({"cool", "warm"})
+
+    def wrap_caption(text, width_px):  # type: ignore[misc]
+        # Degraded fallback if the sibling moved: one line, no wrap. The caption
+        # tooth then only catches a single-line collision — fail-soft, never crash.
+        return [text]
 
 # No genre has earned a canon entry yet (canon.md: "a genre earns its place by
 # the §10 test"). Until one does, any `genre` field is invented notation and is
@@ -68,10 +73,17 @@ REACH_HOPS = 4           # graph-drawing: traceable to a hub within four hops
 LABEL_PX = 16
 TITLE_PX = 18
 SUBGRAPH_LABEL_PX = 12
+CAPTION_PX = 12
 MONO_CHAR_W_AT_16 = 9.6
 LINE_HEIGHT_EM = 1.25
 NODE_SIDE_PADDING = 8
 SQUISH_RATIO = 0.85
+
+# Caption geometry, matching compose.render_caption exactly.
+CAPTION_LEFT_X = 32           # compose.CAPTION_LEFT_X
+CAPTION_RIGHT_MARGIN = 8      # compose.CAPTION_RIGHT_MARGIN
+CAPTION_BASELINE_INSET = 18   # compose.CAPTION_BASELINE_INSET
+CAPTION_LINE_PX = 15          # compose.CAPTION_LINE_H (1.25em at 12px)
 
 
 def char_width(font_px: int) -> float:
@@ -107,6 +119,48 @@ def check_title(spec, issues):
         deny(issues, "graph-drawing aesthetics (legibility)",
              f"title overflows canvas: needs ~{needed:.0f}px, available {available:.0f}px",
              f"title='{title}'")
+
+
+def check_caption(spec, issues):
+    """Caption containment (dual coding): the foot caption is the one text the
+    renderer no longer width-clips — `compose.render_caption` **wraps** it to
+    the canvas width, so it can never overflow horizontally. But a caption long
+    enough wraps to enough lines that the *block* runs off the top of the foot
+    and collides with the diagram body (or off the canvas entirely). This is
+    the deterministic FLOOR tooth (the dead-space / balance / hierarchy reading
+    is deliberately the inference judge's domain, not here).
+
+    Line count is taken from `compose.wrap_caption` — the one shared wrap
+    definition (I-4) — so the gate counts exactly the lines that will render.
+    The block's top sits one font-ascent (~12px) above the first line's
+    baseline; the first baseline is `n-1` line-heights above the last, and the
+    last baseline is `height - 18`. Deny if that top falls below the content's
+    bottom edge (collision) or above the canvas top (off-canvas)."""
+    caption = spec.get("caption", "")
+    if not caption:
+        return
+    width, height = spec.get("size", [900, 500])
+    usable = width - CAPTION_LEFT_X - CAPTION_RIGHT_MARGIN
+    n = len(wrap_caption(caption, usable))
+    top = (height - CAPTION_BASELINE_INSET) - (n - 1) * CAPTION_LINE_PX - CAPTION_PX
+
+    content_bottom = 0
+    for key in ("nodes", "subgraphs", "regions"):
+        for item in spec.get(key, []):
+            content_bottom = max(content_bottom, item.get("y", 0) + item.get("h", 0))
+
+    collides = top < content_bottom
+    off_canvas = top < 0
+    if collides or off_canvas:
+        why = []
+        if collides:
+            why.append(f"collides with the diagram body (content bottom {content_bottom:.0f}px)")
+        if off_canvas:
+            why.append("runs off the top of the canvas")
+        deny(issues, "dual coding",
+             f"wrapped caption ({n} lines, block top {top:.0f}px) {' and '.join(why)} "
+             "— a caption that even wrapped cannot fit the foot; shorten it or grow the canvas",
+             "caption")
 
 
 def check_node_labels(spec, issues):
@@ -487,6 +541,7 @@ def check_region_membership(spec, issues):
 CHECKS = [
     # renderer-fidelity
     check_title,
+    check_caption,
     check_node_labels,
     check_node_in_canvas,
     check_subgraph_rows,

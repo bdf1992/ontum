@@ -129,9 +129,9 @@ The gateway extends the fence's existing asymmetry **one layer down, into the
 pens**, and promotes the read-witness from a watch-trace to a receipt. Same
 rule, pushed where it currently can't reach.
 
-## First organ (the slice to prove the shape)
+## First part (the slice to prove the shape)
 
-Do **not** boil the ocean. The gateway's first organ owns one question:
+Do **not** boil the ocean. The gateway's first part owns one question:
 
 > **"Is this landable?" — answered from `git merge-tree`, never GitHub's field.**
 
@@ -140,7 +140,7 @@ Concretely: relocate the `pr.py:743` mergeable check into the gateway's PIP
 (#226) and the herald through this one seam. That single slice fixes the spurious
 `mergeable`, gives the land path a testable contract (closing the #230 class),
 and serializes the drainer (killing the races) — the three pains of this session,
-in one narrow, behavior-tested increment. Patch the bug **as the first organ**,
+in one narrow, behavior-tested increment. Patch the bug **as the first part**,
 not as a one-off in `pr.py`.
 
 ## Connections (compose, do not double-build — §10)
@@ -167,9 +167,9 @@ not as a one-off in `pr.py`.
 
 ## Open / deferred (named, not invented)
 
-- The full coverage past the land-readiness organ (every git/gh op through the
+- The full coverage past the land-readiness part (every git/gh op through the
   seam, reads included).
 - The witness-log home and its fold (sibling of `tool-use.jsonl`).
-- Remote-surface parity (#245) as a later organ.
+- Remote-surface parity (#245) as a later part.
 - The PDP's policy table (the reversibility × uncertainty cuts) as admitted
   records, not code constants.

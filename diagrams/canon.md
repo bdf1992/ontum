@@ -2,7 +2,7 @@
 
 The named authority the gate ([`qa.py`](qa.py)) enforces. Every refusal
 cites a principle **here**, by name — never taste-by-assertion. This is
-the "SME intent" of the organ made concrete: the diagramming
+the "SME intent" of the part made concrete: the diagramming
 subject-matter expert, written down, so a generated or hand-authored
 diagram is judged against a canon a cold reader can check.
 

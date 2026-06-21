@@ -33,9 +33,9 @@ conformance). Their convergent conclusions are the constraints below.
 ### The corrected thesis (the unification claim was overstated)
 
 The claim "ontum already has this channel five-plus times" is **mercury** — only
-two organs are genuine two-way channels. The honest map:
+two parts are genuine two-way channels. The honest map:
 
-| Organ | What it really is |
+| Part | What it really is |
 |---|---|
 | `web.py` inbox | **genuine two-way** (verdict POST → same `judge()`; "no second write path") |
 | `ask` / `recommend` | **genuine two-way, synchronous** (the proposed primitive) |
@@ -45,7 +45,7 @@ two organs are genuine two-way channels. The honest map:
 
 The defensible claim: *the message grammar recurs; one surface-agnostic outbound
 engine (`reflect`) and one synchronous two-way surface (`ask`) already exist; the
-abstraction names the grammar so the next organ stops re-deriving it.* The
+abstraction names the grammar so the next part stops re-deriving it.* The
 `brief ↔ ask` pair is the one proven "one shape, two render targets" (the ask
 skill already declares this at `SKILL.md`).
 
@@ -170,7 +170,7 @@ surface:
   (the spine's 5th branch), against `gaps.py` + `trust.py` (don't double-build)?
 - **OD7** Confirm the "Other"-breakout → next-rail self-improvement loop and home
   the audit fold accordingly.
-- **OD8** Name and mint: "AIM's Request register made real," or its own organ?
+- **OD8** Name and mint: "AIM's Request register made real," or its own part?
 
 ## A ghost to fix (found in the pass)
 

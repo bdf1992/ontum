@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.consequence-graph-resp-money-splits-before-propagating.v0",
+    "story": {
+      "text": "Before value/money ever propagates, split it into at least loved / adopted / reused / pattern_setting \u2014 each grounded in a different evidence kind (local / network / structural-dependency / temporal-doctrinal) and propagating differently. No scalar money. (Definition stays bdo s; this is the mechanism that keeps it from taste-only collapse.)",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.consequence-graph-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/consequence-graph/",
+        "seal:25dfa4e81552"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'consequence-graph' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.consequence-graph-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

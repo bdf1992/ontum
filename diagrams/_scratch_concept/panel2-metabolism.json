@@ -1,0 +1,25 @@
+{
+  "title": "Panel 2 · the metabolism — the button-masher loop",
+  "size": [1240, 480],
+  "caption": "Clockwise metabolism: energy feeds the systems-matter substrate; the system operates and observes; coherence reads the friction (measured against the fixed pole) and surfaces to the field; the owner elevates it back (dashed return). Coherence scores an act PREDICTIVE vs TRIVIAL; an act names its consequence-receipt or HALTs.",
+  "nodes": [
+    {"id": "energy",    "type": "rhombus", "x": 72,   "y": 48,  "w": 172, "h": 82,  "label": "energy", "accent": "warm"},
+    {"id": "substrate", "type": "rect",    "x": 485,  "y": 48,  "w": 270, "h": 82,  "label": "systems-matter"},
+    {"id": "operate",   "type": "hex",     "x": 986,  "y": 48,  "w": 182, "h": 82,  "label": "operate", "accent": "cool"},
+    {"id": "observe",   "type": "hex",     "x": 975,  "y": 196, "w": 193, "h": 82,  "label": "observe", "accent": "cool"},
+    {"id": "coherence", "type": "rect",    "x": 953,  "y": 344, "w": 215, "h": 84,  "label": "coherence"},
+    {"id": "field",     "type": "pill",    "x": 514,  "y": 344, "w": 212, "h": 84,  "label": "field"},
+    {"id": "owner",     "type": "rounded", "x": 72,   "y": 324, "w": 282, "h": 104, "label": "owner", "accent": "cool"},
+    {"id": "pole",      "type": "rect",    "x": 587,  "y": 177, "w": 66,  "h": 120, "label": "pole", "accent": "cool"}
+  ],
+  "edges": [
+    {"from": "energy",    "to": "substrate", "label": "feeds"},
+    {"from": "substrate", "to": "operate"},
+    {"from": "operate",   "to": "observe"},
+    {"from": "observe",   "to": "coherence"},
+    {"from": "coherence", "to": "field"},
+    {"from": "field",     "to": "owner"},
+    {"from": "owner",     "to": "substrate", "style": "dashed", "label": "elevates", "via": [[130, 310], [130, 150]], "label_x": 198, "label_y": 235},
+    {"from": "coherence", "to": "pole",      "style": "tether", "label": "measured-against", "label_x": 818, "label_y": 305}
+  ]
+}

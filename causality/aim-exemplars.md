@@ -5,7 +5,7 @@
 > **amplify**, what must **never regress** (with checkable facts), and what to
 > **fix** next. It is the oracle a **CHANGE test** judges a change against
 > (amplified / held / regressed). Pin it before iterating, so the diverge-judge
-> metabolism can't silently regress a good surface.
+> loop can't silently regress a good surface.
 
 ## Exemplars — the pinned good (bdo's words)
 

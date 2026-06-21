@@ -242,5 +242,89 @@ class TestRegionsAreStructure(unittest.TestCase):
         self.assertEqual(qa.check_region_membership.__name__, "check_region_membership")
 
 
+class TestCaptionContainment(unittest.TestCase):
+    """The caption-containment tooth: `compose.render_caption` wraps the foot
+    caption to the canvas width (it can no longer clip off the right edge), and
+    `qa.check_caption` is the deterministic FLOOR that refuses a caption that —
+    even wrapped — runs off the top of the foot into the diagram body.
+
+    The §10 pair: a normal multi-word caption that WRAPS still renders fully and
+    PASSES the gate; an absurdly long caption on a tiny canvas, which even
+    wrapped cannot fit, is REFUSED with the 'dual coding' principle named. The
+    renderer and the gate share one wrap definition (`compose.wrap_caption`,
+    I-4), so the gate counts exactly the lines that render."""
+
+    def _principles(self, spec):
+        return {p for sev, p, _m, _c in qa.evaluate(spec) if sev == "error"}
+
+    def test_wrapping_caption_renders_fully_and_passes(self):
+        caption = ("This panel deliberately omits the metabolism loop and the "
+                   "tier stack so the reader sees only the floor organs and the "
+                   "one dimension everything is measured on.")
+        spec = {"size": [520, 400], "title": "wrap demo", "nodes": [
+            {"id": "a", "type": "rect", "x": 40, "y": 40, "w": 150, "h": 60, "label": "alpha"},
+            {"id": "b", "type": "rect", "x": 320, "y": 40, "w": 150, "h": 60, "label": "beta"}],
+            "edges": [{"from": "a", "to": "b"}], "caption": caption}
+
+        usable = 520 - 32 - 8
+        lines = compose.wrap_caption(caption, usable)
+        self.assertGreater(len(lines), 1, "the caption must actually wrap for this test to mean anything")
+
+        # renders fully: every wrapped line's text is in the SVG (nothing dropped)
+        svg = compose.render(spec)
+        for line in lines:
+            self.assertIn(__import__("html").escape(line), svg,
+                          "a wrapped caption line did not render")
+        # the last line's baseline is unchanged at height-18 (the foot anchor)
+        self.assertIn('y="382"', svg)
+
+        # and the gate passes it — wrapping fits within the foot
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "wrap.json"
+            p.write_text(json.dumps(spec), encoding="utf-8")
+            r = _run_qa(p)
+        self.assertEqual(r.returncode, 0, f"a wrapping-but-fitting caption was refused:\n{r.stderr}")
+        self.assertEqual(self._principles(spec), set(), "a fitting wrapped caption must trip no tooth")
+
+    def test_overflowing_caption_is_refused_with_cited_principle(self):
+        # absurdly long caption on a tiny canvas: even wrapped it runs off the
+        # top of the foot into the body and off the canvas.
+        caption = ("overflow " * 60).strip()
+        spec = {"size": [200, 140], "nodes": [
+            {"id": "a", "type": "rect", "x": 20, "y": 20, "w": 70, "h": 40, "label": "a"},
+            {"id": "b", "type": "rect", "x": 110, "y": 20, "w": 70, "h": 40, "label": "b"}],
+            "edges": [{"from": "a", "to": "b"}], "caption": caption}
+
+        # the tooth bites in isolation: check_caption alone denies with dual coding
+        issues = []
+        qa.check_caption(spec, issues)
+        deny_principles = {p for sev, p, _m, c in issues if sev == "error" and c == "caption"}
+        self.assertIn("dual coding", deny_principles,
+                      "check_caption must refuse an un-fittable caption, citing dual coding")
+
+        # and the full gate refuses it (exit 2)
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "overflow.json"
+            p.write_text(json.dumps(spec), encoding="utf-8")
+            r = _run_qa(p)
+        self.assertEqual(r.returncode, 2, "the un-fittable caption passed the gate")
+        self.assertIn("dual coding", r.stderr.lower())
+        self.assertIn("caption", r.stderr.lower())
+
+    def test_single_line_caption_is_byte_identical_to_unwrapped(self):
+        # a caption that already fits on one line must render exactly as the
+        # pre-wrap form did (keeps short-caption fixtures unchanged).
+        spec = {"size": [1200, 360], "caption": "short caption that fits on one line"}
+        rendered = compose.render_caption(spec)
+        expected = (
+            '<text x="32" y="342" '
+            "font-family='" + compose.FONT_STACK + "' font-size=\"12\" "
+            "fill=\"" + compose.PALETTE["muted"] + "\">"
+            "short caption that fits on one line</text>"
+        )
+        self.assertEqual(rendered, expected,
+                         "a single-line caption must be byte-identical to the un-wrapped output")
+
+
 if __name__ == "__main__":
     unittest.main()

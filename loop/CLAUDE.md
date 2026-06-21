@@ -254,7 +254,7 @@ so a prompt edit can't reopen a settled verdict (I-2).
 - [heal.py](heal.py) — the healing fold (done-line 0111): the counterforce
   to the teeth. Teeth without a healing reflex is autoimmunity — the loop
   keeps a correct-but-stale bite inflamed on the owner surfaces and has no
-  organ that could ever see a tooth bite *wrong*. Sibling of `retro` on the
+  part that could ever see a tooth bite *wrong*. Sibling of `retro` on the
   *bite* axis (retro: what keeps happening; heal: where did a tooth bite
   wrong), reusing the same `Fold`, the digest's version-split, and
   supersession — no second truth. Three detectors: **stale-park** (a gate
@@ -358,7 +358,7 @@ so a prompt edit can't reopen a settled verdict (I-2).
   entry verified against `.codex/hooks.json` when present). The accounting is
   enforceable: no silent collector can be wired without declaring its
   data-practice. Read-only, propose-grain; the cut and the wider shared-gateway
-  unification stay bdo's (D-4). The unwitnessed count is the bridge to organ 2,
+  unification stay bdo's (D-4). The unwitnessed count is the bridge to part 2,
   the runtime witness (every firing → a first-class receipt, the sibling of
   `tool-use.jsonl` the git/gh-gateway proposal deferred).
 - [herald.py](herald.py) — the herald (epic.landing-throughput-response): agents are an open set, so registration and reputation are FOLDS over logged `herald_introduction` admissions, never a table — a herald `introduce`s a named/titled agent (the dumb pen mints a content-hash `credential` at the trust-ladder floor rank, read from `loop.trust`), `roster` folds who is registered (superseding, never erasing), and `reputation` derives distributed value from the log's provenance edges (exemplars net against notorieties per credential, and a herald earns a meta-reputation over the standing of whom it vouched, so a bad voucher is visible by construction); read-only but for the one pen, standing only ever earned forward (§10: standing is recomputed from records, never asserted; D-4).

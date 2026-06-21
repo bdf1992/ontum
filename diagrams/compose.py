@@ -56,6 +56,11 @@ FONT_STACK = (
 LABEL_SIZE = 16
 TITLE_SIZE = 18
 EDGE_LABEL_SIZE = 14
+CAPTION_SIZE = 12       # the foot caption's mono size
+CAPTION_LINE_H = 15     # 1.25em line height at 12px
+CAPTION_LEFT_X = 32     # caption left edge (compose hardcodes the title/caption gutter)
+CAPTION_RIGHT_MARGIN = 8  # right breathing room before the frame edge
+CAPTION_BASELINE_INSET = 18  # the last line's baseline above the frame foot
 MONO_CHAR_W = 9.6  # rough per-char width at 16px monospace
 
 
@@ -353,20 +358,72 @@ def render_subgraph_frame(sg: dict) -> str:
     return "\n".join(parts)
 
 
+def caption_char_w() -> float:
+    """Per-char advance of the 12px caption mono, derived from the 16px base
+    metric so the caption tracks the same font assumption as every other
+    width check (MONO_CHAR_W * 12/16 = 7.2px)."""
+    return MONO_CHAR_W * (CAPTION_SIZE / LABEL_SIZE)
+
+
+def wrap_caption(text: str, width_px: float) -> list[str]:
+    """Word-wrap `text` to fit `width_px` at the 12px caption mono metric.
+
+    Pure and byte-deterministic: a greedy wrap on spaces, hard-breaking any
+    single word longer than a full line. This is the **one** wrap definition
+    (I-4): `render_caption` here and `qa.check_caption` both import it, so the
+    renderer and the gate can never disagree about how many lines a caption
+    becomes — the gate counts exactly the lines that will render."""
+    max_chars = max(1, int(width_px // caption_char_w()))
+    lines: list[str] = []
+    cur = ""
+    for word in text.split(" "):
+        # A single word wider than a full line is hard-broken into chunks.
+        while len(word) > max_chars:
+            if cur:
+                lines.append(cur)
+                cur = ""
+            lines.append(word[:max_chars])
+            word = word[max_chars:]
+        if not cur:
+            cur = word
+        elif len(cur) + 1 + len(word) <= max_chars:
+            cur += " " + word
+        else:
+            lines.append(cur)
+            cur = word
+    lines.append(cur)
+    return lines
+
+
 def render_caption(spec: dict) -> str:
     """The 'what is deliberately not shown' caption — cognitive integration
     (canon §5). A spec may carry a top-level `caption` string; it renders as
     muted mono at the canvas foot so a diagram in a set always carries its own
-    honesty about its boundary."""
+    honesty about its boundary.
+
+    The caption **wraps** to the canvas width (`wrap_caption`) instead of
+    clipping off the right frame edge: the block sits at the foot with the
+    **last** line's baseline at `height - 18` (so a caption that already fits
+    on one line renders byte-identical to the un-wrapped form), and earlier
+    lines stack above it at a 1.25em line height."""
     caption = spec.get("caption", "")
     if not caption:
         return ""
-    _, height = spec.get("size", [900, 500])
-    return (
-        f'<text x="32" y="{height - 18}" '
-        f"font-family='{FONT_STACK}' font-size=\"12\" fill=\"{PALETTE['muted']}\">"
-        f'{escape(caption)}</text>'
-    )
+    width, height = spec.get("size", [900, 500])
+    usable = width - CAPTION_LEFT_X - CAPTION_RIGHT_MARGIN
+    lines = wrap_caption(caption, usable)
+    n = len(lines)
+    last_baseline = height - CAPTION_BASELINE_INSET
+    parts = []
+    for i, line in enumerate(lines):
+        y = last_baseline - (n - 1 - i) * CAPTION_LINE_H
+        parts.append(
+            f'<text x="{CAPTION_LEFT_X}" y="{y}" '
+            f"font-family='{FONT_STACK}' font-size=\"{CAPTION_SIZE}\" "
+            f"fill=\"{PALETTE['muted']}\">"
+            f'{escape(line)}</text>'
+        )
+    return "\n".join(parts)
 
 
 def node_box(n):

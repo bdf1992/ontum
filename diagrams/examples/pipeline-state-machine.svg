@@ -36,5 +36,6 @@
 <text x="935.0" y="184.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">handed off</text>
 <polyline points="1050.0,160.0 1050.0,110.0 130.0,110.0 130.0,160.0" fill="none" stroke="#5C5C60" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
 <text x="590.0" y="171.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">refuse · re-derive</text>
-<text x="32" y="342" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">Deliberately not shown: the mock-vs-real lifecycle of each node, the setpoint dial, and the merge-node landing leg. See the loop/ reconcile PIPELINE for the live stage table.</text>
+<text x="32" y="327" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">Deliberately not shown: the mock-vs-real lifecycle of each node, the setpoint dial, and the merge-node landing leg. See the loop/ reconcile PIPELINE for the live</text>
+<text x="32" y="342" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">stage table.</text>
 </svg>
