@@ -284,6 +284,35 @@ def _base_version(atom_id):
     return atom_id, 0
 
 
+def live_hash_by_base(fold):
+    """Per atom base, the content hash of its LIVE version — the artifact_hash
+    of the most recent `atom.created` event. Identity is the content hash, not
+    the `.vN` id: an atom edited IN PLACE keeps its id but becomes new bytes,
+    so a refusal on the old bytes is dead history even though the `.vN` never
+    changed. Lets the divergence / churn / over-bite detectors tell a refusal
+    on dead bytes from one on the live version. Tolerant of a fold without
+    events (returns {}) — the fail-safe is to surface, never to hide a live
+    record."""
+    latest = {}  # base -> (ts, hash)
+    for ev in getattr(fold, "events", []) or []:
+        if ev.get("type") != "atom.created":
+            continue
+        base = _base_version(ev.get("artifact_id") or "")[0]
+        h, ts = ev.get("artifact_hash"), ev.get("ts") or ""
+        if h and (base not in latest or ts > latest[base][0]):
+            latest[base] = (ts, h)
+    return {b: hh for b, (ts, hh) in latest.items()}
+
+
+def on_superseded_bytes(live_by_base, artifact_id, artifact_hash):
+    """True if this record judged a SUPERSEDED hash — bytes a newer version of
+    the same base replaced. Such a verdict is healed history (identity is the
+    content hash), never live work. False when the live hash is unknown or the
+    record carries no hash (fail-safe toward surfacing)."""
+    live = live_by_base.get(_base_version(artifact_id or "")[0])
+    return bool(live) and bool(artifact_hash) and artifact_hash != live
+
+
 def _superseded(pieces):
     """Atom ids whose refusal is settled history, not a live divergence: a
     *later version of the same atom* reached terminal (landed).
@@ -340,6 +369,7 @@ def _divergences(fold, arcs, ticks, since, until, superseded=frozenset()):
        the dial and reality disagreeing.
     """
     out = []
+    live_by_base = live_hash_by_base(fold)
     for arc in arcs:
         if not arc.get("confirmed"):
             continue
@@ -347,6 +377,12 @@ def _divergences(fold, arcs, ticks, since, until, superseded=frozenset()):
             if piece.get("atom") in superseded:
                 continue
             for rc in piece.get("refusals", []):
+                # a refusal on dead bytes (a newer hash of the same id
+                # superseded them) is healed history, not a live divergence —
+                # identity is the content hash, even when the .vN is unchanged
+                if on_superseded_bytes(live_by_base, rc.get("artifact_id"),
+                                       rc.get("artifact_hash")):
+                    continue
                 out.append({
                     "kind": "refusal-under-confirmed-arc",
                     "epic": arc["epic"],

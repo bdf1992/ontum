@@ -80,6 +80,34 @@ class TestChurn(unittest.TestCase):
             found = retro.churn_findings(retro.Fold(root))
             self.assertEqual([f["subject"] for f in found], ["atom.redo"])
 
+    def test_negations_on_superseded_bytes_are_not_churn(self):
+        """The herald shape: an atom edited IN PLACE (same .v0 id). its old
+        bytes collected negating verdicts; a newer atom.created replaced them
+        and the live bytes confirmed. identity is the content hash, so those
+        dead-byte negations are healed history, not churn — and the one id
+        means the version-count signal sees nothing either. Fails on the
+        receipt-blind count; passes once churn skips superseded bytes."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = write_log(Path(tmp) / ".ai-native",
+                receipts=[
+                    {**receipt("rcp.n1", "atom.h.v0", "send_back"),
+                     "artifact_hash": "sha256:OLD"},
+                    {**receipt("rcp.n2", "atom.h.v0", "missed"),
+                     "artifact_hash": "sha256:OLD"},
+                    {**receipt("rcp.ok", "atom.h.v0", "confirmed"),
+                     "artifact_hash": "sha256:NEW"},
+                ],
+                events=[
+                    {"id": "evt.old", "type": "atom.created",
+                     "artifact_id": "atom.h.v0", "artifact_hash": "sha256:OLD",
+                     "ts": "2026-06-18T00:00:00Z"},
+                    {"id": "evt.new", "type": "atom.created",
+                     "artifact_id": "atom.h.v0", "artifact_hash": "sha256:NEW",
+                     "ts": "2026-06-19T00:00:00Z"},
+                ])
+            found = retro.churn_findings(retro.Fold(root))
+            self.assertNotIn("atom.h", {f["subject"] for f in found})
+
     def test_clean_history_surfaces_no_churn(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = write_log(Path(tmp) / ".ai-native", receipts=[
