@@ -356,6 +356,75 @@ class AutoTest(ReflectBase):
         self.assertEqual(code, 0)
 
 
+class DigestKindTest(ReflectBase):
+    """Done-line 0166: the whole digest as ONE live, self-updating issue
+    through the one pen — bdo's 'use the gateway, only go through one,
+    consumed by those listening'. The shape that must hold: open once,
+    edit-on-change, never a second open, and an unchanged digest is silent."""
+
+    def test_opens_one_live_issue_then_quiets(self):
+        self.register()
+        acts = reflect.digest_drift(self.root, "github-issues")
+        self.assertEqual([a["act"] for a in acts], ["open"])
+        act = acts[0]
+        self.assertEqual(act["title"], "Daily arc digest")
+        self.assertEqual(act["atom_id"], reflect.DIGEST_ATOM_ID)
+        self.assertIn("Arc digest", act["body"])  # the rendered digest itself
+        reflect.record_reflection(self.root, "github-issues", act["atom_id"],
+                                  act["artifact_hash"], "open",
+                                  "https://x/issues/1", by="test")
+        # the digest has not changed → the level-triggered beat is silent
+        self.assertEqual(reflect.digest_drift(self.root, "github-issues"), [])
+
+    def test_changed_digest_edits_in_place_never_reopens(self):
+        """§10: the issue exists, the digest moved — the fit is an EDIT to the
+        same issue, never a second open (that would pile, the failure the one
+        live digest exists to prevent)."""
+        self.register()
+        opened = reflect.digest_drift(self.root, "github-issues")[0]
+        reflect.record_reflection(self.root, "github-issues", opened["atom_id"],
+                                  opened["artifact_hash"], "open",
+                                  "https://x/issues/1", by="test")
+        self.to_stamp()  # an atom advances → the rendered digest changes
+        acts = reflect.digest_drift(self.root, "github-issues")
+        self.assertEqual([a["act"] for a in acts], ["edit"])
+        edit = acts[0]
+        self.assertEqual(edit["external_ref"], "https://x/issues/1")
+        self.assertNotEqual(edit["artifact_hash"], opened["artifact_hash"])
+        reflect.record_reflection(self.root, "github-issues", edit["atom_id"],
+                                  edit["artifact_hash"], "edit",
+                                  "https://x/issues/1", by="test")
+        # the same digest is now live → silent again (no redundant re-edit)
+        self.assertEqual(reflect.digest_drift(self.root, "github-issues"), [])
+
+    def test_the_beat_carries_the_digest_when_its_rule_is_enabled(self):
+        self.register()
+        reflect.admit_rule(self.root, "daily-digest", "github-issues",
+                           True, by="test-bdo")
+        calls = []
+
+        def fake(args):
+            calls.append(args)
+            return "https://github.com/owner/repo/issues/42"
+
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = reflect_pen.auto(self.root, by="reflect-auto", run=fake)
+        self.assertEqual(code, 0)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
+
+    def test_pen_speaks_edit_as_gh_issue_edit_in_place(self):
+        calls = []
+        ref = reflect_pen._gh_edit(
+            "owner/repo",
+            {"act": "edit", "external_ref": "https://github.com/owner/repo/issues/7",
+             "body": "the new digest"}, lambda a: (calls.append(a), "ok")[1])
+        self.assertEqual(calls[0][:3], ["gh", "issue", "edit"])
+        self.assertIn("--body", calls[0])
+        self.assertEqual(ref, "https://github.com/owner/repo/issues/7")
+
+
 class HookBeatTest(unittest.TestCase):
     def test_beat_fails_open_everywhere(self):
         """Garbage stdin + a project dir with no pen in it: exit 0, no
