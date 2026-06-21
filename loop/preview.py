@@ -74,6 +74,7 @@ def deploy_local(root, name, by, host=DEFAULT_HOST, port=DEFAULT_PORT, fold=None
     admission recording the promotion to the local env, and return it. On a
     non-accepted snapshot (or a missing signer) it refuses and writes NOTHING.
     Returns (admission, gate) or (None, gate)."""
+    fold = fold or Fold(root)
     g = gate(name, root, fold)
     if not g["deployable"]:
         print(f"result: needs-you — refused: {g['reason']}")
@@ -83,9 +84,13 @@ def deploy_local(root, name, by, host=DEFAULT_HOST, port=DEFAULT_PORT, fold=None
               "pass --by")
         return None, g
     url = f"http://{host}:{port}/"
+    # the ledger is append-only history (a snapshot is previewed many times); a
+    # per-snapshot sequence keeps repeated same-second deploys distinct so the
+    # dedup fold never drops one (the collision the spine's id fix also closed).
+    seq = sum(1 for a in local_deployments(fold) if a.get("snapshot") == name)
     adm = {
         "id": "adm." + short_hash(LOCAL_DEPLOY_TYPE, name, g["commit"] or "",
-                                  url, str(by), now_ts()),
+                                  url, str(seq), str(by), now_ts()),
         "type": LOCAL_DEPLOY_TYPE,
         "environment": ENVIRONMENT,
         "snapshot": name,
@@ -197,10 +202,13 @@ def main(argv=None):
                               host=args.host, port=args.port)
         if adm is None:
             return 1
-        print(f"result: done — local deployment recorded: `{adm['snapshot']}` "
-              f"→ {adm['url']} ({adm['id']})")
+        print(f"local deployment recorded: `{adm['snapshot']}` → {adm['url']} "
+              f"({adm['id']})")
         if not args.no_serve:
-            serve_tree(args.dir, args.host, args.port)
+            serve_tree(args.dir, args.host, args.port)  # blocks until Ctrl-C
+        # the result line is last, after the (blocking) serve ends — D-6
+        print(f"result: done — local deployment `{adm['snapshot']}` served at "
+              f"{adm['url']}")
         return 0
 
     # no subcommand: read-only status
