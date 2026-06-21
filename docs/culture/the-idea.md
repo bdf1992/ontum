@@ -252,9 +252,9 @@ something larger:
 ## What "finished" would look like
 
 The goal is approached in arcs — large, named pushes, each with a clear
-picture of what *done* looks like for it. There are eighteen of them today
-(the engine always holds the current, exact list — see *Where this comes
-from*). Grouped by what each is really for:
+picture of what *done* looks like for it. The engine always holds the
+current, exact list (see *Where this comes from*). Grouped by what each is
+really for:
 
 - **An engine you can trust enough to point throwaway AI sessions at.**
   Every state can be rebuilt from files; every claim passed a second pair
@@ -364,7 +364,7 @@ record — not a new claim. Its sources:
 - the **discipline and the rules** — the project doctrine
   (`ai-native-loop-substrate.md`), which always pointed here for "the full
   telling";
-- the **eighteen arcs** — the engine's own list (`python -m loop.node arcs`);
+- the **arcs and their horizons** — the engine's own list (`python -m loop.node arcs`);
 - the **deep bet** — the read-only background in `docs/phase-2/` (a small
   specification with unbounded reach).
 

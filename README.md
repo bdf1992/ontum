@@ -115,9 +115,9 @@ part census, the owner digest, the family-neutral fence, the glyph knoller and
 3D viewer, the language strata, the envoy export surface, and the pivot
 recoverability instrument all exist.
 
-Direction lives in `.ai-native/epics/` — eighteen arcs (seventeen confirmed),
-each with a horizon for what done looks like at epic scale
-(`python -m loop.node arcs`); the complete telling of where they point is
+Direction lives in `.ai-native/epics/` — each arc with a horizon for what
+done looks like at epic scale (`python -m loop.node arcs` lists them and
+which are confirmed); the complete telling of where they point is
 [docs/culture/the-idea.md](docs/culture/the-idea.md). Among them: the substrate
 trustworthy enough to point disposable sessions at, the experience layer and the
 virtual fleet where agents launch, judge, and staff themselves, the owner
