@@ -54,6 +54,12 @@ from loop.orchestrate import next_action, read_setpoint
 # read it as a landing, not a refusal (retro fold 0098 surfaced the inflation).
 LANDING_VERDICTS = frozenset({"landed"})
 
+# How many landings the span narrates piece-by-piece before folding the rest
+# into the trailer count. The digest is bdo's glance, not the full merge log —
+# but the overflow is always *named*, never silently dropped (loop/'s law: a
+# bounded surface that hides what it cut reads as "covered everything").
+LANDING_NARRATIVE_CAP = 15
+
 
 def _is_landing(rc):
     """A receipt that advanced the work to terminal — the explicit advance into
@@ -69,6 +75,28 @@ def _is_refusal(rc):
     return (rc.get("next_suggested_event") is None
             and not _is_landing(rc)
             and bool(rc.get("verdict")))
+
+
+def _landing_line(rc):
+    """One landing receipt as a narrative record — *what* reached terminal,
+    named from whatever the receipt already carries. A merge-node receipt names
+    its PR, branch, arc and the atoms it carried (the rich D-13 write-through);
+    an in-pipeline terminal advance names its atom and the node that advanced
+    it. Read generically off the receipt's own fields (never spelled out by
+    stage), so a future landing shape narrates the day its receipts land — the
+    same property that lets `_is_landing` already speak the merge-node's verbs."""
+    atoms = rc.get("landed_atoms")
+    if not atoms:
+        atoms = [rc["artifact_id"]] if rc.get("artifact_id") else []
+    return {
+        "atoms": atoms,
+        "pr": rc.get("pr"),
+        "head": rc.get("head"),
+        "epic": rc.get("epic"),
+        "by": rc.get("pr_author") or rc.get("node"),
+        "verdict": rc.get("verdict"),
+        "ts": rc.get("ts"),
+    }
 
 
 def atoms_on_main(fold):
@@ -146,6 +174,12 @@ def digest(root, since=None, until=None):
     # refusals (the 58-where-~7-were-real inflation retro surfaced).
     landings = [rc for rc in receipts if _is_landing(rc)]
     refusals = [rc for rc in receipts if _is_refusal(rc)]
+    # the span's narrative, not just its tally: each landing named (PR, atoms,
+    # arc, who), most-recent-first so the story leads with the latest. The bare
+    # count never told bdo *which* work reached main — the thing the span exists
+    # to carry (bdo: the digest must support more of the narrative that unfolded).
+    landed_in_span = [_landing_line(rc) for rc in
+                      sorted(landings, key=lambda r: r.get("ts") or "", reverse=True)]
 
     # attribute every present atom to its arc (or to the loose pile)
     by_epic = {}
@@ -225,6 +259,7 @@ def digest(root, since=None, until=None):
         "arcs": arcs,
         "loose": loose,
         "landings": len(landings),
+        "landed_in_span": landed_in_span,
         "refusals": len(refusals),
         "divergences": divergences,
         "phrasing": phrasing_in_span,
@@ -457,6 +492,25 @@ def render(d):
                     f"- **queue over cap** at tick {x['tick']}: backlog "
                     f"{x['backlog']} > cap {x['cap']} — re-dial if it recurs "
                     f"**(yours)**.")
+        lines.append("")
+
+    # 2.5 the span's narrative: what actually reached terminal. The bare "N
+    #     landing(s)" count never told bdo *which* work landed — the story the
+    #     span exists to carry. Named from the log, capped, the overflow folded
+    #     into the trailer count but never silently dropped (loop/'s law).
+    landed = d.get("landed_in_span", [])
+    if landed:
+        lines.append(f"## What landed in span ({len(landed)})")
+        for ev in landed[:LANDING_NARRATIVE_CAP]:
+            atoms = ", ".join(f"`{a}`" for a in ev["atoms"]) or "_(no atom named)_"
+            pr = f"PR #{ev['pr']} — " if ev.get("pr") else ""
+            where = f" · `{ev['epic']}`" if ev.get("epic") else ""
+            by = f" — {ev['by']}" if ev.get("by") else ""
+            lines.append(f"- {pr}{atoms}{where}{by}")
+        extra = len(landed) - LANDING_NARRATIVE_CAP
+        if extra > 0:
+            lines.append(f"- _…+{extra} earlier landing(s) in span, folded into "
+                         "the count below_")
         lines.append("")
 
     # 3. the field, one glance — the dial in play and how it ran
