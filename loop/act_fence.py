@@ -135,8 +135,13 @@ def classify(act):
         if act.get("arc_confirmed") and reversible:
             return FORGIVENESS, ("landing under a confirmed arc — the merge-node "
                                  "executing bdo's standing stamp, and git-revertable")
-        return PERMISSION, ("landing to main without a confirmed arc — bdo weighs "
-                            "it; the arc-confirm is the authorization that would lift it")
+        if not act.get("arc_confirmed"):
+            return PERMISSION, ("landing to main without a confirmed arc — bdo weighs "
+                                "it; the arc-confirm is the authorization that would lift it")
+        # arc is confirmed, but the land names no rollback path — reversibility,
+        # not authorization, is what holds it back (the reason must not lie).
+        return PERMISSION, ("landing under a confirmed arc but with no rollback path "
+                            "— bdo weighs an un-revertable land")
 
     if blast in CONTAINED and reversible:
         return FORGIVENESS, (f"reversible and contained to {blast} — undoable by an "

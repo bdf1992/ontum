@@ -104,6 +104,30 @@ class WideActCannotBuyForgiveness(unittest.TestCase):
         self.assertEqual(tier, PERMISSION)
 
 
+class ReversibilityIsLoadBearing(unittest.TestCase):
+    """The reversibility leg of the 'reversibility x blast-radius' cut must
+    bite. The independent review of PR #450 caught it as a soft tooth: a mutant
+    classify() with the `reversible` checks deleted passed all 18 original
+    tests. Per section 10, the axis the bar names must be testable — these flip
+    `reversible` and require the tier to move, so the mutant now fails."""
+
+    def test_contained_but_irreversible_is_permission(self):
+        # a contained act with no rollback path is PERMISSION, not forgiveness —
+        # exercises the `and reversible` on the contained branch.
+        tier, _ = classify(observed(family="draft", blast_radius="branch",
+                                    reversible=False))
+        self.assertEqual(tier, PERMISSION)
+
+    def test_landing_confirmed_but_irreversible_is_permission(self):
+        # a confirmed-arc land with no rollback path is PERMISSION — the arc
+        # alone is not enough; exercises the `and reversible` on land-main.
+        tier, reason = classify(observed(family="land-main", blast_radius="main",
+                                         arc_confirmed=True, reversible=False))
+        self.assertEqual(tier, PERMISSION)
+        # and the reason must name reversibility, not lie about a missing arc.
+        self.assertNotIn("without a confirmed arc", reason)
+
+
 class FenceAndDefaultSafe(unittest.TestCase):
     """Default-safe: a forgiveness act escalates with no fence and self-admits
     only under one — the disposer's inert-until-stamped shape."""
