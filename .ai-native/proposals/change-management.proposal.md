@@ -7,6 +7,30 @@
 > we would decide *before* building, and the process by which findings, work, and
 > decisions move on-path.
 
+## DECISIONS (bdo, 2026-06-20 — chat stamp, "all yes")
+
+This bundle is no longer all-PROPOSED. bdo's calls, on the record:
+
+- **CTA-3 — YES.** *Blueprint-before-build* is now a **hard rule** in
+  [CLAUDE.md](../../CLAUDE.md) (Hard rules) — the standing instruction #348 asked for.
+- **CTA-2 — YES.** A blueprint becomes a **first-class, digest-visible record**.
+  This is itself a non-trivial build, so — dogfooding CTA-3 — it graduates to
+  **`epic.change-management`** and is built *under* the new rule, not rushed now.
+- **#247 — YES.** *The owner's stamp is portable* is now a **hard rule** in
+  CLAUDE.md; #245 stays the mechanism (the build).
+- **#294 micro-stamps — DECLINED (moot).** The C19/RegisterFacet amendment is
+  absent from the current `display-system.md` (restructured); Commons-v1 was homed
+  by the merged #174. Both retired.
+- **Anthology — reaffirmed BLESSED** (`anthology.self-governing-loop`); #296/#297
+  resolved (the bless is recorded; `loop/anthology.py` is a later build).
+- **CTA-7 (consequence-policy primitive) — ENDORSED as its own arc**, not blocking
+  the above. Graduates separately when bdo opens it.
+
+Remaining session-buildable under `epic.change-management` (awaiting bdo's
+`confirm-arc`): CTA-1 (close the `prompt`-parity fence hole — the raw-`gh` hole
+#348 leaked through, the enforcement precondition), then CTA-4 (lightweight
+finding-capture pen) and CTA-2 (the first-class blueprint record).
+
 ## The why (the target reframe)
 
 A session under throughput-pressure reaches for the **fastest path to a visible
