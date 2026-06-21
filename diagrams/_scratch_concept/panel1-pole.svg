@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 800" width="1080" height="800">
+<rect width="1080" height="800" fill="#0B0B0C"/>
+<defs>
+  <pattern id="halftone" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+    <rect width="5" height="5" fill="#0F1011"/>
+    <circle cx="1" cy="1" r="0.6" fill="#1F2123"/>
+  </pattern>
+  <filter id="glow-cool" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#5EB7A1" flood-opacity="0.6"/>
+  </filter>
+  <filter id="glow-warm" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#C97A55" flood-opacity="0.6"/>
+  </filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5C5C60"/>
+  </marker>
+</defs>
+<text x="32" y="38" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="18" font-weight="600" fill="#E6E6E6">Panel 1 · the pole — the fixed axis every act is measured on</text>
+<rect x="430" y="66" width="220" height="58" rx="14" ry="14" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="540.0" y="95.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="540.0" dy="-0.00em">goal  +</tspan></text>
+<rect x="430" y="132" width="220" height="372" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="540.0" y="318.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="540.0" dy="-0.00em">the pole</tspan></text>
+<rect x="430" y="512" width="220" height="58" rx="14" ry="14" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="540.0" y="541.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="540.0" dy="-0.00em">raw  −</tspan></text>
+<polygon points="170.0,185 295,240.0 170.0,295 45,240.0" fill="url(#halftone)" stroke="#C97A55" stroke-width="1.5" filter="url(#glow-warm)"/>
+<text x="170.0" y="240.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="170.0" dy="-0.00em">self-force</tspan></text>
+<polygon points="910.0,185 1035,240.0 910.0,295 785,240.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="910.0" y="240.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="910.0" dy="-0.00em">back-force</tspan></text>
+<rect x="45" y="612" width="300" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="195.0" y="655.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="195.0" dy="-0.00em">observe.py</tspan></text>
+<rect x="390" y="612" width="300" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="540.0" y="655.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="540.0" dy="-0.00em">relation_ledger.py</tspan></text>
+<rect x="735" y="612" width="300" height="86" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="885.0" y="655.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="885.0" dy="-0.00em">over_containment.py</tspan></text>
+<line x1="540.0" y1="124.0" x2="540.0" y2="132.0" stroke="#3A3A3D" stroke-width="1"/>
+<line x1="540.0" y1="504.0" x2="540.0" y2="512.0" stroke="#3A3A3D" stroke-width="1"/>
+<polyline points="295.0,240.0 400.0,240.0 430.0,256.7" fill="none" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="362.0" y="226.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">propels</text>
+<polyline points="785.0,240.0 680.0,240.0 650.0,256.7" fill="none" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="718.0" y="226.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">resists</text>
+<polyline points="195.0,612.0 195.0,455.0 430.0,361.7" fill="none" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="300.0" y="441.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">gates</text>
+<polyline points="540.0,612.0 540.0,598.0 370.0,598.0 370.0,470.0 430.0,416.4" fill="none" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="345.0" y="612.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">measures</text>
+<polyline points="885.0,612.0 885.0,455.0 650.0,361.7" fill="none" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="780.0" y="441.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="14" fill="#8C8C8F">discriminates</text>
+<text x="32" y="752" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">The pole is the one axis every act is measured on: did this move toward the goal (the + terminal, top) or toward raw button-mash (the −</text>
+<text x="32" y="767" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">terminal, bottom)? self-force propels the agent up the axis; back-force resists. observe.py gates an act against the pole, relation_ledger.py</text>
+<text x="32" y="782" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">measures it, over_containment.py discriminates predictive from trivial. Not shown: panel 2 (metabolism) · panel 3 (tiers).</text>
+</svg>

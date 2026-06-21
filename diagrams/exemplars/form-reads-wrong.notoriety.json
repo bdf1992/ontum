@@ -1,0 +1,10 @@
+{
+  "id": "form-reads-wrong",
+  "kind": "notoriety",
+  "title": "a shape (or a cluster of shapes) accidentally reads as something it shouldn't",
+  "named_consequence": "The reader's eye resolves the silhouette before it reads the labels — and the silhouette says the wrong thing. A tall vertical bar with a small cap hung off its bottom edge reads as anatomy, not as an axis; the accidental form hijacks attention, undercuts the diagram's seriousness, and distracts from the meaning entirely. The intent is lost to an unintended picture.",
+  "evidence": "a tall narrow rectangle ('the pole') with a small node ('raw') protruding centered below it; any composition whose overall outline forms a recognizable unintended object before its parts are read.",
+  "source": "bdo, 2026-06-21 — looked at panel 1 (the pole): 'this is bad, the raw and penis shape is bad'.",
+  "remedy_shape": "Compose the silhouette deliberately: keep terminals inline within the bar or to the side, vary proportions, and look at the whole outline as a stranger would before shipping. Shape of the cure, not a checklist.",
+  "intent_violated": "the picture's overall form reads as the system, not as an accidental unintended object"
+}

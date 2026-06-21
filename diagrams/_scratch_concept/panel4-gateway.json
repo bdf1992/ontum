@@ -1,0 +1,39 @@
+{
+  "title": "Panel 4 · the gateway, opened up — the per-directory governance stack",
+  "size": [1240, 720],
+  "regions": [
+    {"id": "enforcement", "label": "physical enforcement", "x": 150, "y": 250, "w": 1010, "h": 220}
+  ],
+  "nodes": [
+    {"id": "authN",  "type": "rect",    "x": 120, "y": 80,  "w": 200, "h": 86,  "label": "authN",  "accent": "warm"},
+    {"id": "policy", "type": "rounded", "x": 500, "y": 80,  "w": 220, "h": 86,  "label": "policy"},
+    {"id": "authZ",  "type": "rect",    "x": 945, "y": 80,  "w": 185, "h": 86,  "label": "authZ",  "accent": "warm"},
+
+    {"id": "fence",     "type": "hex", "region": "enforcement", "x": 185, "y": 305, "w": 185, "h": 110, "label": "fence",     "accent": "cool"},
+    {"id": "guard",     "type": "hex", "region": "enforcement", "x": 445, "y": 305, "w": 185, "h": 110, "label": "guard",     "accent": "cool"},
+    {"id": "threshold", "type": "hex", "region": "enforcement", "x": 705, "y": 305, "w": 185, "h": 110, "label": "threshold", "accent": "cool"},
+    {"id": "gate",      "type": "hex", "region": "enforcement", "x": 945, "y": 305, "w": 185, "h": 110, "label": "gate",      "accent": "cool"},
+
+    {"id": "attribution", "type": "rect",       "x": 180,  "y": 545, "w": 200, "h": 86, "label": "attribution", "accent": "warm"},
+    {"id": "pen",         "type": "subroutine", "x": 460,  "y": 545, "w": 150, "h": 86, "label": "pen"},
+    {"id": "patrol",      "type": "rect",       "x": 660,  "y": 545, "w": 170, "h": 86, "label": "patrol"},
+    {"id": "ledger",      "type": "pill",       "x": 880,  "y": 545, "w": 170, "h": 86, "label": "ledger"},
+    {"id": "heal",        "type": "rect",       "x": 1090, "y": 545, "w": 130, "h": 86, "label": "heal"}
+  ],
+  "edges": [
+    {"from": "authN",  "to": "policy", "label": "admits"},
+    {"from": "policy", "to": "authZ",  "label": "decides"},
+    {"from": "authZ",  "to": "gate",   "label": "enters"},
+
+    {"from": "gate",      "to": "threshold"},
+    {"from": "threshold", "to": "guard"},
+    {"from": "guard",     "to": "fence"},
+
+    {"from": "fence",       "to": "attribution", "label": "attributes"},
+    {"from": "attribution", "to": "pen",         "label": "writes"},
+    {"from": "pen",         "to": "patrol"},
+    {"from": "patrol",      "to": "ledger",      "label": "logs"},
+    {"from": "ledger",      "to": "heal",        "label": "audits"}
+  ],
+  "caption": "Gateway stack — a fidelity draft of bdo's model, for his correction. A request's journey runs top to bottom: authN, policy, authZ, into the physical-enforcement band (gate, threshold, guard, fence — co-present perimeter mechanisms, threaded right-to-left), then attribution, pen, patrol, ledger, heal. Warm marks the three A's running across the stack — authenticated (authN), authorized (authZ), attributed (attribution); cool is the enforcement layer."
+}

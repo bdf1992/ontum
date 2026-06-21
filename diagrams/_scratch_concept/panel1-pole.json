@@ -1,0 +1,24 @@
+{
+  "title": "Panel 1 · the pole — the fixed axis every act is measured on",
+  "size": [1080, 800],
+  "caption": "The pole is the one axis every act is measured on: did this move toward the goal (the + terminal, top) or toward raw button-mash (the − terminal, bottom)? self-force propels the agent up the axis; back-force resists. observe.py gates an act against the pole, relation_ledger.py measures it, over_containment.py discriminates predictive from trivial. Not shown: panel 2 (metabolism) · panel 3 (tiers).",
+  "nodes": [
+    {"id": "goal",      "type": "rounded", "x": 430, "y": 66,  "w": 220, "h": 58,  "label": "goal  +"},
+    {"id": "pole",      "type": "rect",    "x": 430, "y": 132, "w": 220, "h": 372, "label": "the pole"},
+    {"id": "raw",       "type": "rounded", "x": 430, "y": 512, "w": 220, "h": 58,  "label": "raw  −"},
+    {"id": "self_force","type": "rhombus", "x": 45,  "y": 185, "w": 250, "h": 110, "label": "self-force", "accent": "warm"},
+    {"id": "back_force","type": "rhombus", "x": 785, "y": 185, "w": 250, "h": 110, "label": "back-force", "accent": "cool"},
+    {"id": "observe_py",       "type": "rect", "x": 45,  "y": 612, "w": 300, "h": 86, "label": "observe.py"},
+    {"id": "relation_ledger",  "type": "rect", "x": 390, "y": 612, "w": 300, "h": 86, "label": "relation_ledger.py"},
+    {"id": "over_containment", "type": "rect", "x": 735, "y": 612, "w": 300, "h": 86, "label": "over_containment.py"}
+  ],
+  "edges": [
+    {"from": "goal", "to": "pole", "style": "tether"},
+    {"from": "pole", "to": "raw",  "style": "tether"},
+    {"from": "self_force", "to": "pole", "label": "propels", "via": [[400, 240]], "label_x": 362, "label_y": 226},
+    {"from": "back_force", "to": "pole", "label": "resists", "via": [[680, 240]], "label_x": 718, "label_y": 226},
+    {"from": "observe_py", "to": "pole", "label": "gates", "via": [[195, 455]], "label_x": 300, "label_y": 441},
+    {"from": "relation_ledger", "to": "pole", "label": "measures", "via": [[540, 598], [370, 598], [370, 470]], "label_x": 345, "label_y": 612},
+    {"from": "over_containment", "to": "pole", "label": "discriminates", "via": [[885, 455]], "label_x": 780, "label_y": 441}
+  ]
+}

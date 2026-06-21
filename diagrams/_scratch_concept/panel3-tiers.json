@@ -1,0 +1,41 @@
+{
+  "title": "Panel 3 · the four tiers and the gateway-generation seam",
+  "caption": "Bottom-up: the substrate generates gateways that ascend to the owner. Gateway tier: authN·authZ·policy·attribution govern; full stack is its zoom.",
+  "size": [1200, 600],
+  "nodes": [
+    {"id": "t_owner",     "type": "rounded", "x": 52,  "y": 64,  "w": 244, "h": 74,  "label": "OWNER"},
+    {"id": "t_watcher",   "type": "rect",    "x": 52,  "y": 180, "w": 244, "h": 74,  "label": "WATCHER", "hub": true},
+    {"id": "t_gateways",  "type": "hex",     "x": 52,  "y": 292, "w": 244, "h": 166, "label": "GATEWAYS", "accent": "cool", "hub": true},
+    {"id": "t_substrate", "type": "rect",    "x": 52,  "y": 486, "w": 244, "h": 74,  "label": "SYSTEMS MATTER\nthe substrate", "accent": "warm"},
+
+    {"id": "owner_dash",  "type": "rounded", "x": 336, "y": 64,  "w": 816, "h": 74,  "label": "dashboard"},
+    {"id": "watch_op",    "type": "rect",    "x": 336, "y": 180, "w": 816, "h": 74,  "label": "operations"},
+
+    {"id": "gw_authn",  "type": "rect", "x": 336,  "y": 327, "w": 124, "h": 96, "label": "authN",       "accent": "cool"},
+    {"id": "gw_authz",  "type": "rect", "x": 474,  "y": 327, "w": 124, "h": 96, "label": "authZ",       "accent": "cool"},
+    {"id": "gw_policy", "type": "rect", "x": 612,  "y": 327, "w": 124, "h": 96, "label": "policy",      "accent": "cool", "hub": true},
+    {"id": "gw_attrib", "type": "rect", "x": 750,  "y": 327, "w": 124, "h": 96, "label": "attribution", "accent": "cool"},
+    {"id": "gw_gate",   "type": "rect", "x": 888,  "y": 327, "w": 124, "h": 96, "label": "gate",        "accent": "cool"},
+    {"id": "gw_guard",  "type": "rect", "x": 1026, "y": 327, "w": 124, "h": 96, "label": "guard",       "accent": "cool"},
+
+    {"id": "sub_corpus",  "type": "rect",    "x": 336, "y": 486, "w": 816, "h": 74,  "label": "model-free corpus", "accent": "warm"}
+  ],
+  "edges": [
+    {"from": "t_substrate", "to": "t_gateways", "label": "generates"},
+    {"from": "t_gateways",  "to": "t_watcher",  "label": "ascends"},
+    {"from": "t_watcher",   "to": "t_owner",    "label": "surfaces"},
+
+    {"from": "t_owner",     "to": "owner_dash", "style": "tether"},
+    {"from": "t_watcher",   "to": "watch_op",   "style": "tether"},
+    {"from": "t_substrate", "to": "sub_corpus", "style": "tether"},
+
+    {"from": "t_gateways", "to": "gw_authn",  "style": "tether"},
+    {"from": "gw_authn",   "to": "gw_authz",  "style": "tether"},
+    {"from": "gw_authz",   "to": "gw_policy", "style": "tether"},
+    {"from": "gw_policy",  "to": "gw_attrib", "style": "tether"},
+    {"from": "gw_attrib",  "to": "gw_gate",   "style": "tether"},
+    {"from": "gw_gate",    "to": "gw_guard",  "style": "tether"},
+
+    {"from": "owner_dash", "to": "sub_corpus", "style": "dashed", "label": "elevates", "via": [[1178, 101], [1178, 523]], "label_x": 1115, "label_y": 470}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "scattered-placement",
+  "kind": "notoriety",
+  "title": "the placement does not reflect the topology — a loop that isn't laid as a loop",
+  "named_consequence": "The labels are right and the picture is honest, but the NODES SIT WHEREVER. A cyclic system is drawn as a clean top row and a scattered bottom, with a node floating mid-canvas tethered across an empty gap, so the reader cannot see the cycle AS a cycle — they have to trace edges one by one to recover a structure the placement should have shown at a glance. The arrangement carries no information; the sites are arbitrary.",
+  "evidence": "a loop whose nodes do not form a ring; an empty hole in the middle of the frame while content crowds the edges; a node placed off on its own with a single long tether ('pole' floating with a lonely 'measured-against' line); uneven spacing and no alignment.",
+  "source": "bdo, 2026-06-21 — looked at panel 2 (the metabolism) and said 'this isn't great'. The placement, not the labels.",
+  "remedy_shape": "Place by the structure: a loop as a ring, a hierarchy as stacked layers, even spacing, aligned to a grid, related things adjacent. The SITE of each node should itself say where it belongs. Shape of the cure, not a checklist.",
+  "intent_violated": "the arrangement itself informs — the reader sees the structure in the placement at a glance"
+}
