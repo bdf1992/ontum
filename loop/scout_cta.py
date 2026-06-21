@@ -70,8 +70,8 @@ FIXTURE = {
     "goal": "a working Scout -> Claim -> Build -> Prune cycle",
     "horizon": "Scout emits one marked CTA, Claim bounds it, Build routes it, Prune retires it",
     "priors_consulted": [
-        {"file": "strategy-metabolism.md", "contains": "unmanaged possibility that consumes field-space"},
-        {"file": "strategy-metabolism.md", "contains": "Claim is the missing bridge"},
+        {"file": ".ai-native/proposals/strategy-metabolism.md", "contains": "unmanaged possibility that consumes field-space"},
+        {"file": ".ai-native/proposals/strategy-metabolism.md", "contains": "Claim is the missing bridge"},
         {"file": ".ai-native/done/0141-scout-cta-contract.md", "contains": "ScoutCTA contract"},
     ],
     "uncertainty_held": "whether Scout should ever self-aim (decision D) and the manifold's true axes — not collapsed here",
