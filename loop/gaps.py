@@ -2,7 +2,7 @@
 """The gap fold (done-line 0048): the loop's own gaps become the next work.
 
 Every sensing surface this repo grew — the shame beat's still-mock set,
-the inbox's parked pieces, reflection drift, the organ census — *surfaces*
+the inbox's parked pieces, reflection drift, the part census — *surfaces*
 a gap and then waits for a session to choose to care. The conversion from
 surfaced to worked has been a session's self-discipline, and the record
 shows that is the unreliable component (a session can narrate around a
@@ -25,8 +25,8 @@ nothing here moves work or judges it, so there is no setpoint to admit):
                        self-asserted (done-line 0049)
   4. parked-piece      an atom a gate refused, holding; amend or retire
   5. surface-drift     acts not yet reflected to a registered surface
-  6. idle-organ        census wired·idle — a writer plumbed in, never fired
-  7. dormant-organ     census dormant — a prune candidate (the cut is bdo's)
+  6. idle-part        census wired·idle — a writer plumbed in, never fired
+  7. dormant-part     census dormant — a prune candidate (the cut is bdo's)
 
 The fold computes lazily in priority order: the cheap log folds answer
 before the census walks the tree, so the every-prompt hook pays the
@@ -53,7 +53,7 @@ from loop.orchestrate import next_action
 from loop.reflect import drift, registered_surfaces
 
 KIND_ORDER = ("mock-stage", "mock-actor", "unadmitted-actor",
-              "parked-piece", "surface-drift", "idle-organ", "dormant-organ")
+              "parked-piece", "surface-drift", "idle-part", "dormant-part")
 
 # done-line 0129 (epic.three-marks, wave 1): a flaw is a mark made in the
 # wrong stage — sketch (provisional), ink (committed/permanent), paint
@@ -67,7 +67,7 @@ KIND_ORDER = ("mock-stage", "mock-actor", "unadmitted-actor",
 #   ink    — a permanent-mark problem: a record-writer no admission named
 #            (mock-actor, unadmitted-actor — the merge-node's 22), or an
 #            instrument plumbed to mark but never fired / disconnected
-#            (idle-organ, dormant-organ — a pen in hand, no pigment).
+#            (idle-part, dormant-part — a pen in hand, no pigment).
 #   paint  — truth the log holds that a reader surface does not show
 #            (surface-drift — paint that never reached the wall).
 # This is a fold label, not doctrine (decision 1): it must read true against
@@ -79,8 +79,8 @@ KIND_MARK = {
     "unadmitted-actor": "ink",
     "parked-piece": "sketch",
     "surface-drift": "paint",
-    "idle-organ": "ink",
-    "dormant-organ": "ink",
+    "idle-part": "ink",
+    "dormant-part": "ink",
 }
 
 
@@ -254,11 +254,11 @@ def organ_gaps(root):
     from loop import census as census_mod
     repo = Path(root).resolve().parent
     moves = {
-        "wired·idle": ("idle-organ",
+        "wired·idle": ("idle-part",
                        "exercise it through the working system so a word "
                        "of its lands on the record, or say why silence is "
                        "by design"),
-        "dormant": ("dormant-organ",
+        "dormant": ("dormant-part",
                     "propose the prune with the census as evidence — the "
                     "cut stays bdo's (D-4)"),
     }

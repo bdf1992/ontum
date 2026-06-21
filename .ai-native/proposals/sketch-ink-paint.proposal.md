@@ -5,7 +5,7 @@ craft it is borrowed from. The pen is the **inker's** stage of a
 three-stage making — pencil sketch, pen linework, paint-over — and naming
 the other two turns a scattered backlog of recurring flaws into one
 diagnosis. A fourth element emerged in conversation with bdo — the
-**pentimento** (experience read out of the palimpsest), the organ ontum is
+**pentimento** (experience read out of the palimpsest), the part ontum is
 most missing. Written for bdo to react to. Not adopted — a proposal.*
 
 ## The problem, exactly
@@ -108,7 +108,7 @@ The unifier — the thing that is neither "memory" nor "meaning" — is
 
 > **Memory is the trace retained. Meaning is what the trace says.
 > Experience is memory made *comparable* — held against enough other
-> traces that it hardens into craft.** Comparison is the metabolism between
+> traces that it hardens into craft.** Comparison is the engine between
 > them, and it is the whole reason the sketch must stay on the book.
 
 And experience is not a thing you *have* — it is a thing you *keep*. bdo's
@@ -131,7 +131,7 @@ the sauce survives:
 - **Feeding it** is just every session's traces landing on the book.
 
 The reason the loop feels like a contractor today is that it throws the
-sauce out and re-buys ingredients every morning. The pentimento organ is
+sauce out and re-buys ingredients every morning. The pentimento part is
 **the pot you never wash.**
 
 **A note on the word, because it is already overloaded (bdo, this
@@ -143,7 +143,7 @@ causality would flag exactly this split:
   an authored story (the writer / artist / architect): this is
   `epic.experience-layer`.
 - **craft / the sauce** — *memory made comparable*, reduced and kept: the
-  pentimento organ above, `epic.pentimento`.
+  pentimento part above, `epic.pentimento`.
 - **felt experience** — the **felt feel of the work and its media**, the
   quality of *encountering* the made thing (the *anima*), not the maker's
   process.
@@ -154,7 +154,7 @@ felt feel of the art, not the artist* — is the third, and it is what tells
 the **paint** stage that its job is not only legibility but **feeling**:
 the colorist gives the page its mood, not just its caption.
 
-**Why this is the organ ontum is most missing.** Every fold today reads
+**Why this is the part ontum is most missing.** Every fold today reads
 the log down to *current state* — `gaps`, `census`, `term_economy`,
 `reconcile` all ask *"what is true now?"* and throw the **journey** away.
 None asks *"what did we try, abandon, or stumble into?"* The slow loop
@@ -165,7 +165,7 @@ and it cannot even write back its one dial (the write-back gap, report
 **no experience** — it cannot get better at its own craft, only re-derive
 its current state. That is the deepest flaw under all the others.
 
-The fix names an organ, not a mark: a **palimpsest fold** — a read over
+The fix names a part, not a mark: a **palimpsest fold** — a read over
 the log's *superseded and abandoned* layers (not its surface) whose output
 is **craft** the next session inherits at wake, the same way it inherits a
 gap today. The pentimento layer is how the hand gets better; without it,
@@ -214,7 +214,7 @@ Run the backlog through the three marks (evidence from `loop.gaps`,
 | **off-log strands** — 50 local commits never landed, 14 Causality increments unintegrated, the off-log-gate (PR #123) unlanded | **sketch torn out of the book** — branch commits leave no trace on the log, so they can be neither inked nor *compared* (and comparison is how we improve); the sketchbook is missing | sketch **off-book** |
 | **unadmitted actors** — merge-node's 22 landings, mock-actor's 14 records, no `node_real` | **ink drawn by a hand never admitted to hold the pen** — provisional authority making permanent marks | ink **authority leak** |
 | **mock stages** — effective-mocks, the mock-shame scream | **pencil drawn in ink's slot** — a mock fills a pipeline stage that should make permanent verdicts but only sketches fixed ones. A mock is a *legitimate sketch mislabeled as ink* | sketch **wearing ink's clothes** |
-| **idle organs** — `freeze_guard.py`, `write_guard.py` wired but never exercised | **a pen in the hand, no pigment on the page** — the instrument exists; no word of its output is on any medium | the instrument has **laid no mark** |
+| **idle parts** — `freeze_guard.py`, `write_guard.py` wired but never exercised | **a pen in the hand, no pigment on the page** — the instrument exists; no word of its output is on any medium | the instrument has **laid no mark** |
 | **owner-asks parked in reports bdo never reads**; reflect-mirror close-text bugs | **paint that never reached the wall** — the painting is done in a back room (a report file) the reader never enters | paint on the **wrong medium** |
 | **slow-loop write-back missing** — senses the gap, cannot re-admit its dial | **the colorist can see the correction but may not lay it** — read half built, paint half not | paint **with no authorized stroke** |
 
@@ -360,13 +360,13 @@ its own, §9):
    until he draws the fence — exactly the right shape (D-4 at one level
    down).
 
-6. **The palimpsest fold — the pentimento organ (the deepest, do last).**
+6. **The palimpsest fold — the pentimento part (the deepest, do last).**
    A read-only fold over the log's *superseded and abandoned* layers — not
    its current surface — that surfaces "what did we try and erase, and what
    keeps recurring" as **craft** the summon hands at wake. The whiteout and
    the un-inked fold (step 2) are its inputs; the slow loop is its natural
    consumer (it would fold the journey, not the snapshot). This is the
-   organ that turns memory + meaning into experience — the thing that lets
+   part that turns memory + meaning into experience — the thing that lets
    the hand get better, currently absent. Largest of the six; the first
    five make it possible.
 
@@ -412,12 +412,12 @@ inherits them from the record, not from chat. They are carried into
 4. **First build scope → a full epic with a done-line series** (`epic.three-marks`),
    wave-ordered, so all five build steps have a home. (bdo chose the fuller
    frame over a single done-line — the whole frontier visible.)
-5. **The pentimento/sauce organ → its own arc, after waves 1–2.** It
+5. **The pentimento/sauce part → its own arc, after waves 1–2.** It
    graduates out of this epic into `epic.pentimento` (the palimpsest fold →
    craft) once the sketchbook gives it something comparable to read. *Naming
    note:* the existing `epic.experience-layer` already binds the word
    **"experience"** to a different sense (a launched, bounded encounter that
-   ends in an authored story). This organ's "experience" (memory made
+   ends in an authored story). This part's "experience" (memory made
    comparable) is a genuine **overload** to reconcile — which is why its arc
    is named for its mechanism (*pentimento / palimpsest*), not "experience."
 
@@ -451,5 +451,5 @@ smallest thing that puts the sketchbook back in the book, so a waking
 session sees the 50 stranded commits as comparable sketch instead of a
 silent strand. The session that picks up wave 1 writes its done-line and
 builds; bdo confirms the arc (`confirm-arc`) to authorize landing. The
-pentimento organ that keeps the sauce graduates to `epic.pentimento`,
+pentimento part that keeps the sauce graduates to `epic.pentimento`,
 after.*

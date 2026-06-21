@@ -528,7 +528,7 @@ def report():
     is by-design-raw (a session may always look) and is NOT a wrapper
     candidate; only a raw *mutation* nominates a wrapper. Before intent
     tags, reads inflated the count and `gh pr list` ×65 read as 'wrap gh' —
-    the noise the organ census caught."""
+    the noise the part census caught."""
     mutate, read, unknown = {}, {}, {}
     examples, denied, branded = {}, 0, 0
     if WATCH_LOG.exists():

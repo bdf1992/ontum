@@ -24,7 +24,10 @@ OpenAI server (no model needed), matching tests/test_gateway.py.
 import http.server
 import importlib.util
 import json
+import multiprocessing
+import os
 import pathlib
+import random
 import tempfile
 import threading
 import time
@@ -55,6 +58,74 @@ def _make_root():
     for name in ("events.jsonl", "receipts.jsonl", "admissions.jsonl"):
         (root / "log" / name).write_text("", encoding="utf-8")
     return root
+
+
+def _concurrency_worker(args):
+    """One real worker PROCESS: repeatedly claim a slot, and while holding it
+    drop a marker file then count how many markers exist — a DIRECT, clock-free
+    count of concurrent holders (sound across processes, unlike comparing
+    per-process clocks). Returns (peak_seen, refusals, [error_names]). Must be a
+    module-level function so the spawn start method can pickle it."""
+    root, markers, bound, n, wait_ms, seed = args
+    random.seed(seed)
+    root, markers = pathlib.Path(root), pathlib.Path(markers)
+    peak, refusals, errors = 0, 0, []
+    for k in range(n):
+        try:
+            h = q.acquire(root, bound=bound, lease_ms=30000, wait_ms=wait_ms, poll_ms=3)
+        except Exception as e:        # an acquire must never raise (Windows file-locking, etc.)
+            errors.append(type(e).__name__); continue
+        if h is None:
+            refusals += 1; continue
+        mk = markers / f"{os.getpid()}-{k}"
+        try:
+            mk.write_text("x")
+            peak = max(peak, len(list(markers.iterdir())))  # holders present right now
+            time.sleep(random.uniform(0.03, 0.06))          # hold long enough to overlap
+        finally:
+            try:
+                mk.unlink()
+            except OSError:
+                pass
+            try:
+                q.release(h)
+            except Exception as e:
+                errors.append(type(e).__name__)
+    return peak, refusals, errors
+
+
+class TestConcurrencyUnderRealParallelism(unittest.TestCase):
+    """The §10 gate whose absence let a real bound violation land. The
+    sequential tests above exercise the LOGIC; they cannot exercise the
+    cross-process race. A non-atomic create-then-write let a concurrent reader
+    see a freshly-created (still-empty) slot, judge it `stale`, and double-claim
+    it — a stress test measured 6 holders on a bound of 3, and 2 on a bound of
+    1, plus Windows PermissionErrors. The claim is now atomic-with-content
+    (`os.link`). This test spawns REAL parallel processes and asserts the bound
+    holds and no acquire/release ever raises."""
+
+    def test_bound_holds_under_real_parallel_contention(self):
+        bound, workers, cycles, wait_ms = 2, 8, 8, 2000
+        root = pathlib.Path(tempfile.mkdtemp())
+        markers = pathlib.Path(tempfile.mkdtemp())
+        args = [(str(root), str(markers), bound, cycles, wait_ms, i)
+                for i in range(workers)]
+        ctx = multiprocessing.get_context("spawn")  # the cross-platform start method
+        with ctx.Pool(workers) as pool:
+            results = pool.map(_concurrency_worker, args)
+        peak = max(p for p, _, _ in results)
+        errors = [e for _, _, errs in results for e in errs]
+        self.assertEqual(errors, [],
+                         f"acquire/release raised under contention: {errors}")
+        self.assertLessEqual(
+            peak, bound,
+            f"BOUND VIOLATED: {peak} concurrent holders on a bound of {bound} "
+            "— the create-then-write race is back")
+        # not vacuous: the run must have actually exercised concurrency, else it
+        # proves nothing. With 8 workers on bound=2 and a generous wait, real
+        # overlap is expected.
+        self.assertGreaterEqual(
+            peak, 2, "the test did not exercise real concurrency (vacuous)")
 
 
 class TestTheBoundBites(unittest.TestCase):

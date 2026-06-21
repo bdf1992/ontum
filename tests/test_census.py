@@ -1,14 +1,14 @@
-"""Tests for the organ census (done-line 0029): the loop sensing its own
+"""Tests for the part census (done-line 0029): the loop sensing its own
 body. The census is a pure fold over two signals — wired (reachable from
-the working system, not the organ's own test) and exercised (a controlled
-literal of the organ's is on the record). The §10 case is the whole point:
-four organs that are each *locally fine* (real files, plausible code) must
+the working system, not the part's own test) and exercised (a controlled
+literal of the part's is on the record). The §10 case is the whole point:
+four parts that are each *locally fine* (real files, plausible code) must
 land in distinct verdicts, and the lens must catch the dormant one — a
 census that calls everything alive (or everything dead) is doing nothing.
 
 The false positive this guards against is real and was found in the live
 run: a generic word ("local") shared between a source literal and a raw
-captured command forged a trace and hid a dormant organ. The vocabulary
+captured command forged a trace and hid a dormant part. The vocabulary
 must be controlled fields only — no prose, no raw capture."""
 
 import contextlib
@@ -31,7 +31,7 @@ def write(path, text):
 
 
 def make_repo(tmp):
-    """A miniature repo with one organ of each kind we want to prove.
+    """A miniature repo with one part of each kind we want to prove.
 
       scribe   — writer whose literal is on the record   -> alive
       plumbed  — writer, imported by live code, no record -> wired·idle

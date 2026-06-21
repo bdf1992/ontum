@@ -53,6 +53,18 @@ def _gh_open(address, act, run):
     return ref.splitlines()[-1].strip() if ref else ref
 
 
+def _gh_edit(address, act, run):
+    """github-issues: an edit act updates the one live issue's body in place —
+    the daily-digest kind is perennial (it re-renders, never re-opens), so its
+    issue is edited, not closed-and-reopened (done-line 0166)."""
+    ref = act["external_ref"]
+    edit_args = ["gh", "issue", "edit", str(ref), "--body", act["body"]]
+    if not str(ref).startswith("http"):
+        edit_args += ["--repo", address]
+    run(edit_args)
+    return ref
+
+
 def _gh_close(address, act, run):
     ref = act["external_ref"]
     close_args = ["gh", "issue", "close", str(ref),
@@ -69,7 +81,7 @@ def _gh_close(address, act, run):
 # gh-shaped verbs. A new surface kind lands as a new entry here plus
 # its SURFACE_KINDS row, its own stamped increment.
 TRANSLATORS = {
-    "github-issues": {"open": _gh_open, "close": _gh_close},
+    "github-issues": {"open": _gh_open, "edit": _gh_edit, "close": _gh_close},
 }
 
 

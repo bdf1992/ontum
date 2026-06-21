@@ -3,7 +3,8 @@
 bdo amended `bdo merges` (2026-06-11): he no longer merges — an independent
 merge-node lands what he confirmed. The guard is the safety: it refuses by
 default and lands only a confirmed-arc, green, written, non-draft,
-non-conflicting PR based on main, as a named node.
+non-conflicting PR based on main, as a named node with an explicit
+non-author attestation.
 
 The §10 bar: a PR that is perfect on every mechanical axis — open, green,
 written, non-draft, based on main — must STILL refuse to land when bdo has
@@ -52,7 +53,8 @@ class TestTheTeeth(unittest.TestCase):
 
     def test_perfect_pr_without_arc_confirmation_refuses(self):
         reason = pr.land_refusal(_ready_pr(), confirmation=None,
-                                 by="merge-node.v0", by_admitted=True)
+                                 by="merge-node.v0", by_admitted=True,
+                                 non_author_attested=True)
         self.assertIsNotNone(reason)
         self.assertIn("confirmed", reason)
 
@@ -60,16 +62,22 @@ class TestTheTeeth(unittest.TestCase):
         # the control: the only thing that changed is bdo's confirmation
         self.assertIsNone(
             pr.land_refusal(_ready_pr(), confirmation="adm.arc.1",
-                            by="merge-node.v0", by_admitted=True))
+                            by="merge-node.v0", by_admitted=True,
+                            non_author_attested=True))
 
 
 class TestGuards(unittest.TestCase):
     def _refused(self, info, conf="adm.arc.1", by="merge-node.v0",
-                 by_admitted=True):
-        return pr.land_refusal(info, conf, by, by_admitted)
+                 by_admitted=True, non_author_attested=True):
+        return pr.land_refusal(info, conf, by, by_admitted,
+                               non_author_attested)
 
     def test_unnamed_node_refuses(self):  # no one signs their own line
         self.assertIsNotNone(self._refused(_ready_pr(), by=""))
+
+    def test_missing_non_author_attestation_refuses(self):
+        reason = self._refused(_ready_pr(), non_author_attested=False)
+        self.assertIn("--attest-non-author", reason)
 
     def test_closed_pr_refuses(self):
         self.assertIsNotNone(self._refused(_ready_pr(state="MERGED")))

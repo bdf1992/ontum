@@ -121,7 +121,7 @@ file exists to undo.
 - **Admission, not assertion.** Like every metric in `semantics.md`, this
   one must be an *admitted* record before it is trusted (the `…log-native`
   piece, `.ai-native/epics/epic.model-free-mode-response.json:29`). Until
-  then the band is a reading, not an organ.
+  then the band is a reading, not a part.
 
 ---
 

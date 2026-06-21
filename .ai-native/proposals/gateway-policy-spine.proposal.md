@@ -164,4 +164,4 @@ the spine*, expect denial (exactly as `freeze_guard` does today).
 
 It does not rush the safety layer into inference (the worst place for
 nondeterminism); it does not double-build the existing fence/inference/trust
-organs; and it does not decide adopt-vs-native — that stays bdo's.
+parts; and it does not decide adopt-vs-native — that stays bdo's.

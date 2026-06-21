@@ -27,7 +27,7 @@ The teeth (§10), reusing causality's resolver with no second truth:
                     citations resolve to nothing (teeth #1).
 
 The generating `loop/scout.py` (research over priors -> one CTA) and the
-Claim and Prune organs are NAMED in strategy-metabolism.md but built by
+Claim and Prune parts are NAMED in strategy-metabolism.md but built by
 later lines — this is the contract, not the loop.
 
 Stdlib only, no network, no git. CLI ends with a clear result (D-6).
@@ -61,22 +61,22 @@ MARKS = {
 
 # One hand-authored fixture: a real frontier move, grounded, useful, clearly
 # conjectural — it must NOT read as truth. Pointed at our own situation: the
-# contract is frozen (0141) but Scout has no Claim organ yet, so building the
+# contract is frozen (0141) but Scout has no Claim part yet, so building the
 # generator first risks the overgrowth strategy-metabolism.md §2 warns of.
 FIXTURE = {
     "status": "conjecture",
     "lobe": "scout",
     "purpose": "epic.strategy — land lawful pre-evidence motion, smallest-first",
-    "goal": "a working Scout -> Claim -> Build -> Prune metabolism",
+    "goal": "a working Scout -> Claim -> Build -> Prune cycle",
     "horizon": "Scout emits one marked CTA, Claim bounds it, Build routes it, Prune retires it",
     "priors_consulted": [
-        {"file": "strategy-metabolism.md", "contains": "unmanaged possibility that consumes field-space"},
-        {"file": "strategy-metabolism.md", "contains": "Claim is the missing bridge"},
+        {"file": ".ai-native/proposals/strategy-metabolism.md", "contains": "unmanaged possibility that consumes field-space"},
+        {"file": ".ai-native/proposals/strategy-metabolism.md", "contains": "Claim is the missing bridge"},
         {"file": ".ai-native/done/0141-scout-cta-contract.md", "contains": "ScoutCTA contract"},
     ],
     "uncertainty_held": "whether Scout should ever self-aim (decision D) and the manifold's true axes — not collapsed here",
     "why_this_move_now": "the contract (0141) is frozen, but a Scout CTA has no lawful path to bounded work until Claim exists; building the generator first risks unmanaged conjecture (§2)",
-    "cta": "Before loop/scout.py, author the Claim organ's schema (strategy-metabolism.md §7) so a Scout CTA can become bounded work.",
+    "cta": "Before loop/scout.py, author the Claim part's schema (strategy-metabolism.md §7) so a Scout CTA can become bounded work.",
     "cost": "one review pass + one small branch + one §10 test",
     "attention_class": "small",
     "risk": "low — a proposed schema; the real risk is sequencing (Scout's generator before Claim invites overgrowth)",
