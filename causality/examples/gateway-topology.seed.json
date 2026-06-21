@@ -111,13 +111,13 @@
     }
   ],
   "diagram": {
-    "size": [1280, 520],
+    "size": [1400, 560],
     "title": "Ontum gateway stack · a projection from truth",
-    "caption": "Realness is derived, not asserted: each drawn layer resolves to minted-runtime code, so each is a rect. The named-only `threshold` layer cites a backing that resolves nowhere — refused as a gap, dropped not drawn — so the stack flow breaks where it would sit. A fold over committed bytes (term_economy.py), never a second source of truth.",
-    "node": {"w": 200, "h": 80},
+    "caption": "Realness AND meaning are derived, not asserted: each drawn layer resolves to minted-runtime code (so each is a rect), and the line under each name is the claim of that term's first resolving citation — read from records, so fence/heal/pen read truthfully instead of as a generic gateway. The named-only `threshold` layer cites a backing that resolves nowhere — refused as a gap, dropped not drawn — so the stack flow breaks where it would sit. A fold over committed bytes (term_economy.py), never a second source of truth.",
+    "node": {"w": 220, "h": 140},
     "regions": [
-      {"id": "gatekeeping", "label": "gatekeeping", "x": 40, "y": 70, "w": 1200, "h": 180, "row_y": 140, "col_x0": 70, "col_step": 235},
-      {"id": "acting", "label": "acting", "x": 40, "y": 300, "w": 1200, "h": 180, "row_y": 370, "col_x0": 70, "col_step": 235}
+      {"id": "gatekeeping", "label": "gatekeeping", "x": 40, "y": 70, "w": 1280, "h": 200, "row_y": 110, "col_x0": 60, "col_step": 250},
+      {"id": "acting", "label": "acting", "x": 40, "y": 310, "w": 1280, "h": 200, "row_y": 350, "col_x0": 60, "col_step": 250}
     ],
     "place": {
       "authentication": {"region": "gatekeeping", "col": 0},

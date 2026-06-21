@@ -404,5 +404,145 @@ class TestGatewayTopologyCommittedArtifacts(unittest.TestCase):
                          "the gateway spec trips a canon tooth")
 
 
+class TestGatewayNodeMeaningIsDerived(unittest.TestCase):
+    """Done-line 0179 (epic.diagram, stacks on 0173): each drawn gateway node
+    carries its real ontum MEANING, DERIVED from the term's first resolving
+    citation `claim` in the projection — never prose authored on the node. The
+    fix for a cold reader who confabulated `fence` as IP-whitelisting, `heal` as
+    generic recovery, and `pen` as a sandbox: the shape carried realness but the
+    name carried a generic-gateway trope, so the meaning had to land on the node.
+
+    The §10 teeth are derivation and non-vacuity: a hand-written constant would
+    pass a 'the label is non-empty' check but FAIL here, because the meaning is
+    asserted EQUAL to the projection's resolved claim and is shown to CHANGE when
+    the seed's evidence changes.
+    """
+
+    def setUp(self):
+        self.seed = te.load_seed(GW_SEED)
+        self.layout = self.seed["diagram"]
+        self.projection = te.build_projection(te.ROOT, self.seed)
+        self.spec = te.diagram_spec(self.projection, self.layout)
+
+    def _first_resolved_claim(self, projection, name):
+        """Independently (not via te's helper) read the first resolving
+        citation's claim from the projection's evidence edges — so the assertion
+        proves the node meaning tracks the projection, not a shared code path."""
+        src = f"term:{name}"
+        for e in projection["evidence_edges"]:
+            if e["from"] == src and e["resolved"]:
+                return e["claim"]
+        return None
+
+    def _node_meaning(self, node):
+        """The meaning the node carries: every label line below the name. The
+        wrap joins back to the claim with single spaces (no word is split)."""
+        lines = node["label"].split("\n")
+        self.assertEqual(lines[0], node["id"],
+                         "the first label line must be the layer name")
+        return " ".join(lines[1:])
+
+    def test_every_drawn_node_meaning_equals_its_resolved_claim(self):
+        # (a) derived: each drawn node's meaning IS the projection's first
+        # resolving citation claim — not a string authored on the node.
+        for n in self.spec["nodes"]:
+            claim = self._first_resolved_claim(self.projection, n["id"])
+            self.assertTrue(claim, f"{n['id']} has no resolving claim to draw")
+            self.assertEqual(self._node_meaning(n), claim,
+                             f"{n['id']} meaning is not its derived evidence claim")
+
+    def test_fence_heal_pen_read_truthfully(self):
+        # (b) the three confabulated layers now carry their ground truth.
+        meanings = {n["id"]: self._node_meaning(n) for n in self.spec["nodes"]}
+        self.assertEqual(
+            meanings["fence"],
+            "the registry carries forbidden-decision rules (e.g. raw git push)")
+        self.assertEqual(
+            meanings["heal"],
+            "the healing fold detects a stale-park bite and proposes the heal")
+        self.assertEqual(
+            meanings["pen"],
+            "judge() is the one pen by which a summoned node writes its verdict")
+        # and each is the actual projection claim (the generic-gateway reading is
+        # nowhere on the node).
+        for layer in ("fence", "heal", "pen"):
+            self.assertEqual(
+                meanings[layer],
+                self._first_resolved_claim(self.projection, layer))
+
+    def test_spec_is_byte_deterministic_with_meaning(self):
+        # (c) byte-determinism survives the meaning-bearing label.
+        spec_b = te.diagram_spec(te.build_projection(te.ROOT, self.seed), self.layout)
+        self.assertEqual(te.dumps(self.spec), te.dumps(spec_b))
+        self.assertEqual(compose.render(self.spec).encode("utf-8"),
+                         compose.render(spec_b).encode("utf-8"))
+
+    def test_meaning_bearing_spec_passes_the_gate(self):
+        # (d) the wrapped meaning still fits every node — qa stays clean.
+        self.assertEqual(qa.evaluate(self.spec), [],
+                         "the meaning-bearing gateway spec trips a canon tooth")
+
+    def test_meaning_is_non_vacuous_it_changes_with_the_evidence(self):
+        # the load-bearing §10 leg: the meaning is PULLED from evidence, so
+        # editing the seed's claim changes the node's meaning. A hand-written
+        # constant would not move — this test FAILS on that mistake.
+        real_ev = {"stratum": "code", "file": "loop/node.py",
+                   "contains": "def judge", "claim": "the one pen — original claim"}
+        seed = {
+            "seed": "fixture",
+            "terms": [{"term": "real", "claimed_class": "minted-runtime",
+                       "evidence": [dict(real_ev)]}],
+            "diagram": {
+                "size": [600, 240], "title": "fixture",
+                "node": {"w": 220, "h": 140},
+                "regions": [{"id": "r", "label": "r", "x": 20, "y": 60,
+                             "w": 560, "h": 160, "row_y": 90, "col_x0": 40,
+                             "col_step": 240}],
+                "place": {"real": {"region": "r", "col": 0}},
+                "flow": ["real"],
+            },
+        }
+        spec1 = te.diagram_spec(te.build_projection(te.ROOT, seed), seed["diagram"])
+        meaning1 = " ".join(spec1["nodes"][0]["label"].split("\n")[1:])
+        self.assertEqual(meaning1, "the one pen — original claim")
+
+        # change ONLY the cited claim; the node meaning must follow it.
+        seed["terms"][0]["evidence"][0]["claim"] = "a totally different grounding"
+        spec2 = te.diagram_spec(te.build_projection(te.ROOT, seed), seed["diagram"])
+        meaning2 = " ".join(spec2["nodes"][0]["label"].split("\n")[1:])
+        self.assertEqual(meaning2, "a totally different grounding")
+        self.assertNotEqual(meaning1, meaning2,
+                            "the meaning did not change with the evidence — it is "
+                            "hand-written, not derived")
+
+
+class TestLabelMetricParity(unittest.TestCase):
+    """Done-line 0179: term_economy wraps the node meaning to the node's usable
+    width so the spec it emits passes qa.py's label-fit check. That only holds
+    if the fold and the gate measure with the SAME font metrics. The metrics
+    live in both places (a core fold should not put diagrams/ on sys.path for the
+    whole suite), so this test is the teeth that refuse drift: if qa's mono char
+    width or side padding ever changes, the fold's mirror must follow or this
+    fails — the parity is checked, never trusted."""
+
+    def test_fold_label_metrics_equal_the_gate(self):
+        self.assertEqual(te._LABEL_MONO_CHAR_W, qa.MONO_CHAR_W_AT_16,
+                         "the fold's mono char width drifted from qa's gate")
+        self.assertEqual(te._LABEL_SIDE_PAD, qa.NODE_SIDE_PADDING,
+                         "the fold's node side padding drifted from qa's gate")
+
+    def test_fold_char_budget_matches_qa_usable_width(self):
+        # the budget the fold wraps to must not exceed what the gate calls
+        # usable, at the real gateway node width — a max-length line must pass
+        # qa's own text_width check.
+        node_w = 220
+        max_chars = te._label_max_chars(node_w)
+        usable = node_w - 2 * qa.NODE_SIDE_PADDING
+        self.assertLessEqual(qa.text_width("X" * max_chars), usable,
+                             "a max-budget line overflows qa's usable width")
+        self.assertGreater(qa.text_width("X" * (max_chars + 1)), usable,
+                           "the budget is needlessly conservative (off by one)")
+
+
 if __name__ == "__main__":
     unittest.main()

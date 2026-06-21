@@ -1,0 +1,59 @@
+{
+  "atom": {
+    "id": "atom.gateway-node-meaning.v0",
+    "story": {
+      "text": "As the from-truth gateway diagram (atom.diagram-projection.v0, done-line 0173), I draw each layer as a node shaped by its evidence-derived realness class — but a cold reader looked at the rendered picture and CONFABULATED three layers, because the bare `name` labels carry generic API-gateway connotations: `fence` read as IP-whitelisting / rate-limiting (truth: the actor-blind DENY registry, fence/policy.py), `heal` as generic state recovery (truth: the counterforce that senses where a GATE bit wrong, loop/heal.py, propose-only), `pen` as a sandbox / pre-commit staging (truth: the one authorized writer, loop/node.py def judge). The shape carried realness; the meaning was missing. I want each drawn node to carry the layer's real ontum meaning so the picture cannot be read as a generic gateway. The discipline (diagrams/CLAUDE.md, §10): the meaning must be DERIVED from the projection's existing resolved evidence — the `claim` of the term's first resolving citation, read from the same fold that classifies realness — never prose authored on the node, or the diagram becomes a second place a meaning can drift from truth.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "meaning-on-the-node, derived from evidence - the gateway diagram cannot be read as a generic gateway",
+      "value": "diagram_spec() now surfaces each drawn node's real ontum meaning below its name: the `claim` of the term's first resolving evidence_edge in the projection (_first_resolved_claim), word-wrapped to the node's usable width in qa.py's own metric (_wrap_meaning / _label_max_chars). The meaning is read straight out of the projection the fold already built - no re-resolution, no second truth - so editing the seed's cited evidence changes the diagram. The gateway seed's geometry is resized (nodes 220x140, two regions, 1400x560 canvas) so every wrapped meaning line fits and diagrams/qa.py stays exit 0. fence/heal/pen now read truthfully (the DENY registry, the stale-park counterforce, the one pen) instead of as generic-gateway tropes.",
+      "why_now": "epic.diagram, stacking on atom.diagram-projection.v0 (PR #446): a from-truth diagram whose nodes can still be misread as a generic gateway has not finished being honest. The fix lands the meaning on the node and proves it is derived (changes with the evidence), closing the confabulation the cold reader surfaced.",
+      "if_accepted": "An ontum architecture diagram carries each layer's real meaning derived from records: a reader decodes fence/heal/pen from the node itself, and the meaning cannot drift from truth because it is the projection's resolved claim, not prose. The same derivation rides every future from-truth diagram.",
+      "if_rejected": "The gateway diagram keeps bare name labels that invite the generic-gateway misreading the cold reader already made; the picture is honest about realness but silent about meaning.",
+      "cost_of_wrong_call": "Low and bounded. The change is meaning-on-the-label inside the existing read-only fold (three small pure helpers + the label line in diagram_spec), plus the gateway seed's geometry and its regenerated committed outputs, plus tests. No new node type, field, genre, or accent; the closed vocabulary and the realness/drop teeth are untouched. Reverting is restoring the old label line and seed geometry. The §10 tooth is non-vacuous: the meaning is asserted EQUAL to the projection's resolved claim and shown to CHANGE when the seed's evidence changes, so a hand-written constant fails the test.",
+      "mechanism": "_first_resolved_claim(projection, name) reads the claim of the first evidence_edge from term:{name} whose `resolved` is true (declared order). _wrap_meaning(text, max_chars) greedily word-wraps without splitting a word; _label_max_chars(node_w) computes the per-line budget in qa.py's metric (usable = w - 2*8, / 9.6). diagram_spec composes the node label as name + the wrapped meaning. The gateway seed's diagram block is resized so the wrapped meaning fits and qa stays clean. The committed gateway-topology.spec.json / .spec.svg are regenerated via the --write paths (the projection is geometry-independent, byte-identical). tests/test_diagram.py gains TestGatewayNodeMeaningIsDerived: each drawn node's meaning equals its derived claim, fence/heal/pen read truthfully, byte-determinism and qa-clean hold, and the meaning changes when the fixture seed's claim changes (non-vacuity). Done-line 0179.",
+      "reading": [
+        "causality/term_economy.py",
+        "causality/examples/gateway-topology.seed.json",
+        "tests/test_diagram.py",
+        ".ai-native/done/0179-gateway-node-meaning.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.diagram"
+      ],
+      "touches": [
+        "causality/term_economy.py",
+        "causality/examples/gateway-topology.seed.json",
+        "causality/examples/gateway-topology.spec.json",
+        "causality/examples/gateway-topology.spec.svg",
+        "tests/test_diagram.py",
+        ".ai-native/done/0179-gateway-node-meaning.md"
+      ],
+      "must_not_collide_with": [
+        "diagrams/compose.py",
+        "diagrams/qa.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "epic.diagram",
+        "atom.diagram-projection.v0",
+        ".ai-native/done/0179-gateway-node-meaning.md"
+      ],
+      "receipts": []
+    }
+  }
+}
