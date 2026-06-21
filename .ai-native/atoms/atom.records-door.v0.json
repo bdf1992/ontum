@@ -24,7 +24,7 @@
     "concern_surface": "systems",
     "incidence": {
       "serves": [
-        "epic.substrate"
+        "epic.owner-harness"
       ],
       "touches": [
         "loop/pr_audit.py",
@@ -47,7 +47,7 @@
       "prompt_versions": [],
       "source_artifacts": [
         "issue:off-log-gate-vs-reports",
-        "epic.substrate",
+        "epic.owner-harness",
         ".ai-native/done/0172-records-door.md"
       ],
       "receipts": []
