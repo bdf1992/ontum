@@ -190,3 +190,4 @@
 {"by":"bdo","enabled":true,"epic":"epic.diagram","id":"adm.399f90e086fd","supersedes":null,"ts":"2026-06-20T03:35:58Z","type":"arc_confirmed"}
 {"branch":"claude/diagram-floor-gate","by":"claude","claim":"atom.diagram-floor-gate.v0","id":"adm.426cf4465c44","supersedes":null,"ts":"2026-06-20T16:44:49Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.diagram","id":"adm.20c3e241484f","supersedes":null,"ts":"2026-06-20T17:09:00Z","type":"arc_confirmed"}
+{"branch":"claude/review-queue","by":"claude","claim":"atom.guaranteed-review-queue.v0","id":"adm.da59da63b2a6","supersedes":null,"ts":"2026-06-21T05:08:48Z","type":"workspace_claimed"}
