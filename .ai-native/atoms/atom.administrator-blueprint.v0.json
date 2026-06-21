@@ -1,0 +1,51 @@
+{
+  "atom": {
+    "id": "atom.administrator-blueprint.v0",
+    "story": {
+      "text": "As the loop owner, I need the shape of the fleet overseer agreed before it is built, because the repo now runs a real fleet (14 open PRs, parallel sessions) with no single part watching the whole of it, and the failure mode is rushing a powerful agent-launcher to main before its authority, governance, and second-truth risks are settled. This atom carries the BLUEPRINT only: a three-tier model (Administrator oversees the fleet and launches per-unit Conductors; a Conductor drives one unit and launches worker agents; agents do the work), framed as a projection plus a governed loop that never becomes a second authority and never launches past an admitted dial. It proposes; it builds nothing. The owner steers the name (Administrator vs Controller), the frame, and the authority dial; only then does the first read-only increment (loop/fleet.py) get built.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Agree the fleet-overseer blueprint (the Administrator) before building any organ",
+      "value": "A single, glance-able account of how ontum should oversee all its tasks as a mesh and launch agents against them, grounded in organs that already exist (the spawn rail as the launcher; herald, trust, and the inference queue as the mesh and its governance; digest, census, heal, gaps, activity, and watcher as the per-axis sensors). The blueprint names the one part that is missing: the Administrator that reads the fleet whole and dispatches the right governed launch per unit, with owner-gated items escalated, never auto-launched.",
+      "why_now": "The fleet is already real and ungoverned-as-a-whole: tonight a session hand-conducted exactly one unit end-to-end (the review queue) because nothing standing does it. Foundation-first (the blueprint-before-build rule): the hard calls (the Administrator's authority, how it stays a projection not a second authority, the holon-vs-gate-face overload) are cheaper to settle on paper than after a powerful launcher is on main.",
+      "if_accepted": "The owner has a shape to steer: a name, a three-tier frame, and an authority dial. The first increment falls out as a read-only fleet-fold (loop/fleet.py) that maps every unit, agent, and block plus the one launch each needs, with nothing acting until the dial is set.",
+      "if_rejected": "Fleet oversight stays ad-hoc and per-session; the owner keeps having to hold the whole board in his head; and the next powerful launcher risks being built before its governance is agreed.",
+      "cost_of_wrong_call": "Low: this is a document. It proposes and builds nothing; every downstream organ is gated by the owner's confirmation of the frame and the dial (D-4). The blast radius of a wrong blueprint is a revised blueprint.",
+      "mechanism": "administrator.proposal.md: the full shape, the three tiers, what already exists to compose, the Administrator's organs (the eyes loop/fleet.py, the hand the launch loop, the Conductor role, the authority dial), the separation-of-powers governance, the brokerage tie-in, a labelled concept list (C1-C7), and the calls to action.",
+      "reading": [
+        "administrator.proposal.md",
+        "platform-brokerage.proposal.md",
+        "gateway-policy-spine.proposal.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        "administrator.proposal.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "administrator.proposal.md",
+        "platform-brokerage.proposal.md"
+      ],
+      "receipts": []
+    }
+  }
+}
