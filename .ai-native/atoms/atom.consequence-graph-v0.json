@@ -2,17 +2,17 @@
   "atom": {
     "id": "atom.consequence-graph-v0",
     "story": {
-      "text": "As bdo, I confirmed the arc epic.consequence-graph-response after a foreign peer-architect reviewed the consequence-graph + mark-to-market proposal and returned GO for one small, real piece: the read-only tier-1 graph plane. This is that keystone. It validates consequence by making the becoming of work inspectable, cited, and refusable - without inferring a single causal edge or generating a target. It earns the name consequence (not a prettier provenance view) by carrying cited consequence nodes: a changed state distinct from the work-unit.",
+      "text": "As bdo, I confirmed the arc epic.consequence-graph-response (adm.6a176eb59681) after a foreign peer-architect reviewed the consequence-graph + mark-to-market proposal and returned GO for one small, real piece - the read-only tier-1 graph plane - and NO-GO for everything larger. I want that GO'd scope realized: a read-only consequence plane I can read to see what work became, cited and refusable, witness before actuator. This fold realizes that scope under the confirmed arc; it does not claim to be a pre-named piece - it serves the arc (incidence.serves) and cites the confirmation it answers (lineage). It earns the name consequence, not a prettier provenance view, by carrying cited consequence nodes: a changed state distinct from the work-unit.",
       "value_confidence": "high",
       "owner_stamp": "pending"
     },
     "briefing": {
       "headline": "the consequence graph v0 - the auditable tier-1 plane, read-only, with a non-vacuous ghost-refusal tooth",
       "value": "loop/consequence_graph.py is a stdlib read-only fold over the append-only log (never a second truth). It materializes one node shape carrying a kind (atom_version, atom_base, receipt, arc, actor, finding, consequence) and tier-1 edges that are literal log facts (version_of, member_of_arc, authored_by, receipt_for, judged_by, consequence_of). It folds failure(drag) marks from negating receipts and repair marks from healed bites, reads declared consequence.observed events as cited consequence nodes, and runs one bounded, typed, decaying propagation pass (radius 2, threshold 0.20, per-edge-kind decay; authorship/arc edges render but never propagate; channels never net across type). A mark whose citation does not resolve is refused as a gap - the term-economy ghost tooth, on marks. On the live log it folds 363 events / 382 receipts into 579 nodes / 805 edges with 12 cited marks and 0 ghosts.",
-      "why_now": "bdo confirmed the arc (adm.6a176eb59681) and said to build the keystone; the reviewer GO'd exactly this piece and NO-GO'd everything larger.",
+      "why_now": "bdo confirmed the arc (adm.6a176eb59681); the foreign reviewer GO'd exactly this read-only tier-1 scope and NO-GO'd everything larger, so this is the one piece to build now. The owner-value is the confirmed arc's, cited - not a claim that this specific atom was named by hand.",
       "if_accepted": "The repo has its first consequence surface - a read-only plane the owner can read to see what work became, grounded entirely on edges that already exist. Tier 2/3, marks for value, the volume, and actuation hang off it as later named pieces.",
       "if_rejected": "The consequence-policy direction stays prose; there is no inspectable, cited, refusable plane and the mark-to-market idea has no substrate to ride.",
-      "cost_of_wrong_call": "Low and bounded. The change adds one read-only fold module and its test; it writes nothing, gates nothing, actuates nothing - witness before actuator. Reverting is deleting two files and one CLAUDE.md paragraph. The §10 tooth is proven non-vacuous: with authorship propagation flipped on the actor receives drag 1.8 and the no-superspreader test fails; the ghost citation is genuinely refused while the resolved one lands.",
+      "cost_of_wrong_call": "Low and bounded. The change adds one read-only fold module and its test; it writes nothing, gates nothing, actuates nothing - witness before actuator. Reverting is deleting two files and one CLAUDE.md paragraph. The \u00a710 tooth is proven non-vacuous: with authorship propagation flipped on the actor receives drag 1.8 and the no-superspreader test fails; the ghost citation is genuinely refused while the resolved one lands.",
       "mechanism": "build(root) folds loop.reconcile.Fold and load_epics, reuses loop.digest._base_version for the version split and loop.heal's ADVANCING/NEGATING verdict sets (no second derivation), resolves every mark/consequence citation against the set of log record ids (with an optional contains substring - the ghost-in-spirit guard), and runs _propagate: a bounded BFS per mark along directional edges with the per-edge-kind decay table, NO_FANOUT for actor/arc nodes, channels kept in separate dicts. Emits deterministic JSON (--json) and a prose render. tests/test_consequence_graph.py builds a fixture log and asserts the ghost is refused (not placed), drag decays receipt->version->base->arc without reaching an actor or arc sibling or sibling version, repair lands from both a healed bite and a declared consequence, channels stay separate, and two runs are byte-identical. Done-line 0167.",
       "reading": [
         "loop/consequence_graph.py",
@@ -46,9 +46,12 @@
       "source_artifacts": [
         "consequence-graph.proposal.md",
         "exports/consequence-graph/",
-        "epic.consequence-graph-response"
+        "epic.consequence-graph-response",
+        "arc_confirmed:adm.6a176eb59681"
       ],
-      "receipts": []
+      "receipts": [
+        "adm.6a176eb59681"
+      ]
     }
   }
 }
