@@ -334,7 +334,8 @@ def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subproc
     model = model or GATE_MODEL
     cmd = _launch_cmd(prompt, model)
     cwd = _launch_cwd()
-    proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600)
+    proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600,
+                  stdin=subprocess.DEVNULL)
     raw = proc.stdout or ""
     text = raw
     try:  # --output-format json wraps the result; unwrap to the model's text
