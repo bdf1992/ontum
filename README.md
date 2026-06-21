@@ -1,15 +1,29 @@
 # Ontum
 
-A working repo for an AI-native loop substrate — and, through it, the wider
-**Ontum** system it exists to build.
+**Ontum is a governed gateway for autonomous AI work — a controlled layer
+between what a person wants and the sprawl of their digital life (email,
+files, repos, accounts, calendars), where AI can carry out whole initiatives
+on their behalf without losing track of where facts came from, overstepping
+what it is allowed to do, or dissolving into chat no one can replay.**
 
-One idea we're building around: **the files are the environment, the agent is
-the (mortal) process, and the console just routes between them.** Work moves
-through a versioned, file-defined environment; sessions come and go; the files
-stay. The longer-range bet (phase 2) is a self-similar architecture for
-prediction and compression over **glyphs and structure** — typed, oriented,
-geometrically adjacent pieces — rather than flat token streams, navigating
-syntax, semiotics, and semantics at once.
+Most AI is trapped in one session: it answers, forgets, and grades its own
+work. Ontum gives AI a *lawful body* to act through — durable files instead
+of fading memory, an independent check on every claim, an append-only record
+you can replay, and one owner who steers by approving directions. You stop
+governing **prompts** and start governing **initiatives**.
+
+The aim is to **raise the floor and remove the ceiling**: anyone who can hold
+a conversation should be able to deal with the digital world more safely, and
+the same system should scale up to serious AI-native work.
+**→ [Read the full idea](docs/culture/the-idea.md).**
+
+---
+
+This repository is the **engine** that makes that possible — the durable,
+checkable substrate the gateway is built on. Its working idea: **the files
+are the environment, the agent is a temporary process, and the records are
+the memory.** Work moves through a versioned, file-defined environment;
+sessions come and go; the files stay.
 
 The repo runs as an **owner-and-engineering loop**: **bdo** (PM, owner, the
 last stop) and an engineering family — **Claude**, and Codex as an admitted
@@ -32,6 +46,7 @@ can vary; the owner does not.
 | `exports/` | The envoy surface: sealed ≤10-file packages sent out for review by other model families, each receipted on a committed disclosure ledger. |
 | `.claude/` | The harness config-as-code: hook wiring (`settings.json`), guards (`hooks/`), and versioned rituals (`skills/` — start with [branch-ritual](.claude/skills/branch-ritual/SKILL.md)). |
 | `tests/` | Tests against the done-lines: goals reached over passes; SIGKILL mid-run loses nothing; cache replayed from log is byte-identical; locally-fine atoms can refuse to fit. |
+| `docs/culture/` | The authored telling of the goal — `the-idea.md`, the complete narrative of what Ontum is and why this loop exists to build it (the home the doctrine points to). A synthesis of the record, never a second source of truth. |
 | `docs/phase-2/`, `docs/sources/` | **Read-only context** (not material): the wider system the loop exists to build, and external inspiration. |
 
 ## Quickstart
@@ -100,13 +115,17 @@ part census, the owner digest, the family-neutral fence, the glyph knoller and
 3D viewer, the language strata, the envoy export surface, and the pivot
 recoverability instrument all exist.
 
-Direction lives in `.ai-native/epics/` — ten arcs, each with a horizon for what
-done looks like at epic scale (`python -m loop.node arcs`) — among them: the
-substrate trustworthy enough to point disposable sessions at, the experience
-layer where agents launch and refuse on their own, the owner harness that keeps
-one stamp as leverage, the Causality surface, the inference gateway, the field
-fold, the ontabet language harness with machine-verified laws, and the pivot
-instrument measuring how much structure an encoding carries.
+Direction lives in `.ai-native/epics/` — each arc with a horizon for what
+done looks like at epic scale (`python -m loop.node arcs` lists them and
+which are confirmed); the complete telling of where they point is
+[docs/culture/the-idea.md](docs/culture/the-idea.md). Among them: the substrate
+trustworthy enough to point disposable sessions at, the experience layer and the
+virtual fleet where agents launch, judge, and staff themselves, the owner
+harness and the environments arc that keep one stamp as leverage from any
+device, the Causality and diagram surfaces that make the system communicable
+without a second truth, the inference gateway, the field, the strategy organs for
+lawful pre-evidence motion, the ontabet language harness with machine-verified
+laws, and the pivot instrument measuring how much structure an encoding carries.
 
 ## Working method
 
