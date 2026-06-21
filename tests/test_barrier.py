@@ -100,14 +100,11 @@ class FenceClosure(unittest.TestCase):
         self.assertTrue(barrier.covered(fence, front["example_breach"]))
         self.assertTrue(barrier.covered(fence, top["example_breach"]))
 
-    def test_the_live_command_guard_seals_the_seam(self):
-        # the live command_guard adds the raw seam tooth (SEAM_LINK) over the
-        # raw command — the perimeter loops closed. This is the installed seal.
-        sealed = barrier.command_guard_fence()
-        self.assertEqual(barrier.validate_fence(sealed), [],
-                         f"the live command_guard fence should be closed: "
-                         f"{barrier.validate_fence(sealed)}")
-        self.assertTrue(barrier.is_closed(sealed))
+    # NOTE: the live-command_guard seal assertion (the INSTALLED instance) is
+    # deferred to the installation increment (epic.barriers, next piece). This
+    # re-cut lands the PRIMITIVE — the barrier-link/fence/gate grammar and its
+    # own closure laws, tested below on constructed fences. Sealing the live
+    # command_guard's shelled-git seam (and its assertion) rides the install.
 
     def test_closure_requires_enumerating_seam_and_top(self):
         # a fence that only enumerates the front — never looked for the ways

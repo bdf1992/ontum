@@ -1,0 +1,57 @@
+{
+  "atom": {
+    "id": "atom.barrier-primitive.v0",
+    "story": {
+      "text": "As ontum, I run political barriers (the gateways — they decide who-may from admitted records) and overload 'guard' for everything, but I have no first-class PHYSICAL barrier: a deterministic, model-free, actor-blind stop over an act's observable form. bdo's gate/fence conversation built one (fence/barrier.py) but it stranded on the 59-commits-stale PR #358 with no epic file. Auditing it, bdo's reframe: re-cut it, and name the genus right — epic.barriers, with NATURE (physical / political) as an ATTRIBUTE, not an epic scoped to 'physical'. This atom is the physical-nature primitive of that genus: the barrier-link (actor-blind predicate, L1 deterministic / L2 model-free / L3 actor-blind), the fence (a closed loop of links round a territory — closed/barbed/not-opaque, over front/seam/top routes), and the gate (an allow-link at a sanctioned opening). The political-nature barriers (the gateways) are named by the same grammar in a later piece; installing the seal into the live command_guard is the next piece, not this one.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the barrier primitive (physical nature) under the genus epic.barriers",
+      "value": "fence/barrier.py is a pure stdlib actor-blind module: decide(link, act) -> {allow, reason} reads only the act's observable form (argv / command / path / object-flag), never the actor (L3) — a barrier gives every actor the same answer, where a gateway does not. validate_fence/covered/is_closed enforce that a fence is a CLOSED loop (front/seam/top routes all enumerated), BARBED (every blocked act witnessed), and NOT-OPAQUE (every link carries a cold-reader reason). epic.barriers.json declares the genus with nature (physical/political) as the attribute, atom.barrier-primitive.v0 its first piece.",
+      "why_now": "The primitive is real, valuable, and currently stranded on a stale PR that cannot land (no epic file, 59 commits behind, real conflict). bdo audited it and reframed the epic; this re-cut lands it clean on current main under the right genus. It is the substrate for the per-directory gatekeeping stack (fence/policy/guard/gate/threshold) — naming nature as an attribute is what stops 'guard' from being overloaded across incompatible meanings.",
+      "if_accepted": "ontum has a first-class physical-barrier primitive and a genus (epic.barriers) under which both natures — physical (gate/fence) and political (gateway) — are named by one grammar. The installed instances (sealing real seams) and the political-nature unification ride later pieces.",
+      "if_rejected": "The gate/fence primitive stays stranded on a stale PR; 'guard' stays overloaded; there is no actor-blind primitive to compose the gatekeeping stack from.",
+      "cost_of_wrong_call": "Low and bounded. fence/barrier.py is pure, stdlib, read-only — it decides over data, wires into nothing live (the command_guard installation is explicitly a later piece), so it actuates nothing and reverting is deleting the module + its test + the epic. The re-cut is a faithful rebase of tested work; the one real drift (the shared prefix matcher's tuple-vs-list union) is bridged and covered by the test.",
+      "mechanism": "fence/barrier.py rebased from PR #358 onto current main; _predicate_matches bridges a JSON barrier-link's list position-union to fence.policy.prefix_matches's tuple-union semantics (the one integration drift over 59 commits). The docstring is reframed to epic.barriers + nature-as-attribute. tests/test_barrier.py joins the suite (24 tests: the link laws, fence closure over front/seam/top, the §10 bite that an un-enumerated route class or an unbarbed/opaque link fails the whole perimeter); the live-command_guard-seal assertion is deferred to the installation increment. Done-line 0175.",
+      "reading": [
+        "fence/barrier.py",
+        "tests/test_barrier.py",
+        ".ai-native/epics/epic.barriers.json",
+        ".ai-native/done/0175-barrier-primitive.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.barriers"
+      ],
+      "touches": [
+        "fence/barrier.py",
+        "tests/test_barrier.py",
+        ".ai-native/epics/epic.barriers.json",
+        ".ai-native/done/0175-barrier-primitive.md"
+      ],
+      "must_not_collide_with": [
+        "fence/policy.py",
+        ".claude/hooks/command_guard.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "pr:#358",
+        "epic.barriers",
+        ".ai-native/done/0175-barrier-primitive.md"
+      ],
+      "receipts": []
+    }
+  }
+}

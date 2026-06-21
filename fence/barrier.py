@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""fence/barrier.py — the gate/fence primitive (done-line 0148).
+"""fence/barrier.py — the barrier primitive (epic.barriers, done-line 0175).
 
-bdo's shape (2026-06-20): we have *gateways* (policy — they decide), but no
-deterministic *gate* that closes a gateway and no *fence* around the route. A
-gateway is political: it asks "is this *actor* permitted?" and answers from
-admitted who-may records (RBAC, a trust rung, the owner's stamp). A gate and a
-fence are *not* political and must not be — they are physical:
+A barrier is the genus of bounded control, and its NATURE is an attribute, not
+the epic (bdo, 2026-06-21 — the reframe that re-cut this from the stale
+epic.physical-barriers): a barrier is either PHYSICAL (the gate/fence — what
+this module builds) or POLITICAL (the gateway). This module is the
+**physical-nature** primitive.
+
+bdo's shape (2026-06-20): we have *gateways* (the political-nature barriers —
+they decide), but no deterministic *gate* that closes a gateway and no *fence*
+around the route. A gateway is political: it asks "is this *actor* permitted?"
+and answers from admitted who-may records (RBAC, a trust rung, the owner's
+stamp). A gate and a fence are *not* political and must not be — they are
+physical:
 
     you can see through it, you can't pass it, you can't climb it,
     and touching it bites.
@@ -136,7 +143,13 @@ def _predicate_matches(predicate, act):
     the act and the object — never the actor (it is not in scope)."""
     kind = predicate.get("kind")
     if kind == "argv-prefix":
-        return prefix_matches(act.get("argv", []), predicate.get("prefix", ()))
+        # A barrier-link is JSON, so a position-union arrives as a LIST
+        # (`["push", "pull"]`); the shared policy matcher reads a union only as
+        # a TUPLE (a bare list is one literal). Bridge it here so the same
+        # union the Codex prefix rules express works from a JSON link too.
+        prefix = tuple(tuple(p) if isinstance(p, list) else p
+                       for p in predicate.get("prefix", ()))
+        return prefix_matches(act.get("argv", []), prefix)
     if kind == "command-regex":
         field = predicate.get("over", "command")
         return re.search(predicate.get("pattern", ""),
