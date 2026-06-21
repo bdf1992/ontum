@@ -1,0 +1,56 @@
+{
+  "atom": {
+    "id": "atom.records-door.v0",
+    "story": {
+      "text": "As the loop, I refuse a PR that carries no atom on the log (the off-log gate, done-lines 0066/0068) — but a session REPORT is a record OF work, not a work-particle, and carries no atom. Reports normally bundle into their session's work PR, but a report written after its work already landed cannot bundle retroactively; the gate then strands it off main forever (the merge-node hit this on #417 and #427), even though the report belongs on main as the durable §9 record. The fix is at the rule, not the instance — give the off-log gate a records door, the same proof-carrying shape the phrasing door already established and landed (done-line 0117, atom.phrasing-backdoor.v0 under this same arc): a PR whose every change is a report or done-line is backed without an atom, and any non-record change closes the door. This atom is named as a piece of epic.owner-harness (the phrasing door's arc), so its arc membership is backed by the epic record, not self-asserted.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the records door - a records-only PR (reports/done-lines) lands without an atom",
+      "value": "loop.pr_audit gains records_only(paths) (pure: every path is a .ai-native/reports|done .md, non-empty) and orphan_reason(..., records_only) returns None when it holds - a THIRD way to be backed beside an atom+receipt and the phrasing door. The reach pr.py audit recomputes records_only from the diff (base...head --name-only) so the CI gate and the pen agree and the door cannot be lied to: a single code/atom/log/config change makes it False and the branch falls back to needing an atom.",
+      "why_now": "The off-log gate (not a required GitHub check yet, but the pen's land path enforces it) blocks standalone report PRs #417 and #427 - the merge-node refused them on exactly this. Reports are the doctrine's session-end record (§9); they must be able to reach main. Fixing the gate unblocks every future post-hoc report PR, not just these two.",
+      "if_accepted": "A records-only PR lands without ceremony; standalone session reports reach main as durable records; #417/#427 become landable once refreshed onto the fix.",
+      "if_rejected": "Post-hoc session reports can never land - they strand on branches forever, and the durable-record half of §9 is unenforceable through the normal pen path.",
+      "cost_of_wrong_call": "Low and bounded, and the door is narrow by construction. The exemption applies ONLY when every changed path is a reports/done-line .md - proven non-vacuous by tests that a single code/atom/log path closes it. Records files are already governed at write-time (freeze_guard on done-lines, the record-id fence on ids), so the door opens nothing those guards don't already hold. Reverting is deleting one helper + one param.",
+      "mechanism": "pr_audit.records_only(changed_paths) returns all(p.startswith(('.ai-native/reports/','.ai-native/done/')) and p.endswith('.md')) over a non-empty normalized path list. orphan_reason gains a records_only param checked right after phrasing_clean. audit() threads f['records_only'] and labels a clean records PR backed_by ['records-door']. pr.py _range_atom_facts now returns a 4-tuple (atom_ids, receipt_ids, phrasing_clean, records_only) computed via pr_audit.records_only(names); all three call sites updated (range audit, open-PR sweep, merge land's landed_atoms join). tests/test_pr_audit.py adds the OrphanReason records cases and a RecordsOnly class (non-vacuous: code/atom/log paths close the door; empty is not records-only; audit labels the door). Done-line 0172.",
+      "reading": [
+        "loop/pr_audit.py",
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_pr_audit.py",
+        ".ai-native/done/0172-records-door.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        "loop/pr_audit.py",
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_pr_audit.py",
+        ".ai-native/done/0172-records-door.md"
+      ],
+      "must_not_collide_with": [
+        "loop/phrasing.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "issue:off-log-gate-vs-reports",
+        "epic.owner-harness",
+        ".ai-native/done/0172-records-door.md"
+      ],
+      "receipts": []
+    }
+  }
+}

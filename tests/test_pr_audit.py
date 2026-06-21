@@ -74,6 +74,59 @@ class OrphanReason(unittest.TestCase):
                             "atom.qa-metabolism-resp-vanity-count.v0"],
             receipt_artifact_ids=["atom.inbound-envoy-seam.v0"]))
 
+    def test_records_only_is_backed_without_an_atom(self):
+        # done-line 0172: a report/done-line-only PR is OF work, not work — it
+        # needs no atom (a session report written after its work landed cannot
+        # bundle retroactively and would otherwise strand off main).
+        self.assertIsNone(pr_audit.orphan_reason(
+            added_atom_ids=[], receipt_artifact_ids=[], records_only=True))
+
+    def test_records_only_does_not_override_the_atom_need_when_false(self):
+        # the door is narrow: without the records_only proof, no atom is still
+        # an orphan (the reach computes records_only from the diff; any non-record
+        # change makes it False).
+        self.assertIsNotNone(pr_audit.orphan_reason(
+            added_atom_ids=[], receipt_artifact_ids=[], records_only=False))
+
+
+class RecordsOnly(unittest.TestCase):
+    """The records door's pure check (done-line 0172): only reports/done-line
+    markdown, nothing else. Non-vacuous — a single non-record path closes it,
+    so a report PR cannot smuggle code/atoms/logs in under the exemption."""
+
+    def test_reports_and_done_lines_qualify(self):
+        self.assertTrue(pr_audit.records_only(
+            [".ai-native/reports/0123-x.md", ".ai-native/done/0172-y.md"]))
+
+    def test_windows_separators_normalize(self):
+        self.assertTrue(pr_audit.records_only(
+            [".ai-native\\reports\\0123-x.md"]))
+
+    def test_a_single_code_file_closes_the_door(self):
+        self.assertFalse(pr_audit.records_only(
+            [".ai-native/reports/0123-x.md", "loop/pr_audit.py"]))
+
+    def test_an_atom_or_log_change_closes_the_door(self):
+        self.assertFalse(pr_audit.records_only(
+            [".ai-native/reports/0123-x.md", ".ai-native/atoms/atom.x.v0.json"]))
+        self.assertFalse(pr_audit.records_only(
+            [".ai-native/reports/0123-x.md", ".ai-native/log/events.jsonl"]))
+
+    def test_a_non_md_record_path_does_not_qualify(self):
+        # a .pen.json or a stray non-md under the records dir is not a record
+        self.assertFalse(pr_audit.records_only([".ai-native/done/.pen.json"]))
+
+    def test_empty_change_set_is_not_records_only(self):
+        self.assertFalse(pr_audit.records_only([]))
+
+    def test_audit_labels_a_records_pr_backed_by_the_records_door(self):
+        result = pr_audit.audit([{
+            "number": 427, "headRefName": "claude/report-0123",
+            "added_atom_ids": [], "receipt_artifact_ids": [],
+            "records_only": True}])
+        self.assertEqual(result["orphans"], [])
+        self.assertEqual(result["clean"][0]["backed_by"], ["records-door"])
+
 
 class Audit(unittest.TestCase):
     def test_the_two_real_pr_shapes_split(self):
