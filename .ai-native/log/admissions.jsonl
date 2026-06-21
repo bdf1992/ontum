@@ -186,6 +186,9 @@
 {"by":"claude","files":[{"after":"sha256:c7aa80fcf88b136c6f32a20e68b3cb4d3ddc9513f392174d349f5430d8264e81","before":"sha256:c7aa80fcf88b136c6f32a20e68b3cb4d3ddc9513f392174d349f5430d8264e81","path":"git-gh-gateway.proposal.md"}],"id":"adm.d2765bc8706b","reason":"new design proposal, prose-only","ts":"2026-06-20T04:59:55Z","type":"phrasing"}
 {"by":"claude","files":[{"after":"sha256:2557c4a24283829c4c53670c70cca5e7937c2cd094369c1add58812a5c8cd844","before":"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","path":".ai-native/reports/0103-environments-arc-captured.md"}],"id":"adm.dfbdba59a3e7","reason":"session-close report for the epic.environments capture \u2014 pure prose, a new report file, no code or schema","ts":"2026-06-20T05:27:18Z","type":"phrasing"}
 {"branch":"claude/report-0135-environments","by":"claude","claim":"report.0103-environments-capture","id":"adm.5a3e83ccf488","supersedes":null,"ts":"2026-06-20T05:27:29Z","type":"workspace_claimed"}
+{"branch":"claude/strategy-metabolism","by":"claude","claim":"epic.strategy-metabolism","id":"adm.11562fc4f4a2","supersedes":null,"ts":"2026-06-20T16:40:59Z","type":"workspace_claimed"}
+{"branch":"claude/strategy-metabolism","by":"claude","claim":"epic.strategy","id":"adm.a425a15e7fab","supersedes":"adm.11562fc4f4a2","ts":"2026-06-20T19:27:38Z","type":"workspace_claimed"}
+{"by":"bdo","enabled":true,"epic":"epic.strategy","id":"adm.a327837a60c5","supersedes":null,"ts":"2026-06-20T19:48:03Z","type":"arc_confirmed"}
 {"branch":"claude/activity-accounting-register","by":"claude","claim":"atom.activity-accounting.v0","id":"adm.f7241200f1bc","supersedes":null,"ts":"2026-06-20T17:15:58Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.diagram","id":"adm.399f90e086fd","supersedes":null,"ts":"2026-06-20T03:35:58Z","type":"arc_confirmed"}
 {"branch":"claude/diagram-floor-gate","by":"claude","claim":"atom.diagram-floor-gate.v0","id":"adm.426cf4465c44","supersedes":null,"ts":"2026-06-20T16:44:49Z","type":"workspace_claimed"}
@@ -197,3 +200,6 @@
 {"by":"bdo","enabled":true,"epic":"epic.strategy","id":"adm.bc55d43121f8","supersedes":null,"ts":"2026-06-20T22:08:38Z","type":"arc_confirmed"}
 {"branch":"claude/tasters-clause","by":"claude","claim":"atom.tasters-clause.v0","id":"adm.e55cd121ec9c","supersedes":null,"ts":"2026-06-20T22:13:15Z","type":"workspace_claimed"}
 {"branch":"claude/placement-worktree-fold","by":"claude","claim":"atom.placement-folds-worktrees.v0","id":"adm.a94f3bddc4f8","supersedes":null,"ts":"2026-06-20T22:48:20Z","type":"workspace_claimed"}
+{"atoms":[{"frozen_hash":"sha256:4a021f9127c9bb38b48558d233103bd9d0a674838b271d42417ed73a8fba9b7b","id":"atom.snapshot-acceptance-unit.v0"}],"by":"claude","commit":"903712d","enabled":true,"id":"adm.919ed81a05b4","name":"env-spine","supersedes":null,"ts":"2026-06-20T22:55:52Z","type":"snapshot"}
+{"atoms":[{"frozen_hash":"sha256:e7127b25e3877cf410899286fbf59162f3c15e80c55812fd7df1c27a09da7782","id":"atom.snapshot-acceptance-unit.v0"}],"by":"claude","commit":"0053bce","enabled":true,"id":"adm.fe3564c24b82","name":"env-spine","supersedes":null,"ts":"2026-06-20T23:06:46Z","type":"snapshot"}
+{"branch":"claude/strategy-claim","by":"claude","claim":"epic.strategy","id":"adm.a304dedb8c54","supersedes":null,"ts":"2026-06-20T23:20:45Z","type":"workspace_claimed"}
