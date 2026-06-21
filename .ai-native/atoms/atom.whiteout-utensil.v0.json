@@ -1,0 +1,55 @@
+{
+  "atom": {
+    "id": "atom.whiteout-utensil",
+    "story": {
+      "text": "As a session, I arrived to a DIRTY viewport (bdo's primary tree, uncommitted edits + untracked strays, behind origin/main) and discovered I could not sort it at all: the workstation fence (done-lines 0145/0147) forbids every working-state git verb in the viewport, and the git pen refuses to commit on the trunk, so the dirty-viewport sort model (done-line 0031: commit+push on a branch, then sync) names a remedy a session cannot perform. git.py sync refuses while dirty and points back at the impossible remedy. Deadlock, dogfooded (issue #415). A rule that forces offloading is a bug in the rule. I want the missing sanctioned recovery: a :whiteout utensil on the git pen that preserves the whole pile on a rescue branch BEFORE it cleans, then fast-forwards the now-clean viewport to origin/main and surfaces the rescue branch. bdo confirmed both the direction and the name (#415, via the ask): every workstation ships with :whiteout, proof-carrying like the phrasing door.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the :whiteout utensil - a session recovers a dirty viewport without losing a byte",
+      "value": "git.py grows a `whiteout` verb (and an explicit `sync` on a dirty tree) that sorts a DIRTY viewport, proof-carrying: it preserves the ENTIRE pile (tracked edits + untracked files, `add -A` total snapshot) on a fresh claude/rescue-viewport-<date> branch - committed and pushed - BEFORE it cleans, then returns the viewport to the trunk and fast-forwards to origin/main, and surfaces the rescue branch for reconciliation. The pen is the one actor sanctioned to flip the viewport (it already runs checkout + merge there via subprocess), so a session never routes around the workstation fence. In ambient `sync --hook` the pen surfaces a pointer to the utensil rather than branching and pushing autonomously at every dirty session start.",
+      "why_now": "Filed and direction-confirmed by bdo as #415, dogfooded by a viewport-started session that hit the deadlock live and could not land the fix from inside it. It blocks the actual janitorial work bdo asked for: the viewport is dirty and stuck, and there is no sanctioned path to clean it. The fence siblings (workstation-fence, workstation-write-fence, trespass-shame, all epic.substrate) closed the doors; this is their recovery counterpart - teeth without a recovery reflex is a trap.",
+      "if_accepted": "A dirty viewport is recoverable through one sanctioned verb that loses nothing; the deadlock #415 names is gone. Every session that arrives to a dirty primary tree (or, in a later increment, any bench in a bad state) reaches for the same named utensil.",
+      "if_rejected": "The deadlock stands: a dirty viewport can only be sorted by routing around the fence (forbidden) or by handing bdo the cleanup (the offloading the hard rule forbids). The viewport stays stuck.",
+      "cost_of_wrong_call": "Low and bounded, and the whiteout shape makes it safe by construction: recovery PRESERVES before it cleans, so the worst case loses nothing - the pile is committed and pushed on the rescue branch before the tree is touched, and an offline push leaves it committed locally (still safe). The change is one git-pen verb + a pure naming helper + its test; reverting is deleting them. The §10 tooth is non-vacuous: a control test proves a naive force-clean WOULD lose the pile, so the preservation assertion is load-bearing.",
+      "mechanism": "recover_dirty_viewport(viewport, git, emit, bail, ns) creates the rescue branch (rescue_branch_name folds the date + existing refs, never clobbering an earlier same-day rescue), `git add -A` snapshots the whole pile, commits a proof-carrying message naming what is preserved, pushes -u to origin, returns to the trunk (now clean), and `merge --ff-only origin/main`. If nothing is staged (clean tree or a race) it abandons the empty rescue branch and is a plain sync. cmd_sync calls it when the viewport is dirty and carries no local commits origin lacks; in --hook mode it instead surfaces a one-line pointer to the whiteout verb. tests/test_git_whiteout.py builds a real temp repo (bare origin, viewport clone one behind), dirties it, runs the actuator, and asserts the viewport is clean + fast-forwarded to origin/main AND the rescue branch holds the exact pile byte-for-byte (tracked edit + untracked file) AND was pushed; a control proves a naive reset+clean loses that pile; the pure naming fold and the clean-viewport plain-sync path are covered too. Done-line 0170.",
+      "reading": [
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_git_whiteout.py",
+        ".ai-native/done/0170-whiteout-utensil.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_git_whiteout.py",
+        ".ai-native/done/0170-whiteout-utensil.md"
+      ],
+      "must_not_collide_with": [
+        ".claude/hooks/command_guard.py",
+        ".claude/hooks/workstation_guard.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "issue:#415",
+        "epic.substrate",
+        ".ai-native/done/0170-whiteout-utensil.md"
+      ],
+      "receipts": []
+    }
+  }
+}
