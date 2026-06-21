@@ -281,17 +281,27 @@ RULES = (
         "argv": ("gh", "issue", ("create", "edit", "close", "reopen",
                                  "comment", "delete", "lock", "unlock",
                                  "pin", "unpin", "transfer", "develop")),
-        "decision": "prompt",
+        "decision": "forbidden",
         "justification": (
-            "Issues are bdo's surface. The reflector pen mirrors the owner's "
-            "stamp queue onto GitHub automatically "
-            "(.claude/skills/reflect/reflect.py) and the gate opens its own "
-            "run-issue through its pen - a session does not open, close, or "
-            "comment on issues raw. Surface the intent to bdo instead."
+            "Raw `gh issue` mutations are denied here (#412): a GitHub issue "
+            "mutation must carry log provenance, the same governance the PR "
+            "pen gives PRs. This rule used to be decision `prompt` - a silent "
+            "no-op on the Claude surface (only `forbidden` compiles into the "
+            "guard's deny-list), so raw `gh issue` slipped straight through: "
+            "the prompt-parity hole. The paved path is the issue pen, which "
+            "closes/comments AND records the act on the log: "
+            "python .claude/skills/issue/issue.py close <n> --reason \"<why>\" "
+            "--by <who> (or `comment <n> --body \"<text>\" --by <who>`). The "
+            "reflector pen still owns the owner-stamp-queue mirror "
+            "(.claude/skills/reflect/reflect.py) and the gate owns its "
+            "run-issues - both reach gh from inside Python, invisible to this "
+            "guard, so this rule governs only what a session types raw. Reads "
+            "(gh issue view / list / status) stay raw - they are witnessed, "
+            "not gated."
         ),
         "match": ("gh issue close 3", "gh issue comment 5 --body x",
                   "gh issue create --title t --body b"),
-        "not_match": ("gh issue view 3", "gh issue list"),
+        "not_match": ("gh issue view 3", "gh issue list", "gh issue status 1"),
     },
     {
         "id": "gh-api-write",
