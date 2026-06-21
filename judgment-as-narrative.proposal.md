@@ -108,6 +108,44 @@ The gate is mechanical on slot-checks and literal-matches; it is a *judgment
 call* on threshold-crossing. Everything else can be deterministic, which is what
 makes the whole thing buildable instead of hand-wavy.
 
+## Propagation is signed: documents tighten *or* relax — harshness is the emergent envelope
+
+The threshold-crossing cuts **both ways**, by the same latent mechanism. A
+document can **activate** a latent requirement (it reveals you are in a stricter
+branch -> tighten) *or* **obviate** one (it proves an exemption -> a whole class
+of downstream documents drops away -> relax). The framing above leaned on
+activation, the ratchet-up; the symmetry is the point -- *bringing a document
+mostly lessens the policy.* Harshness scales **back** as evidence arrives, by the
+very latent structure that could also raise it.
+
+So harshness is not a ratchet. It is the **emergent net field** of activations and
+obviations over the current evidence -- *mark-to-market for the bar*: continuously
+re-valued, up or down, by what the evidence connects to *now* (the consequence
+graph's propagated field, [`consequence-graph.proposal.md`](consequence-graph.proposal.md)).
+
+This sharpens *why* harsh-first, cleanly:
+
+> At first contact nothing has been obviated yet, so the **strictest applicable
+> envelope applies.** The bar is harsh because the situation is maximally
+> under-determined -- and each document *narrows* which policy branch truly
+> governs, usually relaxing it. **Default-strict-under-uncertainty, relaxed by
+> proof.**
+
+That is the same shape as the inference-gateway's default-deny and the
+trust-ladder's deny-until-granted -- a conservative envelope that evidence opens.
+And it is load-bearing, not merely elegant: **a policy that could only tighten
+would reject everything -- the over-containment failure** (`over_containment.py`:
+stable because never relaxed reads as *trivial*, not *predictive*). The obviation
+direction is what keeps the harsh gate predictive, and therefore honest; the
+relaxation is not a kindness bolted on, it is what makes the harshness
+legitimate.
+
+**Latent structure creates emergence:** the bar is emergent from latent policy x
+evidence, never predetermined and never configured -- judgment's instance of the
+self-assembling controller (bdo's control-theory framing). This is also why the
+"setting" dial (above) tunes *how much evidence the situation requires*, never the
+harshness directly: harshness is an output of the propagation, not an input to it.
+
 ## The engine already landed: bounded propagation through the policy mesh
 
 What "your document reveals a fact that lights up a requirement a few hops away"
