@@ -24,6 +24,23 @@ its disposition (re-home through the pen, or close) bdo's call (D-4).
 from __future__ import annotations
 
 ATOM_DIR = ".ai-native/atoms/"
+RECORD_DIRS = (".ai-native/reports/", ".ai-native/done/")
+
+
+def records_only(changed_paths):
+    """True iff the branch changes ONLY records — session reports or done-lines
+    (`.ai-native/reports|done/NNNN-*.md`) and nothing else (done-line 0172,
+    bdo's records door). A record is *of* work, not work: a report written after
+    its work PR already landed has no atom to carry and can never bundle
+    retroactively, yet it belongs on main as the durable record. Such a PR is
+    backed without an atom, the same shape as the phrasing door — and just as
+    narrow: a single code, atom, log, or config change makes this False and the
+    branch falls back to needing an atom (a report PR cannot smuggle work). An
+    empty change set is not records-only (nothing to land)."""
+    paths = [p.replace("\\", "/") for p in changed_paths if p.strip()]
+    if not paths:
+        return False
+    return all(p.startswith(RECORD_DIRS) and p.endswith(".md") for p in paths)
 
 
 def atom_id_of(path):
@@ -38,7 +55,8 @@ def atom_id_of(path):
     return name[:-5] if name.endswith(".json") else name
 
 
-def orphan_reason(added_atom_ids, receipt_artifact_ids, phrasing_clean=False):
+def orphan_reason(added_atom_ids, receipt_artifact_ids, phrasing_clean=False,
+                  records_only=False):
     """Why a PR's branch is off-log, or None when it is backed. Pure: given the
     atom ids the branch adds under `.ai-native/atoms/` and the `artifact_id`s
     the branch's added receipt lines name, a branch is atom-backed when at least
@@ -54,11 +72,21 @@ def orphan_reason(added_atom_ids, receipt_artifact_ids, phrasing_clean=False):
     cannot be lied to: a code or schema change makes it False and the branch
     falls back to needing an atom.
 
+    The THIRD way to be backed (done-line 0172, bdo's records door): a branch
+    that changes ONLY records — reports/done-lines (`records_only`) — needs no
+    atom, because a record is *of* work, not a work-particle. A session report
+    written after its work landed cannot bundle retroactively and would otherwise
+    strand off main forever. Like the phrasing proof, `records_only` is recomputed
+    by the reach (`pr.py audit`) from the diff, so it cannot be lied to: any
+    non-record change falls back to needing an atom.
+
     Otherwise, two ways to be an orphan, in the order the pen states them: no
     atom at all (the #107 case), or an atom that never entered the pipeline (a
     file with no receipt naming it)."""
     if phrasing_clean:
         return None  # backed through the phrasing door (low-impact, proven)
+    if records_only:
+        return None  # backed through the records door (a record is of work)
     added = set(added_atom_ids)
     named = set(receipt_artifact_ids)
     if not added:
@@ -84,15 +112,18 @@ def audit(pr_facts):
     orphans, clean = [], []
     for f in pr_facts:
         phrasing_clean = bool(f.get("phrasing_clean", False))
+        records = bool(f.get("records_only", False))
         reason = orphan_reason(f.get("added_atom_ids", []),
                                f.get("receipt_artifact_ids", []),
-                               phrasing_clean)
+                               phrasing_clean, records)
         row = {k: f[k] for k in ("number", "headRefName", "author") if k in f}
         if reason:
             orphans.append({**row, "reason": reason})
         else:
             if phrasing_clean:
                 row["backed_by"] = ["phrasing-door"]  # proven prose-only, no atom
+            elif records:
+                row["backed_by"] = ["records-door"]  # reports/done-lines, no atom
             else:
                 row["backed_by"] = sorted(set(f.get("added_atom_ids", []))
                                           & set(f.get("receipt_artifact_ids", [])))
