@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.consequence-graph-resp-v0-marks-failure-repair-only.v0",
+    "story": {
+      "text": "v0 mark types are failure and repair ONLY; defer both exemplar and value. Do not derive exemplar from passing gates \u2014 a pass is the correctness floor, not excellence, and a floor-derived exemplar poisons the target (sharpens our seam-2 lean, which deferred only value).",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.consequence-graph-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/consequence-graph/",
+        "seal:25dfa4e81552"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'consequence-graph' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.consequence-graph-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}
