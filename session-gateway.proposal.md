@@ -164,12 +164,12 @@ anthology that re-derives the arcs it already composes — `owner-harness`,
 throughline is roughly *the loop governs, provisions, and staffs itself safely*.
 bdo names that anthology; the gateway lands as one of its chapters.
 
-**As an organ (when built):** `loop/anthology.py`, sibling of
+**As a part (when built):** `loop/anthology.py`, sibling of
 `digest`/`retro`/`heal` — read-only, propose-only. Folds the arcs, detects
 overlap (shared atoms; near-duplicate horizons), re-derives each cluster's
 throughline, proposes anthology groupings; bdo blesses and names. The digest
 then surfaces anthologies instead of a wall of arcs. (Itself a chapter of the
-same anthology — the consolidation organ for the self-governing substrate.)
+same anthology — the consolidation part for the self-governing substrate.)
 
 ## 6. Folding, made precise (bdo)
 
@@ -287,7 +287,7 @@ measured composition; authority + attribution are what make it a gateway.
 
 ## 9. What it composes / reuses (no double-build, §10)
 
-Nothing here is new architecture; it wires organs that exist:
+Nothing here is new architecture; it wires parts that exist:
 
 - `loop/inference.py` — the RBAC/PEP **template** (authority half).
 - `loop/trust.py` — the rungs (capability authority).
@@ -352,7 +352,7 @@ isn't a fold), and **challenged over time**: the inference-as-composition move
 (re-derive bounded behavior just-in-time) is precisely *converting interior glue
 into a fold* to kill settling-drift. Glue→fold is the arc's quality gradient.
 
-**Four deeper threads closed (each reuses an existing organ — no double-build):**
+**Four deeper threads closed (each reuses an existing part — no double-build):**
 
 - **Tension (§8.6) — measured, with a yield point and a response.** Tension is a
   fold over: energy-strain (`energy.py`: burned/fallback acts), the **glue:fold
@@ -496,7 +496,7 @@ build.
 **The landing diagnosis (Claude).** This names why *work grows but doesn't land*:
 the loop today has **drain pressure (gates that refuse) without pull**.
 Generation pressure ("always 5 tickets") + gates, with no through-line that
-*pulls a batch to done*, manufactures WIP. The missing organs are the **pull** —
+*pulls a batch to done*, manufactures WIP. The missing parts are the **pull** —
 the cross-arc through-line (the **Anthology**, §5b, is its arc-tier form) and a
 **bounded free-form lane** (an escalated-and-fenced summon scoped to a
 neighborhood + through-line).
@@ -511,7 +511,7 @@ gateway, observed by the fiber, self-healing, surfacing operational data at
 it *does*). ontum is **instance #1, pointed at itself** (dogfood); the platform
 is meant to generalize. **The envoy package presents this vision as the subject**
 and asks one sharp question: *why doesn't a through-line pull work to done, and
-what three organs stand between here and the platform these pieces already
+what three parts stand between here and the platform these pieces already
 imply?*
 
 **13.8 Still open (bdo's calls).**
@@ -685,7 +685,7 @@ hazard); **retro-invalidation** (an update silently re-judges settled work);
   in-flight operation — so operations cannot steer their own standard by writing.
   (The loop's deepest pattern: the log is truth, everything else is a fold.)
 - **IN-3 · meter ⟂ interpretation.** The meters stay dumb (measure raw reality);
-  the standard interprets. One organ that both measures and sets the bar can move
+  the standard interprets. One part that both measures and sets the bar can move
   both to pass — keep them separate.
 
 *The governance spine (who owns what — authority + attribution, mapped onto the
@@ -773,7 +773,7 @@ lifecycle's "witnessed violation → reversible quarantine" applied to the stand
 judging *itself*. Healing that resolves the deficit by *lowering the bar to stop
 the pain of refusals* is anesthesia — it **is** mirror drift / capability-
 laundering (AG-3 breach), the failure this subsection refuses. So the standard
-self-heals *toward more honest biting, never toward less*. The organ is three
+self-heals *toward more honest biting, never toward less*. The part is three
 pieces, two already real: `heal.py` (the bite-axis sensor), a new
 **verdict-flip-without-work** detector (a fourth `heal.py` detector — same `Fold`,
 version-split, and propose-only contract as its siblings; greenfield today, a

@@ -33,7 +33,7 @@ outcome's tension.
 ontum already has the **channel** for this: `loop.summon` fires at
 SessionStart and UserPromptSubmit and hands a waking session the single top
 pressure point from `loop.gaps`. But the pressure it carries is
-**work-hygiene** — mock stages, surface drift, dormant organs. (Every turn of
+**work-hygiene** — mock stages, surface drift, dormant parts. (Every turn of
 the discussion that produced this proposal, the hook screamed `loop/census.py
 — connected but never exercised — needs attention`: real pressure, wrong
 kind.) The channel is right; the content is janitorial. **No fold measures the

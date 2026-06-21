@@ -8,7 +8,7 @@ thing, and admitted nodes that *judge* a thing. The band between them —
 then *borne out or not* by what actually happened — has no home. This is
 that home, at its first, deliberately humble increment: LOGGED relation
 claims and observed consequence receipts. Not embeddings. The vector
-organ (`model_candidate`) is declared here as a later, admitted shape and
+part (`model_candidate`) is declared here as a later, admitted shape and
 is explicitly **out of scope** for v0 — a schema slot, not a mechanism.
 
 The grain is the loop's: declared records (like `loop.tags`' dimension
@@ -19,10 +19,10 @@ write here, no second source of truth. Five record kinds are declared in
 
   relation_claim          asserts "inputs in bucket B predict consequence C".
   relation_probe          a question posed against a bucket (declared; the
-                          active-probing organ rides a later increment).
+                          active-probing part rides a later increment).
   consequence_receipt     records an observed (action -> consequence) tie.
   model_candidate         a learned representation over a bucket (the
-                          embeddings organ — DECLARED, out of scope in v0).
+                          embeddings part — DECLARED, out of scope in v0).
   bucket_coherence_report the fold's output: per bucket, did the claim's
                           predicted consequence MATCH the observed receipts?
 
@@ -84,7 +84,7 @@ SCHEMA = {
     },
     "relation_probe": {
         "gloss": "a question posed against a bucket — declared; the active-"
-                 "probing organ rides a later increment, out of scope in v0",
+                 "probing part rides a later increment, out of scope in v0",
         "required": ("id", "bucket", "question"),
         "fields": {
             "id": "the probe's identity",
@@ -104,12 +104,12 @@ SCHEMA = {
     },
     "model_candidate": {
         "gloss": "a learned representation over a bucket — the embeddings "
-                 "organ; DECLARED here, explicitly out of scope for v0",
+                 "part; DECLARED here, explicitly out of scope for v0",
         "required": ("id", "bucket", "representation"),
         "fields": {
             "id": "the candidate's identity",
             "bucket": "the bucket it represents",
-            "representation": "the learned form (a LATER admitted organ)",
+            "representation": "the learned form (a LATER admitted part)",
         },
     },
     "bucket_coherence_report": {
@@ -221,7 +221,7 @@ def coherence_report(claims, receipts, match=_matches):
 
 
 # ---------------------------------------------------------------- sample data
-# v0 has no log records; the organ is declared anyway (the cool-valve grain).
+# v0 has no log records; the part is declared anyway (the cool-valve grain).
 # This sample is what the CLI folds when none is supplied — one bucket whose
 # claim is borne out (PREDICTIVE) and one whose receipts refute it (TRIVIAL),
 # so a cold reader sees the split the fold draws.
@@ -263,7 +263,7 @@ def render(d):
     lines.append(f"Folded {s['claims']} claim(s) and {s['receipts']} receipt(s).")
     lines.append("")
     if not d["buckets"]:
-        lines.append("No records — the organ is declared and idle (the "
+        lines.append("No records — the part is declared and idle (the "
                      "cool-valve grain). Hand it claims and receipts to fold.")
         return "\n".join(lines)
     order = {PREDICTIVE: 0, TRIVIAL: 1, UNTESTED: 2, UNCLAIMED: 3}

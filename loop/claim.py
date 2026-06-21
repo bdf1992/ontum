@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The Claim organ (done-line 0158): the bridge from a conjectural ScoutCTA to
+"""The Claim part (done-line 0158): the bridge from a conjectural ScoutCTA to
 bounded work — read-only, propose-only.
 
 The Scout lobe emits one marked call to action (a ScoutCTA). Left alone, that
@@ -14,7 +14,7 @@ bounds a **valid** conjecture — it runs `scout_cta.validate` first and REFUSES
 to claim an invalid or ungrounded ScoutCTA (you cannot bound what was never a
 lawful conjecture). Every claim it produces is itself **bounded** — it carries
 a non-empty `exit_condition` and `expiry` (an unbounded claim is the overgrowth
-this organ exists to prevent). And it never **proves**: the claim adds no truth,
+this part exists to prevent). And it never **proves**: the claim adds no truth,
 carries provenance that is not `minted`, and never sets `truth_claim`/`minted`.
 
 Read-only and propose-only (D-4): Claim bounds; it never judges, proves, mints,

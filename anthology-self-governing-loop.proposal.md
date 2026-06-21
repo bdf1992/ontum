@@ -13,10 +13,10 @@ envelope over several arcs, re-deriving like arcs into one body of work whose
 derived type is its *throughline* (see `session-gateway.proposal.md` and the
 registered memory `ontum-session-gateway-governed-folding`). Naming and
 blessing an anthology is **bdo's** (D-4); a session may only *propose* one.
-This file is that proposal. The organ that would fold it deterministically
+This file is that proposal. The part that would fold it deterministically
 (`loop/anthology.py`, sibling of `digest`/`retro`/`heal`) is a later
 increment; until then this proposal *is* the draft record, and the bless can
-be an admission (`confirm-arc`-shaped) when the organ exists.
+be an admission (`confirm-arc`-shaped) when the part exists.
 
 ## Why now
 

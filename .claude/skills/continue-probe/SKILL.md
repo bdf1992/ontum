@@ -1,11 +1,11 @@
 ---
 name: continue-probe
-description: The firing edge of the session-lifecycle organ (done-line 0135) — resume idle, gateway-eligible sessions with a soft continue-probe. Use to run or inspect the standing watcher tick, to see which idle sessions are due to be nudged, or to wire/understand the external scheduler that ticks it. The pure fold is loop/watcher.py; this skill is the network-reaching pen that actually spawns `claude --resume`. It is dry-run by default and never fires unless asked.
+description: The firing edge of the session-lifecycle part (done-line 0135) — resume idle, gateway-eligible sessions with a soft continue-probe. Use to run or inspect the standing watcher tick, to see which idle sessions are due to be nudged, or to wire/understand the external scheduler that ticks it. The pure fold is loop/watcher.py; this skill is the network-reaching pen that actually spawns `claude --resume`. It is dry-run by default and never fires unless asked.
 ---
 
 # continue-probe — wake an idle session, softly
 
-The session-lifecycle organ in three layers:
+The session-lifecycle part in three layers:
 
 1. **Registration** (`.claude/hooks/session_register.py`, `SessionStart`) — every
    new session records `session_id -> {cwd}` into `~/.claude/ontum-sessions.json`.
@@ -38,7 +38,7 @@ python .claude/skills/continue-probe/probe.py --fire
 
 ## Two activations (bdo's gestures, not a session's)
 
-The organ is **silent until two stamps**, by design (default-deny everywhere):
+The part is **silent until two stamps**, by design (default-deny everywhere):
 
 1. **Open the gateway** — a continue-probe is denied until bdo admits a policy,
    with a tool-scope (the tier-2 lever; propose-only is the safe floor):

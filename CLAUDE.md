@@ -51,7 +51,7 @@ before changing anything.
 The substrate is the harness, never the building. **Ontum** — the
 fabric described in `docs/phase-2/` (a living system of named, bounded,
 provenance-carrying units of meaning) — is what the loop exists to
-build; the loop is its metabolism: durability, second-set-of-eyes,
+build; the loop is its engine: durability, second-set-of-eyes,
 receipts, ambient control. A previous session described the substrate
 as "what ontum is trying to be" and bdo flagged it as a category error
 — [report 0004](.ai-native/reports/0004-the-frame-harness-and-fabric.md)

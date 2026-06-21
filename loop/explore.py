@@ -2,7 +2,7 @@
 """The explore lobe (done-line 0140): research over priors that pays out in
 one pointed call to action — read-only, propose-only.
 
-Every organ this repo grew is an uncertainty-*terminator*: a gate cuts
+Every part this repo grew is an uncertainty-*terminator*: a gate cuts
 (yes/no/amend), a fold collapses a span to a verdict, `term_economy`
 forces a term into one class, the grip discipline refuses the unproven,
 the owner's stamp is the final cut. That is a fully-built convergent
@@ -34,7 +34,7 @@ Read-only and propose-only throughout (D-4): it never judges, stamps,
 mints, or writes the log. It names the move; taking it stays a session's
 or bdo's. The three forks of `epic.explore-lobe` are NOT resolved here:
 this slice takes a *handed* purpose (an epic id or an outcome slug) — the
-minimal path common to both branches of fork 1 (even a self-aiming organ
+minimal path common to both branches of fork 1 (even a self-aiming part
 must act on a given purpose); whether it self-aims (1), the manifold's
 true axes (2), and whether a call to action leaves a marked trace (3) stay
 bdo's to settle.
@@ -67,12 +67,12 @@ PROPOSED = "proposed"
 
 
 # ---------------------------------------------------------------------------
-# pointing the organ: a purpose is an epic id or an outcome slug
+# pointing the part: a purpose is an epic id or an outcome slug
 # ---------------------------------------------------------------------------
 
 def resolve_purpose(root, purpose):
-    """Point the organ. Returns ('epic', epic) | ('outcome', rel, slug) |
-    None — no purpose, no pointed action (the organ is pointed, never free)."""
+    """Point the part. Returns ('epic', epic) | ('outcome', rel, slug) |
+    None — no purpose, no pointed action (the part is pointed, never free)."""
     for epic in load_epics(root):
         if epic.get("id") == purpose:
             return ("epic", epic)
@@ -236,7 +236,7 @@ def call_to_action(root, purpose):
         return {
             "kind": "needs-purpose", "subject": purpose,
             "why": ("the purpose resolves to no epic or outcome on disk — no "
-                    "purpose, no pointed action (the organ is pointed, never "
+                    "purpose, no pointed action (the part is pointed, never "
                     "free)"),
             "provenance": PROPOSED, "grounded": False,
         }
@@ -295,7 +295,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("purpose",
                     help="an epic id (epic.<x>) or an outcome slug — the goal "
-                         "to point the organ at")
+                         "to point the part at")
     ap.add_argument("--root", type=Path, default=Path(DEFAULT_ROOT))
     ap.add_argument("--json", action="store_true",
                     help="emit the raw dataset (machine-readable), not the prose")
@@ -313,7 +313,7 @@ def main(argv=None):
               "session's or bdo's (D-4)")
     elif cta.get("kind") == "needs-purpose":
         print(f"result: needs-you — '{args.purpose}' resolves to no epic or "
-              "outcome; point the organ at a real purpose")
+              "outcome; point the part at a real purpose")
     else:
         print("result: report — candidate refused as ungrounded; no antecedent "
               "resolves (no antecedent, no call to action)")

@@ -3,18 +3,18 @@
 for recurring patterns to refine on.
 
 Every instrument the loop grew senses a *present* state — `gaps` (what is
-open now), `census` (which organs are alive now), `digest` (one span of
+open now), `census` (which parts are alive now), `digest` (one span of
 the merge). Self-critique *across the whole history* stayed a hand-run
 chat exercise, so patterns no single span or session reveals slipped
 through: an atom re-derived again and again, a control valve advertised
 but never opened, a divergence that recurs un-reconciled. This module is
-that critique made an organ — a pure fold over the entire log that
+that critique made an part — a pure fold over the entire log that
 surfaces recurring patterns, each carrying the one refinement move.
 
 It is a sibling of `digest`, on a new axis: the digest folds *one span*;
 retro folds *all of history* and asks what keeps happening. To stay on
 the right side of §10 it does not build a second truth — it folds the
-same append-only log every organ folds (`reconcile.Fold`) and *reuses*
+same append-only log every part folds (`reconcile.Fold`) and *reuses*
 the digest's version-split and divergence detection rather than
 re-deriving them. Evidence is cited to log records, never to report prose
 (the grip rule: a finding points at records, not sentences). It is
