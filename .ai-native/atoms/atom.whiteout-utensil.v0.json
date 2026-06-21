@@ -1,6 +1,6 @@
 {
   "atom": {
-    "id": "atom.whiteout-utensil",
+    "id": "atom.whiteout-utensil.v0",
     "story": {
       "text": "As a session, I arrived to a DIRTY viewport (bdo's primary tree, uncommitted edits + untracked strays, behind origin/main) and discovered I could not sort it at all: the workstation fence (done-lines 0145/0147) forbids every working-state git verb in the viewport, and the git pen refuses to commit on the trunk, so the dirty-viewport sort model (done-line 0031: commit+push on a branch, then sync) names a remedy a session cannot perform. git.py sync refuses while dirty and points back at the impossible remedy. Deadlock, dogfooded (issue #415). A rule that forces offloading is a bug in the rule. I want the missing sanctioned recovery: a :whiteout utensil on the git pen that preserves the whole pile on a rescue branch BEFORE it cleans, then fast-forwards the now-clean viewport to origin/main and surfaces the rescue branch. bdo confirmed both the direction and the name (#415, via the ask): every workstation ships with :whiteout, proof-carrying like the phrasing door.",
       "value_confidence": "high",
