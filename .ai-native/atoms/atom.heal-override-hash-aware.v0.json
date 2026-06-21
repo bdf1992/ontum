@@ -1,0 +1,35 @@
+{
+  "atom": {
+    "id": "atom.heal-override-hash-aware.v0",
+    "story": {
+      "text": "heal.py's owner-override detector — the loop's sensor for 'a tooth bit work bdo wanted' — keyed on the atom-id string (.vN), but the doctrine's law is that identity is the content hash. An atom edited IN PLACE keeps its .v0 id while its bytes change, so a dead-bytes refusal and a live-bytes confirmation collapse under one id, defeating the detector's version discriminator. The live consequence: atom.landing-throughput-resp-the-herald.v0 — fully value_confirmed (handoff ready_for_spec rcp.069c203ba6c6, value-confirm confirmed rcp.c40293f8fe55) — was surfaced to bdo as an owner-override against a stale send_back (rcp.1fd1ab894bef) judged on dead bytes; the autoimmunity heal exists to prevent, occurring inside heal itself. The fix makes the detector hash-aware: when the SAME gate that refused later ADVANCED a different-hash version of the atom (the gate relented), it is a healed bite, never an override. Teeth (§10, tests/test_heal.py): the herald shape is the fixture — the new test FAILS on the id-string reading and PASSES hash-aware, while the genuine-override test still fires (real detection preserved). Verified on the live log: heal drops from [owner-override×1, stale-park×3] to [stale-park×3], removing the one false 'bdo overruled a tooth' from the owner surface. Value: the loop's healing reflex stops raising a false alarm on settled work — the owner surface tells the truth about which teeth actually bit wrong.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.the-field"
+      ],
+      "touches": [
+        "loop/heal.py",
+        "tests/test_heal.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/heal.py",
+        "tests/test_heal.py",
+        "atom.landing-throughput-resp-the-herald.v0"
+      ],
+      "receipts": []
+    }
+  }
+}

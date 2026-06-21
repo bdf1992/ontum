@@ -10,6 +10,15 @@
 #
 # The welcome mat is the landing page (the owner's sequence: welcome -> canvas);
 # the canvas is one tap in.
+#
+# The production gate (done-line 0137, epic.environments wave 1): this workflow
+# no longer serves HEAD unconditionally. It asks `loop.deploy` which snapshot is
+# authorized for the live surface and serves THAT — the latest commit bdo stamped
+# (`production_promotion`). A push that bdo has not stamped does not move the live
+# URL; it stays on the stamped snapshot. The gate executes bdo's stamp, it never
+# invents a verdict (the .github/ law). Before bdo's first stamp the gate is in
+# loud unstamped passthrough (serves HEAD), so turning this on never dark-takes
+# the live site — the teeth engage on his first promotion gesture.
 name: pages
 
 on:
@@ -36,11 +45,34 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # the gate may serve a stamped snapshot older than HEAD
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"  # pure stdlib; nothing to install
+
+      - name: Ask the production gate which snapshot is authorized
+        id: gate
+        run: |
+          # Run the gate from HEAD's code (latest policy); it reads the log and
+          # names the deploy target — the stamped snapshot, or HEAD in unstamped
+          # passthrough. Never blocks the run: held content is simply not served;
+          # the stamped snapshot is served instead (the teeth).
+          python -m loop.deploy gate --candidate "$GITHUB_SHA" --json | tee /tmp/gate.json
+          target=$(python -c "import json;print(json.load(open('/tmp/gate.json'))['deploy'] or '')")
+          verdict=$(python -c "import json;print(json.load(open('/tmp/gate.json'))['verdict'])")
+          echo "target=$target"   >> "$GITHUB_OUTPUT"
+          echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+          echo "::notice title=production gate::serving $verdict snapshot ${target:0:12}"
+
+      - name: Check out the stamped snapshot
+        if: steps.gate.outputs.target != '' && steps.gate.outputs.target != github.sha
+        run: |
+          # Serve the snapshot bdo stamped, not HEAD. The gate logic above already
+          # ran from HEAD; the SITE CONTENT comes from the authorized snapshot.
+          git checkout --force "${{ steps.gate.outputs.target }}"
 
       - name: Assemble the static experience layer
         run: |

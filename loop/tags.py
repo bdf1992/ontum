@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The tag pool (done-line 0032): governed vocabulary for what tools do.
 
-The organ census found the watcher could not tell a read from a mutation,
+The part census found the watcher could not tell a read from a mutation,
 so its `--report` counted 65 raw `gh` calls — all of them reads `gh pr
 list` style, by-design-raw — and nominated `gh` as the next wrapper to
 build. Noise read as signal. bdo's fix, pushed upstream to the write
@@ -78,7 +78,7 @@ _GH_READ = {"list", "view", "status", "diff", "checks", "get"}
 _CURL_MUTATE_METHODS = {"POST", "PUT", "DELETE", "PATCH"}
 
 # The general shell vocabulary, keyed on the command head (the verb is the
-# tool itself, not a subcommand). The organ census caught the watcher's
+# tool itself, not a subcommand). The part census caught the watcher's
 # unclassified tail — `uniq`, `cut`, `tr`, `sleep`, `cp` … read as nothing —
 # and the fix is the same as for git/gh: name what the verb does so the
 # report carries signal, not a blob. Coarse and head-first by design (like

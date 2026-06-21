@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.model-free-mode-resp-observable-as-gate.v0",
+    "story": {
+      "text": "Observable is the enabling substrate from which reversibility, boundedness, and learning-progress are all computed, so Observable-as-gate is the forced first build: an autonomous exploratory act must declare actor, intended action, expected receipt, touched scope, attribution path, rollback path, and probe id before it runs, and halts if it cannot name its receipt path.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.model-free-mode-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/model-free-mode/",
+        "seal:0f65955903fc"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'model-free-mode' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.model-free-mode-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

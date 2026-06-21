@@ -159,5 +159,67 @@ class OrchestrateTest(unittest.TestCase):
         self.assertEqual(before, after, "a settled field was written to")
 
 
+def _landed_receipt(atom_ids, rid="rcp.merge.test"):
+    """A merge-node landing receipt carrying the D-13 per-atom join — the
+    independent lander's `landed_atoms`."""
+    return {"id": rid, "kind": "merge", "node": "merge-node.claude.v1",
+            "verdict": "landed", "epic": "epic.test", "pr": 999,
+            "landed_atoms": list(atom_ids), "ts": "2026-06-20T00:00:00Z"}
+
+
+class SettleOnMainTest(unittest.TestCase):
+    """The follow-through road (done-line for the landing-throughput arc): an
+    atom whose work the independent merge-node landed on main is settled — it
+    stops counting as inflight — so work closes in the wild instead of dying one
+    step past the value-gate. The teeth: an un-landed new version never rides a
+    sibling version's landing (§10)."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_landed_atom_is_not_closed_by_the_merge_alone(self):
+        """done-0154 (reversing done-0133): a merge no longer closes an atom —
+        only a real review does (landed ≠ closed). A landed-but-unreviewed atom
+        still owes a value-confirm verdict, so it stays inflight, not settled."""
+        root = make_root(self.tmp, 1)
+        (atom, ahash), = reconcile.load_atoms(root)
+        reconcile.append_line(root / "log" / "events.jsonl",
+                              {"type": orchestrate.SEED_EVENT, "artifact_hash": ahash,
+                               "id": "evt.seed", "ts": "2026-06-20T00:00:00Z"})
+        # the independent merge-node lands it; its landed_atoms join names the id
+        reconcile.append_line(root / "log" / "receipts.jsonl",
+                              _landed_receipt([atom["id"]]))
+        fold = reconcile.Fold(root)
+        # the landing does NOT settle it — a merge is not a delivery review
+        self.assertIsNotNone(
+            orchestrate.next_action(fold, atom, ahash),
+            "a merge closed an atom — the settle-on-landing rubber-stamp is back")
+        # the whole-field fold still counts it inflight: it owes a real review
+        pressure = orchestrate.sense(fold, reconcile.load_atoms(root))
+        self.assertEqual(pressure["inflight"], 1, "landed work must still owe a review")
+        self.assertEqual(pressure["settled"], 0)
+
+    def test_being_on_main_has_no_settling_power(self):
+        """§10 teeth (done-0154): the settle-on-main short-circuit is gone — being
+        in the landed join no longer changes next_action at all. A landed id is
+        treated identically to an un-landed one; the review, not the merge, closes."""
+        root = make_root(self.tmp, 1)
+        (atom, ahash), = reconcile.load_atoms(root)
+        reconcile.append_line(root / "log" / "events.jsonl",
+                              {"type": orchestrate.SEED_EVENT, "artifact_hash": ahash,
+                               "id": "evt.seed", "ts": "2026-06-20T00:00:00Z"})
+        before = orchestrate.next_action(reconcile.Fold(root), atom, ahash)
+        # ... the id now reaches main (its landed_atoms join names it) ...
+        reconcile.append_line(root / "log" / "receipts.jsonl",
+                              _landed_receipt([atom["id"]]))
+        after = orchestrate.next_action(reconcile.Fold(root), atom, ahash)
+        self.assertEqual(before, after,
+                         "landing changed the atom's next step — settle-on-landing lingers")
+        self.assertIsNotNone(after)
+
+
 if __name__ == "__main__":
     unittest.main()

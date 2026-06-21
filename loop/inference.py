@@ -45,6 +45,18 @@ GRANTOR = "bdo"  # route and policy are config; one stamp re-steers, D-4
 DEFAULT_ROUTE = "default"
 WILDCARD = "*"
 
+# The tool-scope a permit grants (done-line 0135, the tier-2 lever): a
+# permitted (caller, surface, mind) is still tool-bounded. Discovered
+# empirically — a resumed session can *propose and draft* but is tool-
+# permission-gated from *executing*; so a continue-probe policy must say not
+# only "may continue" but "with what reach". The safe default is propose-only;
+# `full` is widened only by an explicit scope on bdo's stamp. The axis is data
+# on the policy record, so a new scope is an admission, never a code edit.
+PROPOSE_ONLY = "propose-only"
+FULL = "full"
+SCOPES = (PROPOSE_ONLY, FULL)
+DEFAULT_SCOPE = PROPOSE_ONLY
+
 # Backing reference schemes the gateway can resolve to a normalized
 # OpenAI-compatible base url. Mirrors loop/minds.REFERENCE_SCHEMES; the
 # normalization is pure (env/file/profile are local reads, no network).
@@ -111,6 +123,25 @@ def authorize(fold, caller, surface, mind, writing_mind=None):
         return (True, f"permitted by {matched_permit['id']}")
     return (False, f"default-deny: no policy permits ({caller}, {surface}, {mind}) "
             "— RBAC admits no thought without a rule (0062 piece 6)")
+
+
+def policy_scope(fold, caller, surface, mind):
+    """The tool-scope a permitted (caller, surface, mind) is granted, or None
+    if not permitted (done-line 0135). Composes `authorize` (default-deny is
+    honoured: a denied call has no scope, None) and reads the scope off the
+    last matching permit — propose-only unless an explicit `full` was stamped.
+    This is the tier-2 lever the continue-probe reads: a permit alone does not
+    license execution; the scope says how far the resumed reach may go."""
+    permit, _why = authorize(fold, caller, surface, mind)
+    if not permit:
+        return None
+    granted = DEFAULT_SCOPE
+    for p in policies(fold):
+        if (p.get("permit") and _matches(p.get("caller"), caller)
+                and _matches(p.get("surface"), surface)
+                and _matches(p.get("mind"), mind)):
+            granted = p.get("scope") or DEFAULT_SCOPE  # last matching permit wins
+    return granted
 
 
 def normalize_backing(backing, model=None, env=None):
@@ -203,10 +234,15 @@ def policy_refusal(caller, surface, mind, by):
     return None
 
 
-def set_policy(root, caller, surface, mind, permit, by, supersedes=None):
+def set_policy(root, caller, surface, mind, permit, by, supersedes=None,
+               scope=DEFAULT_SCOPE):
     reason = policy_refusal(caller, surface, mind, by)
     if reason:
         print(f"result: needs-you — {reason}")
+        return None
+    if permit and scope not in SCOPES:
+        print(f"result: needs-you — scope {scope!r} is not one of {SCOPES}; "
+              "a permit grants a tool-scope (propose-only is the safe default)")
         return None
     adm = {
         "id": "adm." + short_hash("policy", caller, surface, mind,
@@ -216,6 +252,9 @@ def set_policy(root, caller, surface, mind, permit, by, supersedes=None):
         "surface": surface,
         "mind": mind,
         "permit": bool(permit),
+        # the granted tool-scope rides every permit (a deny carries none); a
+        # permit with no explicit scope is propose-only — the safe floor.
+        "scope": (scope if permit else None),
         "by": by,
         "supersedes": supersedes,
         "ts": now_ts(),
@@ -243,7 +282,9 @@ def status_lines(root):
     lines.append(f"  policies ({len(pols)}):")
     for p in pols:
         verb = "permit" if p.get("permit") else "DENY"
-        lines.append(f"    {verb} ({p.get('caller')}, {p.get('surface')}, {p.get('mind')})")
+        scope = f" [{p.get('scope')}]" if p.get("permit") else ""
+        lines.append(f"    {verb} ({p.get('caller')}, {p.get('surface')}, "
+                     f"{p.get('mind')}){scope}")
     return lines
 
 
@@ -266,12 +307,14 @@ def cmd_route(ns):
 
 def cmd_policy(ns):
     permit = not ns.deny
-    adm = set_policy(ns.root, ns.caller, ns.surface, ns.mind, permit, ns.by, ns.supersedes)
+    adm = set_policy(ns.root, ns.caller, ns.surface, ns.mind, permit, ns.by,
+                     ns.supersedes, scope=ns.scope)
     if adm is None:
         return 2
     verb = "permit" if permit else "DENY"
+    scope = f" [{adm.get('scope')}]" if permit else ""
     print(f"result: report — {adm['id']}: {verb} "
-          f"({ns.caller}, {ns.surface}, {ns.mind}) (by {ns.by})")
+          f"({ns.caller}, {ns.surface}, {ns.mind}){scope} (by {ns.by})")
     return 0
 
 
@@ -296,6 +339,9 @@ def main(argv=None):
     po.add_argument("--surface", required=True, help="surface name / '*'")
     po.add_argument("--mind", required=True, help="mind id / '*'")
     po.add_argument("--deny", action="store_true", help="set a deny rule (default permit)")
+    po.add_argument("--scope", default=DEFAULT_SCOPE, choices=SCOPES,
+                    help="the tool-scope a permit grants (default propose-only; "
+                         "full widens execution — bdo's stamp only)")
     po.add_argument("--by", required=True, help="who sets it (D-4: bdo)")
     po.add_argument("--supersedes", default=None)
     po.add_argument("--root", type=Path, default=DEFAULT_ROOT)

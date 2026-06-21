@@ -8,7 +8,7 @@ contradicts the verb) and is refused; `--intent escalate` is a *proposal*
 (a value outside the pool) and is accepted, flagged, never blocked. A
 classifier that refused both, or accepted both, would be doing nothing.
 And the report must rank a raw mutation above a raw read — the noise the
-organ census caught (`gh pr list` ×65 read as 'wrap gh')."""
+part census caught (`gh pr list` ×65 read as 'wrap gh')."""
 
 import contextlib
 import importlib.util

@@ -259,7 +259,7 @@ rides the baseline "already capable" budget:
   already on the board). FAST = hot / quick beat; SLOW = cool / deep breath.
 
 The 2×2 reads as the anima's moods — **fast·strong** = vigorous (hot frontier),
-**slow·strong** = deep/grounded (load-bearing organ), **fast·weak** = jittery
+**slow·strong** = deep/grounded (load-bearing part), **fast·weak** = jittery
 (churn — the unsensed failure in [[ontum-cause-finality-conscious-revision]]),
 **slow·weak** = dormant (the census prune candidate). The display *shows the mood*.
 

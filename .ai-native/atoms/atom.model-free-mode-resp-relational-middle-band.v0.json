@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.model-free-mode-resp-relational-middle-band.v0",
+    "story": {
+      "text": "Smart mashing is not raw model-free action but a relational middle band (representation without mechanism), so the model-free to model-based axis becomes raw to relational to mechanistic and learning-progress must be measured over relation buckets, not undifferentiated action space.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.model-free-mode-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/model-free-mode/",
+        "seal:0f65955903fc"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'model-free-mode' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.model-free-mode-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

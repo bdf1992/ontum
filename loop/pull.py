@@ -51,7 +51,7 @@ The §10 teeth, two locally-fine records that refuse to fit:
 
 The module is `loop.pull`, not `loop.gateway`: "gateway" is already loaded
 here (the inference egress, done-line 0062, and bdo's gate→gateway→patrol
-economy). This organ is *a* gateway in that economy, but the file is named
+economy). This part is *a* gateway in that economy, but the file is named
 for its one verb — the terminal pull — so the vocabulary does not overload
 (the term-economy's own `overloaded` defect, splitting before it forms).
 

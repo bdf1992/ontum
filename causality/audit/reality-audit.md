@@ -60,7 +60,7 @@ substrate exists to build something else (report 0004's harness-vs-fabric
 correction). This slice answers that risk concretely: it is **read-only**, it
 **writes no record**, it **mints nothing**, and its whole job is to make the
 *language* — a thing ontum genuinely needs to keep honest — inspectable. It
-is metabolism (watch your machine run), not a second building.
+is the loop running (watch your machine run), not a second building.
 
 ## Where this slice sits in the gap
 

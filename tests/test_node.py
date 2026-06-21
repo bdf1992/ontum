@@ -179,6 +179,35 @@ class RealNodeTest(unittest.TestCase):
         text = self.inbox_text()
         self.assertIn("0 item(s) awaiting your stamp, 0 awaiting summons, 1 parked", text)
 
+    def test_inbox_hides_a_superseded_park_but_keeps_a_live_one(self):
+        """The stale-park phantom (heal.py): a version a higher sibling
+        replaces must not surface as a live owner park — its receipt is
+        history, not work. §10 teeth: a non-superseded park still must show,
+        so the filter cannot just be hiding parks. Same situation for both
+        (rejected then parked) — only supersession differs."""
+        orchestrate.orchestrate(self.root, quiet=True)
+        # both atoms rejected by the real L0 -> both park as the owner's
+        self.judge("atom.real-00.v0", verdict="reject_no_value",
+                   reason="no owner value (this one stays live)")
+        self.judge("atom.real-01.v0", verdict="reject_no_value",
+                   reason="no owner value (this one gets superseded)")
+        orchestrate.orchestrate(self.root, quiet=True)
+        # before supersession both parks surface (the starting condition)
+        text = self.inbox_text()
+        self.assertIn("atom.real-00.v0 — parked", text)
+        self.assertIn("atom.real-01.v0 — parked", text)
+        # a higher version of real-01 lands on disk: v0 is now history, not work
+        v1 = make_atom(1)
+        v1["atom"]["id"] = "atom.real-01.v1"
+        (self.root / "atoms" / "atom.real-01.v1.json").write_text(
+            json.dumps(v1, indent=2), encoding="utf-8")
+        text = self.inbox_text()
+        # the superseded park is gone from the owner's surface ...
+        self.assertNotIn("atom.real-01.v0 — parked", text)
+        # ... but the live park is untouched (the teeth: not a blanket hide)
+        self.assertIn("atom.real-00.v0 — parked", text)
+        self.assertIn("1 parked", text)
+
     def test_inbox_with_mocked_stamp_owns_nothing(self):
         fresh = make_root(tempfile.mkdtemp(dir=self.tmp), 1)
         orchestrate.admit_setpoint(fresh, SETPOINT, by="test-bdo")

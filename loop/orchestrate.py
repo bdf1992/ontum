@@ -99,6 +99,14 @@ def next_action(fold, atom, ahash, real_map=None, epics=None):
     for (D-2, D-10). With `epics` given, the owner's stamp on a confirmed arc
     is the loop's to take, not his — it classifies as "judge", not "await"
     (done-line 0028), so a confirmed arc's pieces never sit in his queue.
+
+    Landed-is-not-closed (done-line 0154, retiring done-0133's settle-on-main):
+    reaching main no longer settles an atom — a merge is not a delivery review,
+    and "merged = done, no review" is the rubber-stamp value-confirm exists to
+    forbid. Landed work flows on to value-confirm and is closed only by a real
+    review verdict (the review queue, done-0150). `digest.atoms_on_main` is
+    retained as the review's delivery EVIDENCE (read where the review composes),
+    never a settle here.
     """
     if real_map is None:
         real_map = real_nodes(fold)
