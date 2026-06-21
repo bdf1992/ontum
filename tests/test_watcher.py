@@ -156,6 +156,35 @@ class TestReadEasing(unittest.TestCase):
         self.assertEqual(watcher.read_easing(adms), watcher.DEFAULT_EASING)
 
 
+class TestValidateEasing(unittest.TestCase):
+    """validate_easing — the admit-door guard (done-line 0171, review fix): a
+    bad admission is refused before it can crash a tick (the set_bound
+    precedent). A partial-but-sane admission passes."""
+
+    def test_accepts_a_partial_sane_admission(self):
+        self.assertIsNone(watcher.validate_easing({"max_per_tick": 5}))
+
+    def test_rejects_non_integer(self):
+        self.assertIsNotNone(watcher.validate_easing({"max_per_tick": "3"}))
+        self.assertIsNotNone(watcher.validate_easing({"max_per_tick": [3]}))
+        self.assertIsNotNone(watcher.validate_easing({"max_per_tick": 3.5}))
+        self.assertIsNotNone(watcher.validate_easing({"max_per_tick": True}))
+
+    def test_rejects_nonpositive_rate(self):
+        self.assertIsNotNone(watcher.validate_easing({"min_per_tick": 0}))
+        self.assertIsNotNone(watcher.validate_easing({"max_per_tick": -1}))
+
+    def test_rejects_negative_window(self):
+        self.assertIsNotNone(watcher.validate_easing({"open_window_seconds": -1}))
+
+    def test_rejects_min_above_resolved_max(self):
+        # min alone, above the DEFAULT max → caught against the resolved dial
+        self.assertIsNotNone(watcher.validate_easing({"min_per_tick": 99}))
+
+    def test_threshold_zero_is_allowed(self):
+        self.assertIsNone(watcher.validate_easing({"threshold": 0}))
+
+
 class TestRegistry(unittest.TestCase):
     def test_missing_registry_is_empty_watch(self):
         self.assertEqual(watcher.load_registry(Path("/no/such/registry.json")), {})

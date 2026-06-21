@@ -141,10 +141,10 @@ def recent_egress(now, window, trace=TRACE):
                     continue
                 try:
                     rec = json.loads(line)
-                except ValueError:
-                    continue  # torn line — never happened
-                if rec.get("launched") and float(rec.get("ts", 0)) >= cutoff:
-                    n += 1
+                    if rec.get("launched") and float(rec.get("ts", 0)) >= cutoff:
+                        n += 1
+                except (ValueError, TypeError, AttributeError):
+                    continue  # torn / non-dict / non-numeric ts — never happened
     except OSError:
         return 0
     return n
@@ -154,8 +154,8 @@ def eased_budget(due_depth, egress, easing):
     """The eased per-tick fire budget (done-line 0171): the orchestrate heat/
     cool law on the probe-fire plane, a pure function the §10 teeth drive.
 
-    Below `threshold` due sessions the pressure is low — firing flows freely
-    (up to the hard ceiling). At or above the threshold the easing engages: the
+    At or below `threshold` due sessions the pressure is low — firing flows
+    freely (up to the hard ceiling). ABOVE the threshold the easing engages: the
     budget opens to `max_per_tick` minus what is still draining (`egress`),
     floored at `min_per_tick` so progress never stalls, and is never more than
     the backlog itself. So a deep backlog drains in eased waves, and as earlier
@@ -193,15 +193,11 @@ def _spawn(target):
 
 
 def read_easing_setpoint(root=None):
-    """The active easing setpoint, folded from the repo log (the setpoints law,
-    via watcher.read_easing). Default-safe on any error — a bad read falls back
-    to DEFAULT_EASING and never bursts."""
+    """The active easing setpoint for this repo, through the one shared reader
+    (watcher.active_easing — the setpoints law, default-safe on any error so a
+    bad read never bursts). `root` is the `.ai-native` directory."""
     ai = Path(root) if root else ROOT / ".ai-native"
-    try:
-        from loop.reconcile import Fold
-        return watcher.read_easing(Fold(ai).admissions)
-    except Exception:
-        return dict(watcher.DEFAULT_EASING)
+    return watcher.active_easing(ai)
 
 
 def run(now, fire=False, mtime=None, easing=None):

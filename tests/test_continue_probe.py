@@ -158,8 +158,12 @@ class TestRecentEgress(unittest.TestCase):
                 '{"ts": %f, "launched": true}\n' % (NOW - 100) +     # recent ✓
                 '{"ts": %f, "launched": true}\n' % (NOW - 5000) +    # too old ✗
                 '{"ts": %f, "launched": false}\n' % (NOW - 10) +     # not launched ✗
+                '{"ts": "not-a-number", "launched": true}\n' +       # bad ts ✗ (tolerated)
+                '5\n' +                                              # non-dict ✗ (tolerated)
                 '{"ts": %f, "launched": tr\n' % (NOW - 10),          # torn ✗
                 encoding="utf-8")
+            # a bad-ts / non-dict line is dropped like a torn line — never a crash,
+            # the torn-tolerance its docstring promises (review fix, done-line 0171)
             self.assertEqual(probe.recent_egress(NOW, 900, trace=trace), 2)
 
     def test_missing_trace_is_zero(self):

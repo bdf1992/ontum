@@ -108,6 +108,32 @@ def read_easing(admissions):
     return value
 
 
+def validate_easing(value):
+    """Reject an easing admission that would misconfigure the dial — the
+    inference_queue.set_bound precedent (a bound is validated at the door, not
+    trusted). Returns an error string, or None when the (partial) admission is
+    sane. Only provided keys are checked; min<=max is checked against the
+    RESOLVED dial, so admitting `min_per_tick` alone above the default max is
+    caught. JSON whole numbers parse as int; a float/string/list value is
+    refused so a later int() can never crash a tick on a bad admission."""
+    nonneg = ("threshold", "egress_window_seconds", "open_window_seconds")
+    positive = ("min_per_tick", "max_per_tick")
+    for k in nonneg + positive:
+        if k in value:
+            v = value[k]
+            if isinstance(v, bool) or not isinstance(v, int):
+                return f"{k} must be an integer, got {v!r}"
+            if k in positive and v < 1:
+                return f"{k} must be >= 1, got {v}"
+            if k in nonneg and v < 0:
+                return f"{k} must be >= 0, got {v}"
+    merged = dict(DEFAULT_EASING, **value)
+    if merged["min_per_tick"] > merged["max_per_tick"]:
+        return (f"min_per_tick ({merged['min_per_tick']}) must be <= "
+                f"max_per_tick ({merged['max_per_tick']})")
+    return None
+
+
 def admit_easing(root, value, by, supersedes=None):
     """Append a `continue-probe.easing` setpoint admission. `by` is whoever
     stamps it (D-4: a node never sets its own dial). Mirrors
@@ -196,9 +222,11 @@ def idle_sessions(now, registry=None, threshold=IDLE_THRESHOLD_SECONDS,
     return out
 
 
-def _active_easing(root):
+def active_easing(root):
     """The easing setpoint folded from `root`'s log, default-safe on any error
-    (a bad read must never widen the open window or unbound the budget)."""
+    (a bad read must never widen the open window or unbound the budget). The one
+    helper both the watcher CLI and the probe pen read through — `root` is the
+    `.ai-native` directory."""
     try:
         from loop.reconcile import Fold
         return read_easing(Fold(root).admissions)
@@ -233,12 +261,16 @@ def main(argv=None):
             print(f"result: needs-you — unknown easing key(s): {', '.join(unknown)}"
                   f"; the dials are {', '.join(EASING_KEYS)}")
             return 2
+        err = validate_easing(value)
+        if err:
+            print(f"result: needs-you — invalid easing setpoint: {err}")
+            return 2
         adm = admit_easing(args.root, value, args.by)
         print(f"result: report — easing setpoint {adm['id']} admitted by "
               f"{args.by}: {canon(value)}")
         return 0
 
-    easing = _active_easing(args.root)
+    easing = active_easing(args.root)
     open_window = int(easing["open_window_seconds"])
     targets = idle_sessions(time.time(), threshold=args.threshold,
                             open_window=open_window)
