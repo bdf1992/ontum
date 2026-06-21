@@ -284,33 +284,39 @@ def _base_version(atom_id):
     return atom_id, 0
 
 
-def live_hash_by_base(fold):
-    """Per atom base, the content hash of its LIVE version — the artifact_hash
-    of the most recent `atom.created` event. Identity is the content hash, not
-    the `.vN` id: an atom edited IN PLACE keeps its id but becomes new bytes,
-    so a refusal on the old bytes is dead history even though the `.vN` never
-    changed. Lets the divergence / churn / over-bite detectors tell a refusal
-    on dead bytes from one on the live version. Tolerant of a fold without
-    events (returns {}) — the fail-safe is to surface, never to hide a live
-    record."""
-    latest = {}  # base -> (ts, hash)
+def superseded_hashes_by_base(fold):
+    """Per atom base, the content hashes that a strictly-later `atom.created`
+    replaced — the DEAD versions of an atom edited in place (or re-versioned).
+    Identity is the content hash, not the `.vN` id: editing an atom file in
+    place keeps its id but makes new bytes, and the dead bytes' verdicts are
+    healed history. A hash counts as superseded ONLY when a later atom.created
+    of the same base carries a DIFFERENT hash — so a base with a single
+    version supersedes nothing (a live refusal is never hidden), and a verdict
+    on a hash that was never an atom.created (e.g. a synthetic test receipt) is
+    never mistaken for a dead version. Tolerant of a fold without events ({})."""
+    seen = {}  # base -> [(ts, hash)]
     for ev in getattr(fold, "events", []) or []:
         if ev.get("type") != "atom.created":
             continue
         base = _base_version(ev.get("artifact_id") or "")[0]
         h, ts = ev.get("artifact_hash"), ev.get("ts") or ""
-        if h and (base not in latest or ts > latest[base][0]):
-            latest[base] = (ts, h)
-    return {b: hh for b, (ts, hh) in latest.items()}
+        if h:
+            seen.setdefault(base, []).append((ts, h))
+    out = {}
+    for base, items in seen.items():
+        live = max(items)[1]                       # latest atom.created hash
+        dead = {h for ts, h in items if h != live}
+        if dead:
+            out[base] = dead
+    return out
 
 
-def on_superseded_bytes(live_by_base, artifact_id, artifact_hash):
-    """True if this record judged a SUPERSEDED hash — bytes a newer version of
-    the same base replaced. Such a verdict is healed history (identity is the
-    content hash), never live work. False when the live hash is unknown or the
-    record carries no hash (fail-safe toward surfacing)."""
-    live = live_by_base.get(_base_version(artifact_id or "")[0])
-    return bool(live) and bool(artifact_hash) and artifact_hash != live
+def on_superseded_bytes(superseded_by_base, artifact_id, artifact_hash):
+    """True if this record judged a hash a newer version of the same base
+    superseded — healed history (identity is the content hash), never live
+    work. False unless the hash is a known dead atom.created version."""
+    return artifact_hash in superseded_by_base.get(
+        _base_version(artifact_id or "")[0], ())
 
 
 def _superseded(pieces):
@@ -369,7 +375,7 @@ def _divergences(fold, arcs, ticks, since, until, superseded=frozenset()):
        the dial and reality disagreeing.
     """
     out = []
-    live_by_base = live_hash_by_base(fold)
+    superseded_by_base = superseded_hashes_by_base(fold)
     for arc in arcs:
         if not arc.get("confirmed"):
             continue
@@ -380,7 +386,7 @@ def _divergences(fold, arcs, ticks, since, until, superseded=frozenset()):
                 # a refusal on dead bytes (a newer hash of the same id
                 # superseded them) is healed history, not a live divergence —
                 # identity is the content hash, even when the .vN is unchanged
-                if on_superseded_bytes(live_by_base, rc.get("artifact_id"),
+                if on_superseded_bytes(superseded_by_base, rc.get("artifact_id"),
                                        rc.get("artifact_hash")):
                     continue
                 out.append({
