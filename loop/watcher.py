@@ -44,6 +44,25 @@ OPEN_WINDOW_SECONDS = 12 * 60 * 60
 REGISTRY = Path.home() / ".claude" / "ontum-sessions.json"
 PROJECTS = Path.home() / ".claude" / "projects"
 
+# The fire-rate easing setpoint (done-line 0171). Opening the probe gateway
+# made a whole backlog of idle sessions eligible at once; firing them all in one
+# tick is the burst shape of the llama-server kill, but as spawned `claude`
+# sessions the inference-queue semaphore does not govern. So the per-tick fire
+# budget is bounded the orchestrate way — eased on ingress (the due-pool depth)
+# and egress (fires still draining) past a threshold — and the bound is an
+# ADMITTED setpoint, never a code constant (the setpoints law). DEFAULT_EASING
+# is the default-safe fallback used only when none is admitted: a conservative
+# drain that can never burst, not the operator's tuning knob.
+EASING_DIAL = "continue-probe.easing"
+DEFAULT_EASING = {
+    "threshold": 3,            # due-pool depth below which firing flows freely
+    "min_per_tick": 1,         # always make at least this much progress
+    "max_per_tick": 3,         # the hard ceiling — never a burst
+    "egress_window_seconds": IDLE_THRESHOLD_SECONDS,  # a fire "occupies" ~this long
+    "open_window_seconds": OPEN_WINDOW_SECONDS,       # the staleness ceiling, now a dial
+}
+EASING_KEYS = tuple(DEFAULT_EASING)
+
 PROBE = ("[continue-probe] You have been idle a while. You hold this session's "
          "context — if you can carry your current task one safe step further "
          "within your gateway, do it; otherwise stand down and say why. This is "
@@ -69,6 +88,43 @@ def save_registry(registry, path=REGISTRY):
         return True
     except OSError:
         return False
+
+
+def read_easing(admissions):
+    """The active easing setpoint, folded from the log (done-line 0171): the
+    latest admitted `continue-probe.easing` setpoint wins (each admission
+    supersedes the one before, like orchestrate's dial). Falls back to
+    DEFAULT_EASING when none is admitted, and PER KEY when an admission is
+    partial — so a missing key never drops a guard and the budget can never go
+    unbounded on a half-set dial. Pure over the admissions list."""
+    value = dict(DEFAULT_EASING)
+    for adm in admissions:
+        if adm.get("type") == "setpoint" and adm.get("dial") == EASING_DIAL:
+            v = adm.get("value")
+            if isinstance(v, dict):
+                for k in EASING_KEYS:
+                    if k in v:
+                        value[k] = v[k]
+    return value
+
+
+def admit_easing(root, value, by, supersedes=None):
+    """Append a `continue-probe.easing` setpoint admission. `by` is whoever
+    stamps it (D-4: a node never sets its own dial). Mirrors
+    orchestrate.admit_setpoint; the pen reads it at runtime, never a constant.
+    `root` is the `.ai-native` root (where `log/` lives)."""
+    from loop.reconcile import append_line, canon, now_ts, short_hash
+    adm = {
+        "id": "adm." + short_hash(EASING_DIAL, canon(value), str(by), now_ts()),
+        "type": "setpoint",
+        "dial": EASING_DIAL,
+        "value": value,
+        "by": by,
+        "supersedes": supersedes,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm
 
 
 def register_session(registry, session_id, cwd, now, mtime=None,
@@ -140,17 +196,57 @@ def idle_sessions(now, registry=None, threshold=IDLE_THRESHOLD_SECONDS,
     return out
 
 
+def _active_easing(root):
+    """The easing setpoint folded from `root`'s log, default-safe on any error
+    (a bad read must never widen the open window or unbound the budget)."""
+    try:
+        from loop.reconcile import Fold
+        return read_easing(Fold(root).admissions)
+    except Exception:
+        return dict(DEFAULT_EASING)
+
+
 def main(argv=None):
+    from loop.reconcile import DEFAULT_ROOT, canon
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--threshold", type=int, default=IDLE_THRESHOLD_SECONDS,
                     help="seconds of silence before a session is a probe target")
+    ap.add_argument("--root", type=Path, default=DEFAULT_ROOT,
+                    help="the .ai-native root the easing setpoint is read from")
     ap.add_argument("--json", dest="as_json", action="store_true")
+    ap.add_argument("--admit-setpoint", metavar="JSON",
+                    help="append a continue-probe.easing setpoint and exit, e.g. "
+                         '\'{"threshold":3,"min_per_tick":1,"max_per_tick":3,'
+                         '"egress_window_seconds":900,"open_window_seconds":43200}\'')
+    ap.add_argument("--by", help="who admits the setpoint (required with "
+                                 "--admit-setpoint, D-4)")
     args = ap.parse_args(argv)
 
-    targets = idle_sessions(time.time(), threshold=args.threshold)
+    if args.admit_setpoint:
+        if not args.by:
+            print("result: needs-you — a setpoint is admitted *by* someone "
+                  "(--by), never self-set (D-4)")
+            return 2
+        value = json.loads(args.admit_setpoint)
+        unknown = [k for k in value if k not in EASING_KEYS]
+        if unknown:
+            print(f"result: needs-you — unknown easing key(s): {', '.join(unknown)}"
+                  f"; the dials are {', '.join(EASING_KEYS)}")
+            return 2
+        adm = admit_easing(args.root, value, args.by)
+        print(f"result: report — easing setpoint {adm['id']} admitted by "
+              f"{args.by}: {canon(value)}")
+        return 0
+
+    easing = _active_easing(args.root)
+    open_window = int(easing["open_window_seconds"])
+    targets = idle_sessions(time.time(), threshold=args.threshold,
+                            open_window=open_window)
     if args.as_json:
         print(json.dumps(targets, indent=2))
         return 0
+    sp = "DEFAULT (none admitted)" if easing == DEFAULT_EASING else canon(easing)
+    print(f"easing setpoint: {sp}")
     if not targets:
         print("result: done — no idle-and-eligible sessions to probe "
               "(none registered, none idle past threshold, or gateway closed)")
@@ -161,8 +257,8 @@ def main(argv=None):
         print(f"  fire: cd {t['fire_cwd']} && claude --resume {t['session_id']} "
               f'-p "<continue-probe>"')
     print(f"result: report — {len(targets)} idle session(s) eligible to probe; "
-          "the firing is the edge (the continue-probe pen/cron consumes this), "
-          "not this fold")
+          "the per-tick fire budget (the eased slice) is the pen's, not this "
+          "fold — this names who is eligible, the pen bounds how many fire")
     return 0
 
 

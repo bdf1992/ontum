@@ -124,6 +124,38 @@ class TestRegisterSession(unittest.TestCase):
         self.assertEqual(set(out), {"live", "sess-A"})
 
 
+class TestReadEasing(unittest.TestCase):
+    """read_easing — the setpoints law (done-line 0171): latest admitted wins,
+    a partial admission falls back PER KEY (a guard is never dropped), and no
+    admission means the default-safe fallback. Driven over an admissions list."""
+
+    def test_no_admission_is_default_safe(self):
+        self.assertEqual(watcher.read_easing([]), watcher.DEFAULT_EASING)
+
+    def test_latest_admitted_wins(self):
+        adms = [
+            {"type": "setpoint", "dial": watcher.EASING_DIAL,
+             "value": dict(watcher.DEFAULT_EASING, max_per_tick=2)},
+            {"type": "setpoint", "dial": watcher.EASING_DIAL,
+             "value": dict(watcher.DEFAULT_EASING, max_per_tick=5)},
+        ]
+        self.assertEqual(watcher.read_easing(adms)["max_per_tick"], 5)
+
+    def test_partial_admission_falls_back_per_key(self):
+        # only max_per_tick is set; every other guard keeps its safe default
+        adms = [{"type": "setpoint", "dial": watcher.EASING_DIAL,
+                 "value": {"max_per_tick": 7}}]
+        got = watcher.read_easing(adms)
+        self.assertEqual(got["max_per_tick"], 7)
+        self.assertEqual(got["open_window_seconds"],
+                         watcher.DEFAULT_EASING["open_window_seconds"])
+
+    def test_other_dials_are_ignored(self):
+        adms = [{"type": "setpoint", "dial": "orchestration.temperature",
+                 "value": {"max_per_tick": 99}}]
+        self.assertEqual(watcher.read_easing(adms), watcher.DEFAULT_EASING)
+
+
 class TestRegistry(unittest.TestCase):
     def test_missing_registry_is_empty_watch(self):
         self.assertEqual(watcher.load_registry(Path("/no/such/registry.json")), {})
