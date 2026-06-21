@@ -33,6 +33,7 @@ def _ok_pr(**over):
         "title": "the merge-node's hand lands confirmed-arc work",
         "body": "A real written story for a cold reader.",
         "statusCheckRollup": [{"conclusion": "SUCCESS"}],
+        "author": {"login": "claude-author"},
     }
     info.update(over)
     return info
@@ -44,17 +45,17 @@ BY = "merge-node.claude.v0"
 
 class LandRefusal(unittest.TestCase):
     def test_full_house_lands(self):
-        self.assertIsNone(pr.land_refusal(_ok_pr(), CONF, BY, True))
+        self.assertIsNone(pr.land_refusal(_ok_pr(), CONF, BY, True, True))
 
     def test_unconfirmed_arc_refuses_even_when_otherwise_perfect(self):
         # the §10 case: nothing the PR can see is wrong; the missing human
         # stamp is what refuses to fit.
-        reason = pr.land_refusal(_ok_pr(), None, BY, True)
+        reason = pr.land_refusal(_ok_pr(), None, BY, True, True)
         self.assertIsNotNone(reason)
         self.assertIn("confirm", reason.lower())
 
     def test_no_by_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(), CONF, "", True))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(), CONF, "", True, True))
 
     def test_unadmitted_by_refuses_even_when_otherwise_perfect(self):
         # done-line 0049's §10 case: a perfect PR, a confirmed arc, and a
@@ -65,37 +66,48 @@ class LandRefusal(unittest.TestCase):
         self.assertIn("not an admitted node", reason)
         self.assertIn("admit-real", reason)
 
+    def test_missing_non_author_attestation_refuses(self):
+        reason = pr.land_refusal(_ok_pr(), CONF, BY, True)
+        self.assertIsNotNone(reason)
+        self.assertIn("--attest-non-author", reason)
+
+    def test_exact_author_identity_match_refuses_even_with_attestation(self):
+        reason = pr.land_refusal(_ok_pr(author={"login": BY}), CONF, BY,
+                                 True, True)
+        self.assertIsNotNone(reason)
+        self.assertIn("matches --by", reason)
+
     def test_draft_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(isDraft=True), CONF, BY, True))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(isDraft=True), CONF, BY, True, True))
 
     def test_not_open_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(state="MERGED"), CONF, BY, True))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(state="MERGED"), CONF, BY, True, True))
 
     def test_non_main_base_refuses(self):
         self.assertIsNotNone(
-            pr.land_refusal(_ok_pr(baseRefName="epic.owner-harness"), CONF, BY, True))
+            pr.land_refusal(_ok_pr(baseRefName="epic.owner-harness"), CONF, BY, True, True))
 
     def test_conflicting_refuses(self):
         self.assertIsNotNone(
-            pr.land_refusal(_ok_pr(mergeable="CONFLICTING"), CONF, BY, True))
+            pr.land_refusal(_ok_pr(mergeable="CONFLICTING"), CONF, BY, True, True))
 
     def test_failing_check_refuses(self):
         self.assertIsNotNone(pr.land_refusal(
-            _ok_pr(statusCheckRollup=[{"conclusion": "FAILURE"}]), CONF, BY, True))
+            _ok_pr(statusCheckRollup=[{"conclusion": "FAILURE"}]), CONF, BY, True, True))
 
     def test_pending_check_refuses(self):
         self.assertIsNotNone(pr.land_refusal(
-            _ok_pr(statusCheckRollup=[{"state": "PENDING"}]), CONF, BY, True))
+            _ok_pr(statusCheckRollup=[{"state": "PENDING"}]), CONF, BY, True, True))
 
     def test_no_checks_is_green(self):
-        self.assertIsNone(pr.land_refusal(_ok_pr(statusCheckRollup=[]), CONF, BY, True))
+        self.assertIsNone(pr.land_refusal(_ok_pr(statusCheckRollup=[]), CONF, BY, True, True))
 
     def test_auto_title_refuses(self):
         self.assertIsNotNone(
-            pr.land_refusal(_ok_pr(title="claude/merge-node"), CONF, BY, True))
+            pr.land_refusal(_ok_pr(title="claude/merge-node"), CONF, BY, True, True))
 
     def test_empty_body_refuses(self):
-        self.assertIsNotNone(pr.land_refusal(_ok_pr(body="  "), CONF, BY, True))
+        self.assertIsNotNone(pr.land_refusal(_ok_pr(body="  "), CONF, BY, True, True))
 
 
 class NodeAdmittedIn(unittest.TestCase):
@@ -155,12 +167,16 @@ class MergeReceiptReachesTheLog(unittest.TestCase):
 
     def test_receipt_carries_the_authorization(self):
         r = pr._merge_receipt(45, "epic.owner-harness", "merge-node.claude.v0",
-                              "adm.728a87a9ca48", "claude/mock-shame")
+                              "adm.728a87a9ca48", "claude/mock-shame",
+                              pr_author="claude-author",
+                              non_author_attested=True)
         self.assertEqual(r["id"], "rcp.merge.45")
         self.assertEqual(r["kind"], "merge")
         self.assertEqual(r["verdict"], "landed")
         self.assertEqual(r["authorized_by"], "adm.728a87a9ca48")
         self.assertEqual(r["pr"], 45)
+        self.assertEqual(r["pr_author"], "claude-author")
+        self.assertTrue(r["non_author_attested"])
 
     def test_receipt_carries_the_landed_atoms_sorted(self):
         # D-13: the write-through carbon copy — the merge reflects *which* atoms
@@ -206,7 +222,8 @@ class CmdLandUnpacksAtomFacts(unittest.TestCase):
 
     def _land_ns(self, dry_run):
         return argparse.Namespace(
-            number=99, epic="epic.owner-harness", by=BY, dry_run=dry_run)
+            number=99, epic="epic.owner-harness", by=BY, dry_run=dry_run,
+            attest_non_author=True)
 
     def _fake_run(self, recorder=None):
         """A _run that answers gh pr view with a landable PR and swallows the

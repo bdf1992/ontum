@@ -61,11 +61,25 @@ def _reldir(root, dirpath):
         return pathlib.Path(dirpath).as_posix()
 
 
+def _worktree_dirs(root):
+    """Every working tree of this repo (``git worktree list``). The allocator
+    must see a SIBLING worktree's uncommitted record, not just the current
+    checkout's — the concurrent-mint blind spot: two worktrees mint the same id
+    before either commits, and only the commit-check catches it (the 0149
+    collision, two parallel sessions). Falls back to the current checkout if
+    git can't list worktrees (fail-open)."""
+    out = _git(root, ["worktree", "list", "--porcelain"])
+    paths = [pathlib.Path(line[len("worktree "):].strip())
+             for line in out.splitlines() if line.startswith("worktree ")]
+    return paths or [pathlib.Path(root)]
+
+
 def claims(dirpath, root=None):
     """Fold the fleet: id -> {filename -> set(refs claiming it)}.
 
-    Every ref's tree plus the working directory, so an uncommitted record is
-    counted against committed siblings too."""
+    Every ref's tree plus EVERY worktree's working directory, so an uncommitted
+    record — in this checkout or a sibling worktree — is counted against
+    committed siblings too."""
     root = root or repo_root()
     rel = _reldir(root, dirpath)
     seen: dict = defaultdict(lambda: defaultdict(set))
@@ -79,12 +93,20 @@ def claims(dirpath, root=None):
             m = NUMBERED.match(name)
             if m:
                 seen[m.group(1)][name].add(ref)
-    here = pathlib.Path(dirpath)
-    if here.is_dir():
-        for p in here.iterdir():
+    # Every worktree's working tree, not just the current checkout (dirpath):
+    # a sibling worktree's uncommitted mint is invisible to refs and to this
+    # checkout's dir, and that invisibility is what lets two worktrees pick one
+    # id. The current dirpath is one of these worktrees, so it is still counted.
+    for wt in _worktree_dirs(root):
+        wdir = wt / rel
+        if not wdir.is_dir():
+            continue
+        label = "(working tree)" if wt.resolve() == root.resolve() \
+            else f"(worktree: {wt.name})"
+        for p in wdir.iterdir():
             m = NUMBERED.match(p.name)
             if m:
-                seen[m.group(1)][p.name].add("(working tree)")
+                seen[m.group(1)][p.name].add(label)
     return seen
 
 

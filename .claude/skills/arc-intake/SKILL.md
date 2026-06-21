@@ -57,7 +57,7 @@ correct, never silent.
      ```sh
      python .claude/skills/branch-ritual/pr.py confirm --epic <epic> --by bdo
      # then, per open PR under this arc:
-     python .claude/skills/branch-ritual/pr.py land <n> --epic <epic> --by merge-node.claude.v1
+     python .claude/skills/branch-ritual/pr.py land <n> --epic <epic> --by merge-node.claude.v1 --attest-non-author
      ```
      Then reply and close out:
      ```sh

@@ -31,6 +31,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/workstation_guard.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/write_guard.py\"",
             "timeout": 10
           },
@@ -54,6 +59,11 @@
       {
         "matcher": "Edit|MultiEdit|NotebookEdit",
         "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/workstation_guard.py\"",
+            "timeout": 10
+          },
           {
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/freeze_guard.py\"",
@@ -162,6 +172,11 @@
           {
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/owner_ask_shame.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/trespass_shame.py\"",
             "timeout": 10
           },
           {

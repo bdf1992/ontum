@@ -41,7 +41,7 @@ python -m loop.reflect rule --kind owner-stamp-queue --surface github-issues --o
 python -m loop.web render                  # static owner inbox page
 python -m loop.web serve                   # localhost inbox with verdict forms
 
-python -m loop.census                      # the organ census: which organs carry weight, which are dormant
+python -m loop.census                      # the part census: which parts carry weight, which are dormant
 
 python -m loop.activity                     # the activity-accounting fold: every wired hook's data collection + usage, read-only, refuses an undeclared collector
 python -m loop.activity --json              # the raw dataset (machine-readable)
@@ -75,6 +75,9 @@ python -m loop.tags admit --dimension intent --value <v> --by bdo   # promote a 
 
 python -m loop.pull                        # the terminal-pull gateway — the piece-scale landable slice + the namespace gap, read-only
 python -m loop.pull --json                 # the raw dataset (machine-readable)
+
+python -m loop.inference_queue             # the inference admission queue's stats fold — in-flight, throughput, per-mind latency, saturation, read-only
+python -m loop.inference_queue admit --bound <n> --by bdo   # set the in-flight concurrency dial (the gateway's backpressure)
 
 python -m loop.pen new done --slug <slug> --title "<t>"     # the next done-line, from the directory's form
 python -m loop.pen supersede-done --abandoning <id> --slug <new> --done "<new bar>" --reason "<honest reflection>" --by bdo   # bdo-only; refuses every session signer (no free "stop working" card)
@@ -198,10 +201,10 @@ so a prompt edit can't reopen a settled verdict (I-2).
 - [web.py](web.py) — the owner inbox, a rendered fold; its verdict POST
   calls the same `judge()` the CLI uses. There is deliberately no
   second write path.
-- [census.py](census.py) — the organ census (done-line 0029): the loop
+- [census.py](census.py) — the part census (done-line 0029): the loop
   sensing its own body. A pure fold (no subprocess, no git) over two
-  signals — *wired* (reachable from the working system, not the organ's
-  own test) and *exercised* (a controlled literal of the organ's is on
+  signals — *wired* (reachable from the working system, not the part's
+  own test) and *exercised* (a controlled literal of the part's is on
   the record). Crossed, they give three verdicts that are bdo's three
   movements: **alive** (give care), **wired·idle** (a writer plumbed in
   but never fired — needs attention), **dormant** (disconnected — a
@@ -251,7 +254,7 @@ so a prompt edit can't reopen a settled verdict (I-2).
 - [heal.py](heal.py) — the healing fold (done-line 0111): the counterforce
   to the teeth. Teeth without a healing reflex is autoimmunity — the loop
   keeps a correct-but-stale bite inflamed on the owner surfaces and has no
-  organ that could ever see a tooth bite *wrong*. Sibling of `retro` on the
+  part that could ever see a tooth bite *wrong*. Sibling of `retro` on the
   *bite* axis (retro: what keeps happening; heal: where did a tooth bite
   wrong), reusing the same `Fold`, the digest's version-split, and
   supersession — no second truth. Three detectors: **stale-park** (a gate
@@ -291,7 +294,7 @@ so a prompt edit can't reopen a settled verdict (I-2).
   `node_real` admission ever named on either side; one admission clears
   both its sides), **parked-piece** (an atom a gate
   refused, holding), **surface-drift** (acts a registered surface does
-  not show), then **idle-organ**/**dormant-organ** (the census verdicts)
+  not show), then **idle-part**/**dormant-part** (the census verdicts)
   — each gap carrying kind, subject, why, and the one concrete next move
   (always an existing pen's; this fold writes nothing, and the census
   cut stays bdo's, D-4). Computes lazily in priority order so the cheap
@@ -355,10 +358,35 @@ so a prompt edit can't reopen a settled verdict (I-2).
   entry verified against `.codex/hooks.json` when present). The accounting is
   enforceable: no silent collector can be wired without declaring its
   data-practice. Read-only, propose-grain; the cut and the wider shared-gateway
-  unification stay bdo's (D-4). The unwitnessed count is the bridge to organ 2,
+  unification stay bdo's (D-4). The unwitnessed count is the bridge to part 2,
   the runtime witness (every firing → a first-class receipt, the sibling of
   `tool-use.jsonl` the git/gh-gateway proposal deferred).
 - [herald.py](herald.py) — the herald (epic.landing-throughput-response): agents are an open set, so registration and reputation are FOLDS over logged `herald_introduction` admissions, never a table — a herald `introduce`s a named/titled agent (the dumb pen mints a content-hash `credential` at the trust-ladder floor rank, read from `loop.trust`), `roster` folds who is registered (superseding, never erasing), and `reputation` derives distributed value from the log's provenance edges (exemplars net against notorieties per credential, and a herald earns a meta-reputation over the standing of whom it vouched, so a bad voucher is visible by construction); read-only but for the one pen, standing only ever earned forward (§10: standing is recomputed from records, never asserted; D-4).
+- [inference_queue.py](inference_queue.py) — the inference admission queue
+  (done-line 0152, epic.inference-gateway): the summon queue on the request
+  axis. The gateway authorized and receipted every completion but fired each
+  immediately and synchronously — no concurrency bound, so a burst of
+  completions stacked model/KV-cache past physical memory and the host
+  swap-thrashed (bdo's llama-server kill). Three parts, stdlib and local-first
+  (a file semaphore is a local coordination primitive, not the no-network
+  ban's broker): an **admitted concurrency dial** (`concurrency_bound`/
+  `set_bound`, default-safe when unset, never a code constant — the setpoints
+  law), a **lease-based file semaphore** (`acquire`/`release`; a slot is
+  claimed by atomically `os.link`-ing an already-written file into place, so the
+  bound holds under real parallel contention — a create-then-write `O_EXCL`
+  claim let a concurrent reader see an empty slot and double-claim it, a real
+  bound violation a multiprocessing stress test caught and now gates;
+  self-healing on a dead holder once its lease lapses — the torn-tail mortality
+  property; release is token- and lease-guarded so a lapsed holder can never
+  delete the live slot), and a **read-only stats fold** over the
+  inference receipts (throughput, per-mind latency, saturation, live
+  in-flight). The gateway pen acquires a slot before the completion and
+  releases after, receipting a witnessed `saturated` outcome when the plane
+  stays full — backpressure on the record, never a silent host-kill. The
+  bound's value is bdo's to tune (D-4).
+- [observe.py](observe.py) — the Observable-as-gate (epic.model-free-mode-response, wave 1): the consequence-gate's forced-first invariant. A peer review of the smart-mashing doctrine reordered the four invariants — Observable is the substrate reversibility, boundedness and learning-progress are all *computed from*, so it gates first. Before an autonomous **exploratory** act runs it must DECLARE actor, intended action, expected receipt, touched scope, attribution path, rollback path, and a probe id; if it cannot NAME the receipt path that ties effect back to actor, the act HALTS — it does not run. The §10 kill-test runs the **real `command_guard`** as a subprocess: an act the *action-gate* allows (`git status`) is REFUSED by `observe.gate()` when under-declared — the consequence-gate catching what the action-gate cannot (the doctrine's central claim, in a passing test). Pure stdlib, read-only. Soft tooth on record: the attribution check is substring-based, to harden before it gates real acts.
+- [relation_ledger.py](relation_ledger.py) — relation-ledger.v0 (epic.model-free-mode-response, wave 1): the record substrate for the **relational middle band** — representation without mechanism, the corrected spectrum raw → relational → mechanistic. Declares five record kinds (relation_claim, relation_probe, consequence_receipt, model_candidate, bucket_coherence_report) and a pure read-only fold that, per bucket, reads whether a claim's predicted consequence MATCHES observed receipts (PREDICTIVE) or not (TRIVIAL/refuted). The coherence rate is the learning-progress proxy — the rate buckets stabilize into predictive coherence (compression progress), not raw surprise. v0 is logged claims+receipts; embeddings are a later *admitted* part ([relation-organ-admission contract](../causality/contracts/relation-organ-admission.md)). Declared at zero records (the cool-valve grain).
+- [over_containment.py](over_containment.py) — the over-containment counter-test (epic.model-free-mode-response, wave 1): the shared shadow of T6 (over-containment in *action* space — the gate refuses so little nothing risky reaches it) and T7 (over-containment in *representation* space — equivalence classes collapse until real signal is averaged away). One shadow, two layers, one discriminator: is a stabilization PREDICTIVE (coherence rose under test) or merely TRIVIAL (stable because never tested)? The load-bearing leg is `tested` — a signal stable+rising but never tested reads as over-containment. The doctrine's "the clauses that buy safety can erase the signal that justified the freedom," made a detector.
 
 ### Invariants the code is built around (firm)
 

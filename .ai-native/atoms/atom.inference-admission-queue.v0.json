@@ -1,0 +1,71 @@
+{
+  "atom": {
+    "id": "atom.inference-admission-queue.v0",
+    "story": {
+      "from": "bdo, 2026-06-20 (chat), after his llama-server hammered the host into a swap-thrash freeze: 'do we have a requisition / summon queue in front of this installed in the gateway or anything? the idea would be we should allow requests and then they get processed with stats right? Can 1 model handle multiple calls? how does it work?' Then: 'just land the increments.'",
+      "framing": "The gateway (.claude/skills/gateway/gateway.py) already authorizes every completion and receipts it with stats (latency_ms, tokens, outcome). But it fired each completion immediately and synchronously: no admission control, no concurrency bound, no backpressure. N concurrent callers became N concurrent loads on the metal, and the only queue was Ollama's internal one, which the loop neither controls nor witnesses. That unbounded fan-in is the mechanism behind 'hammering kills my PC' — a burst of gate/panel completions stacks models and KV-cache past physical memory and the host swap-thrashes into a freeze. The diagnosis that started this conversation (a single 256k-context request alone reserved 43GB on a 31.8GB box) is the same disease at request-rate scale.",
+      "work": "loop/inference_queue.py — the inference admission queue, the summon queue on a new axis (summon.py admits atoms waiting for nodes; this admits requests waiting for a model slot). Three parts, stdlib and local-first (the loop/ no-network law; a file semaphore is a local coordination primitive): (1) the DIAL — concurrency_bound/set_bound: how many completions may be in flight is an admitted, bdo-signed record, default-safe when unset, never a code constant (the 'setpoints are admitted records' law); (2) the SEMAPHORE — acquire/release: a lease-based file semaphore claimed atomically (O_EXCL), a saturated request waits up to a bound and is then refused; the lease makes it torn-tail safe (a hard-killed caller's slot self-heals on the next acquire once its lease lapses); (3) the STATS FOLD — a read-only fold over the inference receipts (throughput, per-mind p50/p95 latency, saturation) plus the live in-flight count. The gateway acquires a slot before the completion and releases after, receipting a witnessed `saturated` outcome when it cannot within the wait — backpressure on the record, never a silent host-kill. tests/test_inference_queue.py proves the bound BITES (bound=1 refuses the second concurrent acquire) and is not vacuous (bound=2 admits it), the lease self-heals (no deadlock on a dead holder), release is token-guarded (a stale holder cannot delete the live slot), the dial is read from the log not a constant, and the gateway witnesses saturation.",
+      "need": "bdo's naming of where the concurrency bound should sit for his hardware (the dial defaults safe and is his to tune from measurement, D-4), and whether the orthogonal container memory-fence is still wanted as a host-survival belt (this increment makes it unnecessary for loop-originated load but does not govern non-gateway callers). The increment itself is stdlib, local, reversible, and atom-backed, so it was built and landed without waiting (the offloading hard rule: a session does the safe reversible work).",
+      "value": "A burst of completions can no longer stack unbounded model/KV-cache and freeze the host: excess requests wait and, still saturated, are refused with a receipt on the record — the exact 'allow requests and then they get processed with stats' bdo asked for, where the stats half already existed and this adds the missing admission half. It is a better fix than blunt-capping Ollama's max-loaded-models: the bound lives at the loop's door, applies backpressure, witnesses every request, and is one admitted dial bdo tunes — not N brittle per-model manifests. It answers 'can one model handle multiple calls' structurally: the bound governs in-flight slots, the queue absorbs the burst, the footprint stays fixed by the slot count rather than the request rate.",
+      "text": "From bdo's direction to put a requisition/summon queue in front of the inference gateway — allow requests, process them with stats, so hammering stops killing the host — I need a bounded, lease-based admission semaphore the gateway acquires before each completion plus a read-only stats fold over the receipts, because the gateway fired completions with no concurrency bound and an unbounded burst stacks model/KV-cache past physical memory into a swap-thrash freeze.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "moderate",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "A new stdlib loop/ module (file semaphore + read-only fold) plus one bounded edit to the gateway egress: it wraps the existing _post_completion in acquire/release and adds a `saturated` receipt path; no new network egress (the no-bypass urlopen count stays 1, asserted). The slot files are gitignored ephemeral cache (.ai-native/inference-slots/), self-healing by lease, never history. Moderate not cheap because it sits on the single sanctioned inference path and changes call latency under contention (by design — backpressure), but it is reversible by reverting the gateway edit and deleting the module, and the default bound is safe. The full suite is green (1120 tests).",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "a queue in front of inference — hammering becomes backpressure, not a freeze",
+      "value": "Your gateway already counted what each call cost; it never bounded how many ran at once. This adds the missing admission half: a burst of completions can't stack model/KV-cache past your RAM and freeze the host — excess waits, then is refused with a receipt. The bound is one dial you tune.",
+      "why_now": "Your llama-server hammered the host into a freeze today; you asked for exactly this (allow requests, process with stats) and said 'just land the increments.' The single-call 256k overcommit was fixed at the app layer; this closes the request-rate hole structurally.",
+      "if_accepted": "The gateway stops being fire-and-forget: it admits each completion through a bounded, witnessed slot. The container memory-fence becomes unnecessary for loop-originated load. The stats fold (python -m loop.inference_queue) reads live in-flight, throughput, per-mind latency, and saturation off the receipts.",
+      "if_rejected": "The gateway keeps firing every completion immediately; a panel/gate burst can stack models past physical memory and swap-thrash the host into a freeze, with no backpressure and no witness of the saturation.",
+      "cost_of_wrong_call": "Low-moderate: reversible by reverting one gateway edit and deleting the module; the slot files are ephemeral; the default bound is conservative. The standing decision — the bound's value and whether to also keep a container fence — stays yours.",
+      "mechanism": "loop/inference_queue.py: an admitted concurrency dial (default-safe), a lease-based O_EXCL file semaphore (self-healing on a dead holder), and a read-only stats fold over the inference receipts. The gateway acquires a slot before the completion, releases after, and receipts `saturated` when the plane stays full for the whole wait. §10 teeth in tests/test_inference_queue.py prove the bound bites and is not vacuous (D-4: the cut — the bound — stays yours).",
+      "reading": [
+        ".ai-native/done/0152-inference-admission-queue.md",
+        "loop/inference_queue.py",
+        ".claude/skills/gateway/gateway.py",
+        "tests/test_inference_queue.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.inference-gateway"
+      ],
+      "touches": [
+        "loop/",
+        ".claude/",
+        "tests/"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [
+        ".ai-native/nodes/value-gate.claude.v1.md"
+      ],
+      "source_artifacts": [
+        "bdo's chat direction, 2026-06-20 (the requisition-queue-in-front-of-the-gateway conversation)",
+        "done-line 0152",
+        ".claude/skills/gateway/gateway.py (the egress this admits in front of)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record and content-hash source; never mutated (D-5). The inference admission queue for epic.inference-gateway: the summon queue on the request axis. The work is stdlib/local/reversible and was built before the stamp per the offloading hard rule; the bound's value and the container-fence question stay bdo's (D-4)."
+}

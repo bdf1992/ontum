@@ -1,0 +1,38 @@
+{
+  "atom": {
+    "id": "atom.landing-throughput-resp-authorship-in-code.v0",
+    "story": {
+      "text": "No-one-signs-their-own-line (D-2) is the load-bearing invariant of the merge-node: a fresh session lands a PR it did NOT author, so the second set of eyes is structural, not optional. But until now that invariant lived only as PROSE in the merge-node skill -- the land pen (pr.py) never checked it. A session could pass --by <any-node> and land its OWN PR; the pen would merge it as long as the arc was confirmed and CI was green. The discipline was real but uncoded, which is exactly the gap issue #345 names: 'authorship is not enforced in code'. This atom moves the invariant into the pen's land_refusal, where the teeth already live. Two refusals are added BEFORE the mechanical checks (open/green/written/based-on-main): (1) an exact author<->--by identity match refuses outright -- 'PR author X matches --by X -- no one signs their own line'; and (2) absent an explicit --attest-non-author flag, land refuses and tells the merge-node it must attest that this fresh session did not author the PR. The attestation is not free ceremony: it is recorded on the merge receipt (pr_author + non_author_attested), so the land becomes an act on the record that CARRIES who authored and that a non-author attested it -- a later reader can audit the separation from the log alone (the D-13 grain: the receipt answers the question, not just that a land happened). The §10 teeth: the merge_land tests prove the refusal is not vacuous -- a PR perfect on every mechanical axis (open, green, written, non-draft, based on main, confirmed arc, admitted node) STILL refuses when the attestation is missing, and refuses when author==by even WITH the attestation. Two locally-fine facts (a confirmed arc, a green PR) refuse to fit when the one fact that matters -- a different reader -- is absent. Value: the invariant bdo amended into the merge model (he confirms arcs; an independent agent lands) can no longer be bypassed by a self-asserted --by; the pen forces the separation it always described, and the receipt makes the separation auditable.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [
+        ".claude/skills/branch-ritual/pr.py",
+        ".claude/skills/merge-node/SKILL.md",
+        ".claude/skills/arc-intake/SKILL.md",
+        "CLAUDE.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_merge_land.py",
+        "tests/test_merge_node.py"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Closes issue #345 (pr.py land: authorship is not enforced in code). The invariant already lived in .claude/skills/merge-node/SKILL.md as prose and in the unadmitted-signer / unnamed-node refusals; this atom carries it into land_refusal as an exact author<->by match refusal plus a required, receipt-recorded --attest-non-author attestation. Never mutated -- the fold over .ai-native/log/ is the live state (D-5)."
+}

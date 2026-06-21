@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.placement-folds-worktrees.v0",
+    "story": {
+      "text": "As the loop's owner, I need the fleet-id allocator to stop handing two parallel worktrees the same record id — because it gunked twice in one session (the 0132->0139 and 0149->0151 renumber cascades), and the right move when a pen gunks is to clean the pen, not scratch around it and hand it to me to fix. The cause: .claude/hooks/placement.py folds record-id claims over all git refs plus only the CURRENT checkout's working tree, so a SIBLING worktree's uncommitted mint is invisible; two worktrees pick one id and only the commit-check catches it. The fix folds every worktree's working tree (git worktree list), so the concurrent uncommitted mint is seen at allocation time. tests/test_placement.py proves it and fails without the fold.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The fleet-id allocator sees every worktree's uncommitted mint, not just the current checkout's",
+      "value": "Two parallel sessions in two worktrees stop colliding on the same done/report id. The allocator (loop.pen next_id, delegating to placement) and the collision check both gain the sibling worktree's uncommitted records, closing the concurrent-mint race that forced two manual renumber cascades in a single session. Cleaning the pen instead of working around the gunk — landing friction (issue #355, C7 of the change-management bundle) removed at the source.",
+      "why_now": "It bit twice in one session and each time cost a renumber cascade across every file that cited the id, then nearly got handed to bdo as a high-priority owner-ask. The fix is small, bounded, and session-fixable; the workaround was the wrong instinct.",
+      "if_accepted": "placement.claims() folds git worktree list's working trees; a sibling worktree's uncommitted record is counted by next_id and collisions; tests/test_placement.py pins it (the new TestWorktreeFold class, which fails without the fold). Fail-open preserved: no git worktree listing -> fall back to the current checkout.",
+      "if_rejected": "Parallel-worktree sessions keep minting colliding ids; every busy session pays a renumber cascade; the allocator and the commit-check keep disagreeing about what's taken.",
+      "cost_of_wrong_call": "Low. Read-only git, pure id folding, fail-open on any git failure (a broken sensor never blocks a mint). It can only make the allocator see MORE, never less; the worst case is the prior behavior.",
+      "mechanism": "placement.claims() gains _worktree_dirs(root) (git worktree list --porcelain) and folds each worktree's <rel> directory for numbered records, attributing a sibling's record to '(worktree: <name>)'; the current checkout stays '(working tree)'. tests/test_placement.py adds TestWorktreeFold: a sibling worktree's uncommitted record is folded (claims sees it; next_id skips it). Done-line 0156.",
+      "reading": [
+        ".claude/hooks/placement.py",
+        "tests/test_placement.py",
+        ".ai-native/done/0156-placement-folds-every-worktree.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.landing-throughput-response"],
+      "touches": [".claude/hooks/placement.py", "tests/test_placement.py"],
+      "must_not_collide_with": ["loop/pen.py", ".claude/skills/branch-ritual/git.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/hooks/placement.py"]
+    }
+  },
+  "_note": "Birth record for the placement worktree-fold fix (done-line 0156): the allocator folds every worktree's working tree, not just the current checkout, closing the concurrent-mint id-collision race. Authored as the clean-the-pen response to bdo's 'why didn't you fix it first' (2026-06-20). Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

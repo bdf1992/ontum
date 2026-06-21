@@ -16,7 +16,7 @@ bdo's stamp, or genuinely needs him, it runs `python -m loop.patrol escalate
 --reason "<why>"`; that arms a marker the soft reminder reads (`retry.compose`
 goes silent while it is armed). The forcing `decide` fold is gone; this marker —
 the session naming its own escalation (D-2: the patrol never guesses one) — is
-the part the new soft organ composes.
+what the new soft part composes.
 
 The marker is gitignored nag-state (`.ai-native/patrol.json`, the
 `mock-shame.json` precedent — ephemeral session state, never the truth log).

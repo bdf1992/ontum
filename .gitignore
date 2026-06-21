@@ -1,6 +1,9 @@
 # cache, never truth (§14.1): a fold over .ai-native/log/ — rebuilt by replay
 .ai-native/queues/
 .ai-native/offsets/
+# ephemeral runtime coordination: the inference admission semaphore's slot
+# leases (done-line 0149). Live-only, self-healing, never history.
+.ai-native/inference-slots/
 .ai-native/inbox.html
 causality/welcome.html
 causality/welcome-preview.png
@@ -22,6 +25,10 @@ causality/welcome-preview.png
 # nag tally, not truth: turns the same unsurfaced owner-ask set has sat
 # (done-line 0058) — the unsurfaced set is a fold over reports + the log
 .ai-native/owner-ask-shame.json
+
+# nag high-water mark, not truth: per-session count of denied trespasses
+# (tooth #3) — the attempts themselves are witnessed on the watch log
+.ai-native/trespass-shame.json
 
 # session-ephemeral nag state, not truth (done-line 0135, the session-
 # lifecycle organ): the patrol's escalate marker (escalate_armed/reason), the

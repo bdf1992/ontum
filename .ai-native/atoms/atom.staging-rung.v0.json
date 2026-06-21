@@ -1,0 +1,39 @@
+{
+  "atom": {
+    "id": "atom.staging-rung.v0",
+    "story": {
+      "text": "The GIT-tier DEPLOYMENT face of epic.environments (bdo's confirmed arc adm.b30f27b9d5ad), across the local->git boundary bdo confirmed ('go', 2026-06-20). The LOCAL tier is complete on main (the snapshot spine rcp.merge.369 + local-preview rcp.merge.381). The git tier makes main the recorded 'integrated, not yet accepted' STAGING rung a snapshot is promoted FROM into production, and unifies the per-environment promotion records the loop already writes into ONE readable promotion PATH per snapshot: local -> staging -> production. The loop already wrote a record at each END of the path — local_deployment (loop/preview.py) and production_promotion (loop/deploy.py) — but nothing named the middle rung or read the path as one ordered thing; loop/promote.py adds the staging rung (a staging_promotion record) and the unifying fold. It COMPOSES, never double-builds (S10): it reads preview.local_deployments, deploy.production_snapshot, and snapshot.resolve/snapshot.snapshots, and JOINS the two namespaces deploy.py and preview.py use — deploy keys production on a COMMIT sha, preview keys local on the snapshot NAME — by resolving a snapshot's name to its commit. It does not modify the landed deploy/preview behaviour and never re-judges acceptance (D-4). The S10 teeth: the path refuses to fit out of order — only an ACCEPTED snapshot may be promoted to staging (a stale/ghost/unaccepted one is refused, nothing recorded), and the path is ORDERED so a staging promotion with no prior local deployment is refused as out-of-order, and the fold NAMES any out-of-order state it reads (a rung reached without its predecessor, e.g. production without staging). tests/test_promote.py proves it with 8 cases and is non-vacuous (the same snapshot is refused before its local deployment and promotes after). Value: a snapshot's journey across environments becomes a single readable, ordered, recorded path instead of two disconnected end-records, and the integrated-but-unaccepted rung gets a name and a gate. With this the GIT tier is complete; the github tier (preview-env + served control plane; production-gate already shipped #286) is the next increment, across the git->github boundary bdo confirms.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "promote",
+    "incidence": {
+      "serves": [
+        "epic.environments"
+      ],
+      "touches": [
+        "loop/preview.py",
+        "loop/deploy.py",
+        "loop/snapshot.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "atom.preview-env.v0"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0162-staging-rung.md",
+        "loop/promote.py",
+        "tests/test_promote.py",
+        ".ai-native/epics/epic.environments.json"
+      ],
+      "receipts": []
+    }
+  }
+}

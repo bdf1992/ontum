@@ -46,6 +46,22 @@
       "sink": ".ai-native/log/tool-use.jsonl (denials only)",
       "witnessed": false
     },
+    "workstation_guard": {
+      "wiring": "claude",
+      "events": ["PreToolUse:Write", "PreToolUse:Edit|MultiEdit|NotebookEdit"],
+      "collects": ["file_path", "cwd", "session"],
+      "uses_for": "refuse a write/edit whose target path is in a worktree (or the viewport) other than the session's own — the workstation write-fence (done-line 0147); record the denied attempt so the trespass shame beat witnesses it",
+      "sink": ".ai-native/log/tool-use.jsonl (denials only)",
+      "witnessed": true
+    },
+    "trespass_shame": {
+      "wiring": "claude",
+      "events": ["UserPromptSubmit"],
+      "collects": ["session_id", "trespass-denial-fold"],
+      "uses_for": "shame a session for ATTEMPTING to flip the viewport or write a foreign tree (even though the fence denied it); grows louder per new attempt, quiet when it stops",
+      "sink": ".ai-native/trespass-shame.json (gitignored nag high-water mark) + stdout",
+      "witnessed": false
+    },
     "summon": {
       "wiring": "claude",
       "events": ["SessionStart", "UserPromptSubmit"],
