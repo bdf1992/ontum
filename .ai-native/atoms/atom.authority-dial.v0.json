@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.authority-dial.v0",
+    "story": {
+      "text": "As bdo, I said the ask-forgiveness authority dial (reversible -> act + FYI, irreversible -> ask) is the keystone to the autonomous-authorship button — and then I corrected how I want it delivered: 'set the default and give me an owner's manual. I don't want to put all the nuts and bolts together. This isn't ikea, it's apple.' So this is not a flat-pack of decisions handed back to me. It is the dial, BUILT and working, with sensible defaults SET (default-safe, conservative), plus a real owner's manual. The dial governs by CONSEQUENCE, not action: an act proceeds without asking me — acts, leaves a receipt, surfaces as an FYI — only when it is observable AND reversible AND low-blast AND advancing an arc I already confirmed; anything else (new, partial, undeclared, irreversible, far-reaching, or off-plan) stops and asks me first. When in doubt it asks. It composes the consequence-gate (observe.py) rather than re-deriving it, and the tiers are an admitted setpoint I default-set, that I retune with one gesture — never a code constant. The manual (docs/culture/the-administrator.md plus the live `python -m loop.authority` surface) tells me what it does, the defaults chosen, and the exact command for each knob. Apple, not IKEA.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the autonomy dial, default-set and working, with an owner's manual: an act runs unattended only if observable+reversible+low-blast+in-a-confirmed-arc, else it asks bdo first",
+      "value": "loop/authority.py is the risk-tiered authority dial — the keystone to the autonomous-authorship button. classify(declaration) routes any declared act to ACT_AND_FYI (proceed unattended, receipt, FYI) or ASK_FIRST (stop, request bdo's stamp), by CONSEQUENCE not action. It composes loop/observe.py (the consequence-gate): Observable is checked FIRST — an act that cannot be traced home never runs unattended. Over an observable act it weighs reversibility (a declared real undo) x blast-radius (LOW = its own scope only; HIGH = the trunk, viewport, network/outside world, money, identity/persona, deletion, another worker's bench) x in-a-confirmed-arc. ACT_AND_FYI requires ALL four; any single failure, or any undeclared/partial act, asks first (default-safe — when in doubt, ask). The tiers are an admitted authority.tiers setpoint with a default-safe DEFAULT_TIERS I set (the setpoints law, never a constant); bdo retunes with one gesture (admit-tiers --by bdo). The owner's manual is docs/culture/the-administrator.md (plain-words: what it does, the defaults, the knobs, the gesture per knob) plus the live `python -m loop.authority` surface that renders the current policy from the log.",
+      "why_now": "bdo, 2026-06-21: the dial is named the keystone to the autonomous-authorship button (memory: the present-face / ask-forgiveness dial), and he gave a direct delivery correction — 'set the default and give me an owner's manual, this isn't ikea, it's apple.' I had been handing him the tiers as a raw decision to assemble; the correction is to set opinionated default-safe values myself, build it working, and hand a manual. CTA-1 of the authoring-platform blueprint is stamped (crease + sensors-as-staff), so the keystone build is unblocked.",
+      "if_accepted": "The autonomous-authorship button has its keystone: a default-safe bound on what may happen without bdo in the loop, working out of the box, tunable by him with one logged gesture, documented in a manual. Most reversible motion never reaches him; what does is the rare, shaped ask-first set the Administrator will surface.",
+      "if_rejected": "The button stays unpressable: either every autonomous act reaches bdo (a queue, the thing he rejects) or the agent acts unbounded. There is no default line between act-and-FYI and ask-first, and bdo is back to assembling the tiers himself.",
+      "cost_of_wrong_call": "Low and default-safe by construction. The dial only ever decides whether to ASK — it never grants more than 'proceed unattended' for an act already proven observable+reversible+low-blast+in-arc; any doubt asks first, and a bad tiers read falls back to the safe default (never widens authority). It is a pure function with no side effects; it actuates nothing itself (the Administrator that would act on its verdict is a later, separate piece). Reverting is deleting the module. loop/ stays no-network.",
+      "mechanism": "loop/authority.py: classify(declaration, tiers, arc_confirmed) -> (route, reason), pure, composing observe.gate first. _is_reversible reads an explicit `reversible` bool or the rollback_path the consequence-gate already requires (refusing the no-undo words). _reaches_high_blast reads the act's `blast` or `scope` against the high_blast marker list (undeclared reach -> high, default-safe). read_tiers folds the admitted authority.tiers setpoint latest-wins + per-key fallback to DEFAULT_TIERS; admit_tiers is bdo's gesture; active_tiers is default-safe on any error. CLI renders the manual surface + --json + admit-tiers. Tests (tests/test_authority.py, 17): clean act -> ACT_AND_FYI; irreversible / no-undo-rollback / high-blast / acting-as-owner / deletion / unobservable / off-arc / empty -> ASK_FIRST (the load-bearing non-vacuous teeth); the arc param overrides the declaration; the require_reversible knob actually moves the verdict; read_tiers default-safe/latest-wins/per-key. The owner's manual: docs/culture/the-administrator.md. Done-line 0176.",
+      "reading": [
+        "loop/authority.py",
+        "loop/observe.py",
+        "docs/culture/the-administrator.md",
+        "tests/test_authority.py",
+        ".ai-native/done/0176-authority-dial.md",
+        ".ai-native/proposals/authoring-platform.proposal.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/authority.py", "tests/test_authority.py", "docs/culture/the-administrator.md", ".ai-native/done/0176-authority-dial.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/observe.py", "loop/watcher.py", "loop/inference.py", ".ai-native/proposals/authoring-platform.proposal.md", ".ai-native/proposals/gateway-policy-spine.proposal.md"]
+    }
+  }
+}
