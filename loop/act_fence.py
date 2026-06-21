@@ -179,6 +179,35 @@ def read_fence(admissions):
     return fence
 
 
+# The fence a session would RECOMMEND bdo draw — the conservative starting cut:
+# a worker's own contained, reversible work (read-only folds and branch drafts)
+# may self-admit; everything wider still escalates. A session never draws this
+# itself (draw-fence is an owner gesture, FORBIDDEN to self-admit — D-4); it only
+# names the recommendation so bdo's draw is one copy-paste, not a design task.
+RECOMMENDED_FENCE = ("read-fold", "draft")
+
+
+def draw_fence(root, forgivable, by, supersedes=None):
+    """Draw an `act_fence` — bdo's standing authorization that the named
+    forgiveness scopes may self-admit (D-4: only the owner draws it; the pen
+    refuses to write one the classifier would call invalid). Mirrors the
+    disposer's `admit-fence`. `root` is the `.ai-native` root."""
+    ok, why = valid_fence(forgivable)
+    if not ok:
+        raise ValueError(why)
+    from loop.reconcile import append_line, canon, now_ts, short_hash
+    adm = {
+        "id": "adm." + short_hash(FENCE_TYPE, canon(list(forgivable)), str(by), now_ts()),
+        "type": FENCE_TYPE,
+        "forgivable": list(forgivable),
+        "by": by,
+        "supersedes": supersedes,
+        "ts": now_ts(),
+    }
+    append_line(root / "log" / "admissions.jsonl", adm)
+    return adm
+
+
 def fence_authorizes(fence, act):
     """Does the drawn fence authorize self-admission of this act's scope? The
     act's `family` (or its declared `scope_tag`) must be one the fence names."""
@@ -318,7 +347,10 @@ def render(root):
               f"{', '.join(fence['forgivable'])}")
     else:
         print("act-fence — none drawn; the dial is inert (every forgiveness act "
-              "escalates, default-safe). bdo draws one to let a scope self-admit.")
+              "escalates, default-safe). To turn on ask-forgiveness for the safe")
+        print("starting scope, draw the recommended fence (one command, your stamp):")
+        print(f"  python -m loop.act_fence draw-fence --forgivable "
+              f"{' '.join(RECOMMENDED_FENCE)} --by bdo")
     print()
     print("the cut (reversibility x blast-radius, keyed to ontum's gestures):")
     print(f"  {FORGIVENESS:11s} reversible + contained -> act, log, FYI")
@@ -336,10 +368,31 @@ def render(root):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    sub = ap.add_subparsers(dest="cmd")
     ap.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     ap.add_argument("--json", action="store_true",
                     help="emit the catalogue dataset as data")
+
+    pd = sub.add_parser("draw-fence",
+                        help="draw the act-fence (bdo only, D-4): which "
+                             "forgiveness scopes may self-admit")
+    pd.add_argument("--forgivable", nargs="+", required=True, metavar="TAG",
+                    help="the forgiveness scope tags that may self-admit, e.g. "
+                         "read-fold draft")
+    pd.add_argument("--by", required=True, help="who draws it (D-4: bdo)")
+    pd.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+
     args = ap.parse_args(argv)
+
+    if args.cmd == "draw-fence":
+        try:
+            adm = draw_fence(args.root, args.forgivable, args.by)
+        except ValueError as e:
+            print(f"result: needs-you — cannot draw that fence: {e}")
+            return 2
+        print(f"result: report — act_fence {adm['id']} drawn by {args.by}: "
+              f"forgivable scopes {', '.join(adm['forgivable'])}")
+        return 0
 
     if args.json:
         print(json.dumps(catalogue(args.root), indent=2, ensure_ascii=False))

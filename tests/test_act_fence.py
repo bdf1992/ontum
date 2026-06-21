@@ -10,11 +10,13 @@ first: an unobservable act halts before any tier is read.
 """
 
 import unittest
+from pathlib import Path
 
 from loop import act_fence
 from loop.act_fence import (
     FORGIVENESS, PERMISSION, FORBIDDEN, classify, evaluate, read_fence,
 )
+from loop.reconcile import Fold
 
 
 def observed(**over):
@@ -195,6 +197,40 @@ class ClassifierIsNonVacuous(unittest.TestCase):
             classify(observed(family="confirm-arc"))[0],
         }
         self.assertEqual(tiers, {FORGIVENESS, PERMISSION, FORBIDDEN})
+
+
+class TestDrawFence(unittest.TestCase):
+    """The draw-fence pen + recommended fence (the Apple completion): bdo's one
+    gesture turns ask-forgiveness on for a scope; the dial is still inert until
+    he does. A forgiveness act escalates with no fence and self-admits under the
+    drawn one — the actuation flip the manual documents."""
+
+    def _root(self):
+        import tempfile
+        d = Path(tempfile.mkdtemp())
+        (d / "log").mkdir()
+        (d / "log" / "admissions.jsonl").write_text("", encoding="utf-8")
+        return d
+
+    def test_drawn_recommended_fence_flips_escalate_to_admit(self):
+        act = observed(family="read-fold", blast_radius="record")
+        # with no fence: a forgiveness act escalates (inert, default-safe)
+        self.assertEqual(evaluate(None, act)["verdict"], "escalate")
+        # bdo draws the recommended fence -> the same act self-admits
+        root = self._root()
+        act_fence.draw_fence(root, act_fence.RECOMMENDED_FENCE, "bdo")
+        fence = read_fence(Fold(root).admissions)
+        decision = evaluate(fence, act)
+        self.assertEqual(decision["verdict"], "admit")
+        self.assertEqual(decision["authorized_by"], fence["id"])
+
+    def test_pen_refuses_an_empty_fence(self):
+        with self.assertRaises(ValueError):
+            act_fence.draw_fence(self._root(), [], "bdo")
+
+    def test_recommended_fence_is_valid(self):
+        ok, _ = act_fence.valid_fence(act_fence.RECOMMENDED_FENCE)
+        self.assertTrue(ok)
 
 
 if __name__ == "__main__":
