@@ -172,6 +172,38 @@ class WhiteoutRecovery(unittest.TestCase):
             git(["branch", "--list", "claude/rescue-viewport-*"],
                 self.viewport).stdout.strip(), "")
 
+    def test_second_rescue_does_not_clobber_one_left_on_origin(self):
+        """The remote-namespace tooth: a rescue branch pushed earlier but
+        deleted locally still lives on origin. A second whiteout the same day
+        must NOT re-mint the same name (which would clobber the origin pile on
+        push) — it picks the next free suffix."""
+        self._dirty_the_viewport()
+        self._run_recovery()
+        first = next(
+            b.strip().lstrip("* ").strip()
+            for b in git(["branch", "--list", "claude/rescue-viewport-*"],
+                         self.viewport).stdout.splitlines() if b.strip())
+        # the branch is on origin; delete it locally (simulate a later session)
+        git(["checkout", "main"], self.viewport)
+        git(["branch", "-D", first], self.viewport)
+        git(["fetch", "-q", "origin"], self.viewport)  # keep the remote ref
+
+        self._dirty_the_viewport()
+        self._run_recovery()
+        locals_now = [b.strip().lstrip("* ").strip()
+                      for b in git(["branch", "--list",
+                                    "claude/rescue-viewport-*"],
+                                   self.viewport).stdout.splitlines()
+                      if b.strip()]
+        second = locals_now[0]
+        self.assertNotEqual(second, first,
+                            "the second rescue re-used a name still on origin")
+        self.assertTrue(second.endswith("-2"))
+        # the first rescue's pile still stands on origin, unclobbered
+        self.assertTrue(
+            git(["ls-remote", "--heads", "origin", first],
+                self.viewport).stdout.strip())
+
     def test_clean_viewport_recovery_is_a_plain_sync(self):
         """On a CLEAN viewport whiteout is just a fast-forward — no rescue
         branch, nothing lost, the trunk reached."""

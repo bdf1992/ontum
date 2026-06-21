@@ -684,15 +684,29 @@ def recover_dirty_viewport(viewport, git, emit, bail, ns):
     tree)."""
     head = git(["rev-parse", "--short", "HEAD"], viewport).stdout.strip()
     trunk = git(["branch", "--show-current"], viewport).stdout.strip() or "main"
-    existing = set(git(["for-each-ref", "--format=%(refname:short)",
-                        "refs/heads", "refs/remotes"], viewport).stdout.split())
+    raw = git(["for-each-ref", "--format=%(refname:short)",
+               "refs/heads", "refs/remotes"], viewport).stdout.split()
+    # the existing-ref set the naming fold avoids — include remote-tracking
+    # branches under their BARE name (strip the `origin/` prefix), so a rescue
+    # branch pushed earlier but since deleted locally is still not re-minted
+    # and clobbered on push (it lives only on origin until reconciled).
+    existing = set(raw) | {r.split("/", 1)[1] for r in raw
+                           if r.startswith("origin/")}
     rescue = rescue_branch_name(datetime.date.today().isoformat(), existing)
 
     made = git(["checkout", "-b", rescue], viewport)
     if made.returncode != 0:
         bail(f"whiteout could not open the rescue branch '{rescue}' — "
              f"{_oneline(made)}; the viewport is untouched")
-    git(["add", "-A"], viewport)
+    added = git(["add", "-A"], viewport)
+    if added.returncode != 0:
+        # staging failed — the pile is still in the working tree, unsaved.
+        # back out to the trunk (the dirty tree carries cleanly, rescue shares
+        # its commit) and leave the viewport exactly as found.
+        git(["checkout", trunk], viewport)
+        git(["branch", "-D", rescue], viewport)
+        bail(f"whiteout could not stage the viewport pile — {_oneline(added)}; "
+             "the work is still in the viewport, untouched")
     staged = [p for p in git(["diff", "--cached", "--name-only"],
                              viewport).stdout.splitlines() if p]
 
@@ -1034,8 +1048,10 @@ def main(argv=None):
     sync = verbs.add_parser(
         "sync", help="fast-forward the viewport (primary worktree) to "
                      "origin/main — the merge's return leg; restores a "
-                     "stranded viewport to main when its work is safe, "
-                     "surfaces only to preserve unpushed work")
+                     "stranded viewport to main when its work is safe; an "
+                     "explicit run on a DIRTY viewport recovers it via the "
+                     "whiteout utensil (preserve the pile, then sync), while "
+                     "--hook only points at the utensil")
     sync.add_argument("--hook", action="store_true",
                       help="hook mode: at most one line, exit 0 always — "
                            "fail-open, never gates a session's start")
