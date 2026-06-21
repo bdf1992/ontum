@@ -1,0 +1,50 @@
+{
+  "atom": {
+    "id": "atom.workstation-write-fence.v0",
+    "story": {
+      "text": "As bdo, I need a worker unable to write files into a workstation that isn't its own. Tooth #1 (the workstation fence, done-line 0145) stopped a worker FLIPPING the viewport's HEAD with git; this is the other half of the same rule — the FILE dimension. A worker writing or editing files into another worker's worktree, or into the viewport's working tree, is the same trespass and the way the viewport gets dirtied even when its HEAD is held. It was seen live: a concurrent session's files appeared inside another session's worktree path. The existing write_guard governs only new-file creation under the project root, so a write into a SIBLING worktree falls outside that root and was allowed. This closes the filesystem-path dimension.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "a worker writes only inside its own worktree",
+      "value": "A new guard, workstation_guard.py, wired to Write/Edit/MultiEdit/NotebookEdit, refuses (exit 2) a write whose target path resolves into a worktree of the SAME repo other than the one the session stands in — a sibling bench or the primary tree (the viewport). A write inside the session's own worktree, to a path in no git tree (temp, the memory store), or in an unrelated repo is allowed: the fence guards the benches of one repo against each other, nothing else. The session's tree is read from the payload cwd (the harness runs the hook from the project dir for every session, so the process cwd is the viewport for all of them); it fails open and never gates on a guess. Reads are untouched — it is wired only to the write/edit tools.",
+      "why_now": "bdo named viewport re-stranding a plague and asked how to stop it. Tooth #1 shipped (PR #341, the git-flip half); this is the file-write half he named in the same breath ('edit only your own workstation'). The two together close both ways a worker can dirty a tree that isn't its own.",
+      "if_accepted": "A worker physically cannot write or edit files into another worker's bench or into the viewport. Combined with tooth #1, the viewport is protected on both axes (HEAD and working tree), and the lesson-4 contamination (another session's files appearing in a worktree) cannot recur.",
+      "if_rejected": "The file dimension stays open: a worker can keep writing into sibling worktrees and the viewport's working tree, dirtying trees that aren't its own even with tooth #1 in force.",
+      "cost_of_wrong_call": "Low and bounded. A single new guard (single concern, like freeze_guard), wired alongside the existing edit-tool guards; it touches no pipeline stage, no verdict, no git mutation. It fails open on any error and never blocks a write it cannot place. The deliberate non-scope: a session standing IN the viewport writing the viewport is not foreign here (tooth #1 governs its git-flips; the source fix — spawning write-sessions into worktrees — is the complement, a later increment). Reverting is removing one settings wiring + one file.",
+      "mechanism": "workstation_guard.foreign_worktree(target, session_cwd) compares git toplevels: a target whose worktree root differs from the session's but shares the same git common-dir (same repo, different bench) is foreign and refused; same tree, no tree, or a different repo returns None. Helpers _toplevel/_common_dir/_nearest_existing run git in the resolved dir (a not-yet-created target resolves from its nearest existing parent). settings.json wires it into the Write and Edit|MultiEdit|NotebookEdit matchers at $CLAUDE_PROJECT_DIR. tests/test_workstation_write_fence.py joins the suite with the §10 teeth: the SAME target path is denied from a foreign bench and allowed from its owning tree, across both directions (viewport<->worktree), with non-repo paths never fenced and the edit tools covered, not just Write. Done-line 0147. Tooth #2 of three (tooth #3, a trespass shame beat, and the source fix — spawning workers into worktrees — are later increments).",
+      "reading": [
+        ".claude/hooks/workstation_guard.py",
+        ".claude/settings.json",
+        "tests/test_workstation_write_fence.py",
+        ".ai-native/done/0147-workstation-write-fence.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        ".claude/hooks/workstation_guard.py",
+        ".claude/settings.json",
+        "tests/test_workstation_write_fence.py",
+        ".ai-native/done/0147-workstation-write-fence.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/hooks/workstation_guard.py",
+        ".ai-native/done/0145-workstation-fence.md"
+      ],
+      "receipts": []
+    }
+  }
+}

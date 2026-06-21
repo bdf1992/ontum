@@ -1,0 +1,38 @@
+{
+  "atom": {
+    "id": "atom.local-preview.v0",
+    "story": {
+      "text": "The LOCAL-tier DEPLOYMENT face of epic.environments (bdo's confirmed arc), sibling of the local-tier WORKING face already landed (the snapshot spine, loop/snapshot.py, rcp.merge.369). bdo judges visual work on a live URL ([[bdo-eyeballs-on-live-url]]); the local deployment env is where a session serves a NAMED snapshot on localhost so he eyeballs it before anything leaves the machine — and the act is recorded as a promotion to the local environment (the local deploy ledger), so 'what was served, of which snapshot, by whom' is answerable from the log. A snapshot is promoted across environments; this is its first rung, local. loop/preview.py COMPOSES, never double-builds (S10): it reads loop/snapshot.py's resolve for the snapshot's acceptance verdict (never re-judging acceptance — that stays the pipeline's, D-4) and reuses loop/web.py's localhost-serve pattern (ThreadingHTTPServer) for the actual serving. It adds only the local-deploy GATE (the teeth) and the local-deploy LEDGER (the record). The S10 teeth: you do not preview a lie — only an ACCEPTED snapshot may be served to the local env; a snapshot that resolves stale, ghost, or unaccepted is refused at the gate and NOTHING is recorded. tests/test_preview.py proves it (9 cases, non-vacuous: the same snapshot is held before acceptance and deployable after; a stale/ghost/unaccepted snapshot each refused with an empty ledger). Local-first: a localhost server is local coordination, not the no-network ban's egress (the web.py precedent); no git — verifying the served commit equals the working tree belongs to the git/CI layer, a later increment. Value: bdo's eyeballing surface gains its earliest, safest rung — judge a frozen, accepted snapshot locally before it ever leaves the machine, with the promotion on the record. With this, the LOCAL tier (working + deployment) is complete; the git tier (staging rung) is the next increment, across the local->git boundary bdo confirms.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "preview",
+    "incidence": {
+      "serves": [
+        "epic.environments"
+      ],
+      "touches": [
+        "loop/snapshot.py",
+        "loop/web.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "atom.staging-rung.v0"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0161-local-preview.md",
+        "loop/preview.py",
+        "tests/test_preview.py",
+        ".ai-native/epics/epic.environments.json"
+      ],
+      "receipts": []
+    }
+  }
+}

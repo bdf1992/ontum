@@ -1,0 +1,63 @@
+{
+  "atom": {
+    "id": "atom.scout-fold.v0",
+    "story": {
+      "from": "bdo, 2026-06-19 design conversation (captured in explore-lobe.proposal.md) and his carry-over brief of 2026-06-20 (strategy-metabolism.md): ontum is all-exploit and lacks a lawful place for pre-evidence motion; build the Scout lobe — given a purpose+goal, read priors while preserving uncertainty and emit one marked, reversible call to action — as the first slice of a Scout -> Claim -> Build -> Prune metabolism, never landing alone.",
+      "framing": "Every organ ontum has is an uncertainty-terminator: a gate cuts, a fold collapses a span to a verdict, term_economy classifies, the grip discipline refuses the unproven, the owner's stamp is the final cut. That is a complete convergent (exploit) lobe and no divergent (explore) one — the system can say what is broken and what is proven, but never what is worth a move not yet on the record. The payout is not capital (the future banked, the most aggressive terminator, one point of one axis) but motion: a draw that never spends the principal. The forward twin of loop/gaps.py — gaps speaks from the certain present (the maintenance backlog), Scout from research over priors toward a goal (the opportunity frontier).",
+      "work": "The Scout lobe, three pieces: loop/explore.py (done-line 0140) — the explore-fold that derives the forward move (the frontier between what an arc claims and what the record shows); loop/scout_cta.py (done-line 0141) — the ScoutCTA contract, the lawful conjecture shape proven by a hand-authored fixture before any code, with teeth that refuse an ungrounded prior, an empty expiry (a ghost obligation), and a fabricated emitter; loop/scout.py (done-line 0148) — the generator that joins them, grounding a move on substantive, non-self-referential priors (real work / an authored bar naming the subject, never the loop-written confirm/claim admissions) and validating through the contract before emitting, so the teeth bite at move granularity. Read-only, propose-only; reuses causality.term_economy.resolve_evidence as the one ghost-refusal resolver (no second truth). Two independent review rounds drove it; both findings closed.",
+      "need": "bdo's confirm-arc on epic.strategy (given — adm.bc55d43121f8 on the trunk) authorizes the loop to carry the remaining pieces; Claim and Prune (whose build requisitions a panel review for intent — his flag, the weakest organ) are later lines. Nothing else is owed: the work is read-only, local, stdlib, reversible.",
+      "value": "The system stops only ever reducing. It gains a lawful place for pre-evidence motion — it can say, from held-open uncertainty, 'here is one move worth making toward this purpose that is not on the record yet', marked conjecture (expiring, reversible, never minted), without polluting truth. Research over priors finally pays out in the loop's own currency: motion, not a stored verdict.",
+      "text": "From bdo's direction to give ontum a lawful place for pre-evidence motion, I need a read-only Scout lobe that, pointed at a handed purpose+goal, researches priors and emits one marked, grounded, expiring call to action — refusing any move whose subject names nothing real — because the system can only ever reduce uncertainty today and has no organ that can lawfully move into it.",
+      "value_confidence": "high",
+      "owner_stamp": "confirmed-via-arc"
+    },
+    "risk": {
+      "class": "cheap",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "Three pure read-only folds + a contract validator + tests, all stdlib, no network, no git, no log writes. Scout never judges, stamps, mints, or lands — it proposes a marked conjecture and requisitions review. Reversible by deletion. The wider metabolism (Claim, Prune) and the panel-review-for-intent stay later lines and bdo's.",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "give ontum a lawful place to move into uncertainty",
+      "value": "Every organ you have cuts uncertainty down. Scout is the one that holds it open and pays out in a single grounded, expiring move — without ever claiming truth or landing on its own.",
+      "why_now": "You named the missing explore lobe, then reframed it into the Scout -> Claim -> Build -> Prune metabolism and confirmed the arc. This lands the Scout quadrant, grounded teeth and all.",
+      "if_accepted": "The explore front exists; Claim (bound a conjecture into work) and Prune (retire dead possibility, with its panel review for intent) ride next; the convergent loop finally has a divergent counterpart that feeds it without polluting truth.",
+      "if_rejected": "ontum stays all-exploit: it can maintain and prove, but never lawfully propose a move into what is not yet on the record.",
+      "cost_of_wrong_call": "Low: read-only, local, reversible by deletion; nothing lands, mints, or alters truth.",
+      "mechanism": "loop/scout.py derives the forward move (loop/explore.py), grounds it on substantive non-self-referential priors, validates it through the ScoutCTA contract (loop/scout_cta.py), and emits one marked conjecture or refuses. The teeth (the ghost refusal, reused from causality) bite at move granularity; the cut and the next organs stay yours (D-4).",
+      "reading": [
+        "strategy-metabolism.md",
+        ".ai-native/done/0148-scout-generator.md",
+        "loop/scout.py",
+        "loop/scout_cta.py",
+        "loop/explore.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.strategy"],
+      "touches": ["loop/", "tests/"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "bdo's design conversation, 2026-06-19",
+        "bdo's carry-over brief, 2026-06-20",
+        "strategy-metabolism.md",
+        "done-lines 0140, 0141, 0148"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record and content-hash source; never mutated (D-5). The Scout lobe of epic.strategy (Scout -> Claim -> Build -> Prune). Read-only/propose-only; Claim and Prune are later lines, Prune's build requisitioning a panel review for intent (bdo's flag, strategy-metabolism.md §8)."
+}

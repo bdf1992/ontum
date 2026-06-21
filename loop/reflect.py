@@ -46,7 +46,7 @@ from loop.reconcile import (DEFAULT_ROOT, Fold, append_line, epic_of, glue_of,
                             load_atoms, load_epics, now_ts, real_nodes,
                             receipt_for_stage, short_hash)
 from loop.orchestrate import HUMAN_NODE, STAMP_STAGE, next_action
-from loop.digest import digest as compute_digest
+from loop.digest import digest as compute_digest, render as render_digest
 from loop.owner_asks import owner_ask_groups
 
 REFLECTED_EVENT = "surface.reflected"
@@ -62,8 +62,13 @@ PEN = "python .claude/skills/reflect/reflect.py"
 # 0037), and the owner-ask backlog (owner_ask_drift, one aggregate issue
 # per report whose needs-you items reached no surface, done-line 0058 — so
 # an ad-hoc "awaiting bdo" cannot strand in a report he never opens).
+# The fourth (daily-digest, done-line 0166) mirrors the WHOLE digest as one
+# live, self-updating issue — bdo's directive (2026-06-21: "use the gateway,
+# only go through one, an be consumed/digested by those listening"), folding
+# the two raw-`gh` cloud couriers into this one governed path.
 # DRIFT_BY_KIND (below, after the folds) maps each to its fold.
-RULE_KINDS = ("owner-stamp-queue", "merge-divergences", "owner-ask-backlog")
+RULE_KINDS = ("owner-stamp-queue", "merge-divergences", "owner-ask-backlog",
+              "daily-digest")
 
 # The surface kinds table (done-line 0030): the tongues the reflector
 # pen actually speaks — its translator table is keyed to exactly this
@@ -519,6 +524,54 @@ def owner_ask_drift(root, surface):
     return acts
 
 
+DIGEST_ATOM_ID = "daily-digest"  # the one perennial digest's identity slot
+
+
+def digest_drift(root, surface):
+    """The daily-digest kind (done-line 0166): the WHOLE arc digest as ONE
+    live, self-updating issue through the one pen — bdo's directive (2026-06-21:
+    "use the gateway, only go through one, an be consumed/digested by those
+    listening"). Where `merge-divergences` mirrors a *slice* of the digest, this
+    mirrors the full render, so the two cloud couriers that each ran
+    `loop.digest` and pushed via raw `gh` collapse into this single governed
+    path — the digest joins the gateway it already half belongs to.
+
+    Pub/sub, level-triggered like every kind, but perennial: the issue opens
+    ONCE and thereafter EDITS in place whenever the rendered digest changes.
+    Each act is keyed by the body's content hash, so a digest that has not
+    changed since it was last mirrored produces no act — the Stop-hook beat
+    stays quiet and never spams (the property that lets it ride every turn). It
+    never closes; a digest is always current, never reconciled-away. Pure; only
+    the pen reaches out. Raises on an unregistered surface, like the others."""
+    fold = Fold(root)
+    surfaces = registered_surfaces(fold)
+    if surface not in surfaces:
+        known = ", ".join(sorted(surfaces)) or "none registered"
+        raise ValueError(f"surface {surface!r} is not admitted ({known}); "
+                         f"register it: python -m loop.reflect register "
+                         f"--surface {surface} --address <owner/repo> --by <who>")
+    seen = reflections(fold, surface)
+    # the digest records this surface already carries: the bodies it has shown
+    # (content keys, any act) and the issue they all live on (the open's ref).
+    shown = {ah for (ah, act), ev in seen.items()
+             if ev.get("artifact_id") == DIGEST_ATOM_ID}
+    opened = next((ev for (ah, act), ev in seen.items()
+                   if act == "open" and ev.get("artifact_id") == DIGEST_ATOM_ID),
+                  None)
+
+    body = render_digest(compute_digest(root))
+    body_key = "digest.body." + short_hash(body)
+    if opened is None:
+        return [{"act": "open", "atom_id": DIGEST_ATOM_ID,
+                 "artifact_hash": body_key, "title": "Daily arc digest",
+                 "body": body}]
+    if body_key in shown:
+        return []  # this exact digest is already live on the surface — quiet
+    return [{"act": "edit", "atom_id": DIGEST_ATOM_ID,
+             "artifact_hash": body_key, "external_ref": opened.get("external_ref"),
+             "body": body}]
+
+
 def surfaced_open_ids(fold):
     """Every artifact (atom/group/ask) that an 'open' reflection record has
     already named — on any surface. The ack-set the shame floor reads to know
@@ -553,6 +606,7 @@ DRIFT_BY_KIND = {
     "owner-stamp-queue": drift,
     "merge-divergences": divergence_drift,
     "owner-ask-backlog": owner_ask_drift,
+    "daily-digest": digest_drift,
 }
 
 

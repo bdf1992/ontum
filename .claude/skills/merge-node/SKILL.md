@@ -7,8 +7,13 @@ description: >
   asked to "land the confirmed work", "merge what's ready", or to run the
   merge-node. bdo's amendment, 2026-06-11: he confirms arcs and reads the
   digest; agents do the merging.
-version: 0.1.1
+version: 0.1.2
 ---
+
+<!-- changelog 0.1.2 (issue #345): pr.py land now requires
+     --attest-non-author, refuses an exact author/by identity match, and
+     records the PR author plus attestation on the merge receipt. The invariant
+     was already in this skill; the pen now carries it. -->
 
 <!-- changelog 0.1.1 (done-line 0052): the land examples say the v1 seat
      (merge-node.claude.v1) — the id issue #82 admits and the land pen's
@@ -58,9 +63,9 @@ session.
    main whose arc bdo has confirmed, dry-run first, then land:
    ```sh
    python .claude/skills/branch-ritual/pr.py land <n> --epic <epic-id> \
-       --by merge-node.claude.v1 --dry-run
+       --by merge-node.claude.v1 --attest-non-author --dry-run
    python .claude/skills/branch-ritual/pr.py land <n> --epic <epic-id> \
-       --by merge-node.claude.v1
+       --by merge-node.claude.v1 --attest-non-author
    ```
    The seat's contract is its versioned prompt,
    `.ai-native/nodes/merge-node.claude.v1.md` (§7) — read it before landing;
@@ -68,8 +73,9 @@ session.
    (done-line 0049), so until bdo's realness gesture admits the seat, every
    land is a refusal and that freeze is the architecture working.
    The pen reads bdo's confirmation from the **trunk** (`main`), checks the PR
-   is green, written, non-draft, non-conflicting, and based on main, then
-   lands with `gh pr merge --squash`. It does **not** pass
+   is green, written, non-draft, non-conflicting, and based on main, requires
+   `--attest-non-author`, records the PR author and attestation on the merge
+   receipt, then lands with `gh pr merge --squash`. It does **not** pass
    `--delete-branch`; branch cleanup belongs to GitHub's
    `delete_branch_on_merge` setting and the SessionStart gardener. It records
    a merge receipt on the log citing the arc confirmation that authorized it.

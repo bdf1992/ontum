@@ -1,0 +1,37 @@
+{
+  "epic": {
+    "id": "epic.model-free-mode-response",
+    "owner": "bdo",
+    "status": "proposed",
+    "arc": "The foreign review of exports/model-free-mode/ comes home as work. Each finding is a proposed atom under this one arc; bdo's confirm-arc queues them all, his decline retires them \u2014 either way the review stops stranding as context.",
+    "context": "Returned through the inbound envoy seam (done-line 0059) against seal 0f65955903fc\u2026 on exports/log.jsonl. The reviewer saw a sealed snapshot, so every finding is PROPOSED and unverified: the value gate judges each story and a session verifies its claim against the live repo before any is acted on.",
+    "value": "A foreign review becomes value-gated, queued work instead of read-only context \u2014 the return leg the one-way envoy lacked.",
+    "horizon": "Every finding judged by the value gate and either carried under bdo's confirmed arc or refused; none hand-carried into a doc.",
+    "pieces": [
+      {
+        "atom": "atom.model-free-mode-resp-relational-middle-band.v0",
+        "glue": "Smart mashing is not raw model-free action but a relational middle band (representation without mechanism), so the model-free to model-based axis becomes raw to relational to mechanistic and learning-progress must be measured over relation buckets, not undifferentiated action space."
+      },
+      {
+        "atom": "atom.model-free-mode-resp-observable-as-gate.v0",
+        "glue": "Observable is the enabling substrate from which reversibility, boundedness, and learning-progress are all computed, so Observable-as-gate is the forced first build: an autonomous exploratory act must declare actor, intended action, expected receipt, touched scope, attribution path, rollback path, and probe id before it runs, and halts if it cannot name its receipt path."
+      },
+      {
+        "atom": "atom.model-free-mode-resp-relation-ledger.v0",
+        "glue": "Add relation-ledger.v0 holding relation_claim, relation_probe, consequence_receipt, model_candidate, and bucket_coherence_report, beginning with logged relation claims and consequence receipts rather than embeddings, which are admitted later once consequence-grounded relation data exists to train or evaluate against."
+      },
+      {
+        "atom": "atom.model-free-mode-resp-over-containment-shared-shadow.v0",
+        "glue": "Action-space over-containment (T6) and representation-space over-containment (T7) are one shadow at two layers, and the shared counter-test is whether a stabilization is predictive or merely trivial."
+      },
+      {
+        "atom": "atom.model-free-mode-resp-learning-log-native.v0",
+        "glue": "Learning-progress stays log-native without breaking log-as-truth when the relation or model artifact is admitted with its model id, version, threshold, policy, and scope pinned in admitted records."
+      },
+      {
+        "atom": "atom.model-free-mode-resp-kill-test-observable.v0",
+        "glue": "Run one real autonomous workload after Observable-as-gate exists; it passes if an action the action-gate would have allowed is refused for lacking an attributable receipt path, and fails usefully by exposing upstream over-containment if no such action ever appears."
+      }
+    ]
+  }
+}

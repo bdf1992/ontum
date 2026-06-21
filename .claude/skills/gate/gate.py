@@ -449,6 +449,86 @@ def cmd_launch(ns):
     return 0
 
 
+# ---------------------------------------------------------------------------
+# the guaranteed review queue (done-line 0150)
+# ---------------------------------------------------------------------------
+
+# The gate whose queue is the landed-but-unsettled clog: value-confirm PARKS
+# landed work awaiting a judge that, with no processor, never came — so finished
+# atoms piled up against the inflight cap. A queue is healthy only with a
+# guaranteed consumer; this is that consumer.
+DEFAULT_REVIEW_NODE = "value-confirm.claude.v1"
+
+
+def _default_review(records_root, atom_id, node_id, by):
+    """Fire ONE real, trust-railed headless review for a queued atom, in its own
+    process so every headless run is independently traced and watched (the trust
+    rail is per-run). Reuses the `launch` verb verbatim — one rail, no twin path
+    (I-4). Returns the launch process's return code."""
+    proc = subprocess.run(
+        [sys.executable, str(Path(__file__).resolve()), "launch",
+         "--atom", atom_id, "--node", node_id, "--by", by], text=True)
+    return proc.returncode
+
+
+def drain(records_root, by="claude", node=DEFAULT_REVIEW_NODE, review=None,
+          dry_run=False, limit=None):
+    """The guaranteed processor (done-line 0150): the consumer that turns the
+    review queue from a CLOG into a queue. A pure level-triggered fold names the
+    work — every atom awaiting an admitted-real non-owner gate
+    (`loop.summon.open_summons`, re-derived from the log each call) — and the
+    processor fires a REAL review (`review`, default the trust-railed launch) for
+    each. It never decides or settles: the verdict and the advance stay the
+    gate's and the one pen's (D-4); a `missed` keeps its atom surfaced, never
+    force-cleared (no LEAK).
+
+    Idempotent by construction: a judged atom has a receipt, so `open_summons`
+    no longer returns it — a second drain fires nothing already judged — and the
+    one pen no-ops a repeat verdict anyway (I-2). Level-triggered + idempotent is
+    what makes the consumer a *guarantee*: a review that failed or returned no
+    verdict simply leaves its atom in the queue, retried next pass — never lost,
+    never double-judged.
+
+    `review(records_root, atom_id, node_id, by)` is injectable so the §10 test
+    drives the queue with a fake review (a scripted verdict through the real one
+    pen) and never spawns a live mind. `records_root` is the `.ai-native` root."""
+    sys.path.insert(0, str(ROOT))
+    from loop.summon import open_summons
+    review = review or _default_review
+    queue = [s for s in open_summons(records_root)
+             if node is None or s["node"] == node]
+    if limit is not None:
+        queue = queue[:limit]
+    fired = []
+    for s in queue:
+        aid, nid = s["atom"]["id"], s["node"]
+        fired.append({"atom": aid, "node": nid,
+                      "fired": "dry-run" if dry_run else review(records_root, aid, nid, by)})
+    return fired
+
+
+def cmd_drain(ns):
+    root = ns.root or (ROOT / ".ai-native")
+    if not ns.dry_run:
+        reason = launch_refusal()
+        if reason:
+            print(f"result: report — refused to drain: {reason}")
+            return 2
+    fired = drain(root, by=ns.by, node=ns.node, dry_run=ns.dry_run, limit=ns.limit)
+    if not fired:
+        print("result: done — the review queue is empty; nothing awaits a real "
+              "review (no clog).")
+        return 0
+    verb = "would fire" if ns.dry_run else "fired"
+    for f in fired:
+        print(f"  {verb} review: {f['atom']} -> {f['node']}")
+    tail = (" (dry run — nothing launched)" if ns.dry_run else
+            "; each verdict lands through the one pen (D-4); a `missed` stays "
+            "surfaced and a re-run fires nothing already judged (idempotent)")
+    print(f"\nresult: report — drained {len(fired)} queued review(s){tail}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -457,6 +537,20 @@ def main(argv=None):
     lp.add_argument("--node", required=True, help="the gate's node id, e.g. value-gate.claude.v1")
     lp.add_argument("--by", default="claude", help="who launched the run")
     lp.set_defaults(func=cmd_launch)
+    dp = sub.add_parser("drain", help="fire a real review for every atom in the "
+                        "review queue — the guaranteed processor (done-line 0150)")
+    dp.add_argument("--root", type=Path, default=None,
+                    help="the .ai-native records root (default: this repo's)")
+    dp.add_argument("--node", default=DEFAULT_REVIEW_NODE,
+                    help="only drain this gate's queue (default value-confirm)")
+    dp.add_argument("--all", action="store_const", const=None, dest="node",
+                    help="drain every admitted-real non-owner gate's queue")
+    dp.add_argument("--by", default="claude", help="who ran the drain")
+    dp.add_argument("--limit", type=int, default=None,
+                    help="fire at most N reviews this pass (pace the queue; the "
+                         "rest are picked up the next, level-triggered, pass)")
+    dp.add_argument("--dry-run", action="store_true", help="list the queue; fire nothing")
+    dp.set_defaults(func=cmd_drain)
     ns = ap.parse_args(argv)
     return ns.func(ns)
 

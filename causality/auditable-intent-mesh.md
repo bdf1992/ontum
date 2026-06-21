@@ -350,7 +350,7 @@ Raw gestures stay in the Request graph unless folded into a packet. A sub-graph
 that reaches *across* a non-listed seam (e.g. Projection writing Source) is a
 violation, not a feature.
 
-This is the same shape as the loop's organs (reconcile/orchestrate/node/summon
+This is the same shape as the loop's parts (reconcile/orchestrate/node/summon
 each a fold or a pen over the one log) — six lenses, one truth, no second write
 path.
 
