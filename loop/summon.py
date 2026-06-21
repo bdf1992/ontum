@@ -230,6 +230,14 @@ def main(argv=None):
                       " judge through the one pen; otherwise leave them parked:")
                 for s in summons:
                     print(briefing(s))
+                # done-line 0150: the queue has a guaranteed consumer now — a
+                # session need not hand-route each summon. The processor fires a
+                # REAL review for every queued atom and is idempotent, so running
+                # it is always safe; an unattended tick (a scheduler on a pace)
+                # is bdo's to stand up, but ambiently any session can drain it.
+                print("[loop]   ↳ or process the whole queue at once (the "
+                      "guaranteed consumer): "
+                      "python .claude/skills/gate/gate.py drain")
             backlog = owner_backlog(root)
             if backlog:
                 print(f"[loop] {len(backlog)} item(s) await bdo's stamp"
