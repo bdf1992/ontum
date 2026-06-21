@@ -41,9 +41,14 @@
       "prompt_versions": [],
       "source_artifacts": [
         "loop/workspace.py",
-        ".claude/hooks/command_guard.py"
+        ".claude/hooks/command_guard.py",
+        "bdo, arc confirmation: epic.substrate (adm.476af874f9e4) — the standing owner authorization under which this piece lands, the same confirmed arc the sibling workstation fences serve (the merge-node landed them on it: rcp.merge.341, rcp.merge.346)",
+        "bdo, directive 'gateway start, platform level' (2026-06-20): the platform-level continuation of the just-landed workstation fence (atom.workstation-fence.v0 / atom.workstation-write-fence.v0) that this fold is the session-seam door beside — the owner ask now anchored to the record, not only narrated in the story"
       ],
-      "receipts": []
+      "receipts": [
+        "rcp.merge.341",
+        "rcp.merge.346"
+      ]
     }
   }
 }
