@@ -369,7 +369,7 @@ class DigestKindTest(ReflectBase):
         act = acts[0]
         self.assertEqual(act["title"], "Daily arc digest")
         self.assertEqual(act["atom_id"], reflect.DIGEST_ATOM_ID)
-        self.assertIn("Arc digest", act["body"])  # the rendered digest itself
+        self.assertIn("Field Notes", act["body"])  # the rendered digest itself
         reflect.record_reflection(self.root, "github-issues", act["atom_id"],
                                   act["artifact_hash"], "open",
                                   "https://x/issues/1", by="test")

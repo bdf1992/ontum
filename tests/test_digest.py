@@ -128,7 +128,7 @@ class TestLandingNarrative(_Temp):
         self.assertEqual(ev["pr"], 7)
         self.assertEqual(ev["epic"], "epic.test")
         out = digest.render(d)
-        self.assertIn("What landed in span", out)
+        self.assertIn("Shipped", out)
         self.assertIn("PR #7", out)
         self.assertIn("atom.a.v0", out)
 
@@ -389,7 +389,7 @@ class TestRenderAndCli(_Temp):
         node.confirm_arc(self.root, "epic.test", "bdo")
         _append_receipt(self.root, "collision", "2026-06-05T10:00:00Z")
         text = digest.render(digest.digest(self.root))
-        self.assertIn("Divergences", text)
+        self.assertIn("Frictions", text)
         self.assertIn("collision", text)
         self.assertIn(SKELETON_ID, text)
 
@@ -426,7 +426,7 @@ class TestGestureSurface(_Temp):
         self.assertEqual(digest.owner_gestures(d), [],
                          "session work must not be folded into 'your move'")
         text = digest.render(d)
-        self.assertIn("**Your move:** nothing", text)
+        self.assertIn("**Your call:** nothing", text)
         self.assertNotIn("these need you", text)
 
     def test_unconfirmed_arc_with_built_work_is_an_owner_gesture(self):
@@ -434,7 +434,9 @@ class TestGestureSurface(_Temp):
         # exactly the gesture bdo should see at the top — confirm to unblock.
         d = digest.digest(self.root)
         self.assertEqual([a["epic"] for a in digest.owner_gestures(d)], ["epic.test"])
-        self.assertIn("**Your move — confirm 1 arc", digest.render(d))
+        out = digest.render(d)
+        self.assertIn("## → Your call (1)", out)
+        self.assertIn("Confirm `epic.test`", out)
 
     def test_confirmed_arc_is_never_a_gesture(self):
         # crying wolf the other way: never tell bdo to confirm what he has.
@@ -461,9 +463,46 @@ class TestGestureSurface(_Temp):
                         "awaiting": False, "parked": False}],
              "landings": 0, "refusals": 0, "divergences": []}
         text = digest.render(d)
-        self.assertIn("**Your move:** nothing on you", text)
+        self.assertIn("**Your call:** nothing on you", text)
         self.assertIn("1 loose atom(s) are outside an arc", text)
         self.assertIn("atom.loose.v0", text)
+
+
+class TestPatchNotesSurface(_Temp):
+    """bdo, 2026-06-21 (issue #410): the digest was 'boring to read and hard for
+    reading cold' and should read like great patch notes — 'interactive with
+    CTAs and places for me to comment on'. The teeth: the patch-notes grammar is
+    actually rendered (a progress bar, a tickable CTA, a `▸ your note:` anchor),
+    and the bar is honest (pure from the counts, never divides by zero)."""
+
+    def test_progress_bar_is_honest_and_total_width(self):
+        # all-empty arc: every cell unfilled, no divide-by-zero; a half-done arc
+        # fills proportionally. The bar is a fact, not decoration.
+        self.assertEqual(digest._bar(0, 0), "▱" * 10)
+        self.assertEqual(digest._bar(0, 8), "▱" * 10)
+        self.assertEqual(digest._bar(4, 8), "▰" * 5 + "▱" * 5)
+        self.assertEqual(digest._bar(8, 8), "▰" * 10)
+        # never overflows the width even on a malformed over-count
+        self.assertEqual(len(digest._bar(99, 8)), 10)
+
+    def test_arc_line_carries_a_bar(self):
+        d = digest.digest(self.root)
+        line = digest._arc_line(d["arcs"][0])
+        self.assertIn("▱", line)              # 0/1 landed → an empty bar
+        self.assertIn("0/1 landed", line)
+
+    def test_gesture_renders_a_tickable_cta_and_a_note_anchor(self):
+        # an unconfirmed arc with built work is bdo's move — it must render as a
+        # checkbox CTA carrying the exact verb, plus a place to weigh in.
+        out = digest.render(digest.digest(self.root))
+        self.assertIn("- [ ] **Confirm `epic.test`**", out)
+        self.assertIn("confirm-arc --epic epic.test --by bdo", out)
+        self.assertIn("▸ _your note:_", out)
+
+    def test_tuning_section_offers_a_redial_cta(self):
+        out = digest.render(digest.digest(self.root))
+        self.assertIn("## ◉ Tuning", out)
+        self.assertIn("**Re-dial?**", out)
 
 
 class TestEndLineVerdict(_Temp):

@@ -418,11 +418,22 @@ def owner_gestures(d):
             and any(p.get("present") for p in a["pieces"])]
 
 
+def _bar(landed, total, width=10):
+    """A progress bar for an arc — the patch-notes glance at how far it has
+    come (▰ done, ▱ to go). Pure from the counts; an empty arc reads all-empty
+    and never divides by zero. Restrained block glyphs, not a coloured emoji —
+    the repo's own quiet vocabulary (bdo: 'not emoji like that but close')."""
+    if not total:
+        return "▱" * width
+    filled = max(0, min(width, round(landed / total * width)))
+    return "▰" * filled + "▱" * (width - filled)
+
+
 def _arc_line(arc):
-    """One arc, collapsed to a glanceable tally line. The arc's full prose
-    lives in its epic file and never changes day to day — re-dumping all of it
-    every digest was the other half of the unreadability. The mark: ✓
-    confirmed, ○ not."""
+    """One arc, collapsed to a glanceable tally line with a progress bar. The
+    arc's full prose lives in its epic file and never changes day to day —
+    re-dumping all of it every digest was half of the unreadability. The mark:
+    ✓ confirmed, ○ not; the bar is the patch-notes 'how far along' at a glance."""
     mark = "✓" if arc["confirmed"] else "○"
     total = arc.get("total", len(arc["pieces"]))
     extra = []
@@ -435,7 +446,8 @@ def _arc_line(arc):
     if arc.get("history"):
         extra.append(f"{arc['history']} history")
     suffix = (" · " + " · ".join(extra)) if extra else ""
-    return f"- {mark} `{arc['epic']}` — {arc['landed']}/{total} landed{suffix}"
+    return (f"- {mark} `{arc['epic']}` {_bar(arc['landed'], total)} "
+            f"{arc['landed']}/{total} landed{suffix}")
 
 
 def _loose_live(d):
@@ -443,92 +455,102 @@ def _loose_live(d):
 
 
 def render(d):
-    """The dataset as a scannable glance — your-move first, then what refuses
-    to fit, then the field, then arcs collapsed to one line each.
+    """The dataset as patch notes — readable cold, sectioned, with progress
+    bars, calls-to-action, and a place to weigh in.
 
-    The redesign (bdo, 2026-06-16: 'honestly hard to read and make gestures
-    about'): the old render led with a paragraph-long divergence under a
-    'these need you' banner — over work that was a session's to rebuild, not
-    his — and then re-dumped nine full arc descriptions and every atom every
-    single day. Two failures: unreadable (volume) and ungesturable (it
-    promised a gesture that wasn't there). So: lead with the honest answer to
-    'is anything on me?', keep the §10 teeth but terse and ownership-marked,
-    and collapse the arcs (their prose is in their epic files)."""
-    lines = [f"# Arc digest — {_span_label(d['span'])}", ""]
+    bdo (2026-06-21, issue #410): the digest was 'boring to read and hard for
+    reading cold' and should be 'more inspired by great patch notes' — PoE /
+    Warframe / LoL / Destiny — and 'interactive with CTAs and places for me to
+    comment on'. So this keeps everything the 2026-06-16 redesign won (lead with
+    the honest answer to 'is anything on me?'; the §10 teeth terse and
+    ownership-marked; the arcs collapsed, their prose left in their epic files)
+    and layers the patch-notes grammar on top: a TL;DR status line, themed
+    sections, a progress bar per arc, a tickable CTA on each thing that is
+    actually a move, and a `▸ your note:` anchor where bdo replies.
 
-    # 1. the line bdo opens the digest for: is anything actually his to do?
+    Strictly deterministic — every word here is a fact the fold already
+    computed (atom ids, arc horizons, gate reasons, counts). No editorial
+    voice is invented; that flavour layer is a *separate* bounded inference
+    narration over this same dataset (loop/digest_voice.py + the digest-voice
+    pen), grounded by a guard, never the pure fold writing prose it cannot
+    ground (the digest stays truth; reach lives elsewhere)."""
+    lines = [f"# Ontum Field Notes — {_span_label(d['span'])}"]
+
+    # the TL;DR status line — the patch-notes headline AND the honest answer to
+    # 'is anything on me?' in one glance (gesture-first, the rule bdo won).
     gestures = owner_gestures(d)
+    on_you = (f"{len(gestures)} arc(s) waiting on you" if gestures
+              else "nothing waiting on you")
+    on_main = d.get("atoms_on_main", [])
+    lines += [f"_{d['landings']} landed · {d['refusals']} refused · "
+              f"{len(on_main)} on main · {on_you}_", ""]
+
+    # 1. → Your call — the only thing here that is bdo's to do, as a tickable
+    #    CTA with the exact verb and a `▸ your note:` anchor to reply on.
     if gestures:
-        names = ", ".join(f"`{g['epic']}`" for g in gestures)
-        lines += [f"**Your move — confirm {len(gestures)} arc(s):** {names}.",
-                  "Each has built work waiting on your stamp; close its "
-                  "confirm-issue with a yes and the loop lands its pieces.", ""]
+        lines.append(f"## → Your call ({len(gestures)})")
+        for g in gestures:
+            built = sum(1 for p in g["pieces"] if p.get("present"))
+            lines.append(
+                f"- [ ] **Confirm `{g['epic']}`** → "
+                f"`loop.node confirm-arc --epic {g['epic']} --by bdo` "
+                f"(or close its confirm-issue with a yes) — lands its "
+                f"{built} built piece(s)")
+            if g.get("horizon"):
+                lines.append(f"    ↳ horizon: _{_glance(g['horizon'])}_")
+        lines += ["  ▸ _your note:_", ""]
     else:
         loose = _loose_live(d)
         if loose:
-            lines += [f"**Your move:** nothing on you — every arc with live "
+            lines += ["## → Your call",
+                      f"**Your call:** nothing on you — every arc with live "
                       f"work is confirmed; {len(loose)} loose atom(s) are "
                       "outside an arc and need a session to route or retire "
                       "them.", ""]
         else:
-            lines += ["**Your move:** nothing — every arc with live work is "
+            lines += ["## → Your call",
+                      "**Your call:** nothing — every arc with live work is "
                       "confirmed; the loop is carrying its pieces.", ""]
 
-    # 2. the §10 teeth: where two locally-fine records refuse to fit. Kept,
-    #    but terse and marked with whose move it is — most are the loop's.
+    # 2. ⚠ Frictions — the §10 teeth (the patch-notes 'Known Issues'): where two
+    #    locally-fine records refuse to fit, terse, marked with whose move it is.
     div = d["divergences"]
     if div:
-        lines.append(f"## ⚠ Divergences ({len(div)}) — what refuses to fit")
-        lines.append("_surfaced for your eyes; the loop carries each unless "
-                     "marked **(yours)**._")
+        lines.append(f"## ⚠ Frictions ({len(div)}) — what refuses to fit")
+        lines.append("_the loop carries each unless marked **(yours)**._")
         for x in div:
             if x["kind"] == "refusal-under-confirmed-arc":
                 lines.append(
-                    f"- `{x['atom']}` · `{x['epic']}` → **{x['verdict']}**: "
-                    f"{_glance(x.get('reason'))} — a session rebuilds and "
-                    f"re-announces.")
+                    f"- `{x['atom']}` · `{x['epic']}` → **{x['verdict']}**")
+                lines.append(f"    ↳ _why:_ {_glance(x.get('reason'))} — a "
+                             "session rebuilds and re-announces.")
             elif x["kind"] == "queue-over-cap":
                 lines.append(
                     f"- **queue over cap** at tick {x['tick']}: backlog "
                     f"{x['backlog']} > cap {x['cap']} — re-dial if it recurs "
                     f"**(yours)**.")
-        lines.append("")
+        lines += ["  ▸ _your note:_", ""]
 
-    # 2.5 the span's narrative: what actually reached terminal. The bare "N
-    #     landing(s)" count never told bdo *which* work landed — the story the
-    #     span exists to carry. Named from the log, capped, the overflow folded
-    #     into the trailer count but never silently dropped (loop/'s law).
+    # 3. ▰ Shipped — what reached terminal, most-recent first (the marquee),
+    #    capped, the overflow always *named* (loop/'s law); each line carries
+    #    its PR so the count is honest and the cut is never silent.
     landed = d.get("landed_in_span", [])
     if landed:
-        lines.append(f"## What landed in span ({len(landed)})")
+        lines.append(f"## ▰ Shipped ({len(landed)})")
         for ev in landed[:LANDING_NARRATIVE_CAP]:
             atoms = ", ".join(f"`{a}`" for a in ev["atoms"]) or "_(no atom named)_"
             pr = f"PR #{ev['pr']} — " if ev.get("pr") else ""
             where = f" · `{ev['epic']}`" if ev.get("epic") else ""
             by = f" — {ev['by']}" if ev.get("by") else ""
             lines.append(f"- {pr}{atoms}{where}{by}")
-        extra = len(landed) - LANDING_NARRATIVE_CAP
-        if extra > 0:
-            lines.append(f"- _…+{extra} earlier landing(s) in span, folded into "
-                         "the count below_")
+        overflow = len(landed) - LANDING_NARRATIVE_CAP
+        if overflow > 0:
+            lines.append(f"- _…+{overflow} earlier landing(s) in span, folded "
+                         "into the arc bars below_")
         lines.append("")
 
-    # 3. the field, one glance — the dial in play and how it ran
-    sp = d["setpoint"]
-    f = d["field"]
-    dial = (f"`{canon(sp['value'])}` by {sp.get('by')}" if sp
-            else "no setpoint admitted (I-8)")
-    lines += ["## The field at a glance",
-              f"- dial {dial}",
-              f"- {f['ticks']} ticks ({f['heat']} heat / {f['cool']} cool), "
-              f"{f['budget_spent']} steps, peak backlog {f['peak_backlog']}"]
-    if f["deferred_reasons"]:
-        why = ", ".join(f"{k}×{v}" for k, v in sorted(f["deferred_reasons"].items()))
-        lines.append(f"- deferrals: {why}")
-    lines.append("")
-
-    # 4. arcs — collapsed to one tally line each; only a non-quiet arc expands
-    #    its live pieces (landed/unbuilt pieces stay folded into the tally).
+    # 4. Arcs — a progress bar and tally per arc; only a non-quiet arc expands
+    #    its live pieces (landed/unbuilt pieces stay folded into the bar).
     lines.append(f"## Arcs ({len(d['arcs'])}) — {d['landings']} landing(s) in span")
     for arc in d["arcs"]:
         lines.append(_arc_line(arc))
@@ -543,11 +565,29 @@ def render(d):
             if p.get("standing") not in ("landed", "unbuilt",
                                          "superseded history"):
                 lines.append(f"    - `{p['atom']}` — {p.get('standing')}")
-    # 5. the prose stream — the light lane's edits, so you are never blind to it
+    lines.append("")
+
+    # 5. ◉ Tuning — the field and the dial in play (the patch-notes 'balance
+    #    changes'), with a CTA to re-dial and a place to weigh in.
+    sp = d["setpoint"]
+    f = d["field"]
+    dial = (f"`{canon(sp['value'])}` by {sp.get('by')}" if sp
+            else "no setpoint admitted (I-8)")
+    lines += ["## ◉ Tuning (the field)",
+              f"- **dial:** {dial}",
+              f"- {f['ticks']} ticks ({f['heat']} heat / {f['cool']} cool), "
+              f"{f['budget_spent']} steps, peak backlog {f['peak_backlog']}"]
+    if f["deferred_reasons"]:
+        why = ", ".join(f"{k}×{v}" for k, v in sorted(f["deferred_reasons"].items()))
+        lines.append(f"- _most-deferred:_ {why}")
+    lines += ["- [ ] **Re-dial?** → `loop.orchestrate --admit-setpoint "
+              "'{…}' --by bdo` if the deferral mix looks wrong",
+              "  ▸ _your note:_", ""]
+
+    # 6. ✎ Light lane — the phrasing-lane edits, so you are never blind to it.
     ph = d.get("phrasing", [])
     if ph:
-        lines.append(f"## Prose edits ({len(ph)}) — the light lane (no atom, "
-                     "still on the log)")
+        lines.append(f"## ✎ Light lane ({len(ph)}) — prose edits, no atom")
         for e in ph:
             files = ", ".join(f"`{p}`" for p in e["files"])
             lines.append(f"- {_glance(e.get('reason'))} — by {e.get('by')} "
@@ -556,9 +596,10 @@ def render(d):
 
     lines.append(f"_{d['landings']} landing(s), {d['refusals']} refusal(s) "
                  f"in span._")
-    on_main = d.get("atoms_on_main", [])
     if on_main:
         lines.append(f"_{len(on_main)} atom(s) confirmed on main (D-13 join)._")
+    lines.append("_Reply on any ▸ line or tick a CTA box to weigh in; the loop "
+                 "reads your stamps, not your prose (D-4)._")
     return "\n".join(lines)
 
 
