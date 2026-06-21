@@ -26,6 +26,7 @@ the reason and the paved path on stderr.
 
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import pathlib
@@ -33,6 +34,25 @@ import subprocess
 import sys
 
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
+
+ROOT = pathlib.Path(os.environ.get("ONTUM_REPO_ROOT")
+                    or pathlib.Path(__file__).resolve().parents[2])
+WATCH_LOG = pathlib.Path(
+    os.environ.get("ONTUM_TOOL_WATCH_LOG",
+                   ROOT / ".ai-native" / "log" / "tool-use.jsonl"))
+
+
+def record(entry):
+    """Append a denial to the watch log so an ATTEMPT is witnessed — the
+    prerequisite for the trespass shame beat (a denied write is still a
+    trespass that tried). Best-effort: a failed write never blocks a turn."""
+    entry["ts"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    try:
+        WATCH_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with open(WATCH_LOG, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(entry) + "\n")
+    except OSError:
+        pass
 
 
 def _git(args, cwd):
@@ -119,6 +139,9 @@ def hook():
         target = target.resolve()
         foreign = foreign_worktree(target, session_cwd)
         if foreign is not None:
+            record({"status": "denied", "rule": "foreign-worktree",
+                    "session": payload.get("session_id") or "",
+                    "path": str(target), "foreign": str(foreign)})
             print(
                 "denied, firm: this path is in another WORKSTATION "
                 f"({foreign}) — a worker writes only inside its OWN worktree "
