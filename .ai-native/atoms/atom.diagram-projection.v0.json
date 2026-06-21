@@ -1,0 +1,59 @@
+{
+  "atom": {
+    "id": "atom.diagram-projection.v0",
+    "story": {
+      "text": "As the diagram organ, I could render honest architecture pictures from a hand-authored spec, but a hand-authored spec drifts from the system it draws — the failure epic.diagram exists to end. I want to be pointed at the repo so a diagram becomes a FOLD over truth: realness DERIVED from records, never asserted by a draftsman. The hard rule (diagrams/CLAUDE.md, the epic context, §10) is that a from-truth projection folds INTO causality/term_economy.py — never a parallel diagram_economy.py — reusing its resolve -> classify -> gaps machinery so the diagram inherits the same teeth that already refuse a ghost term. The demonstrating subject is the per-directory gateway STACK (authentication -> fence -> policy -> guard -> gate -> threshold -> pen -> patrol -> ledger -> heal): each layer a term node citing real committed bytes, classified by which evidence resolves. The named-only `threshold` layer cites a backing that resolves nowhere, so it is REFUSED — dropped from the spec, not drawn — and the stack flow breaks where it would sit. The picture cannot draw a layer the records do not back.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the diagram projection-from-truth - an architecture diagram folded out of records, refusing what resolves nowhere",
+      "value": "causality/term_economy.py gains diagram_spec(projection, layout): it folds the existing classified projection (build_projection) into a diagrams/compose.py-shaped spec dict - deterministic, stable ids, byte-identical reruns - shaping each node by its evidence-derived realness class within compose.py's CLOSED node vocabulary, and DROPPING any term whose citation resolves nowhere (it is already a gap; the diagram never re-derives realness). A `diagram` CLI verb (sibling of project/mermaid) emits or writes the spec. causality/examples/gateway-topology.seed.json demonstrates it on the real gateway stack; the emitted gateway-topology.spec.json passes diagrams/qa.py (laid out in two regions so no row exceeds the eight-sibling cap) and renders to an SVG. The teeth are non-vacuous: the named-only `threshold` layer is refused on real data, and a fixture whose one citation resolves nowhere drops that node while keeping its resolving twin.",
+      "why_now": "epic.diagram's wave-3 cell (atom.diagram-projection.v0): the floor (compose.py), the gate (qa.py, done-line 0139), and declared regions (done-line 0151) are landed; pointing the organ at truth is the next structural step, and it is the cell that makes a diagram an act on the record rather than a drawing that goes stale. It composes existing organs (term_economy's resolve/classify/gaps, compose.py's renderer, qa.py's canon) and refuses to double-build any of them (§10).",
+      "if_accepted": "An ontum architecture diagram regenerates from committed bytes and cannot drift: the gateway topology is a deterministic spec whose realness is read from records, and a layer claiming a backing that resolves nowhere is refused with the same grip term_economy already applies to a ghost term. The next cells (composition, the served experience) ride the same fold.",
+      "if_rejected": "Architecture diagrams stay hand-authored and drift from the system; the from-truth projection the epic names is unbuilt, and the gateway stack has no record-derived picture - the staleness epic.diagram exists to end.",
+      "cost_of_wrong_call": "Low and bounded. The change is a read-only fold folded INTO an existing read-only module (no new engine, no parallel module, no writes but the explicit --write that regenerates committed example artifacts), plus one seed, its committed outputs, and tests. Reverting is deleting diagram_spec/diagram_drops + the CLI verb + the gateway example. The §10 tooth is non-vacuous: a control test keeps a resolving twin while dropping a ghost, so the refusal is proven caused by non-resolution, not by name or position.",
+      "mechanism": "diagram_spec(projection, layout) folds the name-sorted classified terms through a layout declaration (regions with a tier grid col_x0 + col*col_step + row_y - explicit position by arithmetic, the byte-deterministic grain, never auto-layout): a term placed in the layout with resolved_count > 0 becomes a node shaped by _CLASS_NODE_TYPE[class] within compose.py's NODE_TYPES; a term that resolves nowhere is skipped and any flow edge touching it is dropped. diagram_drops() names the refused terms (each already a projection gap). The `diagram` CLI verb prints the spec or (--write) regenerates the seed's sibling .spec.json; project --write now derives the projection path from the seed (unchanged for the default seed). tests/test_diagram.py proves byte-determinism on a fixed fixture and the non-vacuous ghost tooth (drop the unresolved, keep its resolving twin), and pins the committed gateway spec/SVG/projection as fresh-fold regenerations that pass qa. Done-line 0173.",
+      "reading": [
+        "causality/term_economy.py",
+        "causality/examples/gateway-topology.seed.json",
+        "tests/test_diagram.py",
+        ".ai-native/done/0173-gateway-projection-fold.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.diagram"
+      ],
+      "touches": [
+        "causality/term_economy.py",
+        "causality/examples/gateway-topology.seed.json",
+        "causality/examples/gateway-topology.projection.json",
+        "causality/examples/gateway-topology.spec.json",
+        "causality/examples/gateway-topology.spec.svg",
+        "tests/test_diagram.py",
+        ".ai-native/done/0173-gateway-projection-fold.md"
+      ],
+      "must_not_collide_with": [
+        "diagrams/compose.py",
+        "diagrams/qa.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "epic.diagram",
+        ".ai-native/done/0173-gateway-projection-fold.md"
+      ],
+      "receipts": []
+    }
+  }
+}
