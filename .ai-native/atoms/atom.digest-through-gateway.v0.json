@@ -1,0 +1,61 @@
+{
+  "atom": {
+    "id": "atom.digest-through-gateway.v0",
+    "story": {
+      "from": "bdo, 2026-06-21 (chat): 'it should use the gateway, only go through one, an be consumed/digested by those listening.' — said of the daily arc digest, after a session widened the digest to carry more of the narrative that unfolded.",
+      "framing": "loop/reflect.py already IS the gateway bdo named: topics (RULE_KINDS) published through ONE reflector pen, listeners subscribed via admitted rules. The digest's DIVERGENCES already flow through it (merge-divergences). But the WHOLE daily digest did not — it reached his GitHub surface through TWO cloud routines that each ran `python -m loop.digest` and wrote via RAW `gh issue create/edit/close`: two outward couriers bypassing the one governed pen. That is exactly what 'use the gateway, only go through one' refuses.",
+      "work": "(1) loop/digest.py — the digest now narrates the span it folds: a 'What landed in span' section names each landing from the log (PR, atoms, arc, who), most-recent-first, capped with an explicit non-silent overflow (the bare 'N landing(s)' count never told bdo WHICH work reached main). (2) loop/reflect.py — a new `daily-digest` reflect topic: digest_drift mirrors the WHOLE rendered digest as ONE live, self-updating issue (open once, edit-in-place keyed by body content-hash, silent when unchanged — level-triggered, never spams; never closes, a digest is perennial). (3) the reflector pen gains an `edit` act (gh issue edit in place). (4) tests prove open-once / edit-on-change / never-a-second-open / unchanged-is-silent, the narrative cap is non-vacuous, and the beat carries the digest when its rule is enabled.",
+      "need": "Two gestures stay bdo's (D-4), like every other reflect rule (all by=bdo): enabling the topic (`loop.reflect rule --kind daily-digest --surface github-issues --on --by bdo`) and retiring the two raw-gh cloud routines once the gateway path is proven live (so it is truly only-one, never going dark in between). Surfaced, not done on a forged stamp.",
+      "value": "The daily digest stops being a second outward path that bypasses the one governed pen: it becomes a subscribed topic that listeners consume, a single live issue that updates in place — and it carries the narrative of what actually landed, not a bare count. Use the gateway, only go through one, consumed by those listening — made real, with the two raw-gh couriers now redundant.",
+      "text": "From bdo's direction that the digest use the gateway, go through only one path, and be consumed by those listening, I need the whole digest to flow through the one reflector pen as a perennial, self-updating topic (and to narrate what landed), because today it reaches his surface via two raw-gh cloud couriers that bypass the gateway its own divergences already use.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "cheap",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "A pure read-only fold (digest narrative + a new reflect topic) plus one `edit` verb on the existing reflector pen, all stdlib, no new network surface (the pen already speaks gh). The topic is inert until bdo admits its rule (the setpoints/realness law). Reversible by deletion; the two activation gestures and the cloud-routine retirement stay bdo's.",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "the whole digest goes through the one gateway, as a live topic listeners consume",
+      "value": "Your daily digest stops being two raw-gh cloud couriers and becomes one governed, self-updating issue — and it now names what actually landed, not a bare count.",
+      "why_now": "You said it directly today: use the gateway, only go through one, consumed by those listening. reflect.py already is that gateway; its divergences already ride it. This routes the rest.",
+      "if_accepted": "Enable the daily-digest rule and the Stop-hook beat keeps one live digest issue current through the one pen; the two cloud routines retire (only-one); listeners subscribe to consume it.",
+      "if_rejected": "The digest keeps reaching your surface by two outward couriers doing raw gh, bypassing the one pen every other surface act goes through.",
+      "cost_of_wrong_call": "Low: read-only, local, reversible; inert until you stamp the rule. The only standing decisions — enable the rule, retire the routines — stay yours.",
+      "mechanism": "loop/reflect.py gains a daily-digest topic (digest_drift) that opens one issue then edits it in place on change (content-hash keyed, silent when unchanged); the reflector pen gains an edit act. Pure fold; only the pen reaches out (D-4).",
+      "reading": [
+        ".ai-native/done/0166-digest-through-the-gateway.md",
+        "loop/reflect.py",
+        "loop/digest.py",
+        ".claude/skills/reflect/reflect.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/", ".claude/", "tests/"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "bdo's chat direction, 2026-06-21",
+        "done-line 0166",
+        "loop/reflect.py (the gateway the digest's divergences already use)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record and content-hash source; never mutated (D-5). The digest joins the reflect gateway as a perennial live topic; the narrative section and the edit act ride with it. Activation (enable the rule, retire the two cloud routines) stays bdo's (D-4)."
+}
