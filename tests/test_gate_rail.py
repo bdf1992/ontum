@@ -44,6 +44,7 @@ def _runner_returning(stdout, stderr="", rc=0):
     def runner(cmd, **kw):
         captured["cmd"] = cmd
         captured["cwd"] = kw.get("cwd")
+        captured["stdin"] = kw.get("stdin")
         return _Proc(stdout=stdout, stderr=stderr, returncode=rc)
 
     return runner, captured
@@ -68,6 +69,18 @@ class GateRailLaunch(unittest.TestCase):
         self.assertEqual(cmd[cmd.index("--model") + 1], "claude-opus-4-8")
         # the cwd must NOT be the repo root (where the project hooks block)
         self.assertNotEqual(Path(gate._launch_cwd()).resolve(), gate.ROOT.resolve())
+
+    def test_launch_redirects_stdin_to_devnull_so_it_cannot_hang(self):
+        """The 600s-hang root cause (issues #390/#391/#393/#396): without an
+        explicit stdin the headless child `claude` inherits the parent's stdin
+        and blocks on it when spawned from an interactive-ish parent. The launch
+        must pass stdin=DEVNULL. Non-vacuous: the pre-fix call passed no stdin
+        (captured['stdin'] would be None)."""
+        import subprocess
+        runner, captured = _runner_returning(_verdict_envelope("accept"))
+        gate.launch_claude("p", atom_id="atom.x.v0",
+                           node_id="value-gate.claude.v1", runner=runner)
+        self.assertEqual(captured["stdin"], subprocess.DEVNULL)
 
     def test_default_model_is_explicit_not_the_opus_alias(self):
         self.assertTrue(gate.GATE_MODEL)
