@@ -384,6 +384,57 @@ _CLASS_NODE_TYPE = {
     "orphaned": "subroutine",
 }
 
+# Font metrics shared with diagrams/compose.py and diagrams/qa.py (a 16px
+# monospace label, 8px side padding). The meaning line is wrapped to the node's
+# usable width using these exact numbers so the wrap the spec emits is the wrap
+# the gate measures — the renderer, the gate, and this fold cannot disagree.
+_LABEL_MONO_CHAR_W = 9.6
+_LABEL_SIDE_PAD = 8
+
+
+def _first_resolved_claim(projection, name):
+    """The `claim` of a term's FIRST resolving evidence citation, in declared
+    order — the meaning the diagram surfaces on the node. It is read straight
+    out of the projection's `evidence_edges` (which already carry each
+    citation's `claim` and `resolved` flag), so the node's meaning is DERIVED
+    from the same resolved evidence the projection folded, never prose authored
+    on the node. Edges are emitted in declared evidence order
+    (`edge:{name}:{i}`), so the first resolving one is the term's primary
+    grounding. Returns "" when nothing resolves (such a term is never drawn)."""
+    src = f"term:{name}"
+    for e in projection.get("evidence_edges", []):
+        if e.get("from") == src and e.get("resolved"):
+            return e.get("claim", "")
+    return ""
+
+
+def _wrap_meaning(text, max_chars):
+    """Greedy word-wrap to <= max_chars per line, deterministic, never
+    splitting a word (an over-long word gets its own line — if that overflows
+    the node, qa refuses it loudly rather than this fold silently corrupting
+    the claim). Joining the returned lines with a single space reconstructs the
+    original claim exactly, which is what makes 'the node meaning equals the
+    resolved claim' a checkable equality."""
+    lines, cur = [], ""
+    for word in str(text).split():
+        if not cur:
+            cur = word
+        elif len(cur) + 1 + len(word) <= max_chars:
+            cur += " " + word
+        else:
+            lines.append(cur)
+            cur = word
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def _label_max_chars(node_w):
+    """The per-line character budget for a node of width `node_w`, in qa.py's
+    own metric (usable width = w - 2*pad, divided by the mono char width)."""
+    usable = node_w - 2 * _LABEL_SIDE_PAD
+    return max(1, int(usable // _LABEL_MONO_CHAR_W))
+
 
 def diagram_drops(projection, layout):
     """The terms the diagram REFUSES: a term named in the layout (placed or in
@@ -418,12 +469,21 @@ def diagram_spec(projection, layout):
     The teeth: a term whose evidence resolves nowhere is DROPPED (it is a gap in
     the projection, never a drawn node), and any flow edge touching a dropped
     term is dropped with it — so the picture cannot draw a layer, or a flow
-    through a layer, that the records do not back."""
+    through a layer, that the records do not back.
+
+    The meaning on the node (done-line 0179): each drawn node's label carries,
+    below its `name`, the layer's real ontum meaning — the `claim` of the term's
+    first resolving citation, read from the projection's evidence (never prose
+    authored here). The shape still carries the realness class; the meaning line
+    is what stops a cold reader from mapping `fence`/`heal`/`pen` onto a
+    generic-gateway trope. The claim is word-wrapped to the node's usable width
+    in qa.py's own metric, so what this fold emits is what the gate measures."""
     regions_in = layout.get("regions", [])
     region_by_id = {r["id"]: r for r in regions_in}
     place = layout.get("place", {})
     node_w = layout.get("node", {}).get("w", 200)
     node_h = layout.get("node", {}).get("h", 80)
+    max_chars = _label_max_chars(node_w)
 
     drawn = {}           # term name -> node dict, the ids that actually render
     nodes = []
@@ -439,12 +499,14 @@ def diagram_spec(projection, layout):
             continue                         # a layout that names no such region
         x = region["col_x0"] + spot["col"] * region["col_step"]
         y = region["row_y"]
+        meaning = _first_resolved_claim(projection, name)
+        label_lines = [name] + _wrap_meaning(meaning, max_chars) if meaning else [name]
         node = {
             "id": name,
             "type": _CLASS_NODE_TYPE.get(t["class"], "rect"),
             "region": region["id"],
             "x": x, "y": y, "w": node_w, "h": node_h,
-            "label": f"{name}\n{t['class']}",
+            "label": "\n".join(label_lines),
         }
         nodes.append(node)
         drawn[name] = node

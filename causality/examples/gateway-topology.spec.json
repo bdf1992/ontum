@@ -1,5 +1,5 @@
 {
-  "caption": "Realness is derived, not asserted: each drawn layer resolves to minted-runtime code, so each is a rect. The named-only `threshold` layer cites a backing that resolves nowhere — refused as a gap, dropped not drawn — so the stack flow breaks where it would sit. A fold over committed bytes (term_economy.py), never a second source of truth.",
+  "caption": "Realness AND meaning are derived, not asserted: each drawn layer resolves to minted-runtime code (so each is a rect), and the line under each name is the claim of that term's first resolving citation — read from records, so fence/heal/pen read truthfully instead of as a generic gateway. The named-only `threshold` layer cites a backing that resolves nowhere — refused as a gap, dropped not drawn — so the stack flow breaks where it would sit. A fold over committed bytes (term_economy.py), never a second source of truth.",
   "edges": [
     {
       "from": "authentication",
@@ -32,117 +32,117 @@
   ],
   "nodes": [
     {
-      "h": 80,
+      "h": 140,
       "id": "authentication",
-      "label": "authentication\nminted-runtime",
+      "label": "authentication\nthe trust ladder:\nrungs are bdo's to\ngrant, denied until\nadmitted",
       "region": "gatekeeping",
       "type": "rect",
-      "w": 200,
-      "x": 70,
-      "y": 140
+      "w": 220,
+      "x": 60,
+      "y": 110
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "fence",
-      "label": "fence\nminted-runtime",
+      "label": "fence\nthe registry carries\nforbidden-decision\nrules (e.g. raw git\npush)",
       "region": "gatekeeping",
       "type": "rect",
-      "w": 200,
-      "x": 305,
-      "y": 140
+      "w": 220,
+      "x": 310,
+      "y": 110
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "gate",
-      "label": "gate\nminted-runtime",
+      "label": "gate\nobserve.gate() is the\nconsequence-gate: an\nunder-declared act\nHALTS",
       "region": "gatekeeping",
       "type": "rect",
-      "w": 200,
-      "x": 1010,
-      "y": 140
+      "w": 220,
+      "x": 1060,
+      "y": 110
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "guard",
-      "label": "guard\nminted-runtime",
+      "label": "guard\nthe command guard\ncompiles its\ndeny-rules from the\nfence registry",
       "region": "gatekeeping",
       "type": "rect",
-      "w": 200,
-      "x": 775,
-      "y": 140
+      "w": 220,
+      "x": 810,
+      "y": 110
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "heal",
-      "label": "heal\nminted-runtime",
+      "label": "heal\nthe healing fold\ndetects a stale-park\nbite and proposes the\nheal",
       "region": "acting",
       "type": "rect",
-      "w": 200,
-      "x": 775,
-      "y": 370
+      "w": 220,
+      "x": 810,
+      "y": 350
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "ledger",
-      "label": "ledger\nminted-runtime",
+      "label": "ledger\nthe Fold computes\nevery atom's state\nfrom the append-only\nlog",
       "region": "acting",
       "type": "rect",
-      "w": 200,
-      "x": 540,
-      "y": 370
+      "w": 220,
+      "x": 560,
+      "y": 350
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "patrol",
-      "label": "patrol\nminted-runtime",
+      "label": "patrol\nthe patrol arms an\nescalate marker for\nwhat genuinely needs\nbdo",
       "region": "acting",
       "type": "rect",
-      "w": 200,
-      "x": 305,
-      "y": 370
+      "w": 220,
+      "x": 310,
+      "y": 350
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "pen",
-      "label": "pen\nminted-runtime",
+      "label": "pen\njudge() is the one\npen by which a\nsummoned node writes\nits verdict",
       "region": "acting",
       "type": "rect",
-      "w": 200,
-      "x": 70,
-      "y": 370
+      "w": 220,
+      "x": 60,
+      "y": 350
     },
     {
-      "h": 80,
+      "h": 140,
       "id": "policy",
-      "label": "policy\nminted-runtime",
+      "label": "policy\nauthorize() is the\nPEP — default-deny\nover the admitted\npolicy set",
       "region": "gatekeeping",
       "type": "rect",
-      "w": 200,
-      "x": 540,
-      "y": 140
+      "w": 220,
+      "x": 560,
+      "y": 110
     }
   ],
   "regions": [
     {
-      "h": 180,
+      "h": 200,
       "id": "gatekeeping",
       "label": "gatekeeping",
-      "w": 1200,
+      "w": 1280,
       "x": 40,
       "y": 70
     },
     {
-      "h": 180,
+      "h": 200,
       "id": "acting",
       "label": "acting",
-      "w": 1200,
+      "w": 1280,
       "x": 40,
-      "y": 300
+      "y": 310
     }
   ],
   "size": [
-    1280,
-    520
+    1400,
+    560
   ],
   "title": "Ontum gateway stack · a projection from truth"
 }
