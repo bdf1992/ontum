@@ -1,0 +1,56 @@
+{
+  "atom": {
+    "id": "atom.loop-heartbeat.v0",
+    "story": {
+      "text": "As the loop owner, I need a GUARANTEED tick driving the level-triggered loop, because the value-confirm review queue (done-0150) and the no-settle-on-landing rule (done-0154) shipped and the headless review consumer was fixed (#411, rcp.merge.460) — but nothing TICKS the loop, so atoms sit at derive:value.accepted and never reach the real value-confirm gate; inflight piled to ~57 against a cap of 8. A level-triggered loop without a guaranteed beat is a clog by construction: the consumer is correct, but nobody turns the crank. loop/heartbeat.py is the crank. One beat is one bounded cycle: a TICK (reusing loop.orchestrate's existing tick for one setpoint-bounded pass) that flows confirmed-arc atoms toward value-confirm and parks the rest, then an optional DRAIN (only when drain_limit>0) that fires at most drain_limit real value-confirm reviews through gate.py's drain. Ticking is SAFE because owner-stamp.bdo.v1 and value-confirm.claude.v1 are BOTH admitted real: a confirmed-arc atom advances on bdo's standing confirmation, an unconfirmed atom PARKS at the real owner-stamp (the beat shuts the mock-human valve outright, human_rate=0, so a fake-stamp is structurally impossible), and terminal work parks at the real value-confirm gate (no auto-settle, no leak). The in-harness tick (--hook, tick-only, fail-open) is wired to SessionStart; the paced drain is bdo's external-scheduler activation gesture. This serves epic.virtual-fleet (the loop staffs itself). owner_stamp stays pending: the owner-value authorization at arc scale is bdo's confirm-arc on epic.virtual-fleet (D-4).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Give the level-triggered loop a guaranteed driver: a tick + paced-drain heartbeat that turns the value-confirm clog into a self-draining queue",
+      "value": "loop/heartbeat.py gains a beat(root, drain_limit=0, by): (1) TICK reuses loop.orchestrate one bounded pass (it borrows the pipeline, never reimplements it), advancing confirmed-arc atoms toward value-confirm and parking unconfirmed ones with NO fake-stamp; (2) DRAIN (only drain_limit>0) fires at most drain_limit real reviews through gate.py drain. A --hook mode is tick-only and fail-open (exit 0 always), wired to SessionStart as the in-harness guaranteed tick. The external paced consumer (a Task Scheduler entry running --drain-limit N) is bdo's activation gesture, documented in done-line 0178.",
+      "why_now": "The loop CLOGGED (inflight ~57/cap 8): atoms reach derive:value.accepted and stall because nothing drives the level-triggered loop. Until a guaranteed beat exists, the queue is a clog by construction and no new atom can be born.",
+      "if_accepted": "Every session start nudges the loop once (the in-harness tick keeps atoms flowing); an external schedule runs the paced drain that burns the backlog down with real reviews. The clog drains under a guaranteed consumer, with no fake-stamp, no auto-settle, no leak.",
+      "if_rejected": "Finished and in-flight work keeps stalling with no driver; the inflight cap stays jammed; new work cannot be born.",
+      "cost_of_wrong_call": "Low: the beat only FIRES the existing tick and (when asked) the existing drain. The verdict, the stamp, and the settle stay the gate, the arc confirmation, and the one pen (D-4); the mock-human valve is shut so the tick can never fake-stamp.",
+      "mechanism": "loop/heartbeat.py (the beat, --hook tick-only fail-open, the CLI) + .claude/settings.json (SessionStart wiring) + tests/test_heartbeat.py (the §10 no-fake-stamp / advance / at-most-drain-limit / idempotent / fail-open test, injected fakes, no live spawn). Done-line 0178.",
+      "reading": [
+        ".ai-native/done/0178-loop-heartbeat.md",
+        "loop/heartbeat.py",
+        "loop/orchestrate.py",
+        ".claude/skills/gate/gate.py",
+        "tests/test_heartbeat.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.virtual-fleet"
+      ],
+      "touches": [
+        "loop/heartbeat.py",
+        ".claude/settings.json",
+        "tests/test_heartbeat.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0178-loop-heartbeat.md",
+        ".ai-native/done/0150-guaranteed-review-queue.md",
+        ".ai-native/done/0154-landed-is-not-closed.md"
+      ],
+      "receipts": []
+    }
+  }
+}
