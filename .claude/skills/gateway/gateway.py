@@ -48,7 +48,7 @@ from pathlib import Path
 ROOT = Path(os.environ.get("ONTUM_REPO_ROOT") or Path(__file__).resolve().parents[3])
 sys.path.insert(0, str(ROOT))
 
-from loop import inference, minds  # noqa: E402
+from loop import inference, inference_queue, minds  # noqa: E402
 from loop.reconcile import Fold, append_line, now_ts, short_hash  # noqa: E402
 
 
@@ -96,7 +96,7 @@ def _receipt(root, *, mind, backing, model, prompt_hash, latency_ms, tokens,
         "prompt_hash": prompt_hash,
         "latency_ms": latency_ms,
         "tokens": tokens,
-        "outcome": outcome,           # ok | error | refused | unregistered
+        "outcome": outcome,           # ok | error | refused | unregistered | saturated
         "caller": caller,
         "surface": surface,
         "route": route,
@@ -110,14 +110,20 @@ def _receipt(root, *, mind, backing, model, prompt_hash, latency_ms, tokens,
 
 
 def complete(prompt, *, caller, surface, route="default", mind=None,
-             root=None, by="claude", timeout=60, writing_mind=None):
+             root=None, by="claude", timeout=60, writing_mind=None,
+             queue_wait_ms=None):
     """Route one prompt through the governed plane. Returns a dict:
       {ok, content, mind, receipts, reason}.
     Walks the route order (or the single explicit --mind); for each mind:
-    authorize -> resolve backing -> bounded completion. The first authorized,
-    live mind answers; a refused/down/hung mind is receipted and falls back to
-    the next. result reported by the CLI; the receipts are the truth."""
+    authorize -> admit (claim an in-flight slot) -> resolve backing -> bounded
+    completion. The first authorized, live mind answers; a refused/down/hung
+    mind is receipted and falls back to the next; a saturated plane is refused
+    with a witnessed receipt. result reported by the CLI; receipts are the
+    truth. `queue_wait_ms` is how long a request waits for a slot before that
+    refusal (default: one `timeout`)."""
     ai_root = Path(root) if root else ROOT / ".ai-native"
+    if queue_wait_ms is None:
+        queue_wait_ms = timeout * 1000
     fold = Fold(ai_root)
     registered = minds.registered_minds(fold)
     order = [mind] if mind else inference.resolve_order(fold, route)
@@ -164,6 +170,28 @@ def complete(prompt, *, caller, surface, route="default", mind=None,
                 reason=f"unresolvable backing: {e}", by=by))
             continue
 
+        # admission control: claim one of `bound` in-flight slots before the
+        # completion. A burst of callers can never hold more than the bound's
+        # worth of model/KV-cache resident at once; excess waits, and a plane
+        # that stays saturated for the whole wait is REFUSED with a witnessed
+        # receipt — backpressure on the record, never a silent host-kill. The
+        # slot is held only for the duration of the POST (the memory-consuming
+        # part); a lease makes a hard-killed caller's slot self-heal.
+        bound = inference_queue.concurrency_bound(fold)
+        lease_ms = (timeout + inference_queue.LEASE_GRACE_S) * 1000
+        slot = inference_queue.acquire(
+            ai_root, bound=bound, lease_ms=lease_ms, wait_ms=queue_wait_ms)
+        if slot is None:
+            receipts.append(_receipt(
+                ai_root, mind=mind_id, backing=adm.get("backing"),
+                model=target.get("model"), prompt_hash=prompt_hash,
+                latency_ms=0, tokens=None, outcome="saturated", caller=caller,
+                surface=surface, route=route, attempt=attempt,
+                fallback_from=fallback_from,
+                reason=(f"inference plane saturated: {bound} in flight, waited "
+                        f"{queue_wait_ms}ms for a slot"), by=by))
+            break  # host-level backpressure — a fallback hits the same host
+
         start = time.monotonic()
         try:
             content, tokens = _post_completion(
@@ -179,6 +207,8 @@ def complete(prompt, *, caller, surface, route="default", mind=None,
                 fallback_from=fallback_from,
                 reason=f"{type(e).__name__}: {str(e)[:160]}", by=by))
             continue
+        finally:
+            inference_queue.release(slot)
 
         latency_ms = int((time.monotonic() - start) * 1000)
         rcp = _receipt(
@@ -204,7 +234,9 @@ def cmd_complete(ns):
         print("result: needs-you — a prompt is required (--prompt or --prompt-file)")
         return 2
     out = complete(prompt, caller=ns.caller, surface=ns.surface, route=ns.route,
-                   mind=ns.mind, by=ns.by, timeout=ns.timeout)
+                   mind=ns.mind, by=ns.by, timeout=ns.timeout,
+                   queue_wait_ms=(None if ns.queue_wait is None
+                                  else int(ns.queue_wait * 1000)))
     for r in out["receipts"]:
         tail = f" <- fallback from {r['fallback_from']}" if r.get("fallback_from") else ""
         extra = f" ({r['reason']})" if r.get("reason") else ""
@@ -234,6 +266,9 @@ def main(argv=None):
     cp.add_argument("--by", default="claude", help="who ran the call")
     cp.add_argument("--timeout", type=int, default=60,
                     help="per-attempt seconds — bounds a hung backing (#95/#96)")
+    cp.add_argument("--queue-wait", type=float, default=None, dest="queue_wait",
+                    help="seconds to wait for an in-flight slot before refusing "
+                         "as saturated (default: one --timeout)")
     cp.set_defaults(func=cmd_complete)
     ns = ap.parse_args(argv)
     return ns.func(ns)
