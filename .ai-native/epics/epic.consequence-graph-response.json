@@ -1,0 +1,45 @@
+{
+  "epic": {
+    "id": "epic.consequence-graph-response",
+    "owner": "bdo",
+    "status": "proposed",
+    "arc": "The foreign review of exports/consequence-graph/ comes home as work. Each finding is a proposed atom under this one arc; bdo's confirm-arc queues them all, his decline retires them \u2014 either way the review stops stranding as context.",
+    "context": "Returned through the inbound envoy seam (done-line 0059) against seal 25dfa4e81552\u2026 on exports/log.jsonl. The reviewer saw a sealed snapshot, so every finding is PROPOSED and unverified: the value gate judges each story and a session verifies its claim against the live repo before any is acted on.",
+    "value": "A foreign review becomes value-gated, queued work instead of read-only context \u2014 the return leg the one-way envoy lacked.",
+    "horizon": "Every finding judged by the value gate and either carried under bdo's confirmed arc or refused; none hand-carried into a doc.",
+    "pieces": [
+      {
+        "atom": "atom.consequence-graph-resp-plane-not-memory.v0",
+        "glue": "Reframe the spine: the consequence graph is the auditable PLANE of a larger consequence memory (a fold over the objective and felt fields), not the whole system. Name it a plane in the architecture; v0 still builds the plane first as the smallest auditable slice. (Naming/arc is bdo s \u2014 proposed.)"
+      },
+      {
+        "atom": "atom.consequence-graph-resp-consequence-node-kind.v0",
+        "glue": "Add a first-class consequence node kind to v0, distinct from work-units: a cited consequence node exists only when a sensor (heal/retro/digest) proves a changed state not identical to the work unit. This is what makes v0 a consequence view and not a prettier provenance view \u2014 the answer to the meta-seam."
+      },
+      {
+        "atom": "atom.consequence-graph-resp-v0-marks-failure-repair-only.v0",
+        "glue": "v0 mark types are failure and repair ONLY; defer both exemplar and value. Do not derive exemplar from passing gates \u2014 a pass is the correctness floor, not excellence, and a floor-derived exemplar poisons the target (sharpens our seam-2 lean, which deferred only value)."
+      },
+      {
+        "atom": "atom.consequence-graph-resp-bounded-bfs-propagation.v0",
+        "glue": "Propagation is a bounded breadth-first walk per mark: radius 2, threshold 0.20, per-edge-kind decay table, no convergence/iteration, cycles do not matter; keep strongest contribution per mark/channel/node, sum same-channel contributions, keep channels separate."
+      },
+      {
+        "atom": "atom.consequence-graph-resp-no-superspreader-no-lateral-smear.v0",
+        "glue": "Hard propagation rules: actor nodes and authorship edges render but never propagate (no super-spreader through --by); arc nodes receive aggregation but never fan out to sibling atoms (no lateral smear); never net across mark types (a thing can be loved and broken, repaired and still historically dragged)."
+      },
+      {
+        "atom": "atom.consequence-graph-resp-money-splits-before-propagating.v0",
+        "glue": "Before value/money ever propagates, split it into at least loved / adopted / reused / pattern_setting \u2014 each grounded in a different evidence kind (local / network / structural-dependency / temporal-doctrinal) and propagating differently. No scalar money. (Definition stays bdo s; this is the mechanism that keeps it from taste-only collapse.)"
+      },
+      {
+        "atom": "atom.consequence-graph-resp-single-node-shape-kind-field.v0",
+        "glue": "Use one node shape with a kind field rather than heterogeneous node classes (answers schema seam 1): heterogeneous classes make propagation brittle too early."
+      },
+      {
+        "atom": "atom.consequence-graph-resp-nonvacuous-acceptance-fixture.v0",
+        "glue": "The keystone acceptance test is a fixture log (two atom versions, a negating receipt on the old, a later advancing receipt on the live, a heal stale-park finding, a derived consequence node, an arc membership, an authored_by edge, and one deliberately-bad mark citation) asserting tier-1 edges only, drag+repair marks created, consequence node only when cited, decaying propagation that does NOT cross actor hubs or arc siblings, ghost citation refused as a gap, deterministic across two runs. If the test cannot refuse the ghost, the fold is not real."
+      }
+    ]
+  }
+}
