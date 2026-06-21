@@ -45,6 +45,9 @@ python -m loop.census                      # the organ census: which organs carr
 
 python -m loop.gaps                        # the gap backlog, pressure-ordered — the top one is the work
 
+python -m loop.suite census                # the test-suite economy: typed, attributed, accounted (read-only)
+python -m loop.suite census --json         # the full per-test dataset, machine-readable
+
 python -m loop.digest                      # the owner's merge digest — read-only fold, arc-first
 python -m loop.digest --today --json       # today's records as the raw dataset (machine-readable)
 python -m loop.digest --since 2026-06-01 --until 2026-06-11
@@ -236,6 +239,25 @@ so a prompt edit can't reopen a settled verdict (I-2).
   an absence, not a field of mock stages. `loop.summon --hook` hands the
   single top gap to every session that blinks in — the idle default is
   "work the backlog the harness generated", never "wait for direction".
+- [suite.py](suite.py) — the test-suite economy (done-line 0171): the
+  loop sensing its *test* body the way `census.py` senses its code body.
+  A pure read-only `ast`-fold over `tests/*.py` that **types** each test
+  by structural evidence (guard / refusal / byte-determinism / fold /
+  pen-seam / integration / unit, and an honest **untyped** when nothing
+  decides — never a guessed label, the `tags.py` discipline),
+  **attributes** it (organ from filename + imports + subprocess targets;
+  done-lines pinned from docstrings + cited tokens), and **accounts** it
+  as a census: type histogram, organ→covering-test count (an untested
+  organ named, the census wired·idle grain), and frozen-done-line→pinning
+  count (an unpinned line is an `unreceipted-contract` finding). The teeth
+  (§10, `tests/test_suite.py`): `refusal` is assigned on rejection
+  *evidence*, never the method NAME, so a refusal-named/no-rejection test
+  surfaces as **mislabeled**; the classifier fails a constant. This is the
+  foundation the planned **test-operator** (the hand: runs the mutation
+  and change-scope assays) and **test-administrator** (the governance
+  seat: admits a type, sets the per-organ mutation bar, accepts a survivor
+  as a known gap — bdo last stop, D-4) ride. Read-only; deterministic;
+  `--json` emits the dataset.
 
 ### Invariants the code is built around (firm)
 

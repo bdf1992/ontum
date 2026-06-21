@@ -17,3 +17,12 @@ Conventions the suite already holds:
 - Byte-determinism is asserted as bytes (`read_bytes`), not text.
 - The §10 bar: prefer a test where a locally-fine artifact *refuses to
   fit* over one that confirms the happy path.
+
+These conventions are no longer prose-only: `python -m loop.suite census`
+(done-line 0171) is the read-only fold that measures them — it types each
+test (guard / refusal / fold / …), names which organ and done-line it
+attributes to, and surfaces the gaps (an untyped test, a done-line no test
+pins, a refusal-named test that asserts no rejection). It is the loop
+sensing its test body, the `census.py` of the suite; the planned
+test-operator / test-administrator seats run mutation and change-scope
+assays on top of its attribution map.
