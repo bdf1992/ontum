@@ -76,7 +76,7 @@ recorded checkpoint a second party accepts — served and operable wherever bdo 
 
 ## What this arc deliberately does not double-build (§10)
 
-The promotion-and-acceptance machinery composes existing organs rather than
+The promotion-and-acceptance machinery composes existing parts rather than
 re-deriving them: the merge-node and `loop/digest.py` (`epic.owner-harness`),
 the off-log atom gate (`.github/`), the gateway economy (§13.10), and the
 namespace-join groundwork in `loop/pull.py`. Where a piece overlaps one of these,

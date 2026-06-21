@@ -1,4 +1,4 @@
-"""§10 for the Claim organ (done-line 0158): Claim bounds a valid conjecture
+"""§10 for the Claim part (done-line 0158): Claim bounds a valid conjecture
 and REFUSES an unlawful one — and never proves.
 
 The discriminating test: Claim runs the ScoutCTA contract first, so an

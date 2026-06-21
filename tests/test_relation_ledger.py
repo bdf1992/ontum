@@ -63,7 +63,7 @@ class TestPredictiveVsTrivial(unittest.TestCase):
 
     def test_predictive_and_trivial_separate_in_one_fold(self):
         """Both at once: the fold pulls the predictive bucket apart from the
-        trivial one — the live split the organ exists to draw."""
+        trivial one — the live split the part exists to draw."""
         d = rl.coherence_report(
             [claim("c.warm", "warm", "expands"),
              claim("c.coin", "coin", "heads")],

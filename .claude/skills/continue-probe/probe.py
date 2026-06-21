@@ -10,7 +10,7 @@ the daily digest) runs `probe.py --fire` every few minutes; it asks the watcher
 for idle-and-eligible sessions, budgets which are actually *due* (cooldown +
 a per-streak fire cap so an away session is never hammered), resumes each, and
 records every firing to a gitignored trace (the trust rail — every headless
-fire is on the record until the organ earns trust).
+fire is on the record until the part earns trust).
 
 Default is **dry-run**: it prints what it *would* fire and writes nothing. Only
 `--fire` actually spawns `claude` and advances the ledger — resuming a session

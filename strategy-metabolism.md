@@ -1,10 +1,10 @@
-# Strategy Metabolism — lawful pre-evidence motion
+# Strategy Cycle — lawful pre-evidence motion
 
 > **Status: PROPOSED** — captured from bdo's carry-over brief, 2026-06-20.
 > Extends [explore-lobe.proposal.md](explore-lobe.proposal.md) (the design
-> conversation that found the organ) and **supersedes its scope**: the
-> explore lobe does **not** land alone. It is one quadrant of a four-organ
-> metabolism. This note resolves nothing bdo lists as open (decisions A–D,
+> conversation that found the part) and **supersedes its scope**: the
+> explore lobe does **not** land alone. It is one quadrant of a four-part
+> cycle. This note resolves nothing bdo lists as open (decisions A–D,
 > §11); it adopts his recommendations as working defaults, marked.
 
 ## 1. The missing capability
@@ -22,7 +22,7 @@ That is the **Scout** function. Capital is the future banked — the most
 aggressive uncertainty-terminator there is, one point of one axis. The
 payout here is **motion**: the draw that never spends the principal.
 
-## 2. The metabolism — four organs
+## 2. The cycle — four parts
 
 | Loop (4X)  | Ontum-native | Function                | Ontum shape                                          |
 |------------|--------------|-------------------------|------------------------------------------------------|
@@ -34,7 +34,7 @@ payout here is **motion**: the draw that never spends the principal.
 **The blind spot the conversation found:** exploration creates an immediate
 need for claiming and pruning. Scout without Claim and Prune is beautiful
 overgrowth — unmanaged possibility that consumes field-space. So the
-priority is **not** "build the Scout lobe." It is: land a small metabolism
+priority is **not** "build the Scout lobe." It is: land a small cycle
 where Scout emits one CTA, Claim can bound it, Build can route it, and Prune
 can retire it.
 
@@ -61,7 +61,7 @@ present**: a mock stage exists, an atom is parked, a gate failed, a handoff
 is incomplete. That is the **maintenance backlog**.
 
 Scout emits calls to action from **priors + direction**: an opportunity
-appears, a pattern suggests a possible next organ, the field's conditions
+appears, a pattern suggests a possible next part, the field's conditions
 changed, prior work implies a frontier worth probing. That is the
 **opportunity frontier**.
 
@@ -123,7 +123,7 @@ that `term_economy.resolve_evidence` confirms is committed — a CTA whose
 priors do not resolve is **refused as ungrounded** (the ghost refusal). A
 fabricated/constant emitter cannot pass.
 
-## 7. Claim organ (required adjacent)
+## 7. Claim part (required adjacent)
 
 Claim converts a conjectural CTA into bounded work. It does **not** prove the
 CTA — it only says *this frontier is now bounded enough to work or watch.*
@@ -142,7 +142,7 @@ expiry:
 
 Claim is the missing bridge between possibility and execution.
 
-## 8. Prune organ (required adjacent)
+## 8. Prune part (required adjacent)
 
 Prune is **not** a gate. A gate judges something trying to *land*; Prune
 judges open *possibility* consuming field-space — "this conjecture expired /
@@ -160,7 +160,7 @@ reopen_condition:
 
 Without Prune, Scout creates unmanaged growth.
 
-**Prune is the weakest organ by design-confidence** (bdo, 2026-06-20): retiring
+**Prune is the weakest part by design-confidence** (bdo, 2026-06-20): retiring
 open possibility is a judgment about *intent* — "is this conjecture spent, or
 just early?" — that a single fold cannot make safely. So when Prune is built it
 **requisitions a panel review for intent** (the gate-panel / charades room — a
@@ -176,11 +176,11 @@ clutter, risk. Every Scout CTA carries a `cost` and an `attention_class`
 (e.g. `"one review pass + one small branch + one §10 test"`, `small`). This
 keeps exploration from becoming ambient debt.
 
-## 10. The landable sequence — smallest useful metabolism
+## 10. The landable sequence — smallest useful cycle
 
 Develop-and-requisition-review only; never self-land (D-4).
 
-1. **`strategy-metabolism.md`** — this note (P1). Names the metabolism,
+1. **`strategy-metabolism.md`** — this note (P1). Names the cycle,
    distinguishes maintenance from frontier CTAs, states Scout outputs are
    conjectural/review-required/expiring/non-minted, names Claim and Prune as
    required.
@@ -230,4 +230,4 @@ to change any.
   with the ghost-refusal teeth. `loop/scout_cta.py` (+ its test) is the
   ScoutCTA **contract** (done-line 0141, §6 schema). The generating
   `loop/scout.py` that joins the fold to the schema, and the **Claim** and
-  **Prune** organs, are named but later lines.
+  **Prune** parts, are named but later lines.

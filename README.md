@@ -21,7 +21,7 @@ can vary; the owner does not.
 | Path | What it is |
 |---|---|
 | `ai-native-loop-substrate.md` | **The doctrine.** The working harness: decisions, invariants, seams, the build rule. Start here. |
-| `loop/` | The loop substrate — pure stdlib. The fold (`reconcile`), ambient control (`orchestrate`), the one pen for verdicts (`node`), the summons (`summon`), reflection onto external surfaces (`reflect`), the owner inbox (`web`), the organ census (`census`), the owner digest (`digest`), the merge-node's land-readiness eyes (`merge`), and the folds the loop runs on itself — gaps, retro, pressure, energy, impact, the slow loop (`slowloop`/`disposer`), and more. |
+| `loop/` | The loop substrate — pure stdlib. The fold (`reconcile`), ambient control (`orchestrate`), the one pen for verdicts (`node`), the summons (`summon`), reflection onto external surfaces (`reflect`), the owner inbox (`web`), the part census (`census`), the owner digest (`digest`), the merge-node's land-readiness eyes (`merge`), and the folds the loop runs on itself — gaps, retro, pressure, energy, impact, the slow loop (`slowloop`/`disposer`), and more. |
 | `causality/` | The Causality surface (epic.causality-surface, served live): the term-economy witness (`term_economy.py`, a read-only fold that classifies ontum's own vocabulary against committed bytes) and the agnostic graph canvas (`canvas.html`). A projection, never a second source of truth. |
 | `outcomes/` | Durable desired-realities carried across mortal sessions — the desired-reality pole of the outcome-pressure fold (`loop/pressure.py`). Each outcome is an evidence-bearing probe-set the fold reads met/partial/unmet; aspiration is refused at the door. |
 | `.ai-native/` | The loop's own ground: `log/` (the append-only truth), `atoms/` (units of work, identity = content hash), `nodes/` (versioned node prompts), `epics/` (the arcs), `done/` (done-lines, written before code), `reports/` (session reports). |
@@ -48,7 +48,7 @@ python -m loop.orchestrate --status         # field state: pressure vs setpoint
 python -m loop.node inbox                    # the owner's open items
 python -m loop.node arcs                     # the arcs and which are confirmed
 python -m loop.summon                        # open summons (read-only)
-python -m loop.census                        # which organs carry weight, which are dormant
+python -m loop.census                        # which parts carry weight, which are dormant
 python -m loop.digest --today                # the owner's daily arc-first digest
 python -m loop.merge                         # per-arc land-readiness (read-only)
 
@@ -96,7 +96,7 @@ receipt. Around
 the core, the ambient control loop, the summons, the one pen, reflection onto
 GitHub Issues, the served owner inbox, arc confirmation, the merge-node (the
 hand that lands confirmed-arc work so bdo steps out of the merge seat), the
-organ census, the owner digest, the family-neutral fence, the glyph knoller and
+part census, the owner digest, the family-neutral fence, the glyph knoller and
 3D viewer, the language strata, the envoy export surface, and the pivot
 recoverability instrument all exist.
 

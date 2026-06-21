@@ -1,4 +1,4 @@
-# diagrams/ — the diagram organ
+# diagrams/ — the diagram part
 
 A governed diagramming surface for ontum: it captures subject-matter
 intent and renders **honest** architecture diagrams, and it can
