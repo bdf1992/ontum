@@ -1,0 +1,55 @@
+{
+  "atom": {
+    "id": "atom.diagram-structural-plane.v0",
+    "story": {
+      "text": "As the loop's owner, I need the diagram organ's PLANE and its BOUNDARIES to be first-class structure before any fixture or feature stands on them — because bdo's redirect (2026-06-20) named the inversion: snap and genres were being built before the structured space they snap into and group within exists ('the planes and boundaries themselves before the fixtures and features and attributes'). Today a diagram's regions are decorative rectangles and a node's belonging to one is inferred from where its rectangle happens to sit. This cell makes REGIONS first-class declared structure: a node belongs to a boundary by declaration (node.region == region.id), not by geometry, and the gate refuses a declaration that lies — a node claiming a region that does not exist (the structural analog of an orphan), or a node sitting outside the region it claims. The §10 proof: an honest regioned pipeline passes; a variant differing by exactly one node's region declaration is refused, exit 2, citing [C4 containment / cognitive integration].",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Regions become first-class declared structure — the plane and its boundaries before the fixtures",
+      "value": "The diagram organ stops standing on inferred geometry and starts standing on declared structure. A region is a boundary a node belongs to by declaration, enforced by the gate — so the picture cannot claim a containment the layout contradicts, and snap/genres now have a real structured space to build on. This is bdo's structure-first redirect made real on the smallest honest slice: backward-compatible (a spec with no regions behaves exactly as before), byte-deterministic, and gated with a tooth that cites the canon.",
+      "why_now": "epic.diagram wave 1 (the floor + canon + gate, atom.diagram-floor-gate.v0) landed (PR #322). When the next pieces were named, bdo flagged that the feature-first piece list (snap, one genre) was inverted: snap answers 'snap to what?', and the what — the plane and its boundaries — did not exist. This cell builds the what first, and the epic is re-cut structure-first to match (plane -> composition -> attribute-model -> snap-as-consequence).",
+      "if_accepted": "diagrams/ gains first-class regions: compose.py renders them as structural containers, qa.py enforces declared membership (check_region_membership) citing the canon's new C4 containment rule, and the §10 pair holds in tests/test_diagram.py (now 22 tests). The structural plane is the floor the composition cell (nesting + the holonic node-is-a-subdiagram move), the attribute-model cell (causality's holonic fields), and grid-snap then build on.",
+      "if_rejected": "The organ keeps inferring containment from geometry — a node looks like it belongs to a frame it does not, and nothing refuses the lie; snap and genres keep being built before the structure they need.",
+      "cost_of_wrong_call": "Low. Backward-compatible by construction (the tooth bites only a declaration; a spec with no regions is untouched); pure stdlib, explicit-position, byte-deterministic; the gate fails open on its own error. No pipeline stage changes; no realness asserted.",
+      "mechanism": "compose.py renders spec.regions (declared {id,label,x,y,w,h}) as structural containers at the subgraph z-layer; nodes carry an optional region:<id>. qa.py adds check_region_membership: a node.region not in the declared regions -> deny, and a node geometrically outside its declared region -> deny, both citing 'C4 containment / cognitive integration'. canon.md gains the regions-are-first-class-structure rule with its refusal + non-example. examples/pipeline-regioned.json (+ byte-pinned .svg) and examples/pipeline-region-broken.json are the §10 pair (differ by exactly one node's region). Done-line 0151.",
+      "reading": [
+        "diagrams/canon.md",
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "diagrams/examples/pipeline-regioned.json",
+        "tests/test_diagram.py",
+        ".ai-native/done/0151-diagram-structural-plane.md",
+        ".ai-native/epics/epic.diagram.json"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["epic.diagram"],
+      "touches": [
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "diagrams/canon.md",
+        "tests/test_diagram.py"
+      ],
+      "must_not_collide_with": ["causality/canvas.js", "causality/term_economy.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "diagrams/canon.md"
+      ]
+    }
+  },
+  "_note": "Birth record for epic.diagram structure-first cell 1 (done-line 0151): regions as first-class declared structure. The plane and its boundaries before the fixtures and features (bdo's redirect, 2026-06-20). Authored as one cell because the renderer change, the gate tooth, the canon rule, and the §10 pair are one work-particle (the tooth cites the canon, the examples prove the tooth). grid-snap reframed as a consequence in the re-cut epic. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

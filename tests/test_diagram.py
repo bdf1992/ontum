@@ -30,6 +30,8 @@ DIAGRAMS = REPO / "diagrams"
 EXAMPLES = DIAGRAMS / "examples"
 HONEST = EXAMPLES / "pipeline-state-machine.json"
 DISHONEST = EXAMPLES / "pipeline-dishonest.json"
+REGIONED = EXAMPLES / "pipeline-regioned.json"
+REGION_BROKEN = EXAMPLES / "pipeline-region-broken.json"
 
 sys.path.insert(0, str(DIAGRAMS))
 import compose  # noqa: E402
@@ -183,6 +185,61 @@ class TestEachToothBites(unittest.TestCase):
         spec = json.loads(HONEST.read_text(encoding="utf-8"))
         self.assertEqual(self._principles(spec), set(),
                          "the honest spec must trip no canon tooth")
+
+
+class TestRegionsAreStructure(unittest.TestCase):
+    """Done-line 0151: regions are first-class declared structure — a node
+    belongs to a boundary by declaration, not geometry. The §10 pair: an honest
+    regioned diagram passes; a variant differing by exactly one field (one
+    node's `region`) where that node claims a boundary that does not exist is
+    REFUSED with the C4 containment principle named."""
+
+    def _principles(self, spec):
+        return {p for sev, p, _m, _c in qa.evaluate(spec) if sev == "error"}
+
+    def test_honest_regioned_passes(self):
+        r = _run_qa(REGIONED)
+        self.assertEqual(r.returncode, 0, f"honest regioned spec was refused:\n{r.stderr}")
+
+    def test_committed_regioned_svg_equals_fresh_render(self):
+        spec = json.loads(REGIONED.read_text(encoding="utf-8"))
+        committed = (EXAMPLES / "pipeline-regioned.svg").read_bytes()
+        fresh = compose.render(spec).encode("utf-8")
+        self.assertEqual(committed, fresh,
+                         "the committed regioned SVG drifted — re-render it")
+
+    def test_broken_region_refused_with_cited_principle(self):
+        r = _run_qa(REGION_BROKEN)
+        self.assertEqual(r.returncode, 2, "the broken-region spec passed the gate")
+        self.assertIn("c4 containment", r.stderr.lower())
+        self.assertIn("does not exist", r.stderr.lower())
+
+    def test_the_region_pair_differs_by_one_field(self):
+        honest = json.loads(REGIONED.read_text(encoding="utf-8"))
+        broken = json.loads(REGION_BROKEN.read_text(encoding="utf-8"))
+        diffs = [(h["id"], h.get("region"), b.get("region"))
+                 for h, b in zip(honest["nodes"], broken["nodes"])
+                 if h.get("region") != b.get("region")]
+        self.assertEqual(len(diffs), 1,
+                         "the broken variant must be locally-fine + one bad region declaration")
+        self.assertEqual(honest["regions"], broken["regions"],
+                         "the declared regions are otherwise identical")
+
+    def test_node_outside_its_region_is_refused(self):
+        # a node declares a region it sits geometrically outside → deny
+        spec = {"size": [400, 400],
+                "regions": [{"id": "r", "label": "r", "x": 20, "y": 20, "w": 150, "h": 150}],
+                "nodes": [
+                    {"id": "out", "type": "rect", "region": "r", "x": 220, "y": 220, "w": 80, "h": 50, "label": "out"},
+                    {"id": "ok", "type": "rect", "region": "r", "x": 40, "y": 40, "w": 80, "h": 50, "label": "ok"}],
+                "edges": [{"from": "out", "to": "ok"}]}
+        self.assertIn("C4 containment / cognitive integration", self._principles(spec))
+
+    def test_no_regions_is_backward_compatible(self):
+        # the floor's honest spec has no `regions`/`region` → the tooth never bites
+        spec = json.loads(HONEST.read_text(encoding="utf-8"))
+        self.assertNotIn("C4 containment / cognitive integration", self._principles(spec))
+        self.assertEqual(qa.check_region_membership.__name__, "check_region_membership")
 
 
 if __name__ == "__main__":

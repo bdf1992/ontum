@@ -447,6 +447,43 @@ def check_invented_shapes_genres(spec, issues):
                  f"node id='{n.get('id')}'")
 
 
+def check_region_membership(spec, issues):
+    """Structural containment (canon: C4 containment / cognitive integration,
+    done-line 0151): regions are first-class declared boundaries, and a node
+    *belongs* to one by declaration (`node.region == region.id`), not by where
+    its rectangle happens to sit. Two ways the declaration can lie:
+
+      - a node declares a region that is not in the diagram's `regions` → deny
+        (a boundary that does not exist — the structural analog of an orphan);
+      - a node declares a region it is geometrically *outside* → deny (the
+        picture claims a containment the layout contradicts).
+
+    A spec with no `regions` and no node `region` is untouched — the rule only
+    bites a declaration, so it is backward-compatible (done-line 0151)."""
+    declared = {r.get("id"): r for r in spec.get("regions", []) if r.get("id")}
+    for n in spec.get("nodes", []):
+        r = n.get("region")
+        if r is None:
+            continue
+        if r not in declared:
+            deny(issues, "C4 containment / cognitive integration",
+                 f"node declares region '{r}' that is not in the diagram's "
+                 "`regions` — a boundary that does not exist",
+                 f"node id='{n.get('id')}'")
+            continue
+        reg = declared[r]
+        nx1, ny1 = n["x"], n["y"]
+        nx2, ny2 = n["x"] + n["w"], n["y"] + n["h"]
+        rx1, ry1 = reg["x"], reg["y"]
+        rx2, ry2 = reg["x"] + reg["w"], reg["y"] + reg["h"]
+        if not (rx1 <= nx1 and ry1 <= ny1 and nx2 <= rx2 and ny2 <= ry2):
+            deny(issues, "C4 containment / cognitive integration",
+                 f"node declares region '{r}' but its geometry falls outside "
+                 "that region's bounds — the picture claims a containment the "
+                 "layout contradicts",
+                 f"node id='{n.get('id')}'")
+
+
 CHECKS = [
     # renderer-fidelity
     check_title,
@@ -465,6 +502,7 @@ CHECKS = [
     check_orphans_and_reachability,
     check_sibling_count,
     check_invented_shapes_genres,
+    check_region_membership,
 ]
 
 

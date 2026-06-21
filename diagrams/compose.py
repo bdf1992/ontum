@@ -462,6 +462,13 @@ def render(spec: dict) -> str:
     nodes = spec.get("nodes", [])
     edges = spec.get("edges", [])
     subgraphs = spec.get("subgraphs", [])
+    # Regions are first-class declared structure (done-line 0151): a boundary a
+    # node *belongs to* by declaration (`node.region == region.id`), not a
+    # rectangle that happens to enclose it. Structurally they render like
+    # subgraphs (the visual container is the same); the difference the gate
+    # enforces is membership, not geometry. Drawn at the same z-layer as
+    # subgraphs so frames stay continuous and edges pass over fills.
+    regions = spec.get("regions", [])
     nodes_by_id = {n["id"]: n for n in nodes}
 
     out = [
@@ -479,6 +486,8 @@ def render(spec: dict) -> str:
     # Z-order: subgraph fills (back) → nodes → edges → subgraph frames (front).
     # This puts arrow lines visible across room interiors but under the room's stroke and label,
     # so frames stay continuous and labels stay legible.
+    for region in regions:
+        out.append(render_subgraph_fill(region))
     for sg in subgraphs:
         out.append(render_subgraph_fill(sg))
     for n in nodes:
@@ -486,6 +495,8 @@ def render(spec: dict) -> str:
         out.append(renderer(n))
     for e in edges:
         out.append(render_edge(e, nodes_by_id))
+    for region in regions:
+        out.append(render_subgraph_frame(region))
     for sg in subgraphs:
         out.append(render_subgraph_frame(sg))
     caption = render_caption(spec)

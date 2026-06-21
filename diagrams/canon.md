@@ -107,6 +107,20 @@ recursive zoom is the mechanized form. A containment diagram that mixes
 levels in one frame (a system-context box next to a code-class box) →
 **deny** (level confusion) once the containment genre lands.
 
+**Regions are first-class declared structure** (done-line 0151): a boundary
+a node *belongs to* by declaration (`node.region == region.id`), not a
+rectangle that happens to enclose it. This is the structure the fixtures and
+features stand on — the plane and its boundaries before snap and genres.
+→ *Gate (`check_region_membership`):* a node declaring a region not in the
+diagram's `regions` → **deny** (a boundary that does not exist — the
+structural analog of an orphan node); a node declaring a region it is
+geometrically **outside** → **deny** (the picture claims a containment the
+layout contradicts). *Non-example:* a node visually sitting inside a frame
+but belonging — per the record — to a different region: the geometry must not
+be trusted to *imply* membership, and membership must not be drawn where it
+isn't true. Backward-compatible: a diagram that declares no `regions` is
+untouched (the rule bites only a declaration).
+
 ## The discipline
 
 A rule appears here only with its **refusal** and a **non-example** — a

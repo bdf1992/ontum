@@ -9,29 +9,34 @@
     "horizon": "Done at epic scale: ontum has diagrams/ with a deterministic compose.py spec->SVG floor; a refusing gate (qa.py promoted to the ontum hook grain) whose every refusal cites the named canon; one layout aid (tier-declaration grid-snap) that keeps diffs stable; generative authoring (describe -> schema-valid diagram spec, validated before render, reusing the authoring.js pattern); projection-from-truth folded into term_economy; recursive zoom for complexity; the causality look served live; and a governed, growing diagram Pattern-Commons family. A genre is added only when two real diagrams refuse to fit the existing ones (the §10 test) — never to fill a zoo. The first increment proves the gate-with-teeth + named canon + one genre on a real ontum content shape, requiring none of the rest.",
     "pieces": [
       {
-        "atom": "atom.diagram-floor.v0",
-        "status": "wave 1 — the deterministic floor; ported once",
-        "glue": "Port compose.py + _theme (palette, the seven node types, two-accent rule) from Desktop/SubProtocol/vault into diagrams/ as a stdlib-only, deterministic spec->SVG renderer (ontum's local-first, no-network grain). Keep it EXPLICIT-POSITION (taste.md's deliberate choice for diff-stability). Reuse the schema-driven discipline of causality/canvas.js (one SCHEMA drives defaults + inspector + serialization) but author a diagram-specific SCHEMA — do NOT extend canvas.js (§10: would break the causality preset). Acceptance: a committed diagram spec renders byte-deterministically to the same SVG on every run."
+        "atom": "atom.diagram-floor-gate.v0",
+        "status": "LANDED (PR #322, rcp.merge.322) — the floor, the canon, the refusing gate, as ONE cell",
+        "glue": "The deterministic spec->SVG floor (compose.py, explicit-position, byte-deterministic), the named architecture-diagramming canon (canon.md: Moody + Purchase graph-drawing aesthetics + C4), and the refusing gate (qa.py: deny = exit 2 + cited principle on stderr, fail-open). Shipped as one work-particle, not three (bdo's grain note, 2026-06-20): the gate imports the floor's closed NODE_TYPES (I-4) and every refusal cites the canon by name, so none can be judged apart. Done-line 0139. The §10 pair holds: the honest pipeline state-machine passes; a one-orphan variant is refused citing [graph-drawing: no orphans]."
       },
       {
-        "atom": "atom.diagram-canon.v0",
-        "status": "wave 1 — name the SME (the cited 'why')",
-        "glue": "One reference file naming the architecture-diagramming canon as the governing SME: Moody's *The Physics of Notations* (esp. semantic transparency, graphic economy, complexity management), graph-drawing aesthetics (Purchase: minimize crossings/bends; maximize symmetry), and C4 for containment/zoom. Each principle maps to a checkable rule the gate can cite. The data-visualizer advisor is recorded here as a SUB-advisor for quantitative genres only, not the governor (the repo's correction). This is the SME-intent spine: every refusal points at a named principle, never taste-by-assertion."
+        "atom": "atom.diagram-structural-plane.v0",
+        "status": "STRUCTURE-FIRST cell 1 (in flight, done-line 0151) — the plane and its boundaries before the fixtures",
+        "glue": "bdo's structure-first redirect (2026-06-20): the planes and boundaries themselves come before the fixtures, features, and attributes — snap and genres were trying to stand on structure that did not exist. Make REGIONS first-class declared structure: a node belongs to a boundary by declaration (node.region == region.id), not by where its rectangle sits. compose.py renders regions as structural containers (deterministic); qa.py gains check_region_membership citing the canon's C4 containment rule (a node claiming a region not declared -> deny, the structural analog of an orphan; a node geometrically outside its declared region -> deny). Backward-compatible: a spec with no regions behaves exactly as before."
       },
       {
-        "atom": "atom.diagram-gate.v0",
-        "status": "wave 1 — the load-bearing piece: a gate with teeth",
-        "glue": "Promote qa.py from a checklist-runner to a REFUSING gate in the ontum hook grain (deny = nonzero + reason on stderr, fail-open on its own error, like the off-log gate / mock-shame). Teeth, each citing atom.diagram-canon.v0: not-one-of-the-N-types -> deny (semiotic clarity); >2 accents -> deny; orphan node -> deny; node untraceable-to-a-hub in <=4 hops -> deny (cognitive load); edge through an unrelated node -> deny (the existing Liang-Barsky check); >8 siblings in a row -> deny-with-'split' (graphic economy); invented shape/genre -> deny (semantic transparency). The §10 test applied to pictures: two locally-fine diagrams that refuse to fit are caught here."
+        "atom": "atom.diagram-composition.v0",
+        "status": "STRUCTURE-FIRST cell 2 — larger systems: nesting + the holonic move (recursive zoom, pulled forward)",
+        "glue": "Composition and containment as first-class structure: a region nests inside a region, and a node IS itself a sub-diagram (the holonic move). Recursive zoom — a node expands into its own gated sub-diagram, each level carrying its 'what is deliberately not shown' caption (Moody complexity-management + cognitive-integration) — was the old wave 4; structure-first pulls it forward because composition is structure, not experience. Each level is gated by qa.py the same way; depth follows C4's levels (context -> container -> component). The bond: this is separable value from cell 1 (you can have flat declared regions without nesting), so it is its own cell."
+      },
+      {
+        "atom": "atom.diagram-attribute-model.v0",
+        "status": "STRUCTURE-FIRST cell 3 — authorize the system to hold its attributes",
+        "glue": "bdo: 'authorize the system to be capable of holding its attributes.' Extend the diagram SCHEMA so nodes and edges can HOLD their structural attributes before any feature manipulates them — inherit causality/canvas.js's already-declared holonic node fields (sites / space / strata{fundamental,derived,learned} / anima{strength,tempo}), do NOT rebuild them (§10, no double-build). The model carries the slots; population by later cells. The bond: orthogonal to region structure (cells 1-2), so its own cell."
       },
       {
         "atom": "atom.diagram-gridsnap.v0",
-        "status": "wave 1 — the one honest layout aid",
-        "glue": "Tier-declaration -> deterministic grid-snap: a node declares a tier and an order; the tool computes x/y from the declared column step + margin. This is rank/layer assignment at its honest floor — you declare the rank, the tool does the arithmetic — and diffs stay stable (add a node -> only its column shifts). Explicitly NOT a constraint solver, NOT orthogonal edge routing (taste.md refuses auto-layout; the repo priced full layout as a large net-new subsystem against the existing grain). Gutter-suggestion (the gate proposes the nearest named waypoint for a flagged edge) may ride here; full Sugiyama/ELK-style routing is deferred and, if ever needed, reaches for a named offline dependency rather than a hand-roll."
+        "status": "a CONSEQUENCE of the plane, not a first requirement — snap to a region grid that now exists",
+        "glue": "Now downstream of structure (bdo's reorder): snap answers 'snap to WHAT?', and the what (the plane + its regions) exists only after cells 1-3. Tier/slot-declaration -> deterministic grid-snap within a declared region: a node declares a tier and order, the tool computes x/y from the region's column step + margin; diffs stay stable (add a node -> only its column shifts). Explicitly NOT a constraint solver, NOT orthogonal routing (taste.md refuses auto-layout) — authorize the system to HOLD structure, never to INVENT it. Gutter-suggestion may ride here; full Sugiyama/ELK is deferred to a named offline dependency if ever needed."
       },
       {
         "atom": "atom.diagram-first-genre.v0",
-        "status": "wave 1 — one genre, on a proven content shape",
-        "glue": "Ship exactly ONE new genre whose ontum content shape genuinely refuses the flat node-graph: the pipeline STATE MACHINE (value-gate -> owner-stamp -> placement -> handoff -> confirm, from reconcile.py PIPELINE) OR the summon->judge->receipt SEQUENCE. Carries the mandatory 'what is deliberately not shown' caption (taste.md / qc-checklist deliverable rule). Proves the floor + canon + gate + grid-snap end to end on one real diagram. Earned genres beyond this are added only when two real diagrams refuse to fit (§10) — the membrane cross-section is explicitly NOT a genre (invented notation, refused by graphic economy / semantic transparency); it stands as a one-off authored diagram only."
+        "status": "one genre, now standing on real structure",
+        "glue": "Ship exactly ONE new genre whose ontum content shape genuinely refuses the flat node-graph (the pipeline STATE MACHINE or the summon->judge->receipt SEQUENCE), now built on the structural plane + regions + composition rather than jammed in front of them. Carries the mandatory 'what is deliberately not shown' caption. Earned genres beyond this are added only when two real diagrams refuse to fit (§10) — the membrane cross-section is explicitly NOT a genre (invented notation, refused by graphic economy / semantic transparency); it stands as a one-off authored diagram only."
       },
       {
         "atom": "atom.diagram-generative.v0",
