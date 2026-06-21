@@ -268,6 +268,28 @@ class TestSupersededRefusalIsHistory(unittest.TestCase):
         self.assertEqual([d["atom"] for d in div], ["atom.b.v0"])
         self.assertEqual(div[0]["verdict"], "collision")
 
+    def test_refusal_on_superseded_bytes_is_not_a_divergence(self):
+        # the herald shape: an atom edited IN PLACE (same .v0 id, new bytes).
+        # the old bytes were refused; a newer atom.created replaced them and the
+        # live bytes are clean. identity is the content hash, so the dead-byte
+        # refusal is healed history, never a live divergence — even though the
+        # .vN id never changed (what the integer-version supersession misses).
+        import types
+        fold = types.SimpleNamespace(admissions=[], events=[
+            {"type": "atom.created", "artifact_id": "atom.h.v0",
+             "artifact_hash": "sha256:OLD", "ts": "2026-06-18T00:00:00Z"},
+            {"type": "atom.created", "artifact_id": "atom.h.v0",
+             "artifact_hash": "sha256:NEW", "ts": "2026-06-19T00:00:00Z"},
+        ])
+        arcs = [{"epic": "epic.h", "confirmed": {"by": "bdo"}, "pieces": [
+            {"atom": "atom.h.v0", "landed": False, "refusals": [
+                {"node": "handoff-gate.det.v1", "verdict": "send_back",
+                 "reason": "stale", "artifact_id": "atom.h.v0",
+                 "artifact_hash": "sha256:OLD"}]},
+        ]}]
+        self.assertEqual(digest._divergences(fold, arcs, [], None, None,
+                                             frozenset()), [])
+
     def test_superseded_piece_drops_from_live_arc_tally(self):
         arc = {"epic": "epic.x", "confirmed": {"by": "bdo"}, "pieces": [
             {"atom": "atom.x.v0", "landed": False, "awaiting": False,

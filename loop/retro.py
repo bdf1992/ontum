@@ -92,6 +92,7 @@ def churn_findings(fold):
     fabricated classifier has nothing to point at (§10)."""
     versions = defaultdict(set)   # base -> {full atom ids seen}
     negs = defaultdict(list)      # base -> [negating receipt, ...]
+    superseded_by_base = digest_mod.superseded_hashes_by_base(fold)
     for rc in fold.receipts:
         aid = rc.get("artifact_id")
         if not aid:
@@ -99,6 +100,11 @@ def churn_findings(fold):
         base = _base(aid)
         versions[base].add(aid)
         if rc.get("verdict") in NEGATING_VERDICTS:
+            # a negation on dead bytes (a newer hash of the same id superseded
+            # them) is healed history, not churn — identity is the content hash
+            if digest_mod.on_superseded_bytes(superseded_by_base, aid,
+                                              rc.get("artifact_hash")):
+                continue
             negs[base].append(rc)
     out = []
     for base in sorted(set(versions) | set(negs)):
