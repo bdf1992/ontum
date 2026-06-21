@@ -1,0 +1,60 @@
+{
+  "atom": {
+    "id": "atom.guaranteed-review-queue.v0",
+    "story": {
+      "text": "As the loop owner, I need the value-confirm review queue to drain through a GUARANTEED consumer, because the terminal gate (value-confirm.claude.v1) parks awaiting a judge and nothing fired that judge for landed work — so finished atoms piled up forever (inflight 24/cap 8, 0 headroom: the clog) and jammed every new birth. A queue is healthy only with a guaranteed consumer; without one the queue IS a clog. And a merge must not stand in for that consumer: landing proves the WORK merged, not that it delivered the CLAIM, so settle-on-landing (done-0133) is the rubber-stamp value-confirm exists to forbid. This owner direction is on the record as the two §9.4 contracts written before the work: done-line 0150 (the guaranteed review queue — bdo's Option B, naming the clog root cause 2026-06-20) and done-line 0154 (landed-is-not-closed — bdo's stronger rule that a real review, not a merge, closes an atom). The rail is already exercised end-to-end on the log (rcp.96f208105be0: the review queue confirmed atom.confirm-from-ref.v0). owner_stamp stays pending: the owner-value authorization at arc scale is bdo's confirm-arc on epic.landing-throughput-response (D-4, the seam after this gate).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "Turn the value-confirm clog into a guaranteed, drained review queue (a real review closes an atom, not a merge)",
+      "value": "gate.py gains a drain verb: it folds the open review queue (loop.summon.open_summons) and, for each atom awaiting an admitted-real non-owner gate, fires the existing real-review rail (gate.py launch -> headless verdict -> loop.node judge), idempotently (re-fire = I-2 no-op) and level-triggered (re-derives the queue from the log each pass). settle-on-landing is retired: orchestrate.next_action no longer settles an atom for reaching main; landed work flows to value-confirm and is closed only by a real verdict. atoms_on_main is retained as the delivery EVIDENCE the review reads, never a settle.",
+      "why_now": "The clog (inflight 24/cap 8) blocks every new atom birth: the loop silently stalls. bdo named the root cause 2026-06-20 and chose the stronger rule (the real review must happen). Until the consumer exists, the queue is a clog by construction.",
+      "if_accepted": "The value-confirm queue drains under a guaranteed consumer, proven not to clog (a confirmed review reaches settled) or leak (no atom settles without a value-confirm receipt). A merge stops closing atoms; a real review does. gate.py drain --limit gives a paced drain for the standing backlog.",
+      "if_rejected": "Finished work keeps piling in the await-value-confirm queue with no consumer; the inflight cap stays jammed; new work cannot be born; and merges keep auto-closing atoms no one reviewed.",
+      "cost_of_wrong_call": "Low-to-medium: the processor only FIRES reviews; the verdict and the settle stay the gate and the one pen (D-4) — it never force-settles. The doctrine implication (the second acceptance is a real review of delivery, not a mechanical merge) is surfaced for bdo at arc confirmation, not silently flipped.",
+      "mechanism": ".claude/skills/gate/gate.py drain (the level-triggered, idempotent processor) + loop/summon.py (points every session at the drain) + loop/orchestrate.py next_action (settle-on-landing short-circuit removed) + tests/test_review_queue.py (the §10 no-clog/no-leak/missed-surfaced/idempotent test, fake review runner) + tests/test_orchestrate.py (two settle-on-landing tests reversed to pin landed != closed). Done-lines 0150 and 0154.",
+      "reading": [
+        ".ai-native/done/0150-guaranteed-review-queue.md",
+        ".ai-native/done/0154-landed-is-not-closed.md",
+        ".claude/skills/gate/gate.py",
+        "loop/orchestrate.py",
+        "tests/test_review_queue.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.landing-throughput-response"
+      ],
+      "touches": [
+        ".claude/skills/gate/gate.py",
+        "loop/orchestrate.py",
+        "loop/summon.py",
+        "tests/test_review_queue.py",
+        "tests/test_orchestrate.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/done/0150-guaranteed-review-queue.md",
+        ".ai-native/done/0154-landed-is-not-closed.md",
+        ".ai-native/atoms/atom.work-closes-in-the-wild.v0.json"
+      ],
+      "receipts": [
+        "rcp.96f208105be0"
+      ]
+    }
+  }
+}

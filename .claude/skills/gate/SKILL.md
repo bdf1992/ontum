@@ -35,6 +35,36 @@ It does five things, in order:
    pen never writes a verdict itself) and **records the run** on the ledger
    (`loop.runs record`).
 
+## The guaranteed review queue (`drain`)
+
+`launch` fires one review. `drain` is the **guaranteed consumer** (done-line
+0150): it folds the open review queue (`loop.summon.open_summons`) and fires a
+real `launch` for *every* atom awaiting an admitted-real non-owner gate.
+
+```sh
+python .claude/skills/gate/gate.py drain                 # process the whole queue
+python .claude/skills/gate/gate.py drain --dry-run       # list it; fire nothing
+python .claude/skills/gate/gate.py drain --limit 3       # fire at most N (pace it)
+python .claude/skills/gate/gate.py drain --all           # every real gate, not just value-confirm
+```
+
+Why it exists: the terminal gate `value-confirm.claude.v1` *parks* landed work
+awaiting a judge, and nothing fired that judge — so finished atoms piled into a
+clog (the value-confirm queue with no consumer). `drain` is the consumer that
+turns the clog into a queue. It is **level-triggered** (re-derives the queue
+from the log each run) and **idempotent** (a judged atom drops out of the queue;
+the one pen no-ops a repeat verdict, I-2), so it is always safe to re-run — a
+review that failed or returned nothing simply leaves its atom queued for the
+next pass. It only *fires* reviews; the verdict and the settle stay the gate's
+and the one pen's (D-4); a `missed` keeps its atom surfaced, never force-cleared.
+
+**The guarantee.** The processor is safe on any tick. Two ways it runs:
+ambiently, every session sees the queue and the one command (the summon hook
+points at `drain`); unattended, a scheduler runs `drain --limit K` on a pace —
+**bdo's activation gesture** (the same shape as the session-lifecycle tick), e.g.
+a `schtasks`/cron entry calling the line above. Until that tick is stood up, the
+ambient session is the consumer.
+
 ## Before launching
 
 The launch asks the **trust ladder** first (done-line 0054): a mortal
