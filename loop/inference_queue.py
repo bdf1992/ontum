@@ -20,8 +20,10 @@ is a local coordination primitive, not a daemon):
      unset, never a code constant — the substrate's "setpoints are admitted
      records" law).
   2. the **semaphore** — `acquire`/`release`: a lease-based file semaphore. A
-     slot is a file claimed atomically (`O_EXCL`); a request that finds every
-     slot taken waits up to a bound and, still saturated, is refused. The lease
+     slot is claimed atomically by `os.link`-ing an already-written file into
+     place (so the slot is never observed empty — see `_try_claim`); a request
+     that finds every slot taken waits up to a bound and, still saturated, is
+     refused. The lease
      makes it **torn-tail safe**: a hard-killed caller's slot self-heals on the
      next acquire once its lease expires — the same mortality property the fold
      relies on (a partially-done thing "never happened"; the next pass
@@ -42,6 +44,7 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -131,34 +134,56 @@ def _is_stale(path, *, _now=None):
 
 def _try_claim(root, i, lease_s):
     """Atomically claim slot i, or return None if it is held by a live lease.
-    The claim is `O_EXCL` create — two racing callers can never both win the
-    same index. A stale slot is stolen (unlink + re-create under the same
-    atomic guard); the loser of a steal race simply moves on."""
+    The claim writes the FULLY-FORMED slot content to a private temp file, then
+    `os.link`s it into the slot path: link is atomic and fails if the slot
+    already exists, so two racing callers can never both win the same index AND
+    the slot file is never observed empty. (An `O_EXCL` *create* is atomic, but
+    create-then-write leaves a window where a concurrent reader sees an empty
+    file, mis-judges it `stale`, and double-claims it — the bound violation the
+    concurrency stress test caught: 6 holders on a bound of 3.) A genuinely
+    stale slot is stolen (unlink + re-link); the loser of a steal race simply
+    moves on."""
     path = _slot_path(root, i)
     token = short_hash("slot", str(i), str(os.getpid()), repr(time.time_ns()))
-    for steal in (False, True):
-        try:
-            fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
-        except FileExistsError:
-            if steal:
-                return None
-            if _is_stale(path):
-                try:
-                    os.unlink(str(path))
-                except OSError:
-                    pass
-                continue  # retry the atomic create (steal pass)
-            return None
+    payload = json.dumps({
+        "slot": i,
+        "pid": os.getpid(),
+        "token": token,
+        "acquired": time.time(),
+        "lease_deadline": time.time() + lease_s,
+    })
+    fd, tmp = tempfile.mkstemp(dir=str(slots_dir(root)), prefix=f".slot-{i}.")
+    try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump({
-                "slot": i,
-                "pid": os.getpid(),
-                "token": token,
-                "acquired": time.time(),
-                "lease_deadline": time.time() + lease_s,
-            }, f)
-        return {"path": path, "token": token, "slot": i}
-    return None
+            f.write(payload)
+        for steal in (False, True):
+            try:
+                os.link(tmp, str(path))  # atomic exclusive claim, content already present
+            except FileExistsError:
+                if steal:
+                    return None
+                if _is_stale(path):
+                    try:
+                        os.unlink(str(path))
+                    except OSError:
+                        pass
+                    continue  # retry the atomic link (steal pass)
+                return None
+            except OSError:
+                # the filesystem could not complete the link (a transient I/O
+                # error, or a volume without hardlink support). `acquire`'s
+                # contract is to return a handle or None, never to raise; this
+                # slot is simply unavailable this sweep — acquire's poll loop
+                # retries it. (Slot files live under .ai-native/ on the repo's
+                # own volume, which supports hardlinks; this is the floor.)
+                return None
+            return {"path": path, "token": token, "slot": i}
+        return None
+    finally:
+        try:
+            os.unlink(tmp)  # drop the temp name; the slot path keeps the inode
+        except OSError:
+            pass
 
 
 def acquire(root, *, bound, lease_ms, wait_ms, poll_ms=50):

@@ -371,10 +371,14 @@ so a prompt edit can't reopen a settled verdict (I-2).
   (a file semaphore is a local coordination primitive, not the no-network
   ban's broker): an **admitted concurrency dial** (`concurrency_bound`/
   `set_bound`, default-safe when unset, never a code constant — the setpoints
-  law), a **lease-based `O_EXCL` file semaphore** (`acquire`/`release`,
-  self-healing on a dead holder once its lease lapses — the torn-tail
-  mortality property; release is token- and lease-guarded so a lapsed holder
-  can never delete the live slot), and a **read-only stats fold** over the
+  law), a **lease-based file semaphore** (`acquire`/`release`; a slot is
+  claimed by atomically `os.link`-ing an already-written file into place, so the
+  bound holds under real parallel contention — a create-then-write `O_EXCL`
+  claim let a concurrent reader see an empty slot and double-claim it, a real
+  bound violation a multiprocessing stress test caught and now gates;
+  self-healing on a dead holder once its lease lapses — the torn-tail mortality
+  property; release is token- and lease-guarded so a lapsed holder can never
+  delete the live slot), and a **read-only stats fold** over the
   inference receipts (throughput, per-mind latency, saturation, live
   in-flight). The gateway pen acquires a slot before the completion and
   releases after, receipting a witnessed `saturated` outcome when the plane
