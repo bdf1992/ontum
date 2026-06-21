@@ -516,5 +516,33 @@ class TestGatewayNodeMeaningIsDerived(unittest.TestCase):
                             "hand-written, not derived")
 
 
+class TestLabelMetricParity(unittest.TestCase):
+    """Done-line 0179: term_economy wraps the node meaning to the node's usable
+    width so the spec it emits passes qa.py's label-fit check. That only holds
+    if the fold and the gate measure with the SAME font metrics. The metrics
+    live in both places (a core fold should not put diagrams/ on sys.path for the
+    whole suite), so this test is the teeth that refuse drift: if qa's mono char
+    width or side padding ever changes, the fold's mirror must follow or this
+    fails — the parity is checked, never trusted."""
+
+    def test_fold_label_metrics_equal_the_gate(self):
+        self.assertEqual(te._LABEL_MONO_CHAR_W, qa.MONO_CHAR_W_AT_16,
+                         "the fold's mono char width drifted from qa's gate")
+        self.assertEqual(te._LABEL_SIDE_PAD, qa.NODE_SIDE_PADDING,
+                         "the fold's node side padding drifted from qa's gate")
+
+    def test_fold_char_budget_matches_qa_usable_width(self):
+        # the budget the fold wraps to must not exceed what the gate calls
+        # usable, at the real gateway node width — a max-length line must pass
+        # qa's own text_width check.
+        node_w = 220
+        max_chars = te._label_max_chars(node_w)
+        usable = node_w - 2 * qa.NODE_SIDE_PADDING
+        self.assertLessEqual(qa.text_width("X" * max_chars), usable,
+                             "a max-budget line overflows qa's usable width")
+        self.assertGreater(qa.text_width("X" * (max_chars + 1)), usable,
+                           "the budget is needlessly conservative (off by one)")
+
+
 if __name__ == "__main__":
     unittest.main()

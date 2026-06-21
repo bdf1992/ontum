@@ -384,10 +384,16 @@ _CLASS_NODE_TYPE = {
     "orphaned": "subroutine",
 }
 
-# Font metrics shared with diagrams/compose.py and diagrams/qa.py (a 16px
-# monospace label, 8px side padding). The meaning line is wrapped to the node's
-# usable width using these exact numbers so the wrap the spec emits is the wrap
-# the gate measures — the renderer, the gate, and this fold cannot disagree.
+# Font metrics that MIRROR the gate (diagrams/qa.py): a 16px monospace glyph is
+# MONO_CHAR_W_AT_16 wide and a node reserves NODE_SIDE_PADDING each side. They
+# are kept as local literals — not a runtime import — because term_economy is a
+# core module imported across the whole suite, and putting diagrams/ on sys.path
+# at import time would pollute the path with the generic names `qa`/`compose`
+# for every importer. The parity that the comment promises ("the gate and this
+# fold cannot disagree") is made REAL by a test, not faith: TestLabelMetricParity
+# in tests/test_diagram.py refuses any drift between these and qa's own
+# constants (the repo's teeth-not-trust discipline). If qa's metric changes,
+# that test fails until these follow.
 _LABEL_MONO_CHAR_W = 9.6
 _LABEL_SIDE_PAD = 8
 
