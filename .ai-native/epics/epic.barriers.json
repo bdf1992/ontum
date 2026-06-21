@@ -1,0 +1,13 @@
+{
+  "epic": {
+    "id": "epic.barriers",
+    "owner": "bdo",
+    "arc": "Barriers are the genus of bounded control in ontum — a thing that stops what should not pass. The mistake this arc corrects (bdo, 2026-06-21): naming an epic 'physical-barriers' scopes the genus to one of its attributes. A barrier carries a NATURE, and the nature is the attribute, not the epic: a PHYSICAL barrier (the gate/fence) is deterministic, model-free, and actor-blind — it gives every actor the same answer over the act's observable form; a POLITICAL barrier (the gateway) decides who-may from admitted records — RBAC, a trust rung, the owner's stamp. The repo already runs political barriers (the gateways) and overloads 'guard' for everything; this arc names the genus, governs the nature as an attribute, and builds the physical primitive beside the political ones so a session reaches for the right nature at each seam.",
+    "context": "From the gate/fence conversation (memory ontum-gate-fence-primitive; the stale PR #358 first built fence/barrier.py and proposed epic.physical-barriers). bdo's reframe folds that into the genus: do not scope the epic to 'physical' — make nature an attribute of the barrier. The change-management gatekeeping stack (fence · policy · guard · gate · threshold) is the territory: each layer is a barrier of some nature, and the term economy is fixed by saying so.",
+    "value": "One grammar for every bounded-control seam: a barrier's nature (physical / political) is a declared attribute, so the actor-blind gate/fence and the who-may gateway stop being conflated under 'guard', and a new seam is named by its nature rather than hand-rolled.",
+    "horizon": "Every seam in the per-directory gatekeeping stack is a named barrier of a declared nature, composed under one grammar — physical (gate/fence: deterministic, model-free, actor-blind) and political (gateway: who-may) distinguished by attribute, each witnessed and not-opaque.",
+    "pieces": [
+      {"atom": "atom.barrier-primitive.v0", "glue": "the physical-nature primitive: a barrier-link (a pure, actor-blind predicate over an act's observable form), a fence (a closed loop of links around a territory: closed/barbed/not-opaque), and a gate (an allow-link at a sanctioned opening). The atom of the genus, carrying nature=physical; the political-nature barriers (the gateways) are named by the same grammar and unified in a later piece"}
+    ]
+  }
+}
