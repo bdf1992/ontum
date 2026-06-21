@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.consequence-graph-resp-single-node-shape-kind-field.v0",
+    "story": {
+      "text": "Use one node shape with a kind field rather than heterogeneous node classes (answers schema seam 1): heterogeneous classes make propagation brittle too early.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.consequence-graph-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/consequence-graph/",
+        "seal:25dfa4e81552"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'consequence-graph' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.consequence-graph-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}
