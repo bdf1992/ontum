@@ -1,0 +1,54 @@
+{
+  "atom": {
+    "id": "atom.placement-fold.v0",
+    "story": {
+      "text": "As bdo, after the workstation fence (#341/#346) made it law that a worker cannot flip my viewport (the shared trunk primary checkout, my reading surface), I asked for the platform-level continuation: 'gateway start, platform level' (2026-06-20). The fence is the WALL at the tool seam — it refuses a write or HEAD-flip in the viewport. But a wall with no door just makes a worker bounce: it never tells the worker WHERE it belongs, and the loop keeps generating the same near-miss. This is the door beside that wall, at the SESSION seam: a pure fold that computes a worker's own worktree from its branch and detects when a claimed worker is sitting in the viewport (trespassing), so the prohibition never has to fire. It is the complement, not a second copy: define-once in loop/ (family-neutral), the decision a Claude SessionStart render and a Codex session-start both consume — the same split fence/ uses.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the placement fold — a worker belongs in its own worktree, not the viewport",
+      "value": "loop/placement.py is a pure, stdlib-only fold (no subprocess, no network — loop's law) that reuses loop/workspace.py's claim binding and exposes three things a SessionStart render or a future commit guard consumes: placement_path(branch) — the deterministic worktree a branch belongs in (../ontum-wt/<slug>), derived so no binding needs to carry a path; placement_refusal(cwd, branch, claim, viewport) — the §10 bite, why a claimed worker may not do code-work from cwd (in the viewport => trespassing, told its placement; not in its branch's placement => wrong tree; in its correct tree => None; no claim => left alone, the reader/owner opt-out); and placement_status(registry, viewport) — the census over the watcher's session registry, classifying each session in-viewport / placed / elsewhere. The one git fact (which checkout is the viewport) is read by filesystem, never a subprocess.",
+      "why_now": "bdo named the platform-level continuation of the just-landed workstation fence directly ('gateway start, platform level', 2026-06-20). The fence forbids; nothing yet PLACES. Building the door now, while the wall is fresh, keeps the worker-in-viewport plague from re-festering — a worker mis-born in the viewport is told where to go instead of only being refused.",
+      "if_accepted": "The session gateway gains its placement organ: the decision 'where does this worker belong, and is it trespassing?' is one pure fold any family's render can consume. The provisioning actuator (git worktree add) and the SessionStart render that runs it become straightforward later waves over a settled decision.",
+      "if_rejected": "Placement stays implicit and ad hoc; the workstation fence keeps refusing without ever telling a worker where it should be, and the near-misses keep being cleaned by hand.",
+      "cost_of_wrong_call": "Low and bounded. The change adds one new read-only fold module and its tests; it drives nothing, decides no gate verdict, touches no pipeline stage, and reaches no network. It is propose-only — the provisioning actuator and the render are explicitly deferred to later waves. Reverting is deleting two files.",
+      "mechanism": "loop/placement.py: branch_slug (last path segment), placement_path (<wt_root>/<slug>, derived), _norm (resolve + forward-slash + case-fold for Windows path comparison, never raises out), is_viewport (pure path compare), placement_refusal (the §10 bite: claim-gated, viewport => trespass with the placement and the worktree-add line named, wrong-tree => the placement named, correct tree => None), placement_status (folds the watcher registry into in-viewport / placed / elsewhere), and viewport_root (resolves the trunk primary checkout by FILESYSTEM — a primary .git is a directory, a worktree .git is a gitdir: file pointing at <common>/.git/worktrees/<name> whose grandparent is the viewport — fail-open to None, never a false flag). The CLI (where, status) ends every invocation with done | report | needs-you. tests/test_placement_fold.py joins the suite with the §10 teeth proven NON-VACUOUS: the SAME worker (same claim, same branch) is REFUSED in the viewport and PASSES in its own placement (one test, both sides), the no-claim opt-out is honored, and the status census classifies three sessions three ways. (Filed as test_placement_fold.py because tests/test_placement.py is already taken by the unrelated .claude/hooks/placement.py id-collision fold — a name collision named in the session report.) Done-line 0160.",
+      "reading": [
+        "loop/placement.py",
+        "tests/test_placement_fold.py",
+        "loop/workspace.py",
+        ".ai-native/done/0160-placement-fold.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        "loop/placement.py",
+        "tests/test_placement_fold.py",
+        ".ai-native/done/0160-placement-fold.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/workspace.py",
+        ".claude/hooks/command_guard.py",
+        "bdo, arc confirmation: epic.substrate (adm.476af874f9e4) — the standing owner authorization under which this piece lands, the same confirmed arc the sibling workstation fences serve (the merge-node landed them on it: rcp.merge.341, rcp.merge.346)",
+        "bdo, directive 'gateway start, platform level' (2026-06-20): the platform-level continuation of the just-landed workstation fence (atom.workstation-fence.v0 / atom.workstation-write-fence.v0) that this fold is the session-seam door beside — the owner ask now anchored to the record, not only narrated in the story"
+      ],
+      "receipts": [
+        "rcp.merge.341",
+        "rcp.merge.346"
+      ]
+    }
+  }
+}
