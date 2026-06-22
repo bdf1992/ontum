@@ -48,7 +48,7 @@ internally-networked platform* — **without the log ever stopping being truth.*
                  ▲ witnesses                         ▲ witnesses
         ┌────────┴──────────┐              ┌─────────┴────────────┐
         │  STREAM 1: activity │            │  STREAM 2: holon-graph │
-        │  (part 2: every    │            │  atoms = vertices,     │
+        │  (part 2: every     │            │  atoms = vertices,     │
         │   hook firing → a    │            │  incidence = edges     │
         │   receipt)           │            │  (seam/collide/touch)  │
         └─────────┬───────────┘            └──────────┬─────────────┘
