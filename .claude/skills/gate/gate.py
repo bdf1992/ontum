@@ -35,6 +35,7 @@ Usage:
 
 import argparse
 import hashlib
+import concurrent.futures
 import json
 import os
 import re
@@ -50,12 +51,34 @@ ATOMS = ROOT / ".ai-native" / "atoms"
 NODES = ROOT / ".ai-native" / "nodes"
 EPICS = ROOT / ".ai-native" / "epics"
 
-# The model the headless mind judges with (done-line 0138). It MUST be an
-# explicit, valid model id: a child `claude -p` with no `--model` defaults to
-# the alias `opus`, which 404s in the headless context (`model: opus` not
-# found). Configurable so the model is an admitted choice, not a buried
-# constant; the default is the most capable id at authorship.
-GATE_MODEL = os.environ.get("ONTUM_GATE_MODEL") or "claude-opus-4-8"
+# The model the headless mind judges with. It MUST be an explicit, valid model
+# id (done-line 0138): a child `claude -p` with no `--model` defaults to the
+# alias `opus`, which 404s headless. The gate now draws one at RANDOM per run
+# from a pool (done-line 0142, bdo's direction): record the model + its cost and
+# let `loop.runs` fold cost by model, so the economy of who-judges-for-how-much
+# is visible. `ONTUM_GATE_MODEL`, if set, PINS one model and overrides the draw.
+GATE_MODEL_POOL = [m for m in (os.environ.get("ONTUM_GATE_MODELS") or "").split(",")
+                   if m.strip()] or ["claude-opus-4-8", "claude-sonnet-4-6",
+                                     "claude-haiku-4-5"]
+GATE_MODEL_PIN = os.environ.get("ONTUM_GATE_MODEL") or None
+
+
+def pick_model(pool=None, pin=None):
+    """The judging model for one run: the pin if set (an admitted override),
+    else a uniform random draw from the pool. Random lives in the pen, never in
+    a fold (loop/'s determinism law is for the log readers, not this launcher)."""
+    pin = pin if pin is not None else GATE_MODEL_PIN
+    if pin:
+        return pin
+    import random
+    return random.choice(pool or GATE_MODEL_POOL)
+
+
+# A share of runs fan out to ALL models at once and compile (done-line 0143,
+# bdo's direction): the panel. A panel judging one atom is a natural per-snapshot
+# model comparison — the impact data the cost-only economy deferred. Per launch,
+# with probability GATE_PANEL_RATE the run is a panel; else a single random draw.
+GATE_PANEL_RATE = float(os.environ.get("ONTUM_GATE_PANEL_RATE") or 0.25)
 
 # Where each run leaves its trace — debug cache (gitignored), never truth.
 GATE_RUNS = LOG / "gate-runs"
@@ -326,27 +349,53 @@ def write_trace(atom_id, node_id, info):
     return path
 
 
+def _parse_cost(envelope):
+    """The run's economy, from the `--output-format json` envelope: dollars and
+    token usage. None for `usd` when the envelope carried no cost (an unpriced
+    run confesses; the audit never reads a missing cost as $0, done-line 0142)."""
+    if not isinstance(envelope, dict):
+        return {"usd": None, "input_tokens": None, "output_tokens": None}
+    usage = envelope.get("usage") or {}
+    usd = envelope.get("total_cost_usd")
+    return {
+        "usd": usd if isinstance(usd, (int, float)) else None,
+        "input_tokens": usage.get("input_tokens"),
+        "output_tokens": usage.get("output_tokens"),
+    }
+
+
 def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subprocess.run):
     """Launch the mortal process: real inference, captured, and ALWAYS traced.
-    Returns (verdict, reason, raw, trace) or raises (after writing the trace,
-    whose path is named in the error) on a failure to launch/parse. `runner` is
-    injectable so the §10 test exercises both paths without a live spawn."""
-    model = model or GATE_MODEL
+    The model is drawn (or pinned) per run; the run's cost is parsed from the
+    envelope so `loop.runs` can fold cost by model (done-line 0142). Returns
+    (verdict, reason, raw, trace, model, cost) or raises (after writing the
+    trace, whose path is named in the error) on a failure to launch/parse.
+    `runner` is injectable so the §10 test exercises both paths without a live
+    spawn."""
+    model = model or pick_model()
     cmd = _launch_cmd(prompt, model)
     cwd = _launch_cwd()
+    # stdin=DEVNULL is load-bearing: without it the headless child `claude`
+    # inherits the parent's stdin and HANGS on it when the pen is spawned from
+    # an interactive-ish parent (the 600s timeouts, issues #390/#391/#393/#396 —
+    # all PowerShell-tool-spawned; a DEVNULL stdin completes the same prompt in
+    # ~46s through that exact path). A non-interactive judge must never inherit a
+    # live stdin.
     proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600,
                   stdin=subprocess.DEVNULL)
     raw = proc.stdout or ""
     text = raw
+    envelope = None
     try:  # --output-format json wraps the result; unwrap to the model's text
-        env = json.loads(raw)
-        text = env.get("result", raw) if isinstance(env, dict) else raw
+        envelope = json.loads(raw)
+        text = envelope.get("result", raw) if isinstance(envelope, dict) else raw
     except json.JSONDecodeError:
         pass
+    cost = _parse_cost(envelope)
     # The trace is written BEFORE any parse decision — even an empty, garbled,
     # or crashed run leaves the prompt, raw output, stderr and exit code behind.
     trace = write_trace(atom_id, node_id, {
-        "ts": now(), "model": model, "cwd": cwd,
+        "ts": now(), "model": model, "cwd": cwd, "cost": cost,
         "cmd": cmd[:2] + ["<prompt elided — see 'prompt'>"] + cmd[3:],
         "returncode": proc.returncode, "prompt": prompt,
         "stdout": raw, "stderr": proc.stderr or "", "parsed_text": text,
@@ -365,7 +414,7 @@ def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subproc
         raise ValueError(f"the process returned no parseable verdict object; "
                          f"trace: {trace}; tail: {text.strip()[-300:]}")
     v = objs[-1]
-    return v["verdict"], v.get("reason", ""), text, trace
+    return v["verdict"], v.get("reason", ""), text, trace, model, cost
 
 
 def write_verdict(atom_id, node_id, verdict, reason):
@@ -378,13 +427,139 @@ def write_verdict(atom_id, node_id, verdict, reason):
     return (r.stdout + r.stderr).strip()
 
 
-def record_run(node_id, atom_id, by, moved):
-    subprocess.run(
-        ["python", "-m", "loop.runs", "record", "--kind", "gate-judgment",
-         "--by", by, "--advanced", str(moved),
-         "--note", f"{node_id} judged {atom_id}"],
-        capture_output=True, text=True, cwd=str(ROOT), timeout=60,
-    )
+def record_run(node_id, atom_id, by, moved, model=None, cost=None, verdict=None):
+    """Note the run on the ledger, carrying the model it used, its cost, and the
+    verdict it produced so `loop.runs` can fold cost by model (done-line 0142)
+    AND the per-snapshot model comparison (done-line 0143). A missing cost is
+    passed as nothing, never as $0 — an unpriced run confesses."""
+    cmd = ["python", "-m", "loop.runs", "record", "--kind", "gate-judgment",
+           "--by", by, "--advanced", str(moved), "--atom", atom_id,
+           "--note", f"{node_id} judged {atom_id}"]
+    if model:
+        cmd += ["--model", model]
+    if verdict:
+        cmd += ["--verdict", verdict]
+    cost = cost or {}
+    if cost.get("usd") is not None:
+        cmd += ["--cost-usd", str(cost["usd"])]
+    if cost.get("input_tokens") is not None:
+        cmd += ["--input-tokens", str(cost["input_tokens"])]
+    if cost.get("output_tokens") is not None:
+        cmd += ["--output-tokens", str(cost["output_tokens"])]
+    subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT), timeout=60)
+
+
+def should_panel(rate=None):
+    """Whether this launch is a panel (done-line 0143). 0 never panels, 1 always;
+    in between it is a uniform draw — random lives in the pen, not a fold."""
+    rate = GATE_PANEL_RATE if rate is None else rate
+    if rate <= 0:
+        return False
+    if rate >= 1:
+        return True
+    import random
+    return random.random() < rate
+
+
+def run_panel(prompt, atom_id, node_id, pool=None, runner=subprocess.run):
+    """Fan out: every model in the pool judges the same atom CONCURRENTLY, each
+    its own `claude -p` stream (a thread pool). Returns one result dict per model;
+    a stream that raised is captured as ok=False, never dropped — a missing
+    stream breaks unanimity, which is the point (an unconfirmable room escalates)."""
+    pool = pool or GATE_MODEL_POOL
+
+    def one(m):
+        try:
+            verdict, reason, _text, _trace, model, cost = launch_claude(
+                prompt, atom_id, node_id, model=m, runner=runner)
+            return {"model": model, "verdict": verdict, "reason": reason,
+                    "cost": cost, "ok": True, "error": None}
+        except Exception as e:
+            return {"model": m, "verdict": None, "reason": None,
+                    "cost": None, "ok": False, "error": str(e)}
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, len(pool))) as ex:
+        return list(ex.map(one, pool))
+
+
+def compile_panel(results):
+    """Unanimous-or-escalate (bdo's rule). A clean unanimous room — every stream
+    returned a verdict and all agree — advances that one verdict; any
+    disagreement, or any failed stream (unanimity cannot be confirmed),
+    escalates. The split is the signal, never papered into a verdict. Returns
+    (decision, verdict, detail) where decision is 'unanimous' | 'escalate'."""
+    if not results:
+        return ("escalate", None, "no streams ran")
+    failed = [r["model"] for r in results if not r.get("ok")]
+    if failed:
+        return ("escalate", None,
+                f"unconfirmable — stream(s) failed: {', '.join(failed)}")
+    verdicts = {r["verdict"] for r in results}
+    if len(verdicts) == 1:
+        return ("unanimous", next(iter(verdicts)),
+                f"all {len(results)} models agree")
+    split = "; ".join(f"{r['model']}={r['verdict']}" for r in results)
+    return ("escalate", None, f"split: {split}")
+
+
+def _panel_rows(results):
+    """The per-model comparison, for the trust-rail issue — the snapshot
+    comparison a human reads."""
+    out = []
+    for r in results:
+        c = r.get("cost") or {}
+        price = f"${c['usd']:.4f}" if c.get("usd") is not None else "unpriced"
+        out.append(f"- `{r['model']}`: {r['verdict'] or 'FAILED'} ({price})"
+                   + (f" — {r['error']}" if not r.get("ok") else ""))
+    return "\n".join(out)
+
+
+def _panel_launch(ns, address, ref, prompt, prompt_hash):
+    """The panel path: fan out to all models, record each stream on the ledger
+    (so the economy + snapshot-comparison folds see them), then compile
+    unanimous-or-escalate. A unanimous room lands one verdict; a split or a
+    failed stream leaves the issue OPEN for bdo (no verdict invented)."""
+    results = run_panel(prompt, ns.atom, ns.node)
+    for r in results:  # every stream is a recorded run: model, cost, verdict, atom
+        record_run(ns.node, ns.atom, ns.by, moved=1 if r["ok"] else 0,
+                   model=r["model"], cost=r["cost"], verdict=r["verdict"])
+    decision, verdict, detail = compile_panel(results)
+    rows = _panel_rows(results)
+
+    if decision == "unanimous":
+        out = write_verdict(ns.atom, ns.node, verdict,
+                            f"panel (unanimous, {len(results)} models): {detail}")
+        landed = "result: report" in out
+        rcp = re.search(r'(rcp\.[0-9a-f]+)', out)
+        rcp_id = rcp.group(1) if rcp else "(seam refused — see below)"
+        comment = "\n".join([
+            f"**panel verdict: `{verdict}`** — unanimous across {len(results)} models",
+            "", "model comparison (snapshot):", rows, "",
+            f"- receipt: `{rcp_id}`", f"- prompt_hash: `{prompt_hash[:16]}…`",
+            f"- closed at {now()}",
+        ])
+        if landed:
+            issue_close(address, ref, comment)
+            print(f"result: report — panel UNANIMOUS `{verdict}` on {ns.atom} "
+                  f"({rcp_id}); issue {ref} closed; {len(results)} models compared")
+        else:
+            issue_comment(address, ref, comment)
+            print(f"result: needs-you — panel unanimous `{verdict}` but the one "
+                  f"pen refused it (issue {ref} left open):\n{out}")
+        return 0
+
+    # escalate: no verdict landed — the split is bdo's to resolve (D-4)
+    comment = "\n".join([
+        f"**panel: ESCALATE — {detail}**", "",
+        "No verdict was landed: the room did not reach unanimity, so the split "
+        "is surfaced for bdo rather than papered into a verdict.", "",
+        "model comparison (snapshot):", rows, "", f"- left open at {now()}",
+    ])
+    issue_comment(address, ref, comment)
+    print(f"result: needs-you — panel did NOT reach unanimity on {ns.atom} "
+          f"({detail}); issue {ref} left open with the per-model split — the "
+          "split is yours to resolve (D-4)")
+    return 0
 
 
 def cmd_launch(ns):
@@ -411,8 +586,12 @@ def cmd_launch(ns):
         return 2
     print(f"  trust-rail issue opened: {ref}")
 
+    if should_panel():
+        print(f"  panel mode: fanning out to {len(GATE_MODEL_POOL)} models")
+        return _panel_launch(ns, address, ref, prompt, prompt_hash)
+
     try:
-        verdict, reason, _, _ = launch_claude(prompt, ns.atom, ns.node)
+        verdict, reason, _, _, model, cost = launch_claude(prompt, ns.atom, ns.node)
     except Exception as e:  # the mind hung or crashed: leave the issue OPEN
         issue_comment(address, ref, f"⚠ the process did not return a verdict: "
                       f"{e}\n\nThe issue stays open — this is the run you wanted "
@@ -439,12 +618,13 @@ def cmd_launch(ns):
     ])
     if landed:
         issue_close(address, ref, comment)
-        record_run(ns.node, ns.atom, ns.by, moved=1)
+        record_run(ns.node, ns.atom, ns.by, moved=1, model=model, cost=cost)
         print(f"result: report — {ns.node} judged {ns.atom} -> {verdict} "
-              f"({rcp_id}); issue {ref} closed with the verdict")
+              f"({rcp_id}); issue {ref} closed with the verdict "
+              f"[{model}, ${(cost or {}).get('usd') if (cost or {}).get('usd') is not None else '?'}]")
     else:
         issue_comment(address, ref, comment)
-        record_run(ns.node, ns.atom, ns.by, moved=0)
+        record_run(ns.node, ns.atom, ns.by, moved=0, model=model, cost=cost)
         print(f"result: needs-you — the process returned `{verdict}` but the one "
               f"pen refused it (issue {ref} left open):\n{out}")
     return 0

@@ -1,0 +1,53 @@
+{
+  "atom": {
+    "id": "atom.agent-runs-on-the-books.v0",
+    "story": {
+      "text": "bdo asked to run the agents-launching-subagents admin 'on the books as a training program so to speak but ensure it gets monitored by some process' (2026-06-22). The recovered work already summoned agents on the rail (a governed, hash-pinned node prompt, gated by the requirements door), but their runs VANISHED: no receipt, nothing marking them training-not-production, nothing watching (R5/C6 of the agent-summoning requirements: 'workflow agent runs leave no receipt - they vanish'). This atom closes exactly that, and only that: a training-run posture opened on the log (on the books), every agent run receipted and stamped under it (training: true, never auto-trusted as done), and a read-back fold as the monitor. It composes the recovered C1 (the tend-heal node prompt) and C3 (the prompt-requirements validator) into a witnessed loop. The value stands on bdo's on-record ask; it claims no arc (the amend from value-gate.claude.v1, rcp.9006b15437c8, removed an unbacked serves claim).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "agent runs on the books: a training-posture + monitor layer (loop/agent_run.py)",
+      "value": "loop/agent_run.py mirrors loop/train.py one axis over (train.py opens a security_mode posture and folds fence readings; this opens an agent_training_run posture and folds agent-run receipts). open_run/close_run admit the posture; book_receipt writes one agent_run receipt stamped training:true; fold_run is the monitor read (by node, by verdict, the actionable set, the governed prompt hashes used). tend-heal.js gains an Open phase (open the posture) and a Book phase (book each disposition under it), so every workflow agent is witnessed by construction.",
+      "why_now": "bdo's direct ask (2026-06-22). The recovered C1/C3 were summoned right but unwitnessed; an off-the-books agent run is the exact thing R5/C6 names. The training posture is the unlock that sidesteps the production-land deadlock: it asserts nothing as done, so it needs no confirm-arc to RUN, and its evidence later EARNS the realness stamp - run to learn, recorded, then graduate.",
+      "if_accepted": "Agent runs become facts the loop can fold: a training posture on the log, every run receipted and attributable to its exact governed prompt, a monitor that reads it back. The first live monitored tend-heal run can fire once this is on main (the agents must see the code).",
+      "if_rejected": "Workflow agent runs keep vanishing - unwitnessed, uncounted, and either untrusted or trusted without basis.",
+      "cost_of_wrong_call": "Low and bounded. agent_run.py is read-only but for two sanctioned appends (open a run, book a run), stdlib, no network; nothing it does advances a pipeline, clears a park, or settles a verdict (propose-grain, D-4). Reverting is deleting the module. The teeth are proven non-vacuous (see mechanism).",
+      "mechanism": "loop/agent_run.py: book_receipt refuses a ghost node (no governed prompt) or a prompt_hash that is not the node's current governed hash - you cannot book an ungoverned run; fold_run reads back, an empty run folds to count 0 (no false all-clear). tests/test_agent_run.py proves all of it (ghost + mismatch REFUSED, idempotent re-book, empty != all-clear). Composes the recovered C1 (.ai-native/nodes/tend-heal.claude.v1.md) + C3 (loop/prompt_req.py, tests/test_prompt_req.py). Full suite green at 1404.",
+      "reading": [
+        "loop/agent_run.py",
+        "tests/test_agent_run.py",
+        "loop/prompt_req.py",
+        ".ai-native/nodes/tend-heal.claude.v1.md",
+        ".claude/workflows/tend-heal.js",
+        ".ai-native/reports/0128-agent-runs-on-the-books.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [],
+      "touches": [
+        "loop/agent_run.py",
+        "tests/test_agent_run.py",
+        "loop/prompt_req.py",
+        "tests/test_prompt_req.py",
+        ".ai-native/nodes/tend-heal.claude.v1.md",
+        ".claude/workflows/tend-heal.js"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/train.py",
+        "loop/prompt_req.py",
+        ".ai-native/proposals/agent-summoning-requirements.md"
+      ]
+    }
+  }
+}

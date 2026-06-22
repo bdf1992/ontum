@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" width="1280" height="520">
+<rect width="1280" height="520" fill="#0B0B0C"/>
+<defs>
+  <pattern id="halftone" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+    <rect width="5" height="5" fill="#0F1011"/>
+    <circle cx="1" cy="1" r="0.6" fill="#1F2123"/>
+  </pattern>
+  <filter id="glow-cool" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#5EB7A1" flood-opacity="0.6"/>
+  </filter>
+  <filter id="glow-warm" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#C97A55" flood-opacity="0.6"/>
+  </filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5C5C60"/>
+  </marker>
+</defs>
+<text x="32" y="38" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="18" font-weight="600" fill="#E6E6E6">Ontum gateway stack · a projection from truth</text>
+<rect x="40" y="70" width="1200" height="180" rx="6" ry="6" fill="url(#halftone)" stroke="none"/>
+<rect x="40" y="300" width="1200" height="180" rx="6" ry="6" fill="url(#halftone)" stroke="none"/>
+<rect x="70" y="140" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="170.0" y="180.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="170.0" dy="-0.62em">authentication</tspan><tspan x="170.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="305" y="140" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="405.0" y="180.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="405.0" dy="-0.62em">fence</tspan><tspan x="405.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="1010" y="140" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="1110.0" y="180.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1110.0" dy="-0.62em">gate</tspan><tspan x="1110.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="775" y="140" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="875.0" y="180.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="875.0" dy="-0.62em">guard</tspan><tspan x="875.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="775" y="370" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="875.0" y="410.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="875.0" dy="-0.62em">heal</tspan><tspan x="875.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="540" y="370" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="640.0" y="410.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="640.0" dy="-0.62em">ledger</tspan><tspan x="640.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="305" y="370" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="405.0" y="410.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="405.0" dy="-0.62em">patrol</tspan><tspan x="405.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="70" y="370" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="170.0" y="410.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="170.0" dy="-0.62em">pen</tspan><tspan x="170.0" dy="1.25em">minted-runtime</tspan></text>
+<rect x="540" y="140" width="200" height="80" rx="4" ry="4" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="640.0" y="180.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="640.0" dy="-0.62em">policy</tspan><tspan x="640.0" dy="1.25em">minted-runtime</tspan></text>
+<line x1="270.0" y1="180.0" x2="305.0" y2="180.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="505.0" y1="180.0" x2="540.0" y2="180.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="740.0" y1="180.0" x2="775.0" y2="180.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="975.0" y1="180.0" x2="1010.0" y2="180.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="270.0" y1="410.0" x2="305.0" y2="410.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="505.0" y1="410.0" x2="540.0" y2="410.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="740.0" y1="410.0" x2="775.0" y2="410.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<rect x="40" y="70" width="1200" height="180" rx="6" ry="6" fill="none" stroke="#3A3A3D" stroke-width="1"/>
+<text x="54" y="92" text-anchor="start" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F" letter-spacing="1.2">GATEKEEPING</text>
+<rect x="40" y="300" width="1200" height="180" rx="6" ry="6" fill="none" stroke="#3A3A3D" stroke-width="1"/>
+<text x="54" y="322" text-anchor="start" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F" letter-spacing="1.2">ACTING</text>
+<text x="32" y="502" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">Realness is derived, not asserted: each drawn layer resolves to minted-runtime code, so each is a rect. The named-only `threshold` layer cites a backing that resolves nowhere — refused as a gap, dropped not drawn — so the stack flow breaks where it would sit. A fold over committed bytes (term_economy.py), never a second source of truth.</text>
+</svg>

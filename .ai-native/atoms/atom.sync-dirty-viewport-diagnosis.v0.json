@@ -1,0 +1,53 @@
+{
+  "atom": {
+    "id": "atom.sync-dirty-viewport-diagnosis.v0",
+    "story": {
+      "text": "As a session that opens on a viewport a prior session left dirty and behind origin, I need `git.py sync` to tell me the truth about why it refused to fast-forward — that uncommitted changes block it, not phantom 'stray commits' — so I preserve the right work the right way instead of chasing a non-existent divergence and bouncing off the workstation fence. The misleading message can only ever fire when there are zero stray commits (sync_refusal already bailed on any local commit), yet it sent the session to 'branch + PR the stray commits' when the real, fence-aware move was to preserve precious work to a worktree branch.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "sync names a dirty viewport honestly, not as phantom stray commits",
+      "value": "The merge's return leg stops misdiagnosing itself: a dirty-on-trunk viewport (behind, not ahead) is refused for the real reason — uncommitted tracked changes — with the fence-aware preservation move named, instead of the old message that blamed stray commits that, by construction, cannot exist at that branch.",
+      "why_now": "A live incident: this session opened on a viewport 8 behind origin and dirty with a prior session's stranded work; the SessionStart sync hook reported 'fast-forward refused ... branch + PR the stray commits' though ahead == 0. The message sent the session chasing a non-existent divergence, then the workstation fence (done-line 0145) denied the move it named.",
+      "if_accepted": "git.py sync refuses a dirty-on-trunk viewport with `dirty_viewport_refusal`: it names how many tracked files block the ff, says a worker may not clean the viewport, and points to preserving precious work to a worktree branch. The misleading stray-commits branch is unreachable for the dirty case.",
+      "if_rejected": "Every session that inherits a dirty viewport reads a false diagnosis and a move the fence forbids — wasted motion at exactly the moment the loop is supposed to self-heal the viewport without bdo's hand.",
+      "cost_of_wrong_call": "Low and additive: a pure diagnosis helper plus one pre-check before the unchanged `merge --ff-only`. It changes only refusal wording and the dirty-case path; it does NOT make the pen mutate bdo's viewport. Reverting is dropping one helper and one pre-check.",
+      "mechanism": "`dirty_viewport_refusal(modified, untracked)` (pure, sibling of sync_refusal/restore_blocked) returns the honest refusal or None; cmd_sync counts tracked-vs-untracked porcelain lines and bails on it before the ff. §10 teeth: TestDirtyViewportRefusal proves a dirty tree yields 'uncommitted' (not the old 'PR the stray' instruction) and a clean tree yields None — non-vacuous against the old code path.",
+      "reading": [
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_git_pen.py",
+        ".ai-native/done/0165-sync-dirty-viewport-diagnosis.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_git_pen.py",
+        ".ai-native/done/0165-sync-dirty-viewport-diagnosis.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/branch-ritual/git.py",
+        ".ai-native/done/0165-sync-dirty-viewport-diagnosis.md"
+      ]
+    }
+  },
+  "_note": "Birth record for the sync dirty-viewport diagnosis fix (done-line 0165). Authored to back the PR on the log (the off-log gate's atom invariant); the work it records stands on disk. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
