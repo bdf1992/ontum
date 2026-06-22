@@ -227,10 +227,11 @@ class DriftTest(unittest.TestCase):
 
         def fake(args):
             # the surface-dedup guard (#547) reads the open mirrors before
-            # minting; answer that read with an empty surface (nothing to dedupe
-            # against) so the beat mints exactly one create, as before the guard
-            if args[:3] == ["gh", "issue", "list"]:
-                return "[]"
+            # minting (the exhaustive `gh api --paginate` read); answer it with
+            # an empty surface (nothing to dedupe against) so the beat mints
+            # exactly one create, as before the guard
+            if args[:2] == ["gh", "api"]:
+                return ""
             calls.append(args)
             return "https://github.com/owner/repo/issues/3"
 

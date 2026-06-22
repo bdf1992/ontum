@@ -384,8 +384,13 @@ def drift(root, surface):
     acts = []
     for atom, ahash in awaiting:
         if (ahash, "open") not in seen:
+            # mirror_key is the atom VERSION (artifact_hash), NOT the stable
+            # atom_id: the surface-dedup must restart on an in-place edit so a
+            # new version gets a fresh mirror, never bdo judging a stale issue
+            # body (#547 finding 2) — it equals the log-dedup key (artifact_hash)
+            # so the two never disagree on "this group".
             acts.append({"act": "open", "atom_id": atom["id"],
-                         "artifact_hash": ahash,
+                         "artifact_hash": ahash, "mirror_key": ahash,
                          "title": item_title(atom),
                          "body": item_body(root, fold, atom, ahash, epics, human)})
     awaiting_hashes = {ahash for _, ahash in awaiting}
@@ -401,7 +406,7 @@ def drift(root, surface):
                        "amended to a new version, or was retired; the log "
                        "holds the history")
         acts.append({"act": "close", "atom_id": ev.get("artifact_id"),
-                     "artifact_hash": ahash,
+                     "artifact_hash": ahash, "mirror_key": ahash,
                      "external_ref": ev.get("external_ref"),
                      "comment": comment})
     return acts
@@ -478,14 +483,17 @@ def divergence_drift(root, surface):
     acts = []
     for gid, g in groups.items():
         if (gid, "open") not in seen:
+            # mirror_key is the group id (the stable, cross-worktree-identical
+            # group identity == the log-dedup artifact_hash), so the surface-
+            # dedup and the log-dedup agree on "this group" (#547 finding 2).
             acts.append({"act": "open", "atom_id": g["label"],
-                         "artifact_hash": gid, "title": g["title"],
-                         "body": g["body"]})
+                         "artifact_hash": gid, "mirror_key": gid,
+                         "title": g["title"], "body": g["body"]})
     for (ahash, act), ev in sorted(seen.items(), key=lambda kv: kv[1]["id"]):
         if act != "open" or ahash in groups or (ahash, "close") in seen:
             continue
         acts.append({"act": "close", "atom_id": ev.get("artifact_id"),
-                     "artifact_hash": ahash,
+                     "artifact_hash": ahash, "mirror_key": ahash,
                      "external_ref": ev.get("external_ref"),
                      "comment": "reconciled — this divergence pattern no longer "
                                 "appears in the digest; closed by the mirror"})
@@ -518,9 +526,13 @@ def owner_ask_drift(root, surface):
         if g["id"] in baselined or g["id"] in discharged:
             continue
         if (g["id"], "open") not in seen:
+            # mirror_key is the report_id — stable across versions (a report's
+            # handoff is fixed once written), so the open is idempotent and an
+            # edit to settled history does not re-surface (#547 finding 2). The
+            # ask group's own identity is the report; that is the right key here.
             acts.append({"act": "open", "atom_id": g["report_id"],
-                         "artifact_hash": g["id"], "title": g["title"],
-                         "body": g["body"]})
+                         "artifact_hash": g["id"], "mirror_key": g["report_id"],
+                         "title": g["title"], "body": g["body"]})
     return acts
 
 
@@ -561,15 +573,21 @@ def digest_drift(root, surface):
 
     body = render_digest(compute_digest(root))
     body_key = "digest.body." + short_hash(body)
+    # mirror_key is the ONE perennial id, never the body_key: the digest is a
+    # single live issue regardless of how its body changes, so two worktrees
+    # opening it must agree on the same stable key — the version-changing
+    # body_key would break the cross-worktree open-dedup (#547 finding 2). The
+    # body_key stays the log-dedup key (artifact_hash) for "have I shown this
+    # exact body", which is the right grain for the edit-on-change beat.
     if opened is None:
         return [{"act": "open", "atom_id": DIGEST_ATOM_ID,
-                 "artifact_hash": body_key, "title": "Daily arc digest",
-                 "body": body}]
+                 "artifact_hash": body_key, "mirror_key": DIGEST_ATOM_ID,
+                 "title": "Daily arc digest", "body": body}]
     if body_key in shown:
         return []  # this exact digest is already live on the surface — quiet
     return [{"act": "edit", "atom_id": DIGEST_ATOM_ID,
-             "artifact_hash": body_key, "external_ref": opened.get("external_ref"),
-             "body": body}]
+             "artifact_hash": body_key, "mirror_key": DIGEST_ATOM_ID,
+             "external_ref": opened.get("external_ref"), "body": body}]
 
 
 def surfaced_open_ids(fold):

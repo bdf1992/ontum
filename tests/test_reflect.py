@@ -62,15 +62,32 @@ def make_root(tmp, n_atoms):
     return root
 
 
+def _emulate_open_read(open_issues, args):
+    """Emulate `gh api --paginate ... --jq '... | [.html_url,.body] | @json'`:
+    one JSON [url, body] pair per OPEN issue, newline-separated, with pull
+    requests filtered out — exactly what `_open_mirror_keys` parses. A finite
+    `--limit N` (the capped read the fix replaces) is honoured the way GitHub's
+    server would, so a #547 finding-1 cap-miss is reproducible in a test."""
+    issues = [it for it in (open_issues or []) if not it.get("pull_request")]
+    if "--limit" in args:  # the old capped read — only the first N come back
+        issues = issues[:int(args[args.index("--limit") + 1])]
+    lines = []
+    for it in issues:
+        url = it.get("url") or it.get("html_url") or str(it.get("number"))
+        lines.append(json.dumps([url, it.get("body")]))
+    return "\n".join(lines)
+
+
 def gh_stub(on_mutate, open_issues=None):
     """A fake `run` for the pen. The surface-dedup guard (#547) reads the open
-    mirrors before minting, so a pen stub must speak `gh issue list --json`:
-    this answers it from `open_issues` (default: an empty surface, nothing to
-    dedupe against) and routes create/close/edit to `on_mutate`. So a test's
-    own counter sees only the real mutating calls, exactly as before the guard."""
+    mirrors before minting, so a pen stub must answer the exhaustive read
+    (`gh api --paginate` over the issues endpoint): this serves it from
+    `open_issues` (default: an empty surface, nothing to dedupe against) and
+    routes create/close/edit to `on_mutate`. So a test's own counter sees only
+    the real mutating calls, exactly as before the guard."""
     def run(args):
-        if args[:3] == ["gh", "issue", "list"]:
-            return json.dumps(open_issues or [])
+        if args[:2] == ["gh", "api"]:
+            return _emulate_open_read(open_issues, args)
         return on_mutate(args)
     return run
 
@@ -432,7 +449,7 @@ class DigestKindTest(ReflectBase):
         calls = []
         ref = reflect_pen._gh_edit(
             "owner/repo",
-            {"act": "edit", "atom_id": "daily-digest",
+            {"act": "edit", "atom_id": "daily-digest", "mirror_key": "daily-digest",
              "external_ref": "https://github.com/owner/repo/issues/7",
              "body": "the new digest"}, lambda a: (calls.append(a), "ok")[1])
         self.assertEqual(calls[0][:3], ["gh", "issue", "edit"])
@@ -588,7 +605,8 @@ class IdempotentMirrorTest(ReflectBase):
         ref = reflect_pen._gh_open(
             "owner/repo",
             {"act": "open", "atom_id": "0123-whiteout", "artifact_hash": "ask.abc",
-             "title": "t", "body": "the ask body"}, create)
+             "mirror_key": "0123-whiteout", "title": "t", "body": "the ask body"},
+            create)
         self.assertEqual(ref, "https://github.com/owner/repo/issues/5")
         self.assertIn("ontum-mirror-key: 0123-whiteout", captured["body"])
         keys = reflect_pen._open_mirror_keys(
@@ -604,9 +622,13 @@ class IdempotentMirrorTest(ReflectBase):
         self.register()
         self.to_stamp()
         existing = "https://github.com/owner/repo/issues/99"
+        # the stamp-queue mirror is keyed by the atom VERSION (artifact_hash),
+        # not the stable atom_id (#547 finding 2) — stamp the surface with the
+        # key this version's open act actually carries
+        key = reflect.drift(self.root, "github-issues")[0]["mirror_key"]
         open_issues = [{"number": 99, "url": existing,
                         "body": "mirror body\n\n"
-                                "<!-- ontum-mirror-key: atom.reflect-00.v0 -->"}]
+                                f"<!-- ontum-mirror-key: {key} -->"}]
         mutated = []
 
         def must_not_create(args):
@@ -654,13 +676,153 @@ class IdempotentMirrorTest(ReflectBase):
         self.to_stamp()
 
         def list_fails(args):
-            if args[:3] == ["gh", "issue", "list"]:
-                raise RuntimeError("gh list fell over")
+            if args[:2] == ["gh", "api"]:
+                raise RuntimeError("gh read fell over")
             self.fail("must not mint while the surface is unreadable")
 
         code, text = self.apply(list_fails)
         self.assertEqual(code, 2)
         self.assertIn("refusing to open blind", text)
+
+    # --- finding 1: the capped read silently misses a mirror past the page cap ---
+
+    def test_open_mirror_read_is_exhaustive_never_capped(self):
+        """Finding 1, structural: the read paginates to EXHAUSTION and carries no
+        finite page cap. The capped `gh issue list --limit 500` it replaces
+        silently dropped any mirror past 500 open issues — the read 'succeeded'
+        so the guard never knew it had gone blind, and re-minted the #547
+        duplicate. Non-vacuous: it fails on the old call (no --paginate, a finite
+        --limit)."""
+        calls = []
+
+        def rec(args):
+            calls.append(args)
+            return ""  # an empty surface; we only inspect HOW it was read
+
+        reflect_pen._open_mirror_keys("owner/repo", rec)
+        self.assertEqual(len(calls), 1)
+        read = calls[0]
+        self.assertIn("--paginate", read)     # every page, not just the first
+        self.assertNotIn("--limit", read)     # never a finite cap that can miss
+
+    def test_open_read_tolerates_unicode_line_separators_in_a_body(self):
+        """Finding 1, robustness and non-vacuous: an issue body may contain
+        U+2028/U+2029/U+0085 — characters JSON (and gh's `@json`) leave RAW but
+        Python's str.splitlines() treats as line breaks. Splitting the paginated
+        read on those would tear one issue's JSON record in two, crash the parse,
+        and refuse ALL mirroring on arbitrary issue text (a fail-loud DoS). The
+        read must split on '\\n' only. Non-vacuous: str.splitlines() raises here,
+        split('\\n') finds the key. The line is built the way gh `@json` emits —
+        \\n escaped, U+2028 left raw (ensure_ascii=False)."""
+        body = "intro middle endtail\n\n<!-- ontum-mirror-key: K1 -->"
+        record = json.dumps(["https://x/issues/1", body], ensure_ascii=False)
+        self.assertIn(" ", record)  # the raw separator survived into the line
+        keys = reflect_pen._open_mirror_keys("owner/repo", lambda args: record)
+        self.assertEqual(keys, {"K1": "https://x/issues/1"})
+
+    def test_mirror_past_a_page_cap_is_still_found(self):
+        """Finding 1, behavioral and non-vacuous: 600 open issues, the real
+        mirror is the LAST one — past any 500-cap page. The exhaustive read must
+        still find it and skip the open. The stub honours a finite `--limit` like
+        GitHub's server, so the OLD capped read (`--limit 500`) would drop the
+        600th issue, miss the mirror, and re-mint the #547 duplicate — firing the
+        `must_not_create` failure below."""
+        self.register()
+        self.to_stamp()
+        key = reflect.drift(self.root, "github-issues")[0]["mirror_key"]
+        target = "https://github.com/owner/repo/issues/600"
+        issues = [{"url": f"https://x/{i}", "body": f"noise {i}"}
+                  for i in range(599)]
+        issues.append({"url": target,
+                       "body": f"mirror\n\n<!-- ontum-mirror-key: {key} -->"})
+
+        def must_not_create(args):
+            self.fail("re-minted a duplicate for a mirror past the page cap "
+                      "(#547 finding 1) — the read went blind and the guard "
+                      "never knew")
+
+        code, text = self.apply(gh_stub(must_not_create, open_issues=issues))
+        self.assertEqual(code, 0)
+        self.assertIn("skip-open", text)
+
+    # --- finding 2: the marker key must restart on an in-place atom edit ---
+
+    def test_stamp_queue_marker_key_is_the_version_not_the_stable_id(self):
+        """Finding 2, at the fold: a stamp-queue open act's mirror_key is the
+        atom VERSION (artifact_hash), NOT the stable atom_id. With the stable id
+        (the bug) an atom edited in place — same id, new bytes — would dedup
+        against its own stale issue and bdo would judge an out-of-date body."""
+        self.register()
+        self.to_stamp()
+        act = reflect.drift(self.root, "github-issues")[0]
+        self.assertEqual(act["act"], "open")
+        self.assertEqual(act["mirror_key"], act["artifact_hash"])  # the version
+        self.assertNotEqual(act["mirror_key"], act["atom_id"])     # not the id
+
+    def test_new_version_does_not_dedup_against_its_own_stale_mirror(self):
+        """Finding 2, §10 and non-vacuous: v1 is mirrored through the REAL pen,
+        then a v2 open act for the SAME atom_id is handed in while the surface
+        still shows v1's mirror. Because the key is the version, v2 does not match
+        v1 -> the pen MINTS a fresh issue (bdo judges the current body). Revert
+        the marker key to the stable atom_id (the bug) and v2's key equals v1's
+        marker -> the pen SKIPS -> the `len(calls) == 1` assertion fails."""
+        self.register()
+        adm = reflect.registered_surfaces(reconcile.Fold(self.root))["github-issues"]
+        atom_id = "atom.reflect-00.v0"
+        # v1: mirror it through the real pen, capturing the body it stamps
+        v1_body = {}
+
+        def open_v1(args):
+            if args[:3] == ["gh", "issue", "create"]:
+                v1_body["body"] = args[args.index("--body") + 1]
+                return "https://x/issues/1"
+            self.fail(f"unexpected mutating call: {args[:3]}")
+
+        v1_acts = [{"act": "open", "atom_id": atom_id, "artifact_hash": "HASH_V1",
+                    "mirror_key": "HASH_V1", "title": "t", "body": "v1 body"}]
+        applied, err = reflect_pen._apply_acts(
+            self.root, "github-issues", adm, v1_acts, "test",
+            gh_stub(open_v1, open_issues=[]))
+        self.assertIsNone(err)
+        self.assertIn("ontum-mirror-key: HASH_V1", v1_body["body"])
+        # v2: same atom_id, NEW version; the surface still shows v1's real mirror
+        surface = [{"url": "https://x/issues/1", "body": v1_body["body"]}]
+        v2_acts = [{"act": "open", "atom_id": atom_id, "artifact_hash": "HASH_V2",
+                    "mirror_key": "HASH_V2", "title": "t", "body": "v2 body"}]
+        calls = []
+
+        def open_v2(args):
+            calls.append(args)
+            return "https://x/issues/2"
+
+        applied, err = reflect_pen._apply_acts(
+            self.root, "github-issues", adm, v2_acts, "test",
+            gh_stub(open_v2, open_issues=surface))
+        self.assertIsNone(err)
+        self.assertEqual(len(calls), 1)  # a FRESH mirror for v2, not a stale skip
+        self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
+
+    def test_same_version_still_dedups_proving_the_guard_is_load_bearing(self):
+        """The control for the test above: identical shape, but v2's mirror_key
+        EQUALS the already-mirrored key — so the pen must SKIP (the cross-worktree
+        dedup the guard exists for still bites). The pair makes 'fresh on a new
+        version' meaningful: the dedup is real, it is just keyed by version."""
+        self.register()
+        adm = reflect.registered_surfaces(reconcile.Fold(self.root))["github-issues"]
+        marker = "mirror\n\n<!-- ontum-mirror-key: HASH_SAME -->"
+        surface = [{"url": "https://x/issues/1", "body": marker}]
+        acts = [{"act": "open", "atom_id": "atom.reflect-00.v0",
+                 "artifact_hash": "HASH_SAME", "mirror_key": "HASH_SAME",
+                 "title": "t", "body": "same version body"}]
+
+        def must_not_create(args):
+            self.fail("minted a duplicate for a key already mirrored on the surface")
+
+        applied, err = reflect_pen._apply_acts(
+            self.root, "github-issues", adm, acts, "test",
+            gh_stub(must_not_create, open_issues=surface))
+        self.assertIsNone(err)
+        self.assertEqual(applied, 1)  # the ack was recorded; nothing minted
 
 
 if __name__ == "__main__":

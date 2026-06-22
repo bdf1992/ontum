@@ -53,12 +53,15 @@ def _run(args):
 # from main BEFORE the ack exists, so each opens its own mirror and the
 # union-merged log keeps one ack while GitHub keeps both issues. The local-log
 # check is necessary but not sufficient; the surface itself is the cross-
-# worktree shared truth. We stamp each minted mirror with a hidden, stable
-# key (the group's atom_id — report_id for owner-ask, the atom version for the
-# stamp queue, the group label for divergences, "daily-digest" for the digest)
-# so a later pass can SEE its own group already mirrored and decline a second
-# open. The marker is an HTML comment: invisible in rendered markdown, exact in
-# the body text gh returns.
+# worktree shared truth. We stamp each minted mirror with a hidden key — the
+# group's own per-kind idempotence identity (`mirror_key`, set by the fold so
+# the surface-dedup and the log-dedup never disagree on "this group"): the atom
+# VERSION (artifact_hash) for the stamp queue, so an in-place edit gets a fresh
+# mirror instead of bdo judging a stale body; the report_id for owner-ask; the
+# group label for divergences; "daily-digest" for the perennial digest. So a
+# later pass can SEE its own group already mirrored and decline a second open.
+# The marker is an HTML comment: invisible in rendered markdown, exact in the
+# body text gh returns.
 _MIRROR_KEY_RE = re.compile(r"<!--\s*ontum-mirror-key:\s*(\S+)\s*-->")
 
 
@@ -68,27 +71,46 @@ def _mirror_marker(key):
 
 def _open_mirror_keys(address, run):
     """The mirror keys already live as OPEN issues on the surface — the shared
-    truth a second worktree must dedupe against (#547). Reads every open issue's
-    body for the hidden key. One `gh` read per apply-run (only when an open act
-    is pending), so it never costs the common no-drift beat anything."""
-    raw = run(["gh", "issue", "list", "--repo", address, "--state", "open",
-               "--limit", "500", "--json", "number,url,body"])
+    truth a second worktree must dedupe against (#547). Reads EVERY open issue's
+    body for the hidden key, paginating to EXHAUSTION (`gh api --paginate`) so
+    the guard can never silently miss a mirror past a finite page cap — the
+    capped `gh issue list --limit 500` it replaces would re-mint the #547
+    duplicate the moment a repo crosses 500 open issues (finding 1), the bug
+    going silent because the read still "succeeded". The issues endpoint also
+    returns pull requests, so PRs are filtered out (`select(.pull_request|not)`).
+    One read per apply-run (only when an open act is pending), so the common
+    no-drift beat pays nothing. A read failure raises (fail-loud): minting blind
+    against an unread surface is the double-fire bug, never a default."""
+    raw = run(["gh", "api", "--paginate",
+               f"repos/{address}/issues?state=open&per_page=100",
+               "--jq", ".[] | select(.pull_request | not) | [.html_url, .body] "
+                       "| @json"])
     keys = {}
-    for it in json.loads(raw) if raw else []:
-        m = _MIRROR_KEY_RE.search(it.get("body") or "")
+    # split on "\n" only, NOT str.splitlines(): `@json` escapes the standard
+    # JSON control chars (\n, \r, \t) but leaves U+2028/U+2029/U+0085 RAW in a
+    # body — splitlines() would treat those as line breaks and tear one issue's
+    # JSON record in two, crashing the parse and refusing ALL mirroring on
+    # arbitrary issue text. jq separates records with a literal newline.
+    for line in (raw or "").split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        url, body = json.loads(line)  # one JSON [url, body] pair per open issue
+        m = _MIRROR_KEY_RE.search(body or "")
         if m:
             # first open issue per key wins; a human-closed mirror is gone from
             # this set, so the open-only owner-ask mirror still never re-opens
             # what its local ack already recorded
-            keys.setdefault(m.group(1), it.get("url") or str(it.get("number")))
+            keys.setdefault(m.group(1), url)
     return keys
 
 
 def _gh_open(address, act, run):
     """github-issues: an open act is a created issue; the ref is its URL. The
-    body carries the hidden mirror-key (#547) so a sibling worktree's later pass
-    can recognise this group is already mirrored and not mint a duplicate."""
-    body = act["body"] + _mirror_marker(act["atom_id"])
+    body carries the hidden mirror-key (#547) — the group's own per-kind
+    `mirror_key` — so a sibling worktree's later pass can recognise this group
+    is already mirrored and not mint a duplicate."""
+    body = act["body"] + _mirror_marker(act["mirror_key"])
     ref = run(["gh", "issue", "create", "--repo", address,
                "--title", act["title"], "--body", body])
     return ref.splitlines()[-1].strip() if ref else ref
@@ -102,7 +124,7 @@ def _gh_edit(address, act, run):
     marker must be re-stamped or a later open-dedup could no longer recognise
     this perennial issue and would mint a duplicate."""
     ref = act["external_ref"]
-    body = act["body"] + _mirror_marker(act["atom_id"])
+    body = act["body"] + _mirror_marker(act["mirror_key"])
     edit_args = ["gh", "issue", "edit", str(ref), "--body", body]
     if not str(ref).startswith("http"):
         edit_args += ["--repo", address]
@@ -158,11 +180,14 @@ def _apply_acts(root, surface, adm, acts, by, run):
     applied = 0
     for act in acts:
         try:
-            if act["act"] == "open" and act["atom_id"] in open_keys:
+            if act["act"] == "open" and act["mirror_key"] in open_keys:
                 # this group is ALREADY mirrored to an open issue on the surface
                 # (a sibling worktree opened it). Record the ack against the
                 # existing issue so the local log catches up, and mint nothing.
-                ref = open_keys[act["atom_id"]]
+                # The match is on the per-kind mirror_key (the atom VERSION for
+                # the stamp queue), so an in-place-edited atom's NEW version is
+                # not deduped against its own stale issue (#547 finding 2).
+                ref = open_keys[act["mirror_key"]]
                 record_reflection(root, surface, act["atom_id"],
                                   act["artifact_hash"], "open", ref, by)
                 print(f"skip-open (already mirrored): {act['atom_id']} -> {ref}")
