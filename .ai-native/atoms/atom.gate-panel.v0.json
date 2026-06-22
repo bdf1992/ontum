@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.gate-panel.v0",
+    "story": {
+      "text": "As the loop, now that the gate draws a random model and records its cost (done-line 0142, PR #324), I should be able to MEASURE whether the cheap model judges as well as the expensive one — the impact half the cost-only fold deferred there. The owner direction this serves is recorded in done-line 0144 (frozen on disk, the bar this atom is built to): a percentage of gate runs fan out to ALL models at once, each in its own stream, and compile at the end, to generate per-snapshot model comparisons naturally. Those comparisons ARE the impact data: when every model judges the same atom (snapshot), the room shows where the cheap model diverges from the expensive one. The compile rule recorded in done-line 0144 is unanimous-or-escalate — a unanimous room advances its one verdict; ANY split (or a failed stream) escalates to the owner, because the split is the signal and must never be papered into a verdict — at a ~25% rate. (The value stands on its own grounded merits: it completes the economy begun at done-line 0142; the direction citation is done-line 0144, not an uncited self-assertion.)",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the gate panel: a share of runs judge with all models and compile",
+      "value": "gate.py gains a panel mode (ONTUM_GATE_PANEL_RATE, default 0.25): a chosen run fans out to every model in the pool concurrently (each its own claude -p stream), then compiles unanimous-or-escalate — a unanimous room lands one verdict through loop.node judge; any split or failed stream escalates to bdo with the per-model comparison, no verdict invented. Each stream is recorded with model+cost+verdict+atom, so loop.runs folds both cost-by-model and a per-snapshot model comparison (the impact data), surfaced in render and --json.",
+      "why_now": "The impact half of the gate economy, whose cost half landed at done-line 0142 / PR #324 with impact explicitly deferred; the owner direction for this increment (the panel, unanimous-or-escalate, ~25%) is recorded in frozen done-line 0144. It turns the deferred impact column into real data generated naturally from panel runs.",
+      "if_accepted": "The loop can finally answer cost-vs-impact from real runs: a quarter of gate runs compare all models on the same snapshot, and loop.runs surfaces where the cheap model diverged from the room. The expensive question (is opus worth it over haiku?) gets a growing, evidence-backed answer, with disagreements surfaced for bdo rather than smoothed.",
+      "if_rejected": "Impact stays deferred — the economy shows cost but never whether the cheaper model judges as well, so the model choice stays a guess.",
+      "cost_of_wrong_call": "Bounded: the panel is a launch MODE composing launch_claude, record, and model_economy; it adds no second judge and no second truth. The compile never invents a verdict (a non-unanimous room escalates). A panel costs ~Nx a single run, bounded by the rate. Reverting is setting the rate to 0.",
+      "mechanism": "gate.py: GATE_PANEL_RATE + should_panel, run_panel (a ThreadPoolExecutor fanning launch_claude over the pool, each stream captured ok/failed), compile_panel (unanimous-or-escalate), _panel_launch (records each stream, lands a unanimous verdict or escalates with the per-model split). loop/runs.py: record() + CLI carry atom+verdict; snapshot_comparisons() folds atoms judged by >=2 models into per-model verdict+cost with an agreed/split flag; render + --json surface it. tests/test_gate_panel.py: a unanimous panel compiles to the shared verdict, a split escalates with no verdict, a failed stream escalates (unconfirmable), the rate bound holds, and the comparison fold flags agreement vs split (a constant compile fails). Done-line 0144.",
+      "reading": [
+        ".claude/skills/gate/gate.py",
+        "loop/runs.py",
+        "tests/test_gate_panel.py",
+        ".ai-native/done/0144-gate-panel.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.the-field"],
+      "touches": [".claude/skills/gate/gate.py", "loop/runs.py", "tests/test_gate_panel.py", ".ai-native/done/0144-gate-panel.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/gate/gate.py", "loop/runs.py", ".ai-native/done/0142-gate-model-economy.md", "loop/gate_eval.py"]
+    }
+  }
+}
