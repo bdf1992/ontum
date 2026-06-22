@@ -20,7 +20,7 @@ built. The companion memories are `ontum-activity-accounting-gateway`,
 ## How this arc was found (the thread)
 
 It began at "account for **all** activity, even the harness's own hooks, and
-audit their data collection for a **shared gateway**" (→ organ 1 shipped, PR
+audit their data collection for a **shared gateway**" (→ part 1 shipped, PR
 #339, `loop/activity.py`). Pulling that thread surfaced four more facets that
 are one arc:
 
@@ -48,7 +48,7 @@ internally-networked platform* — **without the log ever stopping being truth.*
                  ▲ witnesses                         ▲ witnesses
         ┌────────┴──────────┐              ┌─────────┴────────────┐
         │  STREAM 1: activity │            │  STREAM 2: holon-graph │
-        │  (organ 2: every    │            │  atoms = vertices,     │
+        │  (part 2: every    │            │  atoms = vertices,     │
         │   hook firing → a    │            │  incidence = edges     │
         │   receipt)           │            │  (seam/collide/touch)  │
         └─────────┬───────────┘            └──────────┬─────────────┘
@@ -118,7 +118,7 @@ one-way glass scales up the chain.
 ## The deeper layer: the consequence tier (what the five facets stand on)
 
 *Added from the design conversation's continuation (2026-06-20). The five facets
-above are the **body** — gateway, mesh, brokerage. This is the **metabolism** they
+above are the **body** — gateway, mesh, brokerage. This is the **cycle** they
 serve: why the platform exists and what it operates on. It is the bridge to
 `epic.model-free-mode-response` and the `exports/model-free-mode` package.*
 
@@ -165,13 +165,13 @@ Bounded, Observable, Learning) splits cleanly along the ladder:
   pentimento.
 
 **The measurement layer is load-bearing, and the model-free research is its spine.**
-The doctrine's three open estimators *are* the measurement organs: the reversibility
+The doctrine's three open estimators *are* the measurement parts: the reversibility
 classifier + blast-radius bound = the **contain** estimators; the in-stream
 learning-progress signal = the **sauce**, made a number. So
 `epic.model-free-mode-response` does not run *beside* the platform — it **is** the
 platform's measurement engine. Wave-1's `observe.py` (Observable-as-gate),
 `relation_ledger.py` (the relational middle band — meaning without mechanism), and
-`over_containment.py` (the predictive-vs-trivial discriminator) are its first organs.
+`over_containment.py` (the predictive-vs-trivial discriminator) are its first parts.
 
 **The reputation economy (the brokerage's foundation).** Pentimento + sauce, composed
 over a creator's history, *are* a reputation: **exemplars net against notorieties, per
@@ -241,7 +241,7 @@ calibrated stop-reflex holding a chewed pen still produces garbage.
 exploded.* The watcher's "which wrapper to build next" (`command_guard --report`) is
 already a proto-sensor of this; #245 is the loud, unmeasured alarm. Instrument-fitness
 becomes a measured axis when the loop folds *route-around rate* per tool from the
-activity record (organ 1's sibling).
+activity record (part 1's sibling).
 
 **The worked example (this session, 2026-06-20).** The fence-heal that produced this
 section is Exhibit A. Healing two built-but-unlanded PRs (#341, #346) hit, in order: a
@@ -323,7 +323,7 @@ clauses are already negotiable in the reach). The doctrine amendment:
 5. **The measure/contain 2×2** — does Observable+Learning = *measure* and
    Bounded+Reversible = *contain* hold, or is it too clean? Reversible is claimed on
    *both* sides (the pentimento gives it). One axis or two?
-6. **Where the non-deterministic organ enters the pure fold** *(the determinant
+6. **Where the non-deterministic part enters the pure fold** *(the determinant
    question, from the package's T3).* Sauce — the learning-progress signal, and any
    locality-sensitive/meaning hash over atoms — is inherently learned and predictive;
    the core is a deterministic fold ("the log is truth, everything else is a fold").
@@ -338,7 +338,7 @@ clauses are already negotiable in the reach). The doctrine amendment:
      `retro.py` (churn), `heal.py`, and `relation_ledger.py`. Determinism and
      log-is-truth stay intact; model-free operation is *first-class*, not bolted on,
      and it is buildable in a single session. The locality-sensitive / meaning-hash
-     **embedding** over atom content (T7's organ) is the more powerful but out-of-fold
+     **embedding** over atom content (T7's part) is the more powerful but out-of-fold
      path — non-deterministic, via the inference gateway — preserved as a **named
      later reach, admitted by the very consequence-gate this layer serves**, and built
      *only if* the native fold provably cannot separate the regimes (the doctrine's
@@ -352,7 +352,7 @@ clauses are already negotiable in the reach). The doctrine amendment:
 - **First buildable link: generalize the Herald.** It is already the proto-
   brokerage; the smallest real slice is to add *routing/matchmaking on the
   record* to its existing registration + reputation folds — proving
-  broker-on-record / transport-ephemeral on the one organ that already passes the
+  broker-on-record / transport-ephemeral on the one part that already passes the
   fold test.
 - **Christening** (the naming ritual) rides facet #1 once the node overload is
   cut: confirm-arc-for-names — young names forgiven, relation-placed, christened
@@ -361,7 +361,7 @@ clauses are already negotiable in the reach). The doctrine amendment:
   brokerage slice proves the cut.
 - **The measurement layer's spine: promote `exports/model-free-mode`.** The package
   stops being a one-shot critique bundle and becomes the research spine of the
-  measurement layer; the doctrine's three estimators become its organs (`observe.py`,
+  measurement layer; the doctrine's three estimators become its parts (`observe.py`,
   `relation_ledger.py`, `over_containment.py` are wave 1). The **existence proof** is
   to climb the ladder *once*, publicly, on the model-free-mode material, and run the
   **holographic kill-test** on the result — the smallest run that banks-or-falsifies
@@ -373,16 +373,16 @@ clauses are already negotiable in the reach). The doctrine amendment:
   of the brokerage; generalize it, do not rebuild it.
 - **The git/gh gateway** and **inference gateway** — sibling governed reaches; the
   brokerage is the agent-to-agent reach in the same grain.
-- **The activity-accounting** (PR #339, organ 2 = the runtime witness) — STREAM 1
-  is organ 2 lifted to gateway level.
+- **The activity-accounting** (PR #339, part 2 = the runtime witness) — STREAM 1
+  is part 2 lifted to gateway level.
 - **The gateway separation-of-powers** (memory) — the brokerage is an *enforcement*
-  organ under the regulatory branch; its routing policy is *legislation*.
+  part under the regulatory branch; its routing policy is *legislation*.
 - **Causality / the canvas** — already renders typed graphs with a recursion lens;
   the holon-graph stream is its data, and the **pentimento (process visualized)** is
   the canvas pointed at provenance.
 - **`epic.model-free-mode-response` + `exports/model-free-mode`** — the **measurement
   engine** of the deep layer; `observe.py` / `relation_ledger.py` / `over_containment.py`
-  (wave 1, PR #351) are its first organs. Do not double-build — the platform's
+  (wave 1, PR #351) are its first parts. Do not double-build — the platform's
   measurement layer *is* this epic, lifted to platform tier.
 - **The gate-panel** (PR #338) + the **§7 spawn rail** — the **peer panel** that
   tastes the sauce; plural independent judges, not one model's verdict.

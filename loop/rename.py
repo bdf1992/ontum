@@ -52,8 +52,10 @@ from loop.phrasing import phrasing_only
 
 # The chars that, adjacent to a match, mean the word is part of a compound
 # (identifier / filename / dotted-or-hyphened handle) and must NOT be renamed.
-# `\w` is letters+digits+underscore; we add `.`, `/`, `-`.
-_JOIN = r"[\w./\-]"
+# `\w` is letters+digits+underscore; we add `/`, `-`. A trailing
+# `.` is sentence punctuation (renamed); a `.`+wordchar is a dotted
+# compound like `.md` (preserved by the (?!\.\w) guard in _rule_regex).
+_JOIN = r"[\w/\-]"
 _VOWELS = set("aeiou")
 
 # Files the applier may consider at all. Prose + the kinds the phrasing door can
@@ -140,7 +142,7 @@ def _rule_regex(frm):
     f = re.escape(frm)
     return re.compile(
         rf"(?P<art>\b[Aa]n?\b[ \t]+)?"      # optional "a "/"an " directly before
-        rf"(?<!{_JOIN})(?P<word>{f}s|{f})(?!{_JOIN})",
+        rf"(?<!{_JOIN})(?P<word>{f}s|{f})(?!{_JOIN})(?!\.\w)",
         re.IGNORECASE,
     )
 

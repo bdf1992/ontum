@@ -47,6 +47,21 @@ class RenameText(unittest.TestCase):
             self.assertEqual(rename.rename_text(token, R), token,
                              f"{token!r} must be preserved (it is a compound)")
 
+    def test_sentence_period_renamed_but_dotted_compound_preserved(self):
+        # a trailing period is sentence punctuation -> rename through it
+        self.assertEqual(rename.rename_text("see the organ. Then", R),
+                         "see the part. Then")
+        self.assertEqual(rename.rename_text("the harness's metabolism.", R),
+                         "the harness's cycle.")
+        # a dotted compound is PRESERVED — the pen cannot tell attribute access
+        # (organs.append) from a handle (metabolism.md), so it conservatively
+        # leaves all `word.word`; this is exactly why census.py's wholesale
+        # identifier rename uses plain \b instead of the pen.
+        self.assertEqual(rename.rename_text("organs.append(x)", R),
+                         "organs.append(x)")
+        self.assertEqual(rename.rename_text("metabolism.md", R), "metabolism.md")
+        self.assertEqual(rename.rename_text("organ.py here", R), "organ.py here")
+
     def test_idempotent(self):
         text = "an organ and two organs in the metabolism; see strategy-metabolism.md"
         once = rename.rename_text(text, R)
