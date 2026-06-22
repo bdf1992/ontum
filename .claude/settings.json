@@ -46,12 +46,7 @@
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/change_guard.py",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/change_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/change_guard.py\"",
             "timeout": 10
           }
         ]
@@ -71,12 +66,7 @@
           },
           {
             "type": "command",
-            "command": "python .claude/hooks/change_guard.py",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/change_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/change_guard.py\"",
             "timeout": 10
           }
         ]

@@ -18,6 +18,12 @@ causality/examples/*.json -text
 # a fresh render, so its bytes must never be eol-rewritten.
 diagrams/examples/*.svg -text
 
+# Authored workflows: arming binds to sha256 over the file bytes (the
+# workflow-authoring wrapper), so git must never eol-rewrite them — the
+# 0007 trap, applied to workflows. A rewrite would change the hash and
+# silently un-arm a reviewed workflow.
+.claude/workflows/*.js -text
+
 # Append-only logs: parallel branches only ever append; union-merge
 # keeps both tails instead of conflicting.
 .ai-native/log/*.jsonl merge=union
