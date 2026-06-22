@@ -70,6 +70,14 @@
       "sink": "stdout (read-only; writes nothing)",
       "witnessed": false
     },
+    "heartbeat": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["log-fold", "setpoint-dial"],
+      "uses_for": "run one guaranteed setpoint-bounded tick of the level-triggered loop so atoms flow toward value-confirm (the in-harness driver, done-line 0178); tick-only and fail-open in hook mode — never drains, never fake-stamps (the mock-human valve is shut)",
+      "sink": ".ai-native/log/ (a tick admission + pipeline events/receipts when the beat advances work) + stdout",
+      "witnessed": true
+    },
     "git:sync": {
       "wiring": "claude",
       "events": ["SessionStart"],

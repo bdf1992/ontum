@@ -114,6 +114,55 @@ class TestAtomsOnMain(_Temp):
         self.assertIn("confirmed on main", digest.render(d))
 
 
+class TestLandingNarrative(_Temp):
+    """The span must narrate, not just tally: each landing named (PR, atoms,
+    arc, who), not folded into a bare count. The §10 teeth here are the cap —
+    an honest overflow note, proven non-vacuous by a span that overflows it."""
+
+    def test_landings_are_itemized_with_pr_atoms_and_arc(self):
+        _append_merge(self.root, 7, landed_atoms=["atom.a.v0", "atom.b.v0"])
+        d = digest.digest(self.root)
+        self.assertEqual(len(d["landed_in_span"]), 1)
+        ev = d["landed_in_span"][0]
+        self.assertEqual(ev["atoms"], ["atom.a.v0", "atom.b.v0"])
+        self.assertEqual(ev["pr"], 7)
+        self.assertEqual(ev["epic"], "epic.test")
+        out = digest.render(d)
+        self.assertIn("What landed in span", out)
+        self.assertIn("PR #7", out)
+        self.assertIn("atom.a.v0", out)
+
+    def test_most_recent_landing_leads(self):
+        _append_merge(self.root, 1, landed_atoms=["atom.old.v0"],
+                      ts="2026-06-05T10:00:00Z")
+        _append_merge(self.root, 2, landed_atoms=["atom.new.v0"],
+                      ts="2026-06-07T10:00:00Z")
+        order = [e["pr"] for e in digest.digest(self.root)["landed_in_span"]]
+        self.assertEqual(order, [2, 1], "the narrative must lead with the latest")
+
+    def test_a_landing_outside_the_span_is_not_narrated(self):
+        _append_merge(self.root, 3, landed_atoms=["atom.x.v0"],
+                      ts="2026-06-01T10:00:00Z")
+        d = digest.digest(self.root, since="2026-06-05", until="2026-06-10")
+        self.assertEqual(d["landed_in_span"], [])
+
+    def test_cap_folds_the_overflow_and_names_it_never_silently(self):
+        # more landings than the cap: the surface shows exactly the cap, and the
+        # remainder is *named* in an overflow line — a silent truncation would
+        # read as "this is all of it". Non-vacuous: it overflows by construction.
+        n = digest.LANDING_NARRATIVE_CAP + 4
+        for i in range(n):
+            _append_merge(self.root, 100 + i, landed_atoms=[f"atom.x{i}.v0"],
+                          ts=f"2026-06-06T10:{i:02d}:00Z")
+        d = digest.digest(self.root)
+        self.assertEqual(len(d["landed_in_span"]), n, "the dataset keeps them all")
+        out = digest.render(d)
+        shown = out.count("PR #")
+        self.assertEqual(shown, digest.LANDING_NARRATIVE_CAP,
+                         "render shows exactly the cap, no more")
+        self.assertIn(f"+{n - digest.LANDING_NARRATIVE_CAP} earlier landing", out)
+
+
 class TestArcGrouping(_Temp):
     def test_arc_present_with_confirmation_status(self):
         d = digest.digest(self.root)
@@ -218,6 +267,28 @@ class TestSupersededRefusalIsHistory(unittest.TestCase):
         div = digest._divergences(fold, arcs, [], None, None, superseded)
         self.assertEqual([d["atom"] for d in div], ["atom.b.v0"])
         self.assertEqual(div[0]["verdict"], "collision")
+
+    def test_refusal_on_superseded_bytes_is_not_a_divergence(self):
+        # the herald shape: an atom edited IN PLACE (same .v0 id, new bytes).
+        # the old bytes were refused; a newer atom.created replaced them and the
+        # live bytes are clean. identity is the content hash, so the dead-byte
+        # refusal is healed history, never a live divergence — even though the
+        # .vN id never changed (what the integer-version supersession misses).
+        import types
+        fold = types.SimpleNamespace(admissions=[], events=[
+            {"type": "atom.created", "artifact_id": "atom.h.v0",
+             "artifact_hash": "sha256:OLD", "ts": "2026-06-18T00:00:00Z"},
+            {"type": "atom.created", "artifact_id": "atom.h.v0",
+             "artifact_hash": "sha256:NEW", "ts": "2026-06-19T00:00:00Z"},
+        ])
+        arcs = [{"epic": "epic.h", "confirmed": {"by": "bdo"}, "pieces": [
+            {"atom": "atom.h.v0", "landed": False, "refusals": [
+                {"node": "handoff-gate.det.v1", "verdict": "send_back",
+                 "reason": "stale", "artifact_id": "atom.h.v0",
+                 "artifact_hash": "sha256:OLD"}]},
+        ]}]
+        self.assertEqual(digest._divergences(fold, arcs, [], None, None,
+                                             frozenset()), [])
 
     def test_superseded_piece_drops_from_live_arc_tally(self):
         arc = {"epic": "epic.x", "confirmed": {"by": "bdo"}, "pieces": [

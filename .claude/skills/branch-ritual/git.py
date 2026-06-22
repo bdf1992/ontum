@@ -56,6 +56,7 @@ session what the act is missing; nothing here escalates to bdo.
 from __future__ import annotations
 
 import argparse
+import datetime
 import pathlib
 import re
 import subprocess
@@ -335,6 +336,21 @@ def dirty_viewport_refusal(modified, untracked):
         "copy the files in, commit with the git pen), then the tree is clean "
         "and sync fast-forwards. It is never bdo's to hand-fix."
     )
+
+
+def rescue_branch_name(today, existing):
+    """The rescue branch a whiteout commits a dirty viewport's pile onto:
+    `claude/rescue-viewport-<date>`, with a `-N` suffix when that name is
+    already taken so a second whiteout the same day never clobbers the first
+    (done-line 0170, #415). Pure: the date and the existing-ref set are passed
+    in, so the name is a deterministic fold, not a clock read."""
+    base = f"claude/rescue-viewport-{today}"
+    if base not in existing:
+        return base
+    n = 2
+    while f"{base}-{n}" in existing:
+        n += 1
+    return f"{base}-{n}"
 
 
 def garden_verdict(uncommitted, has_open_pr, has_merged_pr):
@@ -679,6 +695,115 @@ def cmd_commit(ns):
           f"(hand-off still leaves the machine only through `{PEN.replace('git.py', 'pr.py')} push`)")
 
 
+def _oneline(proc):
+    """The last line of a subprocess's stderr/stdout, for a terse refusal."""
+    detail = (proc.stderr or proc.stdout).strip().splitlines()
+    return detail[-1] if detail else "no detail"
+
+
+def recover_dirty_viewport(viewport, git, emit, bail, ns):
+    """The whiteout utensil's actuator (done-line 0170, #415): sort a DIRTY
+    viewport without losing a byte.
+
+    A session cannot do this itself — the workstation fence forbids every
+    working-state git verb in the primary tree (checkout/reset/restore/clean/
+    stash), and the git pen refuses to commit on the trunk. The pen is the one
+    actor sanctioned to flip the viewport (it already runs checkout + merge
+    here), so recovery is the pen's. It is proof-carrying, the whiteout shape of
+    the phrasing door (done-line 0064): it PRESERVES before it cleans — the
+    entire pile is committed (`add -A`, a total snapshot) and pushed onto a
+    rescue branch FIRST, and only then is the now-clean viewport fast-forwarded
+    to origin/main. Nothing is discarded; the rescue branch is surfaced for
+    reconciliation. Caller guarantees: the viewport is on the trunk, dirty, and
+    carries no local commits origin lacks (a clean fast-forward but for the
+    tree)."""
+    head = git(["rev-parse", "--short", "HEAD"], viewport).stdout.strip()
+    trunk = git(["branch", "--show-current"], viewport).stdout.strip() or "main"
+    raw = git(["for-each-ref", "--format=%(refname:short)",
+               "refs/heads", "refs/remotes"], viewport).stdout.split()
+    # the existing-ref set the naming fold avoids — include remote-tracking
+    # branches under their BARE name (strip the `origin/` prefix), so a rescue
+    # branch pushed earlier but since deleted locally is still not re-minted
+    # and clobbered on push (it lives only on origin until reconciled).
+    existing = set(raw) | {r.split("/", 1)[1] for r in raw
+                           if r.startswith("origin/")}
+    rescue = rescue_branch_name(datetime.date.today().isoformat(), existing)
+
+    made = git(["checkout", "-b", rescue], viewport)
+    if made.returncode != 0:
+        bail(f"whiteout could not open the rescue branch '{rescue}' — "
+             f"{_oneline(made)}; the viewport is untouched")
+    added = git(["add", "-A"], viewport)
+    if added.returncode != 0:
+        # staging failed — the pile is still in the working tree, unsaved.
+        # back out to the trunk (the dirty tree carries cleanly, rescue shares
+        # its commit) and leave the viewport exactly as found.
+        git(["checkout", trunk], viewport)
+        git(["branch", "-D", rescue], viewport)
+        bail(f"whiteout could not stage the viewport pile — {_oneline(added)}; "
+             "the work is still in the viewport, untouched")
+    staged = [p for p in git(["diff", "--cached", "--name-only"],
+                             viewport).stdout.splitlines() if p]
+
+    push_note = ""
+    if staged:
+        message = (
+            f"whiteout: rescue the dirty viewport pile ({len(staged)} path(s)) "
+            f"off {head}\n\n"
+            "Proof-carrying recovery (#415, done-line 0170): the viewport was "
+            "dirty and a session cannot sort it (the workstation fence forbids "
+            "every working-state git verb in the primary tree). The pen "
+            "preserves the entire pile on this branch BEFORE cleaning the "
+            "viewport — nothing is discarded. Reconcile what is still wanted "
+            "into a real PR, or drop this branch once the pile is accounted "
+            "for.")
+        committed = git(["commit", "-m", message], viewport)
+        if committed.returncode != 0:
+            git(["checkout", trunk], viewport)
+            git(["branch", "-D", rescue], viewport)
+            bail(f"whiteout could not commit the rescue pile — "
+                 f"{_oneline(committed)}; the viewport is untouched")
+        pushed = git(["push", "-u", "origin", rescue], viewport,
+                     timeout=ns.fetch_timeout)
+        push_note = ("pushed to origin" if pushed.returncode == 0
+                     else f"NOT pushed (offline?: {_oneline(pushed)}) — it is "
+                          "committed locally and safe; push it with the PR pen")
+
+    # return the viewport to a clean trunk and fast-forward to origin/main
+    back = git(["checkout", trunk], viewport)
+    if back.returncode != 0:
+        where = (f"preserved the pile on '{rescue}' ({push_note}) but "
+                 if staged else "")
+        bail(f"whiteout {where}could not return the viewport to {trunk} — "
+             f"{_oneline(back)}; the work is safe, restore {trunk} by hand")
+    if not staged:
+        # nothing to preserve (a clean tree, or a race that cleaned it) —
+        # never leave an empty rescue branch behind
+        git(["branch", "-D", rescue], viewport)
+    behind = int(git(["rev-list", "--count", f"{trunk}..origin/main"],
+                     viewport).stdout.strip() or 0)
+    if behind:
+        merged = git(["merge", "--ff-only", "origin/main"], viewport)
+        if merged.returncode != 0:
+            where = (f"preserved the pile on '{rescue}' ({push_note}) and " if
+                     staged else "")
+            bail(f"whiteout {where}left the viewport clean, but the "
+                 f"fast-forward was refused — {_oneline(merged)}")
+    if staged:
+        emit("done",
+             f"whiteout recovered the dirty viewport: {len(staged)} path(s) "
+             f"preserved on '{rescue}' ({push_note}); the viewport returned to "
+             f"{trunk} and fast-forwarded {behind} commit(s) to origin/main. "
+             "Open the reconciliation PR for the rescue branch with the PR pen "
+             "(python .claude/skills/branch-ritual/pr.py create, from a "
+             f"worktree on '{rescue}') — until then the garden surfaces it as "
+             "committed-but-no-PR. Nothing was lost.")
+    else:
+        emit("done", f"whiteout: the viewport was already clean — "
+             f"fast-forwarded {behind} commit(s) to origin/main; "
+             "nothing to recover.")
+
+
 def cmd_sync(ns):
     """Fast-forward the viewport (the primary worktree) to origin/main —
     the merge's return leg (done-line 0031). ff-only cannot conflict: it
@@ -738,6 +863,23 @@ def cmd_sync(ns):
         reason = sync_refusal(branch, ahead)
         if reason:
             bail(reason)
+        # The whiteout utensil (done-line 0170, #415): a dirty viewport cannot
+        # be fast-forwarded (the merge would fail on the unsaved tree) and a
+        # session cannot clean it itself (the workstation fence). The pen sorts
+        # it — but only when explicitly asked. In hook mode (ambient
+        # SessionStart) it surfaces a pointer rather than branching and pushing
+        # autonomously at every dirty start; `whiteout` (or an explicit `sync`)
+        # actuates it.
+        dirty = bool(git(["status", "--porcelain"], viewport).stdout.strip())
+        if dirty:
+            if ns.hook and not getattr(ns, "recover", False):
+                bail("the viewport is dirty (uncommitted work) — a session "
+                     "cannot clean the primary tree itself (the workstation "
+                     "fence). Recover it with the whiteout utensil, which "
+                     "preserves the pile on a rescue branch before it cleans: "
+                     "python .claude/skills/branch-ritual/git.py whiteout")
+            recover_dirty_viewport(viewport, git, emit, bail, ns)
+            return
         behind = int(git(["rev-list", "--count", "main..origin/main"],
                          viewport).stdout.strip() or 0)
         if not behind:
@@ -900,6 +1042,19 @@ def cmd_garden(ns):
         sys.exit(0)
 
 
+def cmd_whiteout(ns):
+    """The `:whiteout` utensil (done-line 0170, #415): recover a dirty viewport
+    without losing work. A thin, explicitly-named alias over `sync` that always
+    actuates the recovery — where `sync --hook` only points at the utensil at an
+    ambient session start, `whiteout` is the verb a session reaches for to
+    actually sort the tree. On a CLEAN viewport it is simply a sync (fast-forward
+    to origin/main); there is nothing to recover and nothing is lost either way.
+    The named utensil bdo asked every workstation to ship with."""
+    ns.recover = True
+    ns.hook = False
+    cmd_sync(ns)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="git.py", description=__doc__,
@@ -938,15 +1093,27 @@ def main(argv=None):
     sync = verbs.add_parser(
         "sync", help="fast-forward the viewport (primary worktree) to "
                      "origin/main — the merge's return leg; restores a "
-                     "stranded viewport to main when its work is safe, "
-                     "surfaces only to preserve unpushed work")
+                     "stranded viewport to main when its work is safe; an "
+                     "explicit run on a DIRTY viewport recovers it via the "
+                     "whiteout utensil (preserve the pile, then sync), while "
+                     "--hook only points at the utensil")
     sync.add_argument("--hook", action="store_true",
                       help="hook mode: at most one line, exit 0 always — "
                            "fail-open, never gates a session's start")
     sync.add_argument("--fetch-timeout", dest="fetch_timeout", type=int,
                       default=20, metavar="SECONDS",
                       help="seconds to wait on the network before reporting")
-    sync.set_defaults(func=cmd_sync)
+    sync.set_defaults(func=cmd_sync, recover=False)
+
+    whiteout = verbs.add_parser(
+        "whiteout", help="recover a DIRTY viewport without losing work — "
+                         "preserve the whole pile on a rescue branch, then "
+                         "sync the clean viewport to origin/main (#415, the "
+                         "named mistake-recovery utensil)")
+    whiteout.add_argument("--fetch-timeout", dest="fetch_timeout", type=int,
+                          default=20, metavar="SECONDS",
+                          help="seconds to wait on the network before reporting")
+    whiteout.set_defaults(func=cmd_whiteout, hook=False, recover=True)
 
     garden = verbs.add_parser(
         "garden", help="remove worktrees whose branch has merged (clean tree "

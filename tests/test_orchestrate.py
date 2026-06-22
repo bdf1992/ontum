@@ -180,46 +180,45 @@ class SettleOnMainTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def test_landed_atom_with_seed_settles_and_drains_inflight(self):
+    def test_landed_atom_is_not_closed_by_the_merge_alone(self):
+        """done-0154 (reversing done-0133): a merge no longer closes an atom —
+        only a real review does (landed ≠ closed). A landed-but-unreviewed atom
+        still owes a value-confirm verdict, so it stays inflight, not settled."""
         root = make_root(self.tmp, 1)
         (atom, ahash), = reconcile.load_atoms(root)
-        # the atom has only been announced (seed) and stalled — the clog shape:
-        # a derivable next step, so it counts as inflight, never settled.
         reconcile.append_line(root / "log" / "events.jsonl",
                               {"type": orchestrate.SEED_EVENT, "artifact_hash": ahash,
                                "id": "evt.seed", "ts": "2026-06-20T00:00:00Z"})
-        fold = reconcile.Fold(root)
-        self.assertIsNotNone(
-            orchestrate.next_action(fold, atom, ahash, on_main=set()),
-            "an un-landed announced atom must still have a step — it is inflight")
         # the independent merge-node lands it; its landed_atoms join names the id
         reconcile.append_line(root / "log" / "receipts.jsonl",
                               _landed_receipt([atom["id"]]))
         fold = reconcile.Fold(root)
-        self.assertIsNone(
+        # the landing does NOT settle it — a merge is not a delivery review
+        self.assertIsNotNone(
             orchestrate.next_action(fold, atom, ahash),
-            "a landed atom must settle — the merge-node's landing is the "
-            "deciding acceptance (D-13 join x D-2)")
-        # and the whole-field fold counts it settled, not inflight (clog drains)
+            "a merge closed an atom — the settle-on-landing rubber-stamp is back")
+        # the whole-field fold still counts it inflight: it owes a real review
         pressure = orchestrate.sense(fold, reconcile.load_atoms(root))
-        self.assertEqual(pressure["inflight"], 0, "the landed atom still clogs inflight")
-        self.assertEqual(pressure["settled"], 1)
+        self.assertEqual(pressure["inflight"], 1, "landed work must still owe a review")
+        self.assertEqual(pressure["settled"], 0)
 
-    def test_unlanded_new_version_refuses_to_ride_a_landing(self):
-        """§10 teeth: the id reached main, but the current bytes are a fresh
-        in-place edit (no seed for THIS hash). The un-landed version must NOT be
-        settled by its sibling's landing — a landed id is not a blank cheque."""
+    def test_being_on_main_has_no_settling_power(self):
+        """§10 teeth (done-0154): the settle-on-main short-circuit is gone — being
+        in the landed join no longer changes next_action at all. A landed id is
+        treated identically to an un-landed one; the review, not the merge, closes."""
         root = make_root(self.tmp, 1)
         (atom, ahash), = reconcile.load_atoms(root)
-        # a prior version landed (the id is in landed_atoms) ...
+        reconcile.append_line(root / "log" / "events.jsonl",
+                              {"type": orchestrate.SEED_EVENT, "artifact_hash": ahash,
+                               "id": "evt.seed", "ts": "2026-06-20T00:00:00Z"})
+        before = orchestrate.next_action(reconcile.Fold(root), atom, ahash)
+        # ... the id now reaches main (its landed_atoms join names it) ...
         reconcile.append_line(root / "log" / "receipts.jsonl",
                               _landed_receipt([atom["id"]]))
-        # ... but the current bytes never got a seed event (a new, un-landed hash)
-        fold = reconcile.Fold(root)
-        self.assertEqual(
-            orchestrate.next_action(fold, atom, ahash),
-            ("seed", orchestrate.SEED_EVENT),
-            "an un-landed version rode its sibling's landing — the join is too loose")
+        after = orchestrate.next_action(reconcile.Fold(root), atom, ahash)
+        self.assertEqual(before, after,
+                         "landing changed the atom's next step — settle-on-landing lingers")
+        self.assertIsNotNone(after)
 
 
 if __name__ == "__main__":
