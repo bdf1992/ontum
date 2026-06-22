@@ -146,6 +146,14 @@ between them) → the most recent reports.
   Code). A bound that gates the owner by surface has inverted D-4 and must
   be relaxed to its intent; #245 is the mechanism (`gh` in-env or MCP-backed
   pens), this is the law it serves.
+- **End nearly every message to bdo with a plain-english section (bdo,
+  2026-06-22).** Close roughly every message with a short final section
+  in plain, literal English: clear and flat, not simplified-for-a-child,
+  not dressed up. No metaphor, no hedging, no doctrine vocabulary — say
+  what happened, what it means, and what is next in ordinary words. It is
+  a translation of the message above it, not a summary that adds spin.
+  Skip it only when the whole message is already that plain (a one-line
+  answer, a yes/no).
 
 ## Working method (doctrine §9)
 

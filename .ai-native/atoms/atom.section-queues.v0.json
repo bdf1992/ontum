@@ -1,0 +1,54 @@
+{
+  "atom": {
+    "id": "atom.section-queues.v0",
+    "story": {
+      "text": "As an AI tending the loop, I need to work a named, bounded slice of the loop's incomplete flow — one queue at a time (value-confirm, stale-park, gaps, owner-asks) — so a consuming process drains real work without re-deriving the whole field, because bdo asked to be 'free to work over a named section of the log/ledger ... a process for their workflow which consumes work.'",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The named work-queue producer the tenders consume",
+      "value": "You asked for a process free to work over a named section of the ledger and consume work. This is the producer half: a section is a named, bounded fold over the log that yields exactly the OPEN items in one slice, plus how each is closed. The tender (a workflow) is granted a section by name and drains it.",
+      "why_now": "The loop's incomplete flow was scattered across separate folds (reconcile's value-confirm queue, heal's stale parks, gaps, parked owner-asks) with no single named handle a consumer could be pointed at. Without it, every tender re-implements queue selection and risks a second source of truth.",
+      "if_accepted": "Sections become the named handles the tend workflows (and later the Administrator) work; new sections are added as one fold-composition entry; the consumer stays dumb and the queue stays read-only.",
+      "if_rejected": "Tenders keep hand-rolling their own queue selection over the raw log, drifting toward a second truth and duplicated fold logic.",
+      "cost_of_wrong_call": "Low and reversible: section.py is a pure read-only fold that composes existing folds and writes nothing — reverting is deleting one module. No truth is moved, no new write path.",
+      "mechanism": "loop/section.py registers each section as a composition of an existing fold (reconcile/heal/gaps/owner_asks); 'list' names the sections and their open counts, 'items --name <n>' folds one section's open items, each carrying its artifact_hash for the consumer. It re-derives the open set from the log every call — a consumed item simply stops appearing (level-triggered, no held state).",
+      "reading": [
+        "loop/section.py",
+        "tests/test_section.py",
+        ".ai-native/proposals/agent-summoning-requirements.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.tend-consumers",
+        "v-next.administrator-fleet"
+      ],
+      "touches": [
+        "loop/section.py",
+        "tests/test_section.py"
+      ],
+      "must_not_collide_with": [
+        "atom.owner-inbox.v1"
+      ],
+      "hands_off_to": [
+        "seam.section-to-tender"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-21: 'free to work over a named section ... a process which consumes work'",
+        ".ai-native/proposals/authoring-platform.proposal.md"
+      ]
+    }
+  }
+}

@@ -7,12 +7,34 @@
     "value": "Your stamp stays leverage as the system grows: you see arcs of value with their context, judge in minutes from wherever you are, and the queue refuses to flood you.",
     "horizon": "A served, authenticated page you open from any device you happen to be on: the whole system's open questions told as stories under their epics, cleared with a single gesture, with epic-level verdicts available when an arc should be steered as one unit.",
     "pieces": [
-      {"atom": "atom.owner-inbox.v1", "glue": "the briefed surface: every open item told value-first with what each verdict does, rendered to a page readable on any device, cleared through one pen"},
-      {"atom": "atom.epic-layer.v0", "glue": "this directive itself: items file under epics, the inbox briefs the arc before the item, and the owner steers at epic scale"},
-      {"atom": "atom.github-verdict-mirror.v0", "glue": "the first external surface, wired both ways — parked by bdo's amend in favour of the pattern (rcp.558ad49545cd)"},
-      {"atom": "atom.surface-registry.v0", "glue": "the distributed half of the harness: every surface bdo steers from is registered and watched, its words reflected onto the log, so the stamp travels at whatever speed he does"},
-      {"atom": "atom.merge-node.v0", "glue": "the hand that lets bdo step out of the merge seat: an independent arc-scale gate judging a finished epic 'safe to land on main?' against the setpoints and gate history, never signing its own line — the move done-line 0028 named and deferred (draining the PR queue, not just the atom queue). Its eyes already exist: loop/digest.py (done-line 0032), the read-only fold bdo watches instead of operating the merge. Until bdo admits the node real (--by bdo) and the 'bdo merges' hard rule is amended, it merges nothing and he still merges; both triggers are his alone (D-4)"},
-      {"atom": "atom.records-door.v0", "glue": "the records door (done-line 0172): a records-only PR — a session report or done-line, no atom — is backed without ceremony, the sibling of the phrasing door (atom.phrasing-backdoor.v0). A §9 session report written after its work already landed cannot bundle retroactively, yet belongs on main as the durable record; this lets it reach main, so the owner's record-keeping is never stranded off-trunk"}
+      {
+        "atom": "atom.owner-inbox.v1",
+        "glue": "the briefed surface: every open item told value-first with what each verdict does, rendered to a page readable on any device, cleared through one pen"
+      },
+      {
+        "atom": "atom.epic-layer.v0",
+        "glue": "this directive itself: items file under epics, the inbox briefs the arc before the item, and the owner steers at epic scale"
+      },
+      {
+        "atom": "atom.github-verdict-mirror.v0",
+        "glue": "the first external surface, wired both ways — parked by bdo's amend in favour of the pattern (rcp.558ad49545cd)"
+      },
+      {
+        "atom": "atom.surface-registry.v0",
+        "glue": "the distributed half of the harness: every surface bdo steers from is registered and watched, its words reflected onto the log, so the stamp travels at whatever speed he does"
+      },
+      {
+        "atom": "atom.merge-node.v0",
+        "glue": "the hand that lets bdo step out of the merge seat: an independent arc-scale gate judging a finished epic 'safe to land on main?' against the setpoints and gate history, never signing its own line — the move done-line 0028 named and deferred (draining the PR queue, not just the atom queue). Its eyes already exist: loop/digest.py (done-line 0032), the read-only fold bdo watches instead of operating the merge. Until bdo admits the node real (--by bdo) and the 'bdo merges' hard rule is amended, it merges nothing and he still merges; both triggers are his alone (D-4)"
+      },
+      {
+        "atom": "atom.records-door.v0",
+        "glue": "the records door (done-line 0172): a records-only PR — a session report or done-line, no atom — is backed without ceremony, the sibling of the phrasing door (atom.phrasing-backdoor.v0). A §9 session report written after its work already landed cannot bundle retroactively, yet belongs on main as the durable record; this lets it reach main, so the owner's record-keeping is never stranded off-trunk"
+      },
+      {
+        "atom": "atom.issue-pen-open-reopen.v0",
+        "glue": "the issue pen gains open + reopen — a session puts an owner decision on bdo's GitHub surface as a recorded act (instead of raw gh or a CLI-at-owner line) and can reverse a wrong/stale close with the same accountability; the #348 recovery lesson, governing the owner surface."
+      }
     ]
   }
 }
