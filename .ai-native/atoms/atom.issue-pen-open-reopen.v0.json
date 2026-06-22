@@ -1,0 +1,54 @@
+{
+  "atom": {
+    "id": "atom.issue-pen-open-reopen.v0",
+    "story": {
+      "text": "As a session, I need to OPEN an owner decision onto bdo's GitHub surface and REOPEN a wrongly-closed issue — both as recorded, attributed acts — so the owner-harness has a governed door for putting work in front of bdo and for reversing a stale auto-close, instead of a raw `gh` bypass (the prompt-parity hole) or a CLI line at bdo.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The issue pen gains open + reopen — the recovery and owner-surface verbs",
+      "value": "The issue pen could close and comment; it could not OPEN (so a session bypassed with raw gh or handed bdo a CLI line) or REOPEN (so a wrong/stale auto-close was a silent dead end). This adds both as governed verbs that record provenance on the log, the same accountability close already carries.",
+      "why_now": "The #348 lesson: a non-dry 'dry run' auto-closed an owner directive; recovery needed a reopen verb, and close needed to be opt-in behind a non-empty guard. And the owner-harness needs an open verb so a decision reaches bdo's surface as a recorded act, not a CLI-at-owner fallback.",
+      "if_accepted": "open/reopen are the paved paths for putting an owner decision on GitHub and for reversing a wrong close; both refuse before any gh call and record only after success.",
+      "if_rejected": "Sessions keep bypassing with raw gh (the prompt-parity hole) and a wrong auto-close stays a dead end.",
+      "cost_of_wrong_call": "Low and reversible: additive verbs on an existing pen (126 insertions, 2 deletions); each refuses empties + missing signer before touching gh and writes a record only on success. Reverting is deleting two functions.",
+      "mechanism": "do_open creates the issue (gh issue create), parses the number from the printed /issues/ URL, appends one issue.opened record; do_reopen runs gh issue reopen --comment <reason> (verified flag) and appends issue.reopened; both raise ValueError on empty/missing-signer BEFORE any gh call and append only when returncode==0; comment gains --body-file.",
+      "reading": [
+        ".claude/skills/issue/issue.py",
+        "tests/test_issue.py",
+        ".claude/skills/issue/SKILL.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.owner-harness",
+        "v-next.governed-issue-acts"
+      ],
+      "touches": [
+        ".claude/skills/issue/issue.py",
+        "tests/test_issue.py"
+      ],
+      "must_not_collide_with": [
+        "atom.owner-inbox.v1"
+      ],
+      "hands_off_to": [
+        "seam.issue-pen-to-owner-surface"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "issue #348 (the non-dry dry-run auto-close lesson)",
+        ".claude/skills/issue/issue.py (the close/comment base, #412)"
+      ]
+    }
+  }
+}
