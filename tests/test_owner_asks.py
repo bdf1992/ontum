@@ -227,14 +227,16 @@ class DriftTest(unittest.TestCase):
 
         def fake(args):
             calls.append(args)
+            if args[:3] == ["gh", "issue", "list"]:
+                return "[]"  # no existing mirror — the open act mints (#547 probe)
             return "https://github.com/owner/repo/issues/3"
 
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             code = reflect_pen.auto(self.root, by="reflect-auto", run=fake)
         self.assertEqual(code, 0)
-        self.assertEqual(len(calls), 1)
-        self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
+        creates = [c for c in calls if c[:3] == ["gh", "issue", "create"]]
+        self.assertEqual(len(creates), 1)
         self.assertIn("auto-applied 1 act(s)", out.getvalue())
         # and the beat is now a no-op — the reflection record settled it
         with contextlib.redirect_stdout(io.StringIO()):
