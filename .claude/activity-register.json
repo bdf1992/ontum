@@ -78,6 +78,14 @@
       "sink": ".ai-native/log/ (a tick admission + pipeline events/receipts when the beat advances work) + stdout",
       "witnessed": true
     },
+    "health": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["expected-process-registry", "os-task-state (schtasks query)", "freshness-file-mtime", "log-fold (live activity by actor)"],
+      "uses_for": "the watchdog (bdo 2026-06-22): surface at session start whether every expected standing process (the loop tick) is up or DOWN, the schedule, and what is live for both bdo and the session; speaks ambiently only when something is DOWN",
+      "sink": "stdout (read-only; writes nothing)",
+      "witnessed": false
+    },
     "git:sync": {
       "wiring": "claude",
       "events": ["SessionStart"],

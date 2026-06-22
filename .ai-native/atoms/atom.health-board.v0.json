@@ -1,0 +1,57 @@
+{
+  "atom": {
+    "id": "atom.health-board.v0",
+    "story": {
+      "text": "As bdo (and any session), I need to know at a glance whether every expected standing process is actually running, what is scheduled, and what is live right now for both of us, because the loop tick I just stood up can die silently and nobody would know — an unmonitored automation is a liability.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "A session-start watchdog: are the standing processes up, what's scheduled, what's live",
+      "value": "You stood up the loop-tick scheduler and immediately asked the right question — how do we both know if it dies? This is the watchdog: at each session start it checks every declared standing process (registered + enabled + ran recently), shows the schedule, and shows what's live for both of us (recent log activity by actor). A down process screams ambiently.",
+      "why_now": "An unattended scheduled task that spends money and advances work MUST be monitored — a silent death is the worst failure. This closes that the moment the automation exists.",
+      "if_accepted": "Every standing process is declared in .claude/expected-processes.json and watched; a new one adds a registry entry; both of us see a DOWN at the next session start.",
+      "if_rejected": "The loop tick (and any future standing process) can die silently and the queue quietly stops moving again — the exact problem that prompted the automation.",
+      "cost_of_wrong_call": "Low and reversible: loop/health.py is a read-only fold + a guarded schtasks probe (degrades off Windows); it writes nothing. The only wiring is one fail-open SessionStart hook. Reverting is removing the hook line.",
+      "mechanism": "loop/health.py reads .claude/expected-processes.json; per process probes its OS task (schtasks) and freshness file mtime -> up/down; schedule() lists next-runs; live() folds the log's last 45m by actor. --hook mode speaks only when something is DOWN (fail-open, exit 0). Declared in the activity register (the teeth caught it as an undeclared collector first).",
+      "reading": [
+        "loop/health.py",
+        "tests/test_health.py",
+        ".claude/expected-processes.json",
+        "[[ontum-standing-loop-tick]]"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.standing-process-monitoring"
+      ],
+      "touches": [
+        "loop/health.py",
+        "tests/test_health.py",
+        ".claude/expected-processes.json",
+        ".claude/settings.json",
+        ".claude/activity-register.json"
+      ],
+      "must_not_collide_with": [
+        "atom.activity-accounting.v0"
+      ],
+      "hands_off_to": [
+        "seam.health-to-owner-surface"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-22: 'ALERTS for when expected registered processes are not running, a health check at each claude session start ... show our schedule and what's currently live for both of us'",
+        "[[ontum-standing-loop-tick]] (the process this watches)"
+      ]
+    }
+  }
+}
