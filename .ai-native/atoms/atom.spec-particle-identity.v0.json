@@ -1,0 +1,49 @@
+{
+  "atom": {
+    "id": "atom.spec-particle-identity.v0",
+    "story": {
+      "text": "As bdo, I need authored documents - requirements, user stories, arch diagrams, expectations, suggestions - to be versioned, refactorable particles, so that when a requirement changes the system knows what it breaks. This is the floor of epic.grammar (node 1): a spec carries content-hash identity (never a .vN id-string, which would silently inherit the recorded heal/#424 id-vs-hash hole); create and supersede are appended provenance admissions (--by, ts, reason; supersession names old_hash AND new_hash, no retro-invalidation); and spec state is DERIVED by folding the log, never from file proximity (D-8). Everything else in the arc - the soundness gate, the spec->atom invalidation link, per-version acceptance - keys off this identity, so it must be right first.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "a document becomes a content-hash-versioned particle",
+      "value": "loop/spec.py records a spec file's bytes as a version (sha256 identity), and an in-place edit mints a new version the fold SEES - splitting by content-hash, never by id-string. Create and supersede are appended to admissions.jsonl with --by/ts/reason; supersession names old_hash AND new_hash; state is a pure fold over those appends. The live head is the version no supersession retires.",
+      "why_now": "epic.grammar is confirmed; this is its first piece. The panel (8 system-experts) ratified the completion bar false and named THIS as the load-bearing first increment: if identity is built on the .vN id-string hole, the gate idempotence key, the spec->atom currency check, and per-version acceptance all silently inherit it.",
+      "if_accepted": "Documents are first-class versioned particles. The refactor lifecycle is real: edit a requirement in place and the system records a new version + a supersession edge with full provenance, derivable from the log alone.",
+      "if_rejected": "Authored documents stay prose - not versioned, not refactorable - and nothing can tell whether a landed atom's requirement is still current.",
+      "cost_of_wrong_call": "Low and bounded. One new stdlib module (loop/spec.py) reusing reconcile's append/fold primitives, plus its own §10 test; it touches no pipeline stage and no existing module. Reverting is removing one module + one test + the .ai-native/specs/ artifact dir.",
+      "mechanism": "spec.spec_hash(path) = sha256 of bytes; spec.record_version(root, path, by, reason) appends a spec_version admission and, if the slug already has a different live head, a spec_superseded admission naming old_hash and new_hash; spec.fold(root) derives per-slug versions/edges/head from the log, splitting by content-hash. Spec bytes live under .ai-native/specs/ (already eol-exempt via .gitattributes). tests/test_spec.py is the §10 non-vacuity proof: an in-place byte edit mints a new version the fold sees, and an id-string reading collapses the two (so the content-hash split is load-bearing); plus idempotence, both-hashes-on-supersession, and state-from-log-not-files (D-8).",
+      "reading": [
+        "loop/spec.py",
+        "tests/test_spec.py",
+        "grammar/goals.md",
+        ".ai-native/done/0185-spec-particle-identity.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.grammar"
+      ],
+      "touches": [
+        "loop/spec.py",
+        "tests/test_spec.py",
+        ".ai-native/done/0185-spec-particle-identity.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/spec.py",
+        "grammar/goals.md"
+      ],
+      "receipts": []
+    }
+  }
+}

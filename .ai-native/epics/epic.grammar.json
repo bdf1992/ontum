@@ -1,0 +1,18 @@
+{
+  "epic": {
+    "id": "epic.grammar",
+    "owner": "bdo",
+    "arc": "ontum gains a universal work-grammar: any bounded environment maps onto root behaviors (8 systems x 8 pointers) through a topology, and authored documents - requirements, user stories, arch diagrams, expectations, suggestions - become first-class versioned, gated, refactorable spec particles. The grammar is the adapter that lets the substrate govern not just its own work but a target system's: the outward move from harness to platform.",
+    "context": "Built this session with bdo: the 8x8 systems x pointers grammar (grammar/), the topology axis (Internal/External, Ingress/Egress, Local/Global, measured against the Boundary), and the projection mesh (a log pointer to a graph; the log stays truth, D-8). The spec particle is the intake that lets the grammar adapt a target system; epic.substrate grounds the particle mechanism, but the grammar - the adapter onto a system ontum did not author - is its own arc.",
+    "value": "You can point the substrate at a system it did not author - your gallery, a real team's workflow - and govern its requirements with the same provenance and second-eyes the loop gives its own work: an edited requirement flags what it breaks, an unsound one is refused, and a real requirement runs end to end with an accountable receipt.",
+    "horizon": "A real, non-ontum target system mapped onto the grammar end to end: its requirements live as versioned spec particles (edit -> new version -> flagged dependents), a soundness gate refuses an unsound spec, its topological placement admits real setpoints, and one requirement runs intake -> governed work -> accountable receipt - proving the grammar adapts a system it did not author.",
+    "pieces": [
+      {"atom": "atom.spec-particle-identity.v0", "glue": "the floor: a spec carries content-hash identity (never a .vN id-string), create and supersede are appended provenance, and state is a fold over the log - editing a spec mints a new version the fold sees (the heal/#424 hole refused by construction)"},
+      {"atom": "atom.spec-soundness-gate.v0", "glue": "the eye: a real, admit-real'd gate judges a spec against an enumerable soundness predicate set and refuses an unsound one, proven non-vacuous against a matched-variant corpus, summoned independently of the author"},
+      {"atom": "atom.spec-atom-link.v0", "glue": "the invalidation edge: an appended log fact records the served spec content-hash so an edited requirement flags the atoms serving its stale hash - a recomputed fold, never a stored stale-bit"},
+      {"atom": "atom.topology-setpoint.v0", "glue": "the adapter: a target environment's topological placement (against the Boundary) admits real setpoints (--by, authorized_by, fenced), never code constants - one concrete boundary-relative mapping on the outward target"},
+      {"atom": "atom.spec-acceptance.v0", "glue": "the second eye on specs: acceptance is a fold over logged acceptance receipts keyed to the spec content-hash, the acceptor admit-real'd and never the author (D-2)"},
+      {"atom": "atom.grammar-outward-proof.v0", "glue": "the test that it leaves the sandbox: one real non-ontum requirement runs intake -> spec -> governed work -> accountable receipt, exercising the refuse and independent-acceptance paths, not only the happy path"}
+    ]
+  }
+}
