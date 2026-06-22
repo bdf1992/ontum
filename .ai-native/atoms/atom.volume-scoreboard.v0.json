@@ -23,8 +23,7 @@
     "concern_surface": "systems",
     "incidence": {
       "serves": [
-        "v-next.fill-the-volume",
-        "v-next.administrator-fleet"
+        "epic.virtual-fleet"
       ],
       "touches": [
         "loop/volume.py",
@@ -47,7 +46,8 @@
       "prompt_versions": [],
       "source_artifacts": [
         "bdo 2026-06-21: 'fill a volume based on a setpoint ... the numbers are examples'",
-        ".ai-native/proposals/authoring-platform.proposal.md"
+        ".ai-native/proposals/authoring-platform.proposal.md",
+        "registered as a piece of epic.virtual-fleet (the confirmed arc that backs it)"
       ]
     }
   }
