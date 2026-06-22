@@ -102,6 +102,14 @@
       "sink": "git worktree state + stdout",
       "witnessed": false
     },
+    "forest": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["worktree-list", "branch-status", "pr-states", "tree-cleanliness", "atom-log-fold"],
+      "uses_for": "regenerate the VS Code .code-workspace from the whole-tree forest fold (done-line 0188) so the viewport + sibling repos + each live worktree are navigable roots, kept current every session; fail-open in hook mode",
+      "sink": "ontum-forest.code-workspace (gitignored live cache) + stdout",
+      "witnessed": false
+    },
     "gesture_surface": {
       "wiring": "claude",
       "events": ["SessionStart"],

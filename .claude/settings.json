@@ -139,6 +139,11 @@
           },
           {
             "type": "command",
+            "command": "python -m loop.forest --workspace --hook",
+            "timeout": 45
+          },
+          {
+            "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/gesture_surface.py\"",
             "timeout": 20
           },

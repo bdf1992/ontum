@@ -40,6 +40,10 @@ CLI:
   python -m loop.forest            render FOREST.md to stdout (read-only-safe)
   python -m loop.forest --json     the raw dataset (machine-readable)
   python -m loop.forest --write    (re)generate FOREST.md at the repo root
+  python -m loop.forest --workspace        (re)generate the VS Code workspace at
+                                           <viewport>/ontum-forest.code-workspace
+  python -m loop.forest --workspace --json read-only preview of the workspace JSON
+  python -m loop.forest --workspace --hook fail-open SessionStart regen (exit 0)
 """
 
 import argparse
@@ -377,6 +381,145 @@ def open_count(d):
     return d["counts"].get("parked-atom", 0) + d["counts"].get("stranded", 0)
 
 
+# ------------------------------------------------------- the VS Code workspace
+# bdo, 2026-06-22: *"all I need is something that makes a vscode workspace, and
+# makes sure it's up to date and live."* The forest model already knows every
+# live bench; a VS Code multi-root `.code-workspace` is just that model projected
+# into VS Code's `{folders, settings}` shape, so each LIVE worktree is one
+# navigable root in his Explorer alongside the viewport and the sibling repos.
+# Generated, gitignored, regenerated every session (the SessionStart hook) — a
+# live cache, never committed, never the lens. It composes the forest fold above
+# (§10: one reader more, not a second truth); the teeth live in the filter.
+
+# Sibling repos that ride beside the viewport as base roots, in fixed order, when
+# they exist on disk (absence is information — a missing sibling is simply omitted).
+SIBLING_REPOS = ("gallery", "holonsearch")
+
+# Only the LIVE benches earn a root: an active worktree or one up for review.
+# A stranded / parked / merged worktree — and the viewport itself — never becomes
+# a root (a generator that included everything, or nothing, is caught by the test).
+WORKSPACE_STATUSES = ("live-worktree", "in-review")
+WS_EMOJI = {"live-worktree": "🟢", "in-review": "🔵"}
+WORKSPACE_FILE = "ontum-forest.code-workspace"
+
+
+def _fwd(path):
+    """An absolute path as a forward-slash string — git already speaks forward
+    slashes, so the viewport-side roots match the worktree paths, and the JSON
+    stays clean across OSes (VS Code accepts both on Windows)."""
+    return str(path).replace("\\", "/")
+
+
+def base_roots(viewport):
+    """The base roots, repo FIRST: the viewport as `ontum`, then each sibling repo
+    (`../gallery`, `../holonsearch`) that exists on disk, in fixed order. Computed
+    from the viewport (the primary checkout, bdo's reading surface) — so the roots
+    and the default out-path follow HIS tree, never a session worktree's."""
+    viewport = Path(viewport).resolve()
+    roots = [("ontum", viewport)]
+    for name in SIBLING_REPOS:
+        sib = viewport.parent / name
+        if sib.is_dir():
+            roots.append((name, sib.resolve()))
+    return roots
+
+
+def workspace_label(node, pr_numbers=None):
+    """A clean human tag for one worktree root: the branch short-name (its
+    `claude/` prefix dropped), prefixed with `#<pr>` when an open PR number is
+    known. A detached worktree falls back to its directory slug."""
+    branch = node.get("branch")
+    if branch:
+        short = branch.split("/", 1)[1] if "/" in branch else branch
+    else:
+        short = node.get("slug") or "(detached)"
+    num = (pr_numbers or {}).get(branch) if branch else None
+    return f"#{num} {short}" if num else short
+
+
+def build_workspace(forest_model, roots, pr_numbers=None):
+    """Pure: the forest model + base roots → a VS Code `.code-workspace` dict
+    `{folders, settings}`. Base roots come FIRST (repo, then siblings); then one
+    decorated root per LIVE worktree (status in `WORKSPACE_STATUSES`, never the
+    primary/viewport), deterministically ordered by (status, label).
+
+    The §10 teeth live in the filter: a stranded / parked / merged worktree — and
+    the viewport itself — never becomes a root, so a generator that included every
+    worktree (or none) is caught by the test."""
+    folders = [{"path": _fwd(p), "name": name} for name, p in roots]
+    live = [n for n in forest_model.get("worktrees", [])
+            if not n.get("is_primary") and n.get("status") in WORKSPACE_STATUSES]
+    live.sort(key=lambda n: (STATUSES.index(n["status"]),
+                             workspace_label(n, pr_numbers).lower()))
+    for n in live:
+        emoji = WS_EMOJI.get(n["status"], "·")
+        folders.append({"path": _fwd(n["path"]),
+                        "name": f"{emoji} {workspace_label(n, pr_numbers)}"})
+    return {"folders": folders, "settings": {}}
+
+
+def sense_pr_numbers(repo, timeout=20):
+    """{branch: number} for OPEN PRs — a soft decoration sensor so a live root can
+    carry its review number. {} on any failure (the label simply drops the number;
+    never a crash, never a guess — the same fail-soft the other sensors hold)."""
+    try:
+        gh = subprocess.run(
+            ["gh", "pr", "list", "--state", "open", "--limit", "300",
+             "--json", "headRefName,number"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", cwd=repo, timeout=timeout)
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    if gh.returncode != 0:
+        return {}
+    try:
+        return {pr["headRefName"]: pr["number"]
+                for pr in json.loads(gh.stdout or "[]")}
+    except (ValueError, KeyError):
+        return {}
+
+
+def workspace(repo=REPO, root=None):
+    """Sense the forest and project it into a VS Code workspace dict, plus the
+    viewport path the default out-file follows. The base roots and the out-path
+    track the PRIMARY checkout (bdo's viewport), never a session worktree — so
+    every session's hook regenerates the one file bdo opens."""
+    model = forest(repo, root)
+    vp = model.get("viewport")
+    viewport = Path(vp["path"]).resolve() if vp else Path(repo).resolve()
+    ws = build_workspace(model, base_roots(viewport), sense_pr_numbers(repo))
+    return ws, viewport
+
+
+def render_workspace(ws):
+    """The workspace dict as the on-disk `.code-workspace` text: valid JSON,
+    2-space indent, real (non-escaped) emoji, newline-terminated."""
+    return json.dumps(ws, indent=2, ensure_ascii=False) + "\n"
+
+
+def _emit_workspace(args):
+    """Generate the VS Code workspace and (unless --json) write it to --out.
+    --hook makes the whole path fail-open: any error prints one line and exits 0,
+    so a SessionStart hook can never gate the session (the summon/sync hook law)."""
+    try:
+        ws, viewport = workspace(args.repo, args.root)
+        text = render_workspace(ws)
+        if args.json:                       # read-only preview — write nothing
+            sys.stdout.write(text)
+            return 0
+        out = args.out or (viewport / WORKSPACE_FILE)
+        out.write_text(text, encoding="utf-8")
+        print(f"result: done — wrote {out} ({len(ws['folders'])} root(s): the "
+              "viewport, its sibling repos, and each live worktree)")
+        return 0
+    except Exception as error:  # noqa: BLE001 — fail-open in hook mode
+        if args.hook:
+            print(f"result: report — workspace hook skipped: {error} "
+                  "(the file stays as it is)")
+            return 0
+        raise
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--repo", type=Path, default=REPO,
@@ -387,7 +530,20 @@ def main(argv=None):
                     help="emit the raw dataset (machine-readable), not the prose")
     ap.add_argument("--write", action="store_true",
                     help="(re)generate FOREST.md at the repo root")
+    ap.add_argument("--workspace", action="store_true",
+                    help="generate a VS Code multi-root .code-workspace from the "
+                         "forest (viewport + sibling repos + each live worktree as "
+                         "a root) and write it to --out (a gitignored live cache)")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="where the .code-workspace lands (default: "
+                         "<viewport>/ontum-forest.code-workspace)")
+    ap.add_argument("--hook", action="store_true",
+                    help="fail-open mode for --workspace: exit 0 always — the "
+                         "SessionStart regen never gates a session's start")
     args = ap.parse_args(argv)
+
+    if args.workspace:
+        return _emit_workspace(args)
 
     d = forest(args.repo, args.root)
     if args.json:

@@ -62,3 +62,8 @@ _site/
 # retired (done-line 0135): the continue-beat's old per-session state file —
 # kept ignored so any stray copy on an old worktree never lands as truth.
 .ai-native/continue-beat.json
+
+# the whole-tree viewport's VS Code workspace (done-line 0188): a live cache the
+# SessionStart hook regenerates from loop/forest.py every session — it tracks the
+# live forest, never truth, never committed.
+ontum-forest.code-workspace
