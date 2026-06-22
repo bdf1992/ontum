@@ -62,20 +62,34 @@ def in_span(ts, since, until):
     return True
 
 
-def record(root, kind, by, arc=None, moved=None, note=None):
+def record(root, kind, by, arc=None, moved=None, note=None, model=None, cost=None,
+           atom=None, verdict=None):
     """Append one `run` event: a headless/ambient run's own trace. The write
     seam so a run stops being invisible. The id hashes the trace, not just the
-    clock, so two distinct runs in one second stay distinct."""
+    clock, so two distinct runs in one second stay distinct.
+
+    `model` and `cost` (done-line 0142): a gate run carries the model it drew
+    and what that draw cost (usd + tokens), so `loop.runs` can fold cost by
+    model — the economy of who-judges-for-how-much. A run with no priced cost
+    omits `usd`; the audit reads that as unpriced, never as $0.
+
+    `atom` and `verdict` (done-line 0143): the run names the atom (snapshot) it
+    judged and the verdict it produced, so a panel — many models on one atom —
+    folds into a per-snapshot model comparison (the impact data)."""
     moved = {k: int((moved or {}).get(k, 0)) for k in MOVED_KEYS}
     evt = {
         "id": "evt.run." + short_hash(kind, str(by), str(arc), canon(moved),
-                                      str(note), now_ts()),
+                                      str(note), str(model), str(verdict), now_ts()),
         "type": "run",
         "kind": kind,
         "by": by,
         "arc": arc,
         "moved": moved,
         "note": note,
+        "model": model,
+        "cost": cost,  # {usd, input_tokens, output_tokens} or None
+        "atom": atom,
+        "verdict": verdict,
         "ts": now_ts(),
     }
     append_line(root / "log" / "events.jsonl", evt)
@@ -131,6 +145,10 @@ def _from_event(e):
         "moved": moved,
         "moved_total": total,
         "note": e.get("note"),
+        "model": e.get("model"),
+        "cost": e.get("cost"),
+        "atom": e.get("atom"),
+        "verdict": e.get("verdict"),
         "standing": _classify(total, held=False),
     }
 
@@ -160,6 +178,84 @@ def _sessions(ticks):
     return out
 
 
+def model_economy(events):
+    """The cost-by-model fold (done-line 0142, bdo's direction): per model, how
+    many runs it judged, what they cost, and the movement mix. Cost-only — the
+    IMPACT column is deferred (a gate verdict has no built-in ground truth), so
+    it is named, never fabricated. An unpriced run (a run that carried no `usd`)
+    is counted as unpriced, never as $0 — the audit confesses its blind spots
+    rather than averaging a zero that did not happen.
+
+    Read-only over the same `run` events the ledger already folds; no second
+    truth. The surface bdo asked these reports to ride (the sourcing/run stats),
+    not a bespoke ledger (§10)."""
+    by_model = {}
+    for r in events:
+        m = r.get("model") or "(unrecorded — pre-economy or pinned-off)"
+        cost = r.get("cost") or {}
+        usd = cost.get("usd")
+        b = by_model.setdefault(m, {
+            "model": m, "runs": 0, "priced_runs": 0, "unpriced_runs": 0,
+            "total_usd": 0.0, "input_tokens": 0, "output_tokens": 0,
+            "moved": 0, "barren": 0,
+        })
+        b["runs"] += 1
+        if isinstance(usd, (int, float)):
+            b["priced_runs"] += 1
+            b["total_usd"] += float(usd)
+        else:
+            b["unpriced_runs"] += 1
+        b["input_tokens"] += int(cost.get("input_tokens") or 0)
+        b["output_tokens"] += int(cost.get("output_tokens") or 0)
+        b["moved"] += 1 if r["standing"] == "moved" else 0
+        b["barren"] += 1 if r["standing"] == "barren" else 0
+    out = []
+    for b in by_model.values():
+        b["avg_usd"] = round(b["total_usd"] / b["priced_runs"], 6) if b["priced_runs"] else None
+        b["total_usd"] = round(b["total_usd"], 6)
+        b["impact"] = "deferred"  # bdo: cost-only first; impact named, not faked
+        out.append(b)
+    out.sort(key=lambda b: (-(b["avg_usd"] or 0), b["model"]))
+    return out
+
+
+def snapshot_comparisons(events):
+    """The per-snapshot model comparison (done-line 0143, bdo's direction): an
+    atom judged by ≥2 models is a natural comparison — the impact data the
+    cost-only economy deferred. Per such atom: each model's verdict + cost, and
+    whether the room AGREED (all verdicts equal). A split is the signal (where
+    the cheap model diverges from the room); it is surfaced, never smoothed.
+
+    Read-only over the same `run` events; impact is read from real comparisons,
+    never fabricated. Only atoms with two or more DISTINCT models qualify — a
+    single-model atom is not a comparison."""
+    by_atom = {}
+    for r in events:
+        atom = r.get("atom")
+        model = r.get("model")
+        if not atom or not model:
+            continue
+        by_atom.setdefault(atom, {})[model] = {
+            "model": model,
+            "verdict": r.get("verdict"),
+            "usd": (r.get("cost") or {}).get("usd"),
+        }
+    out = []
+    for atom, per_model in by_atom.items():
+        rows = sorted(per_model.values(), key=lambda x: x["model"])
+        if len(rows) < 2:
+            continue  # one model is not a comparison
+        verdicts = {x["verdict"] for x in rows}
+        out.append({
+            "atom": atom,
+            "models": rows,
+            "agreed": len(verdicts) == 1,
+            "verdicts": sorted(v for v in verdicts if v is not None),
+        })
+    out.sort(key=lambda c: (c["agreed"], c["atom"]))  # disagreements first
+    return out
+
+
 def runs(root, since=None, until=None):
     """The pure fold: every fast-loop tick and headless run event in span,
     each judged moved / held / barren, ticks rolled into sessions."""
@@ -185,6 +281,8 @@ def runs(root, since=None, until=None):
         "runs": items,
         "sessions": sessions,
         "events": events,
+        "model_economy": model_economy(events),
+        "snapshot_comparisons": snapshot_comparisons(events),
         "total": total,
         "moved": standings["moved"],
         "held": standings["held"],
@@ -245,6 +343,37 @@ def render(d):
                          + (f" — {r['note']}" if r.get("note") else ""))
     lines.append("")
 
+    me = d.get("model_economy") or []
+    if me:
+        lines.append("## Gate model economy — cost by model (impact: deferred)")
+        for b in me:
+            avg = f"${b['avg_usd']:.4f}/run" if b["avg_usd"] is not None else "unpriced"
+            tot = f"${b['total_usd']:.4f}" if b["priced_runs"] else "$0 (none priced)"
+            unp = f", {b['unpriced_runs']} unpriced" if b["unpriced_runs"] else ""
+            lines.append(f"- `{b['model']}` — {b['runs']} run(s){unp}: {avg}, "
+                         f"{tot} total; {b['output_tokens']} out-tok; "
+                         f"{b['moved']} moved / {b['barren']} barren")
+        lines.append("_cost is captured truth; impact (does the cheaper model "
+                     "judge as well?) is deferred — named, not fabricated (bdo: "
+                     "cost-only first). Surfaces through the run/sourcing stats._")
+        lines.append("")
+
+    sc = d.get("snapshot_comparisons") or []
+    if sc:
+        agreed = sum(1 for c in sc if c["agreed"])
+        lines.append(f"## Snapshot comparisons — {len(sc)} atom(s) judged by ≥2 "
+                     f"models ({agreed} agreed, {len(sc) - agreed} split)")
+        for c in sc:
+            mark = "✓ agreed" if c["agreed"] else "✗ SPLIT"
+            cells = ", ".join(
+                f"{m['model']}={m['verdict'] or 'FAILED'}"
+                + (f" ${m['usd']:.4f}" if m["usd"] is not None else "")
+                for m in c["models"])
+            lines.append(f"- `{c['atom']}` — {mark}: {cells}")
+        lines.append("_a split is where the cheaper model diverged from the room "
+                     "— the impact signal, surfaced not smoothed (bdo)._")
+        lines.append("")
+
     s = d["sessions"]
     if s:
         moved_steps = sum(x["advanced"] for x in s)
@@ -290,13 +419,25 @@ def main(argv=None):
     rec.add_argument("--lands", type=int, default=0, help="lands")
     rec.add_argument("--refusals", type=int, default=0, help="refusals")
     rec.add_argument("--note", help="one line: what the run did")
+    rec.add_argument("--model", help="the model this run used (gate economy, 0142)")
+    rec.add_argument("--cost-usd", type=float, dest="cost_usd",
+                     help="the run's total_cost_usd from the claude -p envelope")
+    rec.add_argument("--input-tokens", type=int, dest="input_tokens", help="usage input tokens")
+    rec.add_argument("--output-tokens", type=int, dest="output_tokens", help="usage output tokens")
+    rec.add_argument("--atom", help="the atom (snapshot) this run judged (panel comparison, 0143)")
+    rec.add_argument("--verdict", help="the verdict this run produced (panel comparison, 0143)")
     args = ap.parse_args(argv)
 
     if args.verb == "record":
         moved = {"advanced": args.advanced, "receipts": args.receipts,
                  "lands": args.lands, "refusals": args.refusals}
+        cost = None
+        if any(v is not None for v in (args.cost_usd, args.input_tokens, args.output_tokens)):
+            cost = {"usd": args.cost_usd, "input_tokens": args.input_tokens,
+                    "output_tokens": args.output_tokens}
         evt = record(args.root, kind=args.kind, by=args.by, arc=args.arc,
-                     moved=moved, note=args.note)
+                     moved=moved, note=args.note, model=args.model, cost=cost,
+                     atom=args.atom, verdict=args.verdict)
         standing = _classify(sum(moved.values()), held=False)
         print(f"result: report — recorded {evt['id']} ({evt['kind']}, {standing})")
         return 0

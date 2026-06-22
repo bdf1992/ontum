@@ -123,7 +123,7 @@ trustworthy enough to point disposable sessions at, the experience layer and the
 virtual fleet where agents launch, judge, and staff themselves, the owner
 harness and the environments arc that keep one stamp as leverage from any
 device, the Causality and diagram surfaces that make the system communicable
-without a second truth, the inference gateway, the field, the strategy organs for
+without a second truth, the inference gateway, the field, the strategy parts for
 lawful pre-evidence motion, the ontabet language harness with machine-verified
 laws, and the pivot instrument measuring how much structure an encoding carries.
 

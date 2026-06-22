@@ -10,7 +10,7 @@ reflex is autoimmunity — the system keeps a correct-but-stale bite
 inflamed on the surfaces bdo reads (the `atom.field-topology.v0` 'missed'
 that still shows as a parked refusal long after v1 built the thing and
 `confirmed`), and it has no part that could ever see a tooth bite
-*wrong*. This module is the counterforce bdo named: an part that senses
+*wrong*. This module is the counterforce bdo named: a part that senses
 where a tooth was too sharp or has gone stale, and proposes the heal.
 
 Sibling of `retro` on the *bite* axis. Retro asks "what keeps happening";

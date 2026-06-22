@@ -303,6 +303,41 @@ def sync_refusal(branch, ahead):
     return None
 
 
+def dirty_viewport_refusal(modified, untracked):
+    """Why a behind-but-not-ahead viewport may not be fast-forwarded — the
+    honest diagnosis when the working tree is dirty, or None when it is clean.
+
+    A fast-forward refuses when uncommitted modifications to *tracked* files
+    would be overwritten by the incoming commits; untracked files do not block
+    a ff (they only collide if the incoming tree adds the same path). The
+    earlier code reported the raw `merge --ff-only` failure as "branch + PR the
+    stray commits" — but `sync_refusal` already bailed on any local commit, so
+    that branch is only ever reached with zero stray commits: it always
+    misdiagnoses. Name the real blocker instead. The workstation fence
+    (done-line 0145) forbids a worker from reverting the viewport, so the
+    sanctioned move is to preserve precious work to a worktree branch; this pen
+    diagnoses, it does not silently mutate bdo's viewport.
+    """
+    if not modified and not untracked:
+        return None
+    tracked = (
+        f"{modified} tracked file(s) carry uncommitted modifications that "
+        "block the fast-forward"
+        if modified else
+        "untracked files are present (they do not block the fast-forward, but "
+        "the tree is not clean)"
+    )
+    extra = f" (plus {untracked} untracked path(s))" if modified and untracked else ""
+    return (
+        f"the viewport has uncommitted changes, not stray commits — {tracked}"
+        f"{extra}. The workstation fence forbids a worker from reverting or "
+        "cleaning the viewport; preserve any precious work to a worktree branch "
+        "(`git worktree add -b claude/<slug> ../ontum-wt/<slug> origin/main`, "
+        "copy the files in, commit with the git pen), then the tree is clean "
+        "and sync fast-forwards. It is never bdo's to hand-fix."
+    )
+
+
 def rescue_branch_name(today, existing):
     """The rescue branch a whiteout commits a dirty viewport's pile onto:
     `claude/rescue-viewport-<date>`, with a `-N` suffix when that name is
@@ -851,12 +886,22 @@ def cmd_sync(ns):
             if not ns.hook:  # ambient mode stays silent when there is nothing to say
                 emit("done", "the viewport is current")
             return
+        # ahead == 0 here (sync_refusal bailed otherwise), so a ff can only be
+        # blocked by uncommitted tracked changes — diagnose that honestly rather
+        # than letting the raw merge error read as phantom stray commits.
+        status = [ln for ln in git(["status", "--porcelain"], viewport)
+                  .stdout.splitlines() if ln.strip()]
+        modified = sum(1 for ln in status if not ln.startswith("??"))
+        untracked = sum(1 for ln in status if ln.startswith("??"))
+        dirty = dirty_viewport_refusal(modified, untracked)
+        if dirty:
+            bail(dirty)
         merged = git(["merge", "--ff-only", "origin/main"], viewport)
         if merged.returncode != 0:
             detail = (merged.stderr or merged.stdout).strip().splitlines()
             bail("fast-forward refused — " + (detail[-1] if detail else "no detail")
-                 + "; the session sorts the divergence (branch + PR the stray "
-                 "commits), it is never bdo's to hand-fix")
+                 + "; the tree is clean and not ahead, so this is an unexpected "
+                 "non-fast-forward — surface it, it is never bdo's to hand-fix")
         emit("done", f"the viewport fast-forwarded {behind} commit(s) to origin/main")
     except subprocess.TimeoutExpired:
         bail(f"fetch exceeded {ns.fetch_timeout}s (offline?) — the viewport stays where it is")
