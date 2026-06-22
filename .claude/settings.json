@@ -119,6 +119,11 @@
           },
           {
             "type": "command",
+            "command": "python -m loop.heartbeat --hook",
+            "timeout": 30
+          },
+          {
+            "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/skills/branch-ritual/git.py\" sync --hook",
             "timeout": 45
           },

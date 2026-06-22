@@ -25,6 +25,10 @@ python -m loop.orchestrate --status        # field state: pressure vs setpoint
 python -m loop.orchestrate                 # the fast ambient loop (ticks)
 python -m loop.orchestrate --admit-setpoint '{"step_budget_per_tick":3,"max_inflight_atoms":8,"human_queue_cap":2}' --by bdo
 
+python -m loop.heartbeat                    # one guaranteed beat: tick-only (the cheap, always-safe path)
+python -m loop.heartbeat --hook             # in-harness tick-only beat: fail-open, exit 0 always (wired to SessionStart)
+python -m loop.heartbeat --drain-limit 3 --by heartbeat.v0   # the paced consumer: tick + fire ≤3 real value-confirm reviews (bdo's external-scheduler gesture)
+
 python -m loop.node inbox                  # the owner's open items
 python -m loop.node arcs                    # the arcs and which are confirmed
 python -m loop.node confirm-arc --epic <id> --by bdo   # one stamp for an arc

@@ -1,0 +1,44 @@
+{
+  "atom": {
+    "id": "atom.act-fence.v0",
+    "story": {
+      "text": "As bdo, I named the ask-forgiveness authority dial the keystone to the autonomous-authorship button, and two sessions built it in parallel: act-fence (the richer three-tier classifier, but with no atom backing it, no owner's manual, and no way for me to draw the fence except hand-writing a log record) and an authority-dial (a thinner classifier, but with a manual and the Apple 'set the default' delivery I asked for). I asked: can they be composed or do they clash? They clash only at the classifier — one decision, keep the better one (act-fence's) — and compose everywhere else. This atom is that composition: act-fence's three-tier cut (forgiveness / permission / forbidden, keyed to my real gestures, composing the consequence-gate), carried and attributed, COMPLETED with the three things it lacked — a draw-fence gesture pen so authorizing a scope is one command not hand-written JSON (the Apple fix; the authorization still mine, because draw-fence is a forbidden owner gesture a session can never self-admit — D-4), a recommended starting fence the witness shows so my draw is a copy-paste, and an owner's manual. And it is backed by this atom so it can actually land, which act-fence's PR could not. The dial stays inert until I draw the fence — that is the correct safety, not a flaw: the authority to let acts run unattended is my stamp.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the autonomy dial completed and composed: act-fence's 3-tier classifier + a draw-fence gesture pen + an owner's manual + the atom it lacked, landable under epic.owner-harness",
+      "value": "loop/act_fence.py is the ask-forgiveness authority dial — the keystone to the autonomous-authorship button. classify() sorts any declared act into FORGIVENESS (reversible + contained -> act, log, FYI), PERMISSION (reversible-but-wide or weigh-worthy -> stop and ask), or FORBIDDEN (irreversible / outward / an owner gesture -> never, no fence lifts it), keyed to ontum's real gestures (the same land-main act is forgiveness under a confirmed arc, permission without one) and composing observe.gate first (an unobservable act halts before any tier). This atom carries that classifier (built by the act-fence session, attributed in git history) and completes it: (1) draw_fence() + the `draw-fence --by bdo` CLI — bdo's one command to authorize a forgiveness scope to self-admit, refusing an invalid fence, and itself unreachable by a session (draw-fence is a FORBIDDEN owner gesture, D-4); (2) RECOMMENDED_FENCE (read-fold, draft) which the read-only witness surfaces as a copy-paste so the owner's draw is one gesture not a design task; (3) the owner's manual docs/culture/the-administrator.md plus the live `python -m loop.act_fence` surface. The dial is inert until bdo draws a fence (default-safe, correct D-4 — the self-admit authority is his). It actuates nothing itself yet; the Administrator that runs the fleet's acts through this cut is the named next piece.",
+      "why_now": "bdo, 2026-06-21: 'install ask-for-forgiveness on some risk levels'; 'the ask-forgiveness authority dial is the keystone to the autonomous-authorship button'; and the delivery correction 'set the default and give me an owner's manual — this isn't ikea, it's apple.' Two parallel builds (PR #450 act-fence, PR #452 authority-dial) collided on the same keystone; bdo asked whether they compose or clash. This composition resolves the §10 collision into one landable unit, keeping act-fence's better classifier and recovering the manual + the Apple one-gesture delivery, dropping the duplicate classifier.",
+      "if_accepted": "The autonomous-authorship button has its keystone, complete and documented: a three-tier consequence cut over any act, the owner's one-command gesture to turn ask-forgiveness on for a scope, a manual, and the atom that lets it land. One dial, not two; the duplicate (#452) and the atomless original (#450) retire into this.",
+      "if_rejected": "The keystone stays split across two incomplete PRs — the better classifier with no atom/manual/gesture (#450) and a thinner duplicate (#452) — and bdo is back to choosing between halves or hand-writing a fence record.",
+      "cost_of_wrong_call": "Low and default-safe. The dial only classifies and shows; it self-admits nothing until bdo draws a fence, and even then only the FORGIVENESS tier, only for the scopes he names — FORBIDDEN is an absolute floor no fence lifts, draw-fence cannot be self-admitted (D-4), and the consequence-gate halts an unobservable act first. Pure stdlib, no network, no actuation of a real act in this slice. Reverting is deleting act_fence.py and the manual.",
+      "mechanism": "loop/act_fence.py: classify(act) -> (tier, reason) reading family/blast_radius/reversible/arc_confirmed; OWNER_GESTURES + destructive + outward -> FORBIDDEN; land-main reads arc_confirmed; contained+reversible -> FORGIVENESS; else PERMISSION. evaluate(fence, act) -> halt|deny|escalate|admit, observe.gate first, FORGIVENESS+fence_authorizes -> admit citing the fence as authorized_by. NEW: draw_fence(root, forgivable, by) + `draw-fence` CLI (validates via valid_fence, refuses empty); RECOMMENDED_FENCE = (read-fold, draft); render() surfaces the recommended draw command when no fence is drawn. Tests (tests/test_act_fence.py, 23): the 0174 teeth (tier reads authorization context not verb; the landing hinge; forbidden stays forbidden; observe-first halt) carry green, plus the new 3 — drawing the recommended fence flips a forgiveness act escalate->admit (non-vacuous: inert dial fails it), the pen refuses an empty fence, the recommended fence is valid. Owner's manual: docs/culture/the-administrator.md. Done-lines 0174 (the classifier) + 0181 (this completion).",
+      "reading": [
+        "loop/act_fence.py",
+        "loop/observe.py",
+        "docs/culture/the-administrator.md",
+        "tests/test_act_fence.py",
+        ".ai-native/done/0174-act-fence.md",
+        ".ai-native/done/0181-autonomy-dial-composed.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/act_fence.py", "tests/test_act_fence.py", "docs/culture/the-administrator.md", ".ai-native/done/0174-act-fence.md", ".ai-native/done/0181-autonomy-dial-composed.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/observe.py", "loop/disposer.py", ".ai-native/proposals/authoring-platform.proposal.md", ".ai-native/proposals/gateway-policy-spine.proposal.md"]
+    }
+  }
+}
