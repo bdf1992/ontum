@@ -361,6 +361,137 @@ def _nid(s):
 
 
 # ---------------------------------------------------------------------------
+# the diagram spec: the SAME classified projection, emitted as a compose.py
+# spec (epic.diagram wave 3, done-line 0173). This is the from-truth diagram
+# projection folded INTO this module, never a parallel diagram_economy.py
+# (diagrams/CLAUDE.md, §10). It reuses resolve -> classify -> gaps wholesale:
+# realness is the projection's `class`, and a term whose citation resolves
+# nowhere (resolved_count == 0) is REFUSED here exactly as it is a gap there —
+# dropped, not drawn. The diagram never re-derives realness.
+# ---------------------------------------------------------------------------
+
+# class -> a node shape inside compose.py's CLOSED vocabulary (NODE_TYPES). The
+# shape carries the realness so a reader decodes it without reading the log;
+# `ghost` has no shape because a ghost is never drawn (it is refused).
+_CLASS_NODE_TYPE = {
+    "minted-runtime": "rect",
+    "minted-doctrine": "rounded",
+    "minted-workflow": "rounded",
+    "projected": "pill",
+    "proposed": "dashed",
+    "poetic": "hex",
+    "overloaded": "rhombus",
+    "orphaned": "subroutine",
+}
+
+
+def diagram_drops(projection, layout):
+    """The terms the diagram REFUSES: a term named in the layout (placed or in
+    the flow) whose evidence resolves nowhere (resolved_count == 0). Each is
+    already a gap in the projection — this just names which the diagram dropped,
+    for the CLI/report. Deterministic (name-sorted)."""
+    named = set(layout.get("place", {})) | set(layout.get("flow", []))
+    by_name = {t["term"]: t for t in projection["terms"]}
+    drops = []
+    for name in sorted(named):
+        t = by_name.get(name)
+        # absent-from-projection or zero-resolved -> not drawable, refused.
+        if t is None or t.get("resolved_count", 0) == 0:
+            drops.append({
+                "term": name,
+                "class": (t or {}).get("class", "absent"),
+                "why": "no citation resolves on disk — refused, not drawn",
+            })
+    return drops
+
+
+def diagram_spec(projection, layout):
+    """Fold a classified projection + a layout declaration into a compose.py
+    spec dict (the thing diagrams/qa.py judges and diagrams/compose.py renders).
+
+    Deterministic: nodes are emitted in the projection's name-sorted term order,
+    edges follow the layout's declared `flow`, positions are computed from each
+    region's declared tier grid (col_x0 + col*col_step, row_y) — explicit
+    position by arithmetic, the byte-deterministic grain, never auto-layout.
+    Re-running over the same projection + layout yields byte-identical output.
+
+    The teeth: a term whose evidence resolves nowhere is DROPPED (it is a gap in
+    the projection, never a drawn node), and any flow edge touching a dropped
+    term is dropped with it — so the picture cannot draw a layer, or a flow
+    through a layer, that the records do not back."""
+    regions_in = layout.get("regions", [])
+    region_by_id = {r["id"]: r for r in regions_in}
+    place = layout.get("place", {})
+    node_w = layout.get("node", {}).get("w", 200)
+    node_h = layout.get("node", {}).get("h", 80)
+
+    drawn = {}           # term name -> node dict, the ids that actually render
+    nodes = []
+    for t in projection["terms"]:           # name-sorted already
+        name = t["term"]
+        spot = place.get(name)
+        if spot is None:
+            continue                         # not part of this diagram's layout
+        if t.get("resolved_count", 0) == 0:
+            continue                         # refused: cites nothing that resolves
+        region = region_by_id.get(spot["region"])
+        if region is None:
+            continue                         # a layout that names no such region
+        x = region["col_x0"] + spot["col"] * region["col_step"]
+        y = region["row_y"]
+        node = {
+            "id": name,
+            "type": _CLASS_NODE_TYPE.get(t["class"], "rect"),
+            "region": region["id"],
+            "x": x, "y": y, "w": node_w, "h": node_h,
+            "label": f"{name}\n{t['class']}",
+        }
+        nodes.append(node)
+        drawn[name] = node
+
+    edges = []
+    flow = layout.get("flow", [])
+    for a, b in zip(flow, flow[1:]):
+        if a in drawn and b in drawn:
+            edges.append({"from": a, "to": b})
+
+    regions_out = [
+        {k: r[k] for k in ("id", "label", "x", "y", "w", "h") if k in r}
+        for r in regions_in
+    ]
+
+    spec = {
+        "size": list(layout.get("size", [1280, 520])),
+        "title": layout.get("title", ""),
+        "regions": regions_out,
+        "nodes": nodes,
+        "edges": edges,
+    }
+    caption = layout.get("caption")
+    if caption:
+        spec["caption"] = caption
+    return spec
+
+
+def diagram_path_for(seed_path):
+    """The committed spec path for a seed: `<name>.seed.json` ->
+    `<name>.spec.json` beside it."""
+    p = pathlib.Path(seed_path)
+    base = p.name[:-len(".seed.json")] if p.name.endswith(".seed.json") else p.stem
+    return p.parent / f"{base}.spec.json"
+
+
+def projection_path_for(seed_path):
+    """The committed projection path for a seed: `<name>.seed.json` ->
+    `<name>.projection.json` beside it. For the default seed this is exactly
+    DEFAULT_PROJECTION (the existing committed output), so behaviour is
+    unchanged; a non-default seed gets its own sibling projection."""
+    p = pathlib.Path(seed_path)
+    base = p.name[:-len(".seed.json")] if p.name.endswith(".seed.json") else p.stem
+    return p.parent / f"{base}.projection.json"
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -368,17 +499,29 @@ def load_seed(path):
     return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
 
 
+def _rel(p):
+    """A repo-relative display path when possible, else the absolute path —
+    the seed/out may live outside ROOT (an alternate seed)."""
+    try:
+        return pathlib.Path(p).resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(p)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="causality.term_economy",
         description="the term-economy fold — read-only, deterministic")
-    ap.add_argument("mode", choices=["project", "audit", "mermaid"],
+    ap.add_argument("mode", choices=["project", "audit", "mermaid", "diagram"],
                     help="project: the projection | audit: gaps + census | "
-                         "mermaid: a text-first graph render")
+                         "mermaid: a text-first graph render | "
+                         "diagram: a compose.py spec from the classified projection")
     ap.add_argument("--seed", default=str(DEFAULT_SEED),
                     help="the seed to fold (default: the committed example)")
-    ap.add_argument("--write", action="store_true",
-                    help="project only: regenerate the committed projection file")
+    ap.add_argument("--write", nargs="?", const=True, default=None,
+                    help="project: regenerate the seed's committed projection. "
+                         "diagram: regenerate the seed's committed spec; pass a "
+                         "path to write there instead of the default sibling.")
     args = ap.parse_args(argv)
 
     seed = load_seed(args.seed)
@@ -387,9 +530,10 @@ def main(argv=None):
     if args.mode == "project":
         text = dumps(projection)
         if args.write:
-            DEFAULT_PROJECTION.parent.mkdir(parents=True, exist_ok=True)
-            DEFAULT_PROJECTION.write_text(text, encoding="utf-8", newline="\n")
-            print(f"result: report — wrote {DEFAULT_PROJECTION.relative_to(ROOT).as_posix()} "
+            out = projection_path_for(args.seed).resolve()
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(text, encoding="utf-8", newline="\n")
+            print(f"result: report — wrote {_rel(out)} "
                   f"({projection['term_count']} terms, {projection['class_summary']})")
         else:
             sys.stdout.write(text)
@@ -400,6 +544,31 @@ def main(argv=None):
         return 0
     if args.mode == "mermaid":
         print(mermaid(projection))
+        return 0
+    if args.mode == "diagram":
+        layout = seed.get("diagram")
+        if not layout:
+            print("result: needs-you — the seed carries no `diagram` layout "
+                  "block (regions + place + flow); diagram_spec needs one",
+                  file=sys.stderr)
+            return 2
+        spec = diagram_spec(projection, layout)
+        text = dumps(spec)
+        drops = diagram_drops(projection, layout)
+        if args.write:
+            out = (pathlib.Path(args.write) if isinstance(args.write, str)
+                   else diagram_path_for(args.seed)).resolve()
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(text, encoding="utf-8", newline="\n")
+            drop_note = (f"; refused {[d['term'] for d in drops]}" if drops else "")
+            print(f"result: report — wrote {_rel(out)} "
+                  f"({len(spec['nodes'])} nodes, {len(spec['edges'])} edges{drop_note})")
+        else:
+            sys.stdout.write(text)
+            if drops:
+                for d in drops:
+                    print(f"# refused [{d['class']}] {d['term']}: {d['why']}",
+                          file=sys.stderr)
         return 0
     return 2
 

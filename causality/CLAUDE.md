@@ -38,6 +38,8 @@ python causality/term_economy.py project --write      # regenerate examples/ontu
 python causality/term_economy.py audit                # gap findings + census (minted vs evidence)
 python causality/term_economy.py mermaid              # text-first graph render of terms -> evidence
 python causality/term_economy.py project --seed <path> # run over an alternate seed
+python causality/term_economy.py diagram --seed examples/gateway-topology.seed.json          # a diagrams/compose.py spec from the classified projection (the from-truth diagram fold; epic.diagram wave 3)
+python causality/term_economy.py diagram --seed examples/gateway-topology.seed.json --write  # regenerate examples/gateway-topology.spec.json (a layer that resolves nowhere is refused, not drawn)
 
 # atom search fold — pure, read-only, first atom-search-request-node slice
 python causality/atom_search.py causality welcome     # typed JSON over real atom records + folded state

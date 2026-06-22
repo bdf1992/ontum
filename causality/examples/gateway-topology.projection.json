@@ -1,0 +1,546 @@
+{
+  "class_summary": {
+    "ghost": 1,
+    "minted-runtime": 9
+  },
+  "evidence_edges": [
+    {
+      "claim": "the trust ladder: rungs are bdo's to grant, denied until admitted",
+      "file_exists": true,
+      "from": "term:authentication",
+      "id": "edge:authentication:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "GRANTOR",
+        "file": "loop/trust.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-trust-py"
+    },
+    {
+      "claim": "the herald mints a content-hash credential at the floor rank for a named agent",
+      "file_exists": true,
+      "from": "term:authentication",
+      "id": "edge:authentication:1",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def credential_for",
+        "file": "loop/herald.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-herald-py"
+    },
+    {
+      "claim": "the registry carries forbidden-decision rules (e.g. raw git push)",
+      "file_exists": true,
+      "from": "term:fence",
+      "id": "edge:fence:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "\"decision\": \"forbidden\"",
+        "file": "fence/policy.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:fence-policy-py"
+    },
+    {
+      "claim": "observe.gate() is the consequence-gate: an under-declared act HALTS",
+      "file_exists": true,
+      "from": "term:gate",
+      "id": "edge:gate:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def gate",
+        "file": "loop/observe.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-observe-py"
+    },
+    {
+      "claim": "the gate skill composes a mortal headless judge's context",
+      "file_exists": true,
+      "from": "term:gate",
+      "id": "edge:gate:1",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def compose(atom_id",
+        "file": ".claude/skills/gate/gate.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:claude-skills-gate-gate-py"
+    },
+    {
+      "claim": "the PIPELINE value-gate stage is still a fixed-verdict mock — realness is per-stage",
+      "file_exists": true,
+      "from": "term:gate",
+      "id": "edge:gate:2",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "value-gate.mock.v0",
+        "file": "loop/reconcile.py"
+      },
+      "resolved": true,
+      "sense": "pipeline-stage-still-mock",
+      "stratum": "code",
+      "to": "site:loop-reconcile-py"
+    },
+    {
+      "claim": "the command guard compiles its deny-rules from the fence registry",
+      "file_exists": true,
+      "from": "term:guard",
+      "id": "edge:guard:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "DENY_RULES",
+        "file": ".claude/hooks/command_guard.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:claude-hooks-command-guard-py"
+    },
+    {
+      "claim": "the write guard refuses a non-carbon records write with the divergences named",
+      "file_exists": true,
+      "from": "term:guard",
+      "id": "edge:guard:1",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def deny",
+        "file": ".claude/hooks/write_guard.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:claude-hooks-write-guard-py"
+    },
+    {
+      "claim": "the healing fold detects a stale-park bite and proposes the heal",
+      "file_exists": true,
+      "from": "term:heal",
+      "id": "edge:heal:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "stale-park",
+        "file": "loop/heal.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-heal-py"
+    },
+    {
+      "claim": "the Fold computes every atom's state from the append-only log",
+      "file_exists": true,
+      "from": "term:ledger",
+      "id": "edge:ledger:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "class Fold",
+        "file": "loop/reconcile.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-reconcile-py"
+    },
+    {
+      "claim": "append_line is the line-atomic, torn-tail-tolerant write to the log",
+      "file_exists": true,
+      "from": "term:ledger",
+      "id": "edge:ledger:1",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def append_line",
+        "file": "loop/reconcile.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-reconcile-py"
+    },
+    {
+      "claim": "the patrol arms an escalate marker for what genuinely needs bdo",
+      "file_exists": true,
+      "from": "term:patrol",
+      "id": "edge:patrol:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "escalate marker",
+        "file": "loop/patrol.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-patrol-py"
+    },
+    {
+      "claim": "the activity fold accounts for and witnesses every hook's firing",
+      "file_exists": true,
+      "from": "term:patrol",
+      "id": "edge:patrol:1",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "witness",
+        "file": "loop/activity.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-activity-py"
+    },
+    {
+      "claim": "judge() is the one pen by which a summoned node writes its verdict",
+      "file_exists": true,
+      "from": "term:pen",
+      "id": "edge:pen:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def judge",
+        "file": "loop/node.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-node-py"
+    },
+    {
+      "claim": "authorize() is the PEP — default-deny over the admitted policy set",
+      "file_exists": true,
+      "from": "term:policy",
+      "id": "edge:policy:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def authorize(fold, caller, surface, mind",
+        "file": "loop/inference.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-inference-py"
+    },
+    {
+      "claim": "the policy enforcement point is default-deny by construction",
+      "file_exists": true,
+      "from": "term:policy",
+      "id": "edge:policy:1",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "default-deny",
+        "file": "loop/inference.py"
+      },
+      "resolved": true,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-inference-py"
+    },
+    {
+      "claim": "claims a threshold module that nobody has written — the named-only layer",
+      "file_exists": false,
+      "from": "term:threshold",
+      "id": "edge:threshold:0",
+      "record_kind": "projected",
+      "ref": {
+        "contains": "def threshold",
+        "file": "loop/threshold.py"
+      },
+      "resolved": false,
+      "sense": null,
+      "stratum": "code",
+      "to": "site:loop-threshold-py"
+    }
+  ],
+  "gaps": [
+    {
+      "kind": "unresolved-evidence",
+      "move": "fix the citation, or drop the claim — a stale citation reads as a ghost backing",
+      "term": "threshold",
+      "why": "threshold cites 'loop/threshold.py' containing 'def threshold', which does not resolve on disk"
+    },
+    {
+      "kind": "ghost-term",
+      "move": "ground it or retire it; it is not minted",
+      "term": "threshold",
+      "why": "threshold claims a backing that resolves nowhere"
+    },
+    {
+      "kind": "class-drift",
+      "move": "the evidence wins; correct the declaration",
+      "term": "threshold",
+      "why": "threshold is declared 'minted-runtime' but the evidence resolves to 'ghost'"
+    }
+  ],
+  "generator": "causality.term_economy",
+  "site_count": 14,
+  "sites": [
+    {
+      "address": ".claude/hooks/command_guard.py",
+      "exists": true,
+      "id": "site:claude-hooks-command-guard-py",
+      "inbound_term_count": 1,
+      "kind": "workflow",
+      "record_kind": "projected"
+    },
+    {
+      "address": ".claude/hooks/write_guard.py",
+      "exists": true,
+      "id": "site:claude-hooks-write-guard-py",
+      "inbound_term_count": 1,
+      "kind": "workflow",
+      "record_kind": "projected"
+    },
+    {
+      "address": ".claude/skills/gate/gate.py",
+      "exists": true,
+      "id": "site:claude-skills-gate-gate-py",
+      "inbound_term_count": 1,
+      "kind": "workflow",
+      "record_kind": "projected"
+    },
+    {
+      "address": "fence/policy.py",
+      "exists": true,
+      "id": "site:fence-policy-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/activity.py",
+      "exists": true,
+      "id": "site:loop-activity-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/heal.py",
+      "exists": true,
+      "id": "site:loop-heal-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/herald.py",
+      "exists": true,
+      "id": "site:loop-herald-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/inference.py",
+      "exists": true,
+      "id": "site:loop-inference-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/node.py",
+      "exists": true,
+      "id": "site:loop-node-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/observe.py",
+      "exists": true,
+      "id": "site:loop-observe-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/patrol.py",
+      "exists": true,
+      "id": "site:loop-patrol-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/reconcile.py",
+      "exists": true,
+      "id": "site:loop-reconcile-py",
+      "inbound_term_count": 2,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/threshold.py",
+      "exists": false,
+      "id": "site:loop-threshold-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    },
+    {
+      "address": "loop/trust.py",
+      "exists": true,
+      "id": "site:loop-trust-py",
+      "inbound_term_count": 1,
+      "kind": "code",
+      "record_kind": "projected"
+    }
+  ],
+  "source": "the repo is truth; this is a fold, not a record",
+  "term_count": 10,
+  "terms": [
+    {
+      "class": "minted-runtime",
+      "evidence_count": 2,
+      "global_meaning": "The first of the three A's (authenticated, authorized, attributed) bounds verify — governance, never location.",
+      "id": "term:authentication",
+      "local_meaning": "The gateway floor: who is speaking, established before any decision. The trust ladder denies every class everything until a rung is admitted (bdo grants), and the herald mints a content-hash credential at the floor rank for a named agent.",
+      "must_not_mean": [
+        "a password check bolted on (it is a standing, log-derived rung, not a session secret)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 2,
+      "senses": [],
+      "term": "authentication"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 1,
+      "global_meaning": "Physical, actor-blind: a closed loop round a territory you can see through but cannot pass — touching the seam bites.",
+      "id": "term:fence",
+      "local_meaning": "The family-neutral firm denials every engineering surface meets: a registry of forbidden argv prefixes (raw git push, raw gh mutations) rendered into each harness's native enforcement.",
+      "must_not_mean": [
+        "a per-session ACL (it is a standing registry, one rule rendered to two surfaces)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 1,
+      "senses": [],
+      "term": "fence"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 3,
+      "global_meaning": "A gate judges a CONSEQUENCE before it is admitted — distinct from a guard's actor-blind block; some gates are real, some pipeline stages still mock.",
+      "id": "term:gate",
+      "local_meaning": "A real judging position: observe.gate() halts an under-declared exploratory act (the consequence-gate forced first), and the gate skill launches a mortal headless judge that lands one verdict through the one pen. The PIPELINE value-gate stage is still a mock.",
+      "must_not_mean": [
+        "the same thing as a guard (a guard blocks by rule; a gate judges)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 3,
+      "senses": [
+        "pipeline-stage-still-mock"
+      ],
+      "term": "gate"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 2,
+      "global_meaning": "A guard is a GATE in the per-directory stack — actor-blind enforcement at the tool seam, the deny IS the fail notification.",
+      "id": "term:guard",
+      "local_meaning": "The harness hook that denies a forbidden command (exit 2 + reason on stderr) and refuses a non-carbon records write; it derives its deny-list from the fence registry at runtime.",
+      "must_not_mean": [
+        "a linter (it BLOCKS; a deny is exit 2, not a warning)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 2,
+      "senses": [],
+      "term": "guard"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 1,
+      "global_meaning": "Teeth without a healing reflex is autoimmunity; heal is the recovery layer that keeps the gates honest.",
+      "id": "term:heal",
+      "local_meaning": "The counterforce to the teeth: the healing fold senses where a tooth bit wrong or went stale (stale-park, flapping-gate, owner-override) and proposes the heal.",
+      "must_not_mean": [
+        "an actuator (it proposes the heal; it never clears a park or re-opens a verdict)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 1,
+      "senses": [],
+      "term": "heal"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 2,
+      "global_meaning": "The spine the whole stack writes onto and reads back from; history is never retro-invalidated.",
+      "id": "term:ledger",
+      "local_meaning": "The append-only log under everything: the Fold computes all state, and append_line is the line-atomic, torn-tail-tolerant write — the log is truth, everything else is a fold.",
+      "must_not_mean": [
+        "a database with mutable rows (it is append-only; never edit a line, only append)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 2,
+      "senses": [],
+      "term": "ledger"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 2,
+      "global_meaning": "The witness asymmetry — see through the gate, but the patrol sees you — turned on the harness's own metabolism.",
+      "id": "term:patrol",
+      "local_meaning": "The watching layer: the patrol arms an escalate marker when work needs bdo, and the activity fold witnesses every hook's firing (reads get witnessed, not authorized).",
+      "must_not_mean": [
+        "an authorizer (the patrol witnesses and escalates; it does not grant)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 2,
+      "senses": [],
+      "term": "patrol"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 1,
+      "global_meaning": "A pen is where authority is exercised on the record; every act leaves a receipt.",
+      "id": "term:pen",
+      "local_meaning": "The one writing seam: a summoned node writes its verdict through loop.node judge — the single write path, no second one.",
+      "must_not_mean": [
+        "any code that appends to the log (the pen is the GOVERNED single write path, not a raw append)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 1,
+      "senses": [],
+      "term": "pen"
+    },
+    {
+      "class": "minted-runtime",
+      "evidence_count": 2,
+      "global_meaning": "Govern what the world may BECOME, set by the owner; an explicit deny wins, attribution required.",
+      "id": "term:policy",
+      "local_meaning": "The inference gateway's policy enforcement point: default-deny RBAC over an admitted policy set — no (caller, surface, mind) thinks until a rule admits it.",
+      "must_not_mean": [
+        "a config flag (it is an admitted, log-read policy set, not a code constant)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 2,
+      "senses": [],
+      "term": "policy"
+    },
+    {
+      "class": "ghost",
+      "evidence_count": 1,
+      "global_meaning": "Claimed as a gateway layer; cited backing resolves nowhere, so it is a ghost until something real carries it.",
+      "id": "term:threshold",
+      "local_meaning": "Named in the per-directory gateway stack between guard/gate and the pen, but it has no resolving code on disk — a placeholder layer.",
+      "must_not_mean": [
+        "a real, enforced layer (no module implements it — it is named only)"
+      ],
+      "record_kind": "projected",
+      "resolved_count": 0,
+      "senses": [],
+      "term": "threshold"
+    }
+  ],
+  "view": "term-economy"
+}
