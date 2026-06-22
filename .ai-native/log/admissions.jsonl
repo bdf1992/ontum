@@ -226,3 +226,4 @@
 {"by":"bdo","enabled":true,"epic":"epic.agent-summoning","id":"adm.8566c6ade0b8","supersedes":null,"ts":"2026-06-22T17:12:25Z","type":"arc_confirmed"}
 {"by":"bdo","enabled":true,"epic":"epic.calendar","id":"adm.3f230749cce0","supersedes":null,"ts":"2026-06-22T18:02:23Z","type":"arc_confirmed"}
 {"branch":"claude/graded-speed-gradient","by":"claude","claim":"atom.graded-speed-gradient-fold.v0","id":"adm.e9bf71b67981","supersedes":null,"ts":"2026-06-22T18:29:44Z","type":"workspace_claimed"}
+{"by":"bdo","enabled":true,"epic":"epic.graded-speed","id":"adm.d0e9d49487d9","supersedes":null,"ts":"2026-06-22T18:37:46Z","type":"arc_confirmed"}
