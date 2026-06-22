@@ -26,6 +26,10 @@
       {
         "atom": "atom.volume-scoreboard.v0",
         "glue": "the volume scoreboard — the body of admitted target-dimensions the fleet fills (actual-vs-target per dimension as under/at/over pressure), the setpoint widened from one dial to the whole workforce; read-only fold + a bdo-signed admit verb."
+      },
+      {
+        "atom": "atom.health-board.v0",
+        "glue": "the watchdog: a session-start health board that checks whether every expected standing process (the loop tick) is up or DOWN, shows the schedule, and shows what is live for both bdo and the session — the eyes that catch a down mind the fleet must restart."
       }
     ]
   }
