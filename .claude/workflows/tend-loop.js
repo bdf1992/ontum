@@ -26,9 +26,13 @@ export const meta = {
 // The drafts are journalled to a gitignored sink so they outlive this session —
 // the next session (or bdo's digest) reads ready work instead of re-deriving it.
 
-const DRAIN_LIMIT = (args && Number(args.drainLimit)) || 0
-const GAP_LIMIT = (args && Number(args.gapLimit)) || 5
-const BY = (args && args.by) || 'tend-loop.v0'
+// args may arrive as a JSON string (a stringified payload) — parse it the way
+// the sibling tenders do (tend.js / tend-inbox.js), so a dialed-up drain isn't
+// silently dropped to its default (a string has no `.drainLimit`).
+const A = (typeof args === 'string' ? (() => { try { return JSON.parse(args) } catch { return {} } })() : args) || {}
+const DRAIN_LIMIT = Number(A.drainLimit) || 0
+const GAP_LIMIT = Number(A.gapLimit) || 5
+const BY = A.by || 'tend-loop.v0'
 
 // ---- (1) Drain: the real value-confirm rail, only when explicitly dialed up.
 phase('Drain')

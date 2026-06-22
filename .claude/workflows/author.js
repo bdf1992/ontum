@@ -149,16 +149,46 @@ const scriptText = header + authored.script
 // Write the draft through the Stage agent's own Write tool — verbatim, no
 // encoding dance (an earlier base64-via-Buffer version assumed a Node global the
 // workflow runtime does not expose; the dogfood run caught it). The file content
-// is delimited so the agent writes exactly the bytes between the markers.
-await agent(
+// is delimited so the agent writes exactly the bytes between the markers. We
+// CAPTURE the result and report "staged" ONLY if the write actually landed: a
+// swallowed write-failure that still emits a `promote:` path points a reviewer at
+// a file that isn't there (authored ≠ written).
+const STAGE = {
+  type: 'object', additionalProperties: false, required: ['written', 'parses'],
+  properties: {
+    written: { type: 'boolean', description: 'true ONLY if the Write tool actually created the file with the given content' },
+    parses: { type: 'boolean', description: 'true if `node --check` reported the file parses' },
+    bytes: { type: 'number', description: 'the byte count written (0 if not written)' },
+    error: { type: 'string', description: 'if the write failed or the file does not parse, the exact error' },
+  },
+}
+const staged = await agent(
   `Create the file \`.claude/workflows/${filename}\` (a NEW file under the workflows CLAUDE.md) using the Write tool, ` +
   'with EXACTLY the content between the markers below — verbatim, no edits, no added or trimmed lines:\n\n' +
   `----- BEGIN ${filename} -----\n${scriptText}\n----- END ${filename} -----\n\n` +
-  `Then run \`node --check .claude/workflows/${filename}\` from the repo root and report the byte count and whether it parses.`,
-  { label: `stage:${filename}`, phase: 'Stage' }
+  `Then run \`node --check .claude/workflows/${filename}\` from the repo root. Report whether the Write tool ` +
+  `actually succeeded (\`written\`), the byte count, and whether \`node --check\` reports it parses. ` +
+  `If the write failed or the file does not parse, set \`written\`/\`parses\` honestly and give the exact error.`,
+  { label: `stage:${filename}`, phase: 'Stage', schema: STAGE }
 ).catch(() => null)
 
-log(`author: staged ${filename} — a draft tender for ${target.kind} "${target.name}". Review → run once → rename to promote.`)
+// Honest staging: the file is "staged" only if it was actually written AND parses.
+// Otherwise report authored-but-not-written — no `promote:` for a missing file.
+if (!staged || !staged.written || !staged.parses) {
+  const why = !staged ? 'the Stage agent returned nothing'
+    : !staged.written ? `the Write did not succeed${staged.error ? ` (${staged.error})` : ''}`
+    : `the file does not parse${staged.error ? ` (${staged.error})` : ''}`
+  log(`author: STAGE FAILED for ${filename} — authored but NOT written (${why}). No promote path emitted.`)
+  return {
+    authored: null,
+    target,
+    rationale: authored.rationale,
+    script: scriptText,            // the authored draft is preserved here, not lost
+    note: `authored-but-not-written: ${why}. The draft is returned in \`script\` (not staged to disk), so there is no file to promote.`,
+  }
+}
+
+log(`author: staged ${filename} (${staged.bytes || '?'} bytes) — a draft tender for ${target.kind} "${target.name}". Review → run once → rename to promote.`)
 return {
   authored: { file: `.claude/workflows/${filename}`, name: authored.name, serves: authored.serves, cadence: authored.cadence },
   target,

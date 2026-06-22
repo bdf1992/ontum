@@ -17,7 +17,11 @@ export const meta = {
 // information). It proposes; it never runs the move (the cut stays bdo's/a
 // session's, D-4). `args.limit` bounds how many top gaps to tend (default 5).
 
-const LIMIT = (args && Number(args.limit)) || 5
+// args may arrive as a JSON string (a stringified payload) — parse it the way
+// the sibling tenders do (tend.js / tend-inbox.js) so `limit` is actually read,
+// not silently dropped to its default (a string has no `.limit`).
+const A = (typeof args === 'string' ? (() => { try { return JSON.parse(args) } catch { return {} } })() : args) || {}
+const LIMIT = Number(A.limit) || 5
 
 const GAPS = {
   type: 'object',

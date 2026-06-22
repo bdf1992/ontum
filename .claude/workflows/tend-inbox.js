@@ -1,7 +1,7 @@
 export const meta = {
   name: 'tend-inbox',
-  description: 'Tick-tender: investigate each owner-ask parked on bdo against CURRENT repo reality, close what the repo has already resolved (cited), and shape the genuine residue — a closed report, not a draft pile',
-  whenToUse: 'When owner-ask mirror issues are open, or on demand, to stop stale parked items from sitting on bdo. It checks each item against what is true NOW (old reports go stale), closes the resolved ones through the issue pen, does/plans the session-doable ones, and hands bdo only the decisions that are genuinely his.',
+  description: 'Tick-tender: investigate each owner-ask parked on bdo against CURRENT repo reality, identify what the repo has already resolved (cited), and shape the genuine residue — a closed report, not a draft pile. Closing the verified-stale mirrors is OPT-IN (pass close:true); the default is a dry report.',
+  whenToUse: 'When owner-ask mirror issues are open, or on demand, to stop stale parked items from sitting on bdo. It checks each item against what is true NOW (old reports go stale), and hands bdo only the decisions that are genuinely his. By DEFAULT it only reports (dry); pass `close: true` to actuate the close of fully-resolved mirrors through the issue pen (recorded, reversible by reopen).',
   phases: [
     { title: 'Scout', detail: 'list the open owner-ask mirrors and their parked items' },
     { title: 'Investigate', detail: 'one grounded inference per item: resolved | session-doable | owner-decision' },
@@ -24,14 +24,25 @@ export const meta = {
 // reversible by reopen), because leaving bdo to hand-close issues a session
 // verified done is offloading janitorial work (a rule that forces offloading is
 // a bug in the rule). It never closes an item it could not verify resolved, and
-// it never decides an owner-decision. `args.close` (default true) gates the
-// actual close; set false for a dry report.
+// it never decides an owner-decision. Closing is OPT-IN: `args.close` defaults
+// to **false** (a dry report); pass `close: true` to actuate. This matches the
+// documented contract (CLAUDE.md — opt-in behind a non-empty-queue guard); a
+// close-by-default once wrong-closed a standing owner directive (#348).
 
 // args may arrive as a JSON string (a stringified payload) instead of an
-// object — parse defensively so `close: false` actually disables the close
-// (a string has no `.close`, which silently flipped the guard ON once).
+// object — parse defensively so `close` is actually read (a string has no
+// `.close`, which silently dropped the dial once).
 const A = (typeof args === 'string' ? (() => { try { return JSON.parse(args) } catch { return {} } })() : args) || {}
-const DO_CLOSE = A.close !== false
+// Close is OPT-IN (CLAUDE.md contract): default to a dry report, actuate only on
+// an explicit `close: true`. Actuation must be asked for, never assumed.
+const DO_CLOSE = A.close === true
+
+// Single-quote a value for a POSIX shell so arbitrary text (backticks, $(),
+// double quotes, newlines) is passed LITERALLY — never expanded or executed.
+// The close command below carries agent-supplied evidence in its --reason, so it
+// must wrap that in single quotes and escape any embedded single quote as the
+// classic '\'' sequence (mirrors tend-loop.js's journal-payload escaping).
+const shq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`
 
 const ASKS = {
   type: 'object', additionalProperties: false, required: ['mirrors'],
@@ -134,18 +145,36 @@ phase('Close')
 const closed = []
 if (DO_CLOSE && closeable.length) {
   for (const issue of closeable) {
-    const proof = (byIssue[issue] || []).map((v) => `item ${v.item}: ${v.evidence}`).join('; ')
+    // Collapse whitespace in each agent-supplied evidence so the reason stays
+    // ONE line — a newline inside it would survive shq (POSIX-valid) but split the
+    // single "run EXACTLY this" command the close agent is handed (prompt-as-
+    // transport). One-lining keeps the actuating command unambiguous; shq then
+    // makes every remaining metacharacter inert.
+    const proof = (byIssue[issue] || [])
+      .map((v) => `item ${v.item}: ${String(v.evidence).replace(/\s+/g, ' ').trim()}`)
+      .join('; ')
+    // Build the reason as one string and SINGLE-QUOTE it for the shell (shq).
+    // The proof carries agent-supplied evidence, so backticks/$()/quotes in it
+    // must stay inert on this — the one ACTUATING — path. The prior double-quoted
+    // form escaped only `"`, leaving `$(...)` and backticks live to execute.
+    const reason = `tend-inbox verified every parked item already resolved by the current repo; closing the stale mirror (reopen if any item is still live). Evidence — ${proof}`
     const r = await agent(
       `Close owner-ask mirror #${issue} through the governed issue pen (a recorded act, reversible by reopen). ` +
-      `Every item was verified already-resolved by the repo. Run from the repo root:\n` +
-      `python .claude/skills/issue/issue.py close ${issue} --reason "tend-inbox verified every parked item already resolved by the current repo; closing the stale mirror (reopen if any item is still live). Evidence — ${proof.replace(/"/g, "'")}" --by tend-inbox.v0\n` +
+      `Every item was verified already-resolved by the repo. Run EXACTLY this from the repo root (the --reason is ` +
+      `already shell-quoted — do not rewrite, unquote, or re-quote it):\n` +
+      `python .claude/skills/issue/issue.py close ${issue} --reason ${shq(reason)} --by tend-inbox.v0\n` +
       'If the issue pen rejects the verb/flags, report the exact error verbatim instead of forcing a raw gh close. Report what happened.',
       { label: `close:#${issue}`, phase: 'Close' }
     ).catch((e) => String(e))
     closed.push({ issue, result: r })
   }
 } else if (!DO_CLOSE) {
-  log('tend-inbox: close disabled (args.close=false) — reporting only')
+  // Default path: close is OPT-IN, so an omitted `close` lands here — say that
+  // accurately (the prior "args.close=false" message asserted a value the caller
+  // never set, mis-attributing the dry run on the one actuating tender).
+  log(`tend-inbox: close is opt-in and not enabled (pass close:true to actuate) — dry report only${closeable.length ? ` · ${closeable.length} mirror(s) would close` : ''}`)
+} else {
+  log('tend-inbox: close enabled but no fully-resolved mirror to close — nothing to actuate')
 }
 
 return {
