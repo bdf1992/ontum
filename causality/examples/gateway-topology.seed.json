@@ -1,0 +1,135 @@
+{
+  "seed": "gateway-topology.v0",
+  "note": "DECLARED INPUT, not truth. This declares the per-directory gateway STACK as a term/relationship graph; causality/term_economy.py resolves each citation against committed repo bytes and classifies each layer by which evidence resolves. Editing this file changes a claim, never a fact. The repo (loop/*.py, the hooks, fence/, the log) is truth. The `diagram` block is a layout declaration (regions + tier placement + the stack flow); diagram_spec() folds the classified projection through it. A layer whose claimed backing resolves nowhere (the named-only `threshold`) is REFUSED — dropped from the spec, not drawn.",
+  "terms": [
+    {
+      "term": "authentication",
+      "local_meaning": "The gateway floor: who is speaking, established before any decision. The trust ladder denies every class everything until a rung is admitted (bdo grants), and the herald mints a content-hash credential at the floor rank for a named agent.",
+      "global_meaning": "The first of the three A's (authenticated, authorized, attributed) bounds verify — governance, never location.",
+      "must_not_mean": ["a password check bolted on (it is a standing, log-derived rung, not a session secret)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/trust.py", "contains": "GRANTOR", "claim": "the trust ladder: rungs are bdo's to grant, denied until admitted"},
+        {"stratum": "code", "file": "loop/herald.py", "contains": "def credential_for", "claim": "the herald mints a content-hash credential at the floor rank for a named agent"}
+      ]
+    },
+    {
+      "term": "fence",
+      "local_meaning": "The family-neutral firm denials every engineering surface meets: a registry of forbidden argv prefixes (raw git push, raw gh mutations) rendered into each harness's native enforcement.",
+      "global_meaning": "Physical, actor-blind: a closed loop round a territory you can see through but cannot pass — touching the seam bites.",
+      "must_not_mean": ["a per-session ACL (it is a standing registry, one rule rendered to two surfaces)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "fence/policy.py", "contains": "\"decision\": \"forbidden\"", "claim": "the registry carries forbidden-decision rules (e.g. raw git push)"}
+      ]
+    },
+    {
+      "term": "policy",
+      "local_meaning": "The inference gateway's policy enforcement point: default-deny RBAC over an admitted policy set — no (caller, surface, mind) thinks until a rule admits it.",
+      "global_meaning": "Govern what the world may BECOME, set by the owner; an explicit deny wins, attribution required.",
+      "must_not_mean": ["a config flag (it is an admitted, log-read policy set, not a code constant)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/inference.py", "contains": "def authorize(fold, caller, surface, mind", "claim": "authorize() is the PEP — default-deny over the admitted policy set"},
+        {"stratum": "code", "file": "loop/inference.py", "contains": "default-deny", "claim": "the policy enforcement point is default-deny by construction"}
+      ]
+    },
+    {
+      "term": "guard",
+      "local_meaning": "The harness hook that denies a forbidden command (exit 2 + reason on stderr) and refuses a non-carbon records write; it derives its deny-list from the fence registry at runtime.",
+      "global_meaning": "A guard is a GATE in the per-directory stack — actor-blind enforcement at the tool seam, the deny IS the fail notification.",
+      "must_not_mean": ["a linter (it BLOCKS; a deny is exit 2, not a warning)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": ".claude/hooks/command_guard.py", "contains": "DENY_RULES", "claim": "the command guard compiles its deny-rules from the fence registry"},
+        {"stratum": "code", "file": ".claude/hooks/write_guard.py", "contains": "def deny", "claim": "the write guard refuses a non-carbon records write with the divergences named"}
+      ]
+    },
+    {
+      "term": "gate",
+      "local_meaning": "A real judging position: observe.gate() halts an under-declared exploratory act (the consequence-gate forced first), and the gate skill launches a mortal headless judge that lands one verdict through the one pen. The PIPELINE value-gate stage is still a mock.",
+      "global_meaning": "A gate judges a CONSEQUENCE before it is admitted — distinct from a guard's actor-blind block; some gates are real, some pipeline stages still mock.",
+      "must_not_mean": ["the same thing as a guard (a guard blocks by rule; a gate judges)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/observe.py", "contains": "def gate", "claim": "observe.gate() is the consequence-gate: an under-declared act HALTS"},
+        {"stratum": "code", "file": ".claude/skills/gate/gate.py", "contains": "def compose(atom_id", "claim": "the gate skill composes a mortal headless judge's context"},
+        {"stratum": "code", "file": "loop/reconcile.py", "contains": "value-gate.mock.v0", "sense": "pipeline-stage-still-mock", "claim": "the PIPELINE value-gate stage is still a fixed-verdict mock — realness is per-stage"}
+      ]
+    },
+    {
+      "term": "threshold",
+      "local_meaning": "Named in the per-directory gateway stack between guard/gate and the pen, but it has no resolving code on disk — a placeholder layer.",
+      "global_meaning": "Claimed as a gateway layer; cited backing resolves nowhere, so it is a ghost until something real carries it.",
+      "must_not_mean": ["a real, enforced layer (no module implements it — it is named only)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/threshold.py", "contains": "def threshold", "claim": "claims a threshold module that nobody has written — the named-only layer"}
+      ]
+    },
+    {
+      "term": "pen",
+      "local_meaning": "The one writing seam: a summoned node writes its verdict through loop.node judge — the single write path, no second one.",
+      "global_meaning": "A pen is where authority is exercised on the record; every act leaves a receipt.",
+      "must_not_mean": ["any code that appends to the log (the pen is the GOVERNED single write path, not a raw append)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/node.py", "contains": "def judge", "claim": "judge() is the one pen by which a summoned node writes its verdict"}
+      ]
+    },
+    {
+      "term": "patrol",
+      "local_meaning": "The watching layer: the patrol arms an escalate marker when work needs bdo, and the activity fold witnesses every hook's firing (reads get witnessed, not authorized).",
+      "global_meaning": "The witness asymmetry — see through the gate, but the patrol sees you — turned on the harness's own metabolism.",
+      "must_not_mean": ["an authorizer (the patrol witnesses and escalates; it does not grant)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/patrol.py", "contains": "escalate marker", "claim": "the patrol arms an escalate marker for what genuinely needs bdo"},
+        {"stratum": "code", "file": "loop/activity.py", "contains": "witness", "claim": "the activity fold accounts for and witnesses every hook's firing"}
+      ]
+    },
+    {
+      "term": "ledger",
+      "local_meaning": "The append-only log under everything: the Fold computes all state, and append_line is the line-atomic, torn-tail-tolerant write — the log is truth, everything else is a fold.",
+      "global_meaning": "The spine the whole stack writes onto and reads back from; history is never retro-invalidated.",
+      "must_not_mean": ["a database with mutable rows (it is append-only; never edit a line, only append)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/reconcile.py", "contains": "class Fold", "claim": "the Fold computes every atom's state from the append-only log"},
+        {"stratum": "code", "file": "loop/reconcile.py", "contains": "def append_line", "claim": "append_line is the line-atomic, torn-tail-tolerant write to the log"}
+      ]
+    },
+    {
+      "term": "heal",
+      "local_meaning": "The counterforce to the teeth: the healing fold senses where a tooth bit wrong or went stale (stale-park, flapping-gate, owner-override) and proposes the heal.",
+      "global_meaning": "Teeth without a healing reflex is autoimmunity; heal is the recovery layer that keeps the gates honest.",
+      "must_not_mean": ["an actuator (it proposes the heal; it never clears a park or re-opens a verdict)"],
+      "claimed_class": "minted-runtime",
+      "evidence": [
+        {"stratum": "code", "file": "loop/heal.py", "contains": "stale-park", "claim": "the healing fold detects a stale-park bite and proposes the heal"}
+      ]
+    }
+  ],
+  "diagram": {
+    "size": [1280, 520],
+    "title": "Ontum gateway stack · a projection from truth",
+    "caption": "Realness is derived, not asserted: each drawn layer resolves to minted-runtime code, so each is a rect. The named-only `threshold` layer cites a backing that resolves nowhere — refused as a gap, dropped not drawn — so the stack flow breaks where it would sit. A fold over committed bytes (term_economy.py), never a second source of truth.",
+    "node": {"w": 200, "h": 80},
+    "regions": [
+      {"id": "gatekeeping", "label": "gatekeeping", "x": 40, "y": 70, "w": 1200, "h": 180, "row_y": 140, "col_x0": 70, "col_step": 235},
+      {"id": "acting", "label": "acting", "x": 40, "y": 300, "w": 1200, "h": 180, "row_y": 370, "col_x0": 70, "col_step": 235}
+    ],
+    "place": {
+      "authentication": {"region": "gatekeeping", "col": 0},
+      "fence": {"region": "gatekeeping", "col": 1},
+      "policy": {"region": "gatekeeping", "col": 2},
+      "guard": {"region": "gatekeeping", "col": 3},
+      "gate": {"region": "gatekeeping", "col": 4},
+      "pen": {"region": "acting", "col": 0},
+      "patrol": {"region": "acting", "col": 1},
+      "ledger": {"region": "acting", "col": 2},
+      "heal": {"region": "acting", "col": 3}
+    },
+    "flow": ["authentication", "fence", "policy", "guard", "gate", "threshold", "pen", "patrol", "ledger", "heal"]
+  }
+}
