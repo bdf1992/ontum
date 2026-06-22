@@ -23,7 +23,7 @@
     },
     "concern_surface": "systems",
     "incidence": {
-      "serves": ["epic.agent-summoning"],
+      "serves": [],
       "touches": [
         "loop/agent_run.py",
         "tests/test_agent_run.py",
