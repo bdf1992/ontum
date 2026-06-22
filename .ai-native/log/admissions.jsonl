@@ -221,3 +221,4 @@
 {"branch":"claude/exemplar-spec-open","by":"claude","claim":"exemplar-spec.proposal","id":"adm.462120f422d3","supersedes":null,"ts":"2026-06-22T07:55:54Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.agent-summoning","id":"adm.8566c6ade0b8","supersedes":null,"ts":"2026-06-22T17:12:25Z","type":"arc_confirmed"}
 {"branch":"worktree-agent-ad72e904925ec5f41","by":"claude","claim":"atom.reflector-idempotent-mirror.v0","id":"adm.457ad99360c7","supersedes":null,"ts":"2026-06-22T17:49:00Z","type":"workspace_claimed"}
+{"branch":"worktree-agent-ad72e904925ec5f41","by":"value-gate.claude.v1","claim":"atom.reflector-idempotent-mirror.v0","id":"adm.65f47508d53c","supersedes":"adm.457ad99360c7","ts":"2026-06-22T18:23:59Z","type":"workspace_claimed"}
