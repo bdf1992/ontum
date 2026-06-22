@@ -368,6 +368,12 @@ def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subproc
     model = model or pick_model()
     cmd = _launch_cmd(prompt, model)
     cwd = _launch_cwd()
+    # stdin=DEVNULL is load-bearing: without it the headless child `claude`
+    # inherits the parent's stdin and HANGS on it when the pen is spawned from
+    # an interactive-ish parent (the 600s timeouts, issues #390/#391/#393/#396 —
+    # all PowerShell-tool-spawned; a DEVNULL stdin completes the same prompt in
+    # ~46s through that exact path). A non-interactive judge must never inherit a
+    # live stdin.
     proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600,
                   stdin=subprocess.DEVNULL)
     raw = proc.stdout or ""
