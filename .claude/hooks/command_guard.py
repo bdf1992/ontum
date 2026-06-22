@@ -367,6 +367,38 @@ def in_primary_viewport(path=None):
         return False
 
 
+def _in_foreign_repo(path):
+    """True only when `path` is positively a git repo whose top-level is NOT the
+    ontum tree (ROOT). Fail-closed (False) on any uncertainty — the ontum git
+    fence can only ever be relaxed when we KNOW we stand in a different repo."""
+    try:
+        out = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                             capture_output=True, text=True, timeout=5, cwd=path or None)
+    except Exception:
+        return False
+    if out.returncode != 0:
+        return False
+    try:
+        return pathlib.Path(out.stdout.strip()).resolve() != ROOT.resolve()
+    except Exception:
+        return False
+
+
+def foreign_git(acting, session_cwd):
+    """True when a git command acts ENTIRELY on a separate repo, not the ontum
+    tree. The shared-tree git fence is ontum-scoped: a mutation in a different
+    working tree (e.g. gallery/) is that repo's own business — "the fleet shares
+    one tree" does not apply there (bdo, 2026-06-21: "you should have more
+    control"). The targeted tree is the `git -C <path>` path(s) when given, else
+    the session's cwd. Relaxes ONLY git (gh pr stays denied everywhere)."""
+    if "git" not in external_bins(acting):
+        return False
+    paths = dash_c_paths(acting)
+    targets = ([p if os.path.isabs(p) else os.path.join(session_cwd or "", p) for p in paths]
+               or [session_cwd])
+    return bool(targets) and all(_in_foreign_repo(t) for t in targets)
+
+
 def first_deny(acting):
     """The first deny rule this command would hit — the trunk carve-out
     (a push naming main deserves the firm line, not the generic git-push
@@ -414,6 +446,12 @@ def hook():
     training = posture == "train"
 
     rule, message = first_deny(acting)
+    if rule is not None and foreign_git(acting, session_cwd):
+        # a foreign repo's git is its own business — the ontum shared-tree fence
+        # does not reach it (bdo, 2026-06-21). Record and fall through to watch.
+        record({"status": "watched-foreign-git", "rule": rule,
+                "command": command, "session": session})
+        rule = None
     if rule is not None:
         if not training:
             # normal: the firm line — block, explain, exit 2 (unchanged)

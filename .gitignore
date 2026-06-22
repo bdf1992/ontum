@@ -11,6 +11,11 @@ causality/welcome-preview.png
 # sensor trace, not truth: the command watcher's log (done-line 0011) — deletable
 .ai-native/log/tool-use.jsonl
 
+# tick journal, not truth: the workflow tenders' (.claude/workflows/) compiled
+# per-tick drafts — propose-grain assist a session reads, never the verdicts.
+# The truth is the log the value-confirm drain advances; this is deletable.
+.ai-native/log/tenders.jsonl
+
 # sensor trace: what Codex really hands a hook (done-line 0029) — deletable
 .ai-native/log/codex-hook-probe.jsonl
 
