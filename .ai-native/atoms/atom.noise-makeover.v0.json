@@ -1,0 +1,65 @@
+{
+  "atom": {
+    "id": "atom.noise-makeover.v0",
+    "story": {
+      "text": "As bdo, I watch my GitHub inbox accrete: owner-ask mirror issues (one per report's needs-you, open-only — a free-text ask carries no log-backed 'answered' signal) and gate-run trackers (one per headless run, closed only from inside the producing process, so it strands open if that process dies post-verdict). Both surfaces have an automated OPEN path and a manual/in-process-only CLOSE path, so they only ever grow (#628: unresolved work should iterate to a named conclusion, not silently park). I asked (2026-06-22): 'make more beautiful elaborate fold and large inferences to make over more useful sounds and permission to silence noise by upgrading the system producing it.' I want the noise MADE OVER into one synthesized useful read, the raw noise the record PROVES resolved silenced on a bounded standing authorization I stamp, and the genuinely-unresolved escalated by name. I confirmed two things by checklist (emit useful signal not just hush; a standing auto-silence permission) and corrected the framing: the large inference is a TRANSFORMER, not a minimal close-gate.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the noise make-over - an accreting inbox reconciled into one useful read, proven-resolved noise auto-silenced under bdo's fence",
+      "value": "loop/reconcile_noise.py is a pure read-only fold that, per open noise subject, computes a RESOLUTION reading from the log alone: an owner-ask is resolved when an arc it asks bdo to confirm now carries an arc_confirmed admission (the cite); a gate-tracker is resolved when its atom's CURRENT bytes carry a settled value-gate/value-confirm verdict on receipts.jsonl (the cite) - idempotent, closing regardless of which process produced the verdict. It synthesizes the useful sound (one digest line, wired into loop/digest.py) and splits noise into proven-resolved (silenceable) vs genuinely-unresolved (escalating, #628). The actuator pen (.claude/skills/noise-makeover/makeover.py) silences ONLY what bdo's noise_silence_fence authorizes, closing through the issue pen and reflect.discharge_owner_ask, never raw gh. Wave 2 (transform_unresolved) routes a free-text ask + log span through the inference gateway, gated and degrading.",
+      "why_now": "bdo's direction 2026-06-22 + the standing noise: nine stale owner-ask issues and stranded gate-trackers on his inbox right now. Related filed issue #628 names the rule the teeth and escalation half make mechanical. It serves epic.owner-harness (bdo steering arcs and reading a data-rich surface instead of operating the inbox).",
+      "if_accepted": "The owner's accreting surfaces become self-reconciling within a bound he sets: proven-resolved noise auto-silences (cooling, the safe direction), the genuinely-unresolved iterates to a named conclusion (#628), and the whole pile is made over into one synthesized line on his digest. The producer is upgraded at the source for the tracker (a settled verdict closes it regardless of process).",
+      "if_rejected": "The inbox keeps accreting: open-only mirrors and process-bound tracker closes guarantee monotonic growth, and bdo keeps reading each stale issue by hand to know it is dead.",
+      "cost_of_wrong_call": "Low and bounded by construction. The fold is read-only; the standing auto-silence permission is DEFAULT-INERT until bdo stamps the fence (--by bdo, enforced - a session cannot draw it), and cooling-only (it silences only proven-resolved noise; anything unproven escalates). The teeth (loop/reconcile_noise.partition + the reused reflect.discharge_owner_ask cite check) refuse any close with no provable resolution on the log, proven non-vacuous in tests/test_reconcile_noise.py (a fabricated/hallucinated cite is refused; a locally-fine-but-unresolvable ask stays open). No live issue is closed by this build - activation is bdo's gesture.",
+      "mechanism": "loop/reconcile_noise.py: owner_ask_readings + gate_tracker_readings -> partition (the teeth: silenceable only if resolved AND record_on_log(cite)) -> make_over (the useful sound + split) -> plan (fence disposition: authorized up to max_closes; held overflow; escalate the rest). admit_noise_fence refuses any --by != bdo; read_noise_fence is latest-enabled-wins (inert when none). transform_unresolved applies the same teeth over injected inference output (loop/ never reaches a model; the actuator pen provides the gateway-backed infer). The actuator pen lists open issues, matches by title, and silences authorized items through reflect.discharge_owner_ask (re-verifying the cite) + the issue pen's do_close. digest.py gains a guarded, lazy noise_makeover line. tests/test_reconcile_noise.py (15 cases) proves the teeth three ways: unconfirmed-arc owner-ask stays escalating, dead-bytes gate-tracker stays escalating, and a fabricated/hallucinated cite is refused. Bundle: .ai-native/proposals/noise-makeover.proposal.md.",
+      "reading": [
+        ".ai-native/proposals/noise-makeover.proposal.md",
+        "loop/reconcile_noise.py",
+        "tests/test_reconcile_noise.py",
+        ".claude/skills/noise-makeover/makeover.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        "loop/reconcile_noise.py",
+        "tests/test_reconcile_noise.py",
+        ".claude/skills/noise-makeover/makeover.py",
+        ".claude/skills/noise-makeover/SKILL.md",
+        "loop/digest.py",
+        ".ai-native/proposals/noise-makeover.proposal.md"
+      ],
+      "must_not_collide_with": [
+        "loop/reflect.py",
+        "loop/owner_asks.py",
+        ".claude/skills/issue/issue.py",
+        "loop/inference.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "issue:#628",
+        "epic.owner-harness",
+        ".ai-native/proposals/noise-makeover.proposal.md"
+      ],
+      "receipts": []
+    },
+    "reconciliation": {
+      "amend": "rcp.ab5eba7b8523",
+      "note": "The value-gate accepted the value but amended on one mechanical defect: the composition claim incidence.serves=[epic.owner-harness] was asserted but unbacked — the epic did not name this atom as a piece, so policy_facts reported serves_confirmed_arc=false and unbacked_self_claims=[epic.owner-harness]. Reconciled by registering atom.noise-makeover.v0 as a piece of the confirmed epic.owner-harness (it genuinely serves that arc's 'the queue refuses to flood you' horizon), so the serves line is now policy-backed and the receipt trail is honest. This field also bumps the artifact bytes so the value-gate re-fires past its cached AMEND."
+    }
+  }
+}
