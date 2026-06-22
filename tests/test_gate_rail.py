@@ -44,6 +44,7 @@ def _runner_returning(stdout, stderr="", rc=0):
     def runner(cmd, **kw):
         captured["cmd"] = cmd
         captured["cwd"] = kw.get("cwd")
+        captured["stdin"] = kw.get("stdin")
         return _Proc(stdout=stdout, stderr=stderr, returncode=rc)
 
     return runner, captured
@@ -69,13 +70,27 @@ class GateRailLaunch(unittest.TestCase):
         # the cwd must NOT be the repo root (where the project hooks block)
         self.assertNotEqual(Path(gate._launch_cwd()).resolve(), gate.ROOT.resolve())
 
+    def test_launch_redirects_stdin_to_devnull_so_it_cannot_hang(self):
+        """The 600s-hang root cause (issues #390/#391/#393/#396): without an
+        explicit stdin the headless child `claude` inherits the parent's stdin
+        and blocks on it when spawned from an interactive-ish parent. The launch
+        must pass stdin=DEVNULL. Non-vacuous: the pre-fix call passed no stdin
+        (captured['stdin'] would be None)."""
+        import subprocess
+        runner, captured = _runner_returning(_verdict_envelope("accept"))
+        gate.launch_claude("p", atom_id="atom.x.v0",
+                           node_id="value-gate.claude.v1", runner=runner)
+        self.assertEqual(captured["stdin"], subprocess.DEVNULL)
+
     def test_default_model_is_explicit_not_the_opus_alias(self):
-        self.assertTrue(gate.GATE_MODEL)
-        self.assertNotEqual(gate.GATE_MODEL, "opus")
+        # done-line 0142: the single GATE_MODEL became a pool the gate draws from
+        self.assertTrue(gate.GATE_MODEL_POOL)
+        self.assertNotIn("opus", gate.GATE_MODEL_POOL)
+        self.assertNotEqual(gate.pick_model(), "opus")
 
     def test_success_writes_a_trace_and_uses_model_and_cwd(self):
         runner, captured = _runner_returning(_verdict_envelope("accept"))
-        verdict, reason, text, trace = gate.launch_claude(
+        verdict, reason, text, trace, model, cost = gate.launch_claude(
             "a self-contained prompt", atom_id="atom.x.v0",
             node_id="value-gate.claude.v1", runner=runner)
         self.assertEqual(verdict, "accept")
@@ -119,7 +134,7 @@ class GateRailLaunch(unittest.TestCase):
             captured["kwargs"] = kw
             return _Proc(stdout=_verdict_envelope("accept"))
 
-        verdict, _, _, trace = gate.launch_claude(
+        verdict, _, _, trace, _, _ = gate.launch_claude(
             "a self-contained prompt", atom_id="atom.s.v0",
             node_id="value-gate.claude.v1", runner=runner)
         self.assertEqual(verdict, "accept")

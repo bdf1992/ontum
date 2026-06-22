@@ -164,6 +164,30 @@ class TestRestoreBlocked(unittest.TestCase):
         self.assertIn("never bdo's", reason)
 
 
+class TestDirtyViewportRefusal(unittest.TestCase):
+    """The honest diagnosis (done-line 0165): a behind-but-not-ahead viewport
+    whose tree is dirty is refused for *uncommitted changes*, never for phantom
+    stray commits — the misleading branch reachable only with ahead == 0."""
+
+    def test_clean_tree_is_no_refusal(self):
+        self.assertIsNone(gitpen.dirty_viewport_refusal(0, 0))
+
+    def test_tracked_modifications_named_as_the_blocker(self):
+        reason = gitpen.dirty_viewport_refusal(3, 1)
+        self.assertIn("uncommitted", reason)
+        self.assertIn("3 tracked", reason)
+        self.assertIn("never bdo's", reason)
+        # non-vacuous: it must NOT repeat the old misleading instruction
+        # ("branch + PR the stray commits"), reachable only with ahead == 0.
+        self.assertNotIn("PR the stray", reason)
+
+    def test_untracked_only_is_not_clean_but_named_nonblocking(self):
+        reason = gitpen.dirty_viewport_refusal(0, 2)
+        self.assertIsNotNone(reason)
+        self.assertIn("do not block", reason)
+        self.assertNotIn("PR the stray", reason)
+
+
 class TestGitGuard(unittest.TestCase):
     def setUp(self):
         fd, path = tempfile.mkstemp(suffix=".jsonl")

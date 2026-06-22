@@ -1,0 +1,148 @@
+{
+  "caption": "Realness is derived, not asserted: each drawn layer resolves to minted-runtime code, so each is a rect. The named-only `threshold` layer cites a backing that resolves nowhere — refused as a gap, dropped not drawn — so the stack flow breaks where it would sit. A fold over committed bytes (term_economy.py), never a second source of truth.",
+  "edges": [
+    {
+      "from": "authentication",
+      "to": "fence"
+    },
+    {
+      "from": "fence",
+      "to": "policy"
+    },
+    {
+      "from": "policy",
+      "to": "guard"
+    },
+    {
+      "from": "guard",
+      "to": "gate"
+    },
+    {
+      "from": "pen",
+      "to": "patrol"
+    },
+    {
+      "from": "patrol",
+      "to": "ledger"
+    },
+    {
+      "from": "ledger",
+      "to": "heal"
+    }
+  ],
+  "nodes": [
+    {
+      "h": 80,
+      "id": "authentication",
+      "label": "authentication\nminted-runtime",
+      "region": "gatekeeping",
+      "type": "rect",
+      "w": 200,
+      "x": 70,
+      "y": 140
+    },
+    {
+      "h": 80,
+      "id": "fence",
+      "label": "fence\nminted-runtime",
+      "region": "gatekeeping",
+      "type": "rect",
+      "w": 200,
+      "x": 305,
+      "y": 140
+    },
+    {
+      "h": 80,
+      "id": "gate",
+      "label": "gate\nminted-runtime",
+      "region": "gatekeeping",
+      "type": "rect",
+      "w": 200,
+      "x": 1010,
+      "y": 140
+    },
+    {
+      "h": 80,
+      "id": "guard",
+      "label": "guard\nminted-runtime",
+      "region": "gatekeeping",
+      "type": "rect",
+      "w": 200,
+      "x": 775,
+      "y": 140
+    },
+    {
+      "h": 80,
+      "id": "heal",
+      "label": "heal\nminted-runtime",
+      "region": "acting",
+      "type": "rect",
+      "w": 200,
+      "x": 775,
+      "y": 370
+    },
+    {
+      "h": 80,
+      "id": "ledger",
+      "label": "ledger\nminted-runtime",
+      "region": "acting",
+      "type": "rect",
+      "w": 200,
+      "x": 540,
+      "y": 370
+    },
+    {
+      "h": 80,
+      "id": "patrol",
+      "label": "patrol\nminted-runtime",
+      "region": "acting",
+      "type": "rect",
+      "w": 200,
+      "x": 305,
+      "y": 370
+    },
+    {
+      "h": 80,
+      "id": "pen",
+      "label": "pen\nminted-runtime",
+      "region": "acting",
+      "type": "rect",
+      "w": 200,
+      "x": 70,
+      "y": 370
+    },
+    {
+      "h": 80,
+      "id": "policy",
+      "label": "policy\nminted-runtime",
+      "region": "gatekeeping",
+      "type": "rect",
+      "w": 200,
+      "x": 540,
+      "y": 140
+    }
+  ],
+  "regions": [
+    {
+      "h": 180,
+      "id": "gatekeeping",
+      "label": "gatekeeping",
+      "w": 1200,
+      "x": 40,
+      "y": 70
+    },
+    {
+      "h": 180,
+      "id": "acting",
+      "label": "acting",
+      "w": 1200,
+      "x": 40,
+      "y": 300
+    }
+  ],
+  "size": [
+    1280,
+    520
+  ],
+  "title": "Ontum gateway stack · a projection from truth"
+}
