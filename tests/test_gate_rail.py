@@ -108,6 +108,26 @@ class GateRailLaunch(unittest.TestCase):
             {"type": "result", "is_error": False, "num_turns": 0, "result": ""}))
         path.unlink()
 
+    def test_launch_redirects_stdin_to_devnull_so_it_cannot_hang(self):
+        """Issue #411: the headless `claude -p` inherited the parent's stdin and
+        blocked on it for the full 600s timeout — the review-queue drain's
+        consumer never returned. The fix redirects the child's stdin to DEVNULL
+        (a non-interactive judge never needs stdin), so the same prompt that hung
+        completes. Non-vacuous: the pre-fix call passed no `stdin`, so this
+        assertion fails against `kwargs.get('stdin') is None`."""
+        captured = {}
+
+        def runner(cmd, **kw):
+            captured["kwargs"] = kw
+            return _Proc(stdout=_verdict_envelope("accept"))
+
+        verdict, _, _, trace, _, _ = gate.launch_claude(
+            "a self-contained prompt", atom_id="atom.s.v0",
+            node_id="value-gate.claude.v1", runner=runner)
+        self.assertEqual(verdict, "accept")
+        self.assertEqual(captured["kwargs"].get("stdin"), gate.subprocess.DEVNULL)
+        Path(trace).unlink()
+
     def test_nonzero_exit_with_empty_text_writes_trace_and_raises(self):
         runner, _ = _runner_returning("", stderr="boom", rc=1)
         with self.assertRaises(RuntimeError) as cm:

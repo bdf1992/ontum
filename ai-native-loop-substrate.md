@@ -83,8 +83,17 @@ changing one is just a bigger conversation than changing a detail, so let's flag
 when we want to.
 
 - **D-1. Files are the environment; the agent is the process; the console routes.**
-- **D-2. Keep the writer and the reviewer separate** — a worker doesn't sign off on its
-  own work. *(This one's firm — it's the whole point of the second set of eyes.)*
+- **D-2. Two acceptances, never one.** You must judge your own work and earn your own
+  acceptance before you bring it to anyone — that conviction is your case and your standing
+  to push, prod, be noisy, and own your labor. But you cannot cast the *deciding* acceptance:
+  a different, independent reader accepts it into the record, and the owner is the last stop.
+  And when no independent judge capable of accepting your work exists yet, forge one — within
+  policy: a real SME, genuinely independent of you, attributable, judging by a versioned
+  prompt on the record. The duty is not only to travel the road to acceptance but to build
+  the road, and the judge at its end, when neither exists; what you may never forge is a
+  judge you control. *(Firm — all three, in order: earn your own, earn theirs, and make
+  theirs exist. Skipping your own judgment is the slop bug; making it final is the
+  self-dealing bug.)*
 - **D-3. The console routes and reports; it doesn't make value calls.**
 - **D-4. The human is the last stop.** Nothing in the system signs its own approval.
   *(Firm.)*
@@ -122,6 +131,7 @@ when we want to.
   reflection and a bug in the pen**: it manufactures a namespace the log cannot rejoin
   (the per-atom↔per-PR gap the terminal-pull gateway surfaced, done-line 0123). *(Firm
   at the boundary; the join field is the carbon copy.)*
+- **D-14. The Taster's Clause — serve a shaped choice, not a raw dump.** When a node puts a choice to a peer — another node, an agent, or the owner — it shapes that choice for the peer and the moment: not raw, unsorted options, not a flat list of every path, but the work already done on it — organized, the reasoning plain, the node's pick named, and the riskiest option flagged (the one that can't be undone, reaches outside, or breaks a lot when it's wrong). An unshaped dump isn't a service; it shoves the node's own work back onto the peer. The peer still picks, but from something already made for it. You serve; you never decide. A read is not a stamp.
 
 ### 1.2 What those decisions imply
 

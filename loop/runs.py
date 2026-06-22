@@ -7,7 +7,7 @@ shows them, so he can neither see nor close nor report on them together. The
 deeper cut, his own: a run *might be useless*, and a surface that exposed
 that would be doing its job. So this ledger's value is not "a run happened"
 but *whether the run moved real work*. An empty run must confess; the surface
-earns its keep by being able to embarrass the loop. Same logic as the organ
+earns its keep by being able to embarrass the loop. Same logic as the part
 census (`wired·idle` = plumbed in, never fires) — at run scale.
 
 Two sources, read generically:

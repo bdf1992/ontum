@@ -525,7 +525,8 @@ def _range_atom_facts(base, head):
         if rc.get("artifact_id"):
             receipt_ids.add(rc["artifact_id"])
     phrasing_clean = _range_phrasing_clean(base, head, names)
-    return atom_ids, sorted(receipt_ids), phrasing_clean
+    records_only = pr_audit.records_only(names)
+    return atom_ids, sorted(receipt_ids), phrasing_clean, records_only
 
 
 def cmd_audit(ns):
@@ -545,19 +546,22 @@ def cmd_audit(ns):
     rng = getattr(ns, "range", None)
     if rng:
         base, head = rng
-        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(base, head)
+        atom_ids, receipt_ids, phrasing_clean, recs_only = _range_atom_facts(
+            base, head)
         result = pr_audit.audit([{
             "number": getattr(ns, "pr", None) or "(this PR)", "headRefName": head,
             "added_atom_ids": atom_ids, "receipt_artifact_ids": receipt_ids,
-            "phrasing_clean": phrasing_clean,
+            "phrasing_clean": phrasing_clean, "records_only": recs_only,
         }])
         pr_audit.render(result)
         if result["orphans"]:
-            _refuse("this PR adds no atom on the log and is not a phrasing-only "
-                    "edit — open it through the PR pen so it becomes a unit the "
-                    "loop can see and land (§15/D-5); a PR is not a place to put "
-                    "work the machinery never gated. (If it is purely prose, the "
-                    "phrasing door — `pr.py phrasing` — lands it without an atom.)")
+            _refuse("this PR adds no atom on the log and is neither a "
+                    "phrasing-only nor a records-only edit — open it through the "
+                    "PR pen so it becomes a unit the loop can see and land "
+                    "(§15/D-5); a PR is not a place to put work the machinery "
+                    "never gated. (Purely prose? the phrasing door — `pr.py "
+                    "phrasing`. Only a report/done-line? the records door lands "
+                    "it without an atom.)")
         print("result: done — this PR is atom-backed")
         return
     _run(["git", "fetch", "origin"])
@@ -566,7 +570,7 @@ def cmd_audit(ns):
          "--json", "number,headRefName,author"]))
     facts = []
     for pr in prs:
-        atom_ids, receipt_ids, phrasing_clean = _range_atom_facts(
+        atom_ids, receipt_ids, phrasing_clean, recs_only = _range_atom_facts(
             "origin/main", f"origin/{pr['headRefName']}")
         facts.append({
             "number": pr["number"],
@@ -575,6 +579,7 @@ def cmd_audit(ns):
             "added_atom_ids": atom_ids,
             "receipt_artifact_ids": receipt_ids,
             "phrasing_clean": phrasing_clean,
+            "records_only": recs_only,
         })
     result = pr_audit.audit(facts)
     if getattr(ns, "as_json", False):
@@ -1027,7 +1032,8 @@ def cmd_confirm(ns):
         print(f"result: done — bdo {did} arc {ns.epic} on the trunk ({adm['id']}). "
               "The merge-node can land its PRs now: "
               "python .claude/skills/branch-ritual/pr.py land <n> "
-              f"--epic {ns.epic} --by merge-node.claude.v0")
+              f"--epic {ns.epic} --by merge-node.claude.v0 "
+              "--attest-non-author")
     finally:
         _capture(["git", "worktree", "remove", str(wt), "--force"])
         if wt.exists():
@@ -1047,7 +1053,17 @@ def checks_green(rollup):
     return True
 
 
-def land_refusal(info, confirmation, by, by_admitted=False):
+def _pr_author_login(info):
+    author = info.get("author") or {}
+    return (author.get("login") or "").strip()
+
+
+def _same_identity(left, right):
+    return (left or "").strip().lower() == (right or "").strip().lower()
+
+
+def land_refusal(info, confirmation, by, by_admitted=False,
+                 non_author_attested=False):
     """Why the merge-node may not land this PR on main, or None. Default is
     refuse: it lands only a confirmed-arc, green, written, non-draft,
     non-conflicting PR based on main, and only as an *admitted* node — a
@@ -1063,6 +1079,14 @@ def land_refusal(info, confirmation, by, by_admitted=False):
                 "land; bdo's realness gesture admits the seat: python -m "
                 f"loop.node admit-real --stage <superseded-id> --node {by} "
                 "--by bdo (done-line 0049)")
+    author = _pr_author_login(info)
+    if author and _same_identity(author, by):
+        return (f"PR author {author!r} matches --by {by!r} — no one signs "
+                "their own line (D-2/D-4)")
+    if not non_author_attested:
+        return ("land requires --attest-non-author — the merge-node must "
+                "explicitly attest that this fresh session did not author "
+                "the PR, and the receipt records that attestation")
     if info.get("state") != "OPEN":
         return f"PR is {str(info.get('state')).lower()} — only an open PR lands"
     if info.get("baseRefName") not in ("main", "master"):
@@ -1085,7 +1109,8 @@ def land_refusal(info, confirmation, by, by_admitted=False):
     return None
 
 
-def _merge_receipt(pr, epic, by, authorized_by, head, landed_atoms=None):
+def _merge_receipt(pr, epic, by, authorized_by, head, landed_atoms=None,
+                   pr_author="", non_author_attested=False):
     """The merge receipt (D-5, D-13): the land as an act on the record, citing
     the arc confirmation that authorized it. Built here; pushed to the trunk by
     _push_receipt_to_trunk — never left in a worktree (the bug that left every
@@ -1110,6 +1135,8 @@ def _merge_receipt(pr, epic, by, authorized_by, head, landed_atoms=None):
         "verdict": "landed",
         "landed_atoms": sorted(landed_atoms or []),
         "authorized_by": authorized_by,
+        "pr_author": pr_author,
+        "non_author_attested": bool(non_author_attested),
         "ts": _now(),
     }
 
@@ -1170,7 +1197,8 @@ def cmd_land(ns):
     trunk = _trunk_admissions()
     confirmation = arc_confirmed_in(trunk, ns.epic) if trunk is not None else None
     by_admitted = node_admitted_in(trunk, ns.by) if trunk is not None else False
-    reason = land_refusal(info, confirmation, ns.by, by_admitted)
+    reason = land_refusal(info, confirmation, ns.by, by_admitted,
+                          ns.attest_non_author)
     if reason:
         _refuse(reason)
     head = info.get("headRefName")
@@ -1182,7 +1210,7 @@ def cmd_land(ns):
     # reach fails we do not land a lossy receipt — the land raises and retries,
     # never records a merge it cannot describe.
     _run(["git", "fetch", "origin", base, head])
-    landed_atoms, _receipt_ids, _phrasing_clean = _range_atom_facts(
+    landed_atoms, _receipt_ids, _phrasing_clean, _records_only = _range_atom_facts(
         f"origin/{base}", f"origin/{head}")
     if ns.dry_run:
         print(f"result: report — DRY RUN: would land PR #{ns.number} "
@@ -1197,7 +1225,9 @@ def cmd_land(ns):
     # worktree and branch; GitHub's delete_branch_on_merge clears the remote head.
     _run(["gh", "pr", "merge", str(ns.number), "--squash"])
     receipt = _merge_receipt(ns.number, ns.epic, ns.by, confirmation, head,
-                             landed_atoms=landed_atoms)
+                             landed_atoms=landed_atoms,
+                             pr_author=_pr_author_login(info),
+                             non_author_attested=ns.attest_non_author)
     if _push_receipt_to_trunk(receipt):
         print(f"result: done — merge-node landed PR #{ns.number} ({head} -> main) "
               f"on bdo's confirmed arc {ns.epic}; receipt {receipt['id']} on the trunk. "
@@ -1340,6 +1370,10 @@ def main(argv=None):
                       help="the merge-node's identity, e.g. merge-node.claude.v0")
     land.add_argument("--dry-run", dest="dry_run", action="store_true",
                       help="run every guard and print the decision; merge nothing")
+    land.add_argument("--attest-non-author", dest="attest_non_author",
+                      action="store_true",
+                      help="attest that this merge-node session did not author "
+                           "the PR; required and recorded on the merge receipt")
     land.set_defaults(func=cmd_land)
 
     confirm = verbs.add_parser(

@@ -163,6 +163,27 @@ class TestOwnerOverride(unittest.TestCase):
             ])
             self.assertEqual(heal.owner_override_findings(Fold(root)), [])
 
+    def test_override_suppressed_when_gate_later_healed_a_new_hash(self):
+        """§10, the herald fixture (real log): a gate refused an OLD hash of an
+        atom edited IN PLACE (same .v0 id), the SAME gate later ADVANCED the
+        NEW hash, and the owner-stamp (arc-confirm) accepted. Identity is the
+        content hash, not the .vN string — so the gate relented and this is a
+        healed bite, never 'bdo overruled a tooth'. Fails on the id-string
+        reading; passes once the detector is hash-aware."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = write_log(Path(tmp) / ".ai-native", receipts=[
+                {**receipt("rcp.neg", "atom.h.v0", "send_back",
+                           node="handoff-gate.det.v1", ts="2026-06-18T00:00:00Z"),
+                 "artifact_hash": "sha256:OLDBYTES"},
+                {**receipt("rcp.pass", "atom.h.v0", "ready_for_spec",
+                           node="handoff-gate.det.v1", ts="2026-06-19T00:00:00Z"),
+                 "artifact_hash": "sha256:NEWBYTES"},
+                {**receipt("rcp.owner", "atom.h.v0", "accept",
+                           node="owner-stamp.bdo.v1", ts="2026-06-19T00:00:01Z"),
+                 "artifact_hash": "sha256:NEWBYTES"},
+            ])
+            self.assertEqual(heal.owner_override_findings(Fold(root)), [])
+
 
 class TestReadOnly(unittest.TestCase):
     def test_fold_writes_nothing(self):

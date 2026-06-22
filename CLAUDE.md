@@ -51,7 +51,7 @@ before changing anything.
 The substrate is the harness, never the building. **Ontum** — the
 fabric described in `docs/phase-2/` (a living system of named, bounded,
 provenance-carrying units of meaning) — is what the loop exists to
-build; the loop is its metabolism: durability, second-set-of-eyes,
+build; the loop is its engine: durability, second-set-of-eyes,
 receipts, ambient control. A previous session described the substrate
 as "what ontum is trying to be" and bdo flagged it as a category error
 — [report 0004](.ai-native/reports/0004-the-frame-harness-and-fabric.md)
@@ -106,7 +106,8 @@ between them) → the most recent reports.
   merge, and never tell him work is "at the stamp" — that loop is
   retired.** bdo's only surfaces are **arc confirmation** and the **daily
   arc digest**. The merge-node lands through the PR pen's `land` verb
-  (`.claude/skills/branch-ritual/pr.py land --epic <id> --by <node>`);
+  (`.claude/skills/branch-ritual/pr.py land --epic <id> --by <node>
+  --attest-non-author`);
   its eyes are `loop/merge.py`.
 - **Work is not landed until an independent review is requisitioned and
   processed (bdo, 2026-06-18).** A session never treats its own work as
@@ -124,6 +125,27 @@ between them) → the most recent reports.
   for high-blast-radius changes — are the in-flight increment of the
   session-gateway anthology; until that gate is real, requisition the
   review via the `code-review` skill.
+- **Blueprint before build (bdo, 2026-06-20; #348, CTA-3).** For any
+  non-trivial arc, the first deliverable is the *bundle* — full shape →
+  categorized, labelled concept-list → calls-to-action against a purpose
+  (`.ai-native/proposals/change-management.proposal.md` is the worked
+  form) — agreed *before* the building starts. A session that reaches for
+  the fastest visible result and skips the structure is optimizing the
+  wrong target: shipped results are a *byproduct* of good foundation, not
+  the goal (the substrate-not-the-building, the holonic surface). Foundation
+  work is **first-class progress** (`epic.change-management` / CTA-2 makes it
+  digest-visible), never a detour between shipping prompts. The failure this
+  refuses, named on the record: rushing `epic.diagram` wave 1 to main instead
+  of agreeing the structure first.
+- **The owner's stamp is portable (bdo, 2026-06-19; #247).** No bound may
+  block an authenticated, authorized owner-stamp on account of surface,
+  environment, or tooling. Bounds verify *governance* — the three A's
+  (authenticated · authorized · attributed) — never *location*: a rule may
+  narrow what a session can do, but it may never make bdo's last-stop (D-4)
+  unreachable from a session he is authorized in (e.g. web/mobile Claude
+  Code). A bound that gates the owner by surface has inverted D-4 and must
+  be relaxed to its intent; #245 is the mechanism (`gh` in-env or MCP-backed
+  pens), this is the law it serves.
 
 ## Working method (doctrine §9)
 

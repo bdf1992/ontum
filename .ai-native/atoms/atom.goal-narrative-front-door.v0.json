@@ -1,0 +1,49 @@
+{
+  "atom": {
+    "id": "atom.goal-narrative-front-door.v0",
+    "story": {
+      "text": "The repo's goal — what Ontum is and why this loop is its engine, not the building — was scattered and its canonical home dangling: the doctrine pointed to docs/culture/the-idea.md, which did not exist, and the README led engine-first, burying the idea. This delivers the goal narrative as a cold-readable front door — docs/culture/the-idea.md (the complete telling: gateway framing, digital body/persona, who-it's-for, use cases; cold-read litmus-passed, 3-surface audit-clean, bdo-stamped 2026-06-21), docs/culture/CLAUDE.md (founds the authored-goal zone), and a README lead-swap so the GitHub landing page leads with the idea. Verified by repeated zero-vocabulary cold-read reconstruction and an evidence-backed audit (one D-2 defect and one coverage span found and fixed).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The goal narrative as a cold-readable front door: docs/culture/the-idea.md + an idea-first README",
+      "value": "A cold reader — someone who has never seen the project and knows none of its words — can now learn what Ontum is, who it is for, and why this repo is the engine and not the building, from one authored telling synthesized from the record. The doctrine's dangling pointer (it always deferred 'the full telling' to docs/culture/the-idea.md, which did not exist) is now resolved, and the README leads with the idea instead of the engine.",
+      "why_now": "bdo named the goal narrative as an owner/visitor-facing surface that makes the system communicable, and stamped the-idea.md 2026-06-21. The doctrine has long pointed here for 'the full telling'; the pointer was dangling and report 0004 named the gap. This closes it.",
+      "if_accepted": "docs/culture/ becomes the authored-goal zone (the one place under docs/ a session may write), founded by its CLAUDE.md as a synthesis-never-a-second-source-of-truth; the README's GitHub landing page leads with the idea; the doctrine's pointer resolves.",
+      "if_rejected": "The goal stays scattered and the doctrine's canonical 'full telling' pointer stays dangling; the README keeps leading engine-first and a cold reader keeps bouncing off the vocabulary.",
+      "cost_of_wrong_call": "Low and reversible. Two new authored docs and a README lead-swap — no code, no log mechanics, no read-only zone touched. Reverts whole by deletion of docs/culture/ and the README change.",
+      "mechanism": "docs/culture/the-idea.md is a fold of the record told as prose — it cites the doctrine, the epic horizons (python -m loop.node arcs), report 0004's frame correction, and docs/phase-2/ — and carries its own provenance and named gaps (the absent the-ambient-loop.md). docs/culture/CLAUDE.md founds the zone's rules (synthesis never a second source of truth; the goal is the fabric never the harness; provisional until stamped). The README lead-swap keeps the base's 'part census' wording and adds only the idea-first opening, the docs/culture/ table row, and the eighteen-arcs Status paragraph.",
+      "reading": [
+        "docs/culture/the-idea.md",
+        "docs/culture/CLAUDE.md",
+        "README.md",
+        ".ai-native/reports/0004-the-frame-harness-and-fabric.md",
+        "ai-native-loop-substrate.md"
+      ]
+    },
+    "concern_surface": "narrative",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["docs/culture/", "README.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "bdo's direction and stamp, 2026-06-20/21",
+        "ai-native-loop-substrate.md (the dangling 'full telling' pointer this resolves)",
+        ".ai-native/reports/0004-the-frame-harness-and-fabric.md"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record and content-hash source; never mutated (D-5). The goal-narrative front door bdo stamped 2026-06-21: docs/culture/the-idea.md (the cold-readable full telling) + docs/culture/CLAUDE.md (the authored-goal zone) + an idea-first README lead-swap. Authored by an AI session reproducing the owner's viewport work; parks for an INDEPENDENT judge (D-2)."
+}

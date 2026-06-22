@@ -139,6 +139,53 @@ def surface_address(surface="github-issues"):
     return addr
 
 
+def _arc_confirmed(epic_id):
+    """Whether an epic's arc is confirmed — the latest enabled `arc_confirmed`
+    admission for it on the log wins (the arc_confirmation shape, done-line
+    0028). Pure fold; bdo's standing stamp is policy, read deterministically."""
+    confirmed = False
+    for adm in _jsonl(LOG / "admissions.jsonl"):
+        if adm.get("type") == "arc_confirmed" and adm.get("epic") == epic_id:
+            confirmed = bool(adm.get("enabled", True))
+    return confirmed
+
+
+def policy_facts(atom_id, atom=None):
+    """The deterministic policy facts the judge weighs (done-line 0146, bdo's
+    principle: the data is composed from configuration + policy; only the
+    judgment is non-deterministic). A pure fold over the epic records and the
+    admissions log — never the atom's self-claims.
+
+    Composes: (1) arc MEMBERSHIP — the epics whose pieces name this atom; (2)
+    for each, whether that arc is CONFIRMED on the log; (3) a RECONCILIATION of
+    the atom's self-claimed `incidence.serves` against the policy-composed
+    membership, naming any discrepancy (a self-claim that no epic backs)."""
+    serves = []
+    for ep in sorted(EPICS.glob("epic.*.json")):
+        data = json.loads(ep.read_text(encoding="utf-8")).get("epic", {})
+        if any(p.get("atom") == atom_id for p in data.get("pieces", [])):
+            serves.append({
+                "id": data.get("id"), "arc": data.get("arc"),
+                "confirmed": _arc_confirmed(data.get("id")),
+                "glue": next((p.get("glue") for p in data.get("pieces", [])
+                              if p.get("atom") == atom_id), None),
+            })
+    naming = {s["id"] for s in serves}
+    self_claimed = list(((atom or {}).get("atom", {}).get("incidence", {}) or {}).get("serves", []))
+    reconciliation = [
+        {"self_claimed_epic": e, "backed_by_policy": e in naming}
+        for e in self_claimed
+    ]
+    return {
+        "arc_membership": serves,  # composed from the epic records
+        "serves_confirmed_arc": any(s["confirmed"] for s in serves),
+        "self_claimed_serves": self_claimed,
+        "reconciliation": reconciliation,
+        "unbacked_self_claims": [r["self_claimed_epic"] for r in reconciliation
+                                 if not r["backed_by_policy"]],
+    }
+
+
 def compose(atom_id, node_id):
     """Compose the judging context from the ambient state of the log. This IS
     the gate's intelligence: not a fixed verdict, but a prompt assembled from
@@ -157,14 +204,9 @@ def compose(atom_id, node_id):
     artifact_hash = "sha256:" + hashlib.sha256(atom_bytes).hexdigest()
     atom = json.loads(atom_bytes)
 
-    # the arc it serves: the epic whose pieces name this atom
-    serves = []
-    for ep in EPICS.glob("epic.*.json"):
-        data = json.loads(ep.read_text(encoding="utf-8")).get("epic", {})
-        if any(p.get("atom") == atom_id for p in data.get("pieces", [])):
-            serves.append({"id": data.get("id"), "arc": data.get("arc"),
-                           "glue": next((p.get("glue") for p in data.get("pieces", [])
-                                         if p.get("atom") == atom_id), None)})
+    # composed policy facts: deterministic, from the epic records + the log,
+    # NEVER the atom's self-claims (done-line 0146, bdo's principle)
+    facts = policy_facts(atom_id, atom)
 
     # the hesitations it inherits: receipts on THIS version of the atom
     prior = [r for r in _jsonl(LOG / "receipts.jsonl")
@@ -175,10 +217,20 @@ def compose(atom_id, node_id):
         "\n---\n",
         "## The atom under judgment (the claim)\n",
         "```json", json.dumps(atom, indent=2, ensure_ascii=False), "```",
-        "\n## The arc it serves\n",
-        json.dumps(serves, indent=2, ensure_ascii=False) if serves
-        else "_(this atom is not named by any epic's pieces — it serves no "
-             "confirmed arc, which is itself a signal)_",
+        "\n## Composed policy facts (deterministic — judge THESE, not the atom's self-claims)\n",
+        "_Composed from the epic records and the admissions log by a pure fold. "
+        "Your judgment is the only non-deterministic step; these facts are not. "
+        "Where the atom's `incidence.serves` disagrees with the composed arc "
+        "membership, the composed facts are authoritative — the self-claim is a "
+        "claim under judgment._\n",
+        "```json", json.dumps(facts, indent=2, ensure_ascii=False), "```",
+        ("\n_⚠ this atom serves no confirmed arc (no epic names it as a piece, "
+         "or its arc is unconfirmed) — itself a signal._"
+         if not facts["serves_confirmed_arc"] else ""),
+        ("\n_⚠ self-claimed serves NOT backed by policy: "
+         + ", ".join(facts["unbacked_self_claims"])
+         + " — the atom asserts an arc no epic confirms._"
+         if facts["unbacked_self_claims"] else ""),
         "\n## Receipts already on this exact atom version (hesitations you inherit)\n",
         json.dumps([{k: r.get(k) for k in ("node", "verdict", "reason")} for r in prior],
                    indent=2, ensure_ascii=False) if prior else "_(none — you are first)_",
@@ -316,7 +368,8 @@ def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subproc
     model = model or pick_model()
     cmd = _launch_cmd(prompt, model)
     cwd = _launch_cwd()
-    proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600)
+    proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600,
+                  stdin=subprocess.DEVNULL)
     raw = proc.stdout or ""
     text = raw
     envelope = None
@@ -444,6 +497,86 @@ def cmd_launch(ns):
     return 0
 
 
+# ---------------------------------------------------------------------------
+# the guaranteed review queue (done-line 0150)
+# ---------------------------------------------------------------------------
+
+# The gate whose queue is the landed-but-unsettled clog: value-confirm PARKS
+# landed work awaiting a judge that, with no processor, never came — so finished
+# atoms piled up against the inflight cap. A queue is healthy only with a
+# guaranteed consumer; this is that consumer.
+DEFAULT_REVIEW_NODE = "value-confirm.claude.v1"
+
+
+def _default_review(records_root, atom_id, node_id, by):
+    """Fire ONE real, trust-railed headless review for a queued atom, in its own
+    process so every headless run is independently traced and watched (the trust
+    rail is per-run). Reuses the `launch` verb verbatim — one rail, no twin path
+    (I-4). Returns the launch process's return code."""
+    proc = subprocess.run(
+        [sys.executable, str(Path(__file__).resolve()), "launch",
+         "--atom", atom_id, "--node", node_id, "--by", by], text=True)
+    return proc.returncode
+
+
+def drain(records_root, by="claude", node=DEFAULT_REVIEW_NODE, review=None,
+          dry_run=False, limit=None):
+    """The guaranteed processor (done-line 0150): the consumer that turns the
+    review queue from a CLOG into a queue. A pure level-triggered fold names the
+    work — every atom awaiting an admitted-real non-owner gate
+    (`loop.summon.open_summons`, re-derived from the log each call) — and the
+    processor fires a REAL review (`review`, default the trust-railed launch) for
+    each. It never decides or settles: the verdict and the advance stay the
+    gate's and the one pen's (D-4); a `missed` keeps its atom surfaced, never
+    force-cleared (no LEAK).
+
+    Idempotent by construction: a judged atom has a receipt, so `open_summons`
+    no longer returns it — a second drain fires nothing already judged — and the
+    one pen no-ops a repeat verdict anyway (I-2). Level-triggered + idempotent is
+    what makes the consumer a *guarantee*: a review that failed or returned no
+    verdict simply leaves its atom in the queue, retried next pass — never lost,
+    never double-judged.
+
+    `review(records_root, atom_id, node_id, by)` is injectable so the §10 test
+    drives the queue with a fake review (a scripted verdict through the real one
+    pen) and never spawns a live mind. `records_root` is the `.ai-native` root."""
+    sys.path.insert(0, str(ROOT))
+    from loop.summon import open_summons
+    review = review or _default_review
+    queue = [s for s in open_summons(records_root)
+             if node is None or s["node"] == node]
+    if limit is not None:
+        queue = queue[:limit]
+    fired = []
+    for s in queue:
+        aid, nid = s["atom"]["id"], s["node"]
+        fired.append({"atom": aid, "node": nid,
+                      "fired": "dry-run" if dry_run else review(records_root, aid, nid, by)})
+    return fired
+
+
+def cmd_drain(ns):
+    root = ns.root or (ROOT / ".ai-native")
+    if not ns.dry_run:
+        reason = launch_refusal()
+        if reason:
+            print(f"result: report — refused to drain: {reason}")
+            return 2
+    fired = drain(root, by=ns.by, node=ns.node, dry_run=ns.dry_run, limit=ns.limit)
+    if not fired:
+        print("result: done — the review queue is empty; nothing awaits a real "
+              "review (no clog).")
+        return 0
+    verb = "would fire" if ns.dry_run else "fired"
+    for f in fired:
+        print(f"  {verb} review: {f['atom']} -> {f['node']}")
+    tail = (" (dry run — nothing launched)" if ns.dry_run else
+            "; each verdict lands through the one pen (D-4); a `missed` stays "
+            "surfaced and a re-run fires nothing already judged (idempotent)")
+    print(f"\nresult: report — drained {len(fired)} queued review(s){tail}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -452,6 +585,20 @@ def main(argv=None):
     lp.add_argument("--node", required=True, help="the gate's node id, e.g. value-gate.claude.v1")
     lp.add_argument("--by", default="claude", help="who launched the run")
     lp.set_defaults(func=cmd_launch)
+    dp = sub.add_parser("drain", help="fire a real review for every atom in the "
+                        "review queue — the guaranteed processor (done-line 0150)")
+    dp.add_argument("--root", type=Path, default=None,
+                    help="the .ai-native records root (default: this repo's)")
+    dp.add_argument("--node", default=DEFAULT_REVIEW_NODE,
+                    help="only drain this gate's queue (default value-confirm)")
+    dp.add_argument("--all", action="store_const", const=None, dest="node",
+                    help="drain every admitted-real non-owner gate's queue")
+    dp.add_argument("--by", default="claude", help="who ran the drain")
+    dp.add_argument("--limit", type=int, default=None,
+                    help="fire at most N reviews this pass (pace the queue; the "
+                         "rest are picked up the next, level-triggered, pass)")
+    dp.add_argument("--dry-run", action="store_true", help="list the queue; fire nothing")
+    dp.set_defaults(func=cmd_drain)
     ns = ap.parse_args(argv)
     return ns.func(ns)
 

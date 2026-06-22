@@ -1,0 +1,50 @@
+{
+  "atom": {
+    "id": "atom.gate-rail-headless-stdin.v0",
+    "story": {
+      "text": "As the loop that staffs its own gates, I need the headless gate rail to return a verdict instead of hanging, because every autonomous landing depends on an independent judge and the rail timed out at 600s four times (issues #390/#391/#393/#396). The cause was not the model, the permission wall, or tool loops (the judge makes zero tool calls): the headless child `claude` inherited the parent process's stdin and blocked on it whenever the pen was spawned from an interactive-ish parent. The same composed prompt completes in ~46s once the child's stdin is redirected to DEVNULL. I want a non-interactive judge that never inherits a live stdin.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the headless gate judge gets stdin=DEVNULL, so it cannot hang on inherited stdin",
+      "value": "The autonomous gate rail returns verdicts in seconds instead of timing out at 600s, so every summons can get an independent judge without a human — the precondition for the loop staffing its own gates and landing its own approved work, regardless of how the pen is spawned.",
+      "why_now": "Discovered live in a self-paced overnight loop: requisitioning a value-gate hung the rail four times. Isolation testing proved auth, inference, model, and the prompt all fine (a direct call returns verdict=accept in 47s); the only difference was an inherited stdin on the spawned child, which a DEVNULL redirect fixes through the exact failing path.",
+      "if_accepted": "launch_claude passes stdin=subprocess.DEVNULL to the headless `claude -p`; the child no longer blocks on a live stdin and returns its VERDICT line for the pen to land. Verified: the previously-hanging spawn path completes the same prompt in ~46s.",
+      "if_rejected": "The autonomous loop can build and PR work but the gate rail hangs whenever spawned from an interactive parent, so nothing gets independently judged and nothing lands.",
+      "cost_of_wrong_call": "Minimal: one keyword (stdin=subprocess.DEVNULL) on the existing subprocess call. A non-interactive judge never needs stdin. Reverting is dropping the keyword.",
+      "mechanism": "launch_claude adds stdin=subprocess.DEVNULL to the runner call; argv and neutral temp cwd unchanged. The §10 teeth: test_launch_redirects_stdin_to_devnull_so_it_cannot_hang captures the runner kwargs and asserts stdin is DEVNULL — non-vacuous against the pre-fix call that passed no stdin (None). Confirmed by a live gate landing rcp.51f6d9a2dc2a.",
+      "reading": [
+        ".claude/skills/gate/gate.py",
+        "tests/test_gate_rail.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.virtual-fleet"
+      ],
+      "touches": [
+        ".claude/skills/gate/gate.py",
+        "tests/test_gate_rail.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/gate/gate.py"
+      ]
+    }
+  },
+  "_note": "Birth record for the headless gate stdin=DEVNULL fix (the rail's 600s hang, issues #390/#391/#393/#396). Authored to back the PR on the log. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

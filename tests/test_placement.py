@@ -93,5 +93,49 @@ class TestCrossRefFold(unittest.TestCase):
         self.assertEqual(placement.next_id(done, root=d), 2)
 
 
+class TestWorktreeFold(unittest.TestCase):
+    """The concurrent-mint blind spot: placement folded only the CURRENT
+    checkout's working tree, so a SIBLING worktree's *uncommitted* mint was
+    invisible — two parallel worktrees picked the same id and only the
+    commit-check caught it (the 0149 collision). The fix folds every worktree."""
+
+    def _repo_with_sibling_worktree(self):
+        base = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, base, ignore_errors=True)
+        main = base / "main"
+        main.mkdir()
+
+        def g(cwd, *args):
+            subprocess.run(["git", *args], cwd=cwd, check=True,
+                           capture_output=True, text=True)
+
+        g(main, "init", "-q")
+        g(main, "config", "user.email", "t@example.com")
+        g(main, "config", "user.name", "t")
+        done = main / ".ai-native" / "done"
+        done.mkdir(parents=True)
+        (done / "0001-first.md").write_text("a", encoding="utf-8")
+        g(main, "add", "-A")
+        g(main, "commit", "-qm", "first")
+        sib = base / "sib"
+        g(main, "worktree", "add", "-q", "-b", "feature", str(sib))
+        self.addCleanup(lambda: subprocess.run(
+            ["git", "worktree", "prune"], cwd=main, capture_output=True))
+        # an UNCOMMITTED mint in the sibling worktree — invisible before the fix
+        (sib / ".ai-native" / "done" / "0002-second.md").write_text(
+            "b", encoding="utf-8")
+        return main, done
+
+    def test_sibling_worktree_uncommitted_record_is_seen(self):
+        main, done = self._repo_with_sibling_worktree()
+        self.assertIn("0002", set(placement.claims(done, root=main)),
+                      "a sibling worktree's uncommitted record was not folded")
+
+    def test_next_id_skips_a_sibling_worktrees_uncommitted_mint(self):
+        main, done = self._repo_with_sibling_worktree()
+        self.assertEqual(placement.next_id(done, root=main), 3,
+                         "next_id re-handed an id a sibling worktree already minted")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,69 @@
+{
+  "atom": {
+    "id": "atom.inference-queue-atomic-claim.v0",
+    "story": {
+      "from": "bdo, 2026-06-20 (chat), after the inference admission queue (atom.inference-admission-queue.v0, PR #363) landed: 'and we know and stress tested this?' — then, on the fix: 'as long as that's not over engineered.'",
+      "framing": "The admission queue landed with its core guarantee — the in-flight bound — FALSE under real parallelism, and every gate missed it. The unit tests called acquire/release sequentially in one process, so they proved the logic but never the cross-process race; the code review flagged the exact race and it was wrongly overruled as 'intended self-heal.' A real multiprocessing stress test, run because bdo asked, measured the bound violated: 6 concurrent holders on a bound of 3, 2 on a bound of 1, plus Windows PermissionErrors. Root cause: _try_claim created the slot file with O_EXCL (empty) and THEN wrote its JSON; a second process reading in that window saw empty content, _is_stale returned True, and it stole the slot — two holders on one index. O_EXCL makes the create atomic, not create-plus-content.",
+      "work": "Two parts. (1) The minimal stdlib fix: _try_claim now writes the fully-formed slot content to a private temp file and atomically os.link()s it into the slot path — link is exclusive (fails if the slot exists) AND the slot is never observed empty, closing the window. The lease/steal self-healing is unchanged; no new dependency (the loop/ law). (2) The lasting fix — the gate whose absence let the bug land: tests/test_inference_queue.py gains TestConcurrencyUnderRealParallelism, which spawns REAL parallel processes, counts concurrent holders directly with a clock-free marker count (sound across processes, unlike comparing per-process clocks), and asserts the bound is never exceeded and no acquire/release raises. It is proven NON-VACUOUS: it FAILS on the pre-fix module (measured a 3rd holder on a bound of 2) and PASSES on the fix. The module-layering doc line is corrected from O_EXCL to the atomic-link claim.",
+      "need": "Nothing of bdo's beyond his standing confirm on epic.inference-gateway — the fix is stdlib, local, reversible, and atom-backed. His 'not over engineered' steer is honored: the fix is a 3-line claim change and the kept machinery (lease/steal) is needed for dead-holder recovery, not gold-plating; the alternative of adopting a lock library is named and deferred (D-4).",
+      "value": "The admission queue's whole point — a bound that actually holds so a burst can't stack model/KV-cache past memory — is real now instead of violated 2x under parallelism. And the deeper value is the gate: the concurrency test that was missing is in the suite and bites, so this class of cross-process bug can't land silently again. It is the honest repair of a defect the gates missed — caught only because bdo asked for a stress test, and now made impossible to miss.",
+      "text": "From bdo's question whether the admission queue was stress tested — it was not, and a real multiprocessing stress test showed its bound violated 2x under parallel contention — I need the slot claim made atomic-with-content (os.link an already-written file) plus a real parallel-process concurrency test in the suite, because a non-atomic create-then-write let a concurrent reader see an empty slot and double-claim it, and only a stress test (not the sequential unit tests) could ever catch that.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "risk": {
+      "class": "moderate",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "A localized rewrite of one function (_try_claim) plus a new test; stdlib only, no new dependency, no network. The fix is proven correct empirically (the new concurrency test fails on the old code, passes on the new) and the full suite is green (1202 tests). Moderate not cheap because it changes the core claim primitive of a live coordination mechanism on the inference path, but it is reversible by reverting the function and the default behaviour (backpressure, self-heal) is unchanged.",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "the admission queue's bound was false under parallelism — fixed, and now gated",
+      "value": "You asked if it was stress tested. It wasn't, and it wasn't holding: under real parallel load the bound leaked to 2x (6 holders on 3). The claim is now atomic, the bound holds, and the concurrency test that was missing is in the suite and proven to bite.",
+      "why_now": "The queue (PR #363) just landed with this bug; the longer it sits, the more a panel/gate burst can still overcommit. Your question caught it; this closes it before it bites in anger.",
+      "if_accepted": "The admission queue actually bounds in-flight completions under concurrency; the regression gate (a real multiprocessing test) prevents this class of cross-process bug from landing silently again.",
+      "if_rejected": "The queue keeps a bound that leaks ~2x under parallel bursts — partial protection that reads as full — and the gap that hid it (no concurrency test) stays open.",
+      "cost_of_wrong_call": "Low: stdlib, local, reversible by reverting one function; the new test only adds coverage. The kept lease/steal machinery is unchanged.",
+      "mechanism": "_try_claim writes slot content to a temp file then os.link()s it into place (atomic, exclusive, never-empty), replacing the create-then-write O_EXCL window. tests/test_inference_queue.py::TestConcurrencyUnderRealParallelism spawns real processes and asserts the bound holds — proven non-vacuous (fails on the pre-fix module). Stdlib; no dependency (the os.link fix is the smallest correct change; filelock named and deferred, D-4).",
+      "reading": [
+        ".ai-native/done/0159-inference-queue-atomic-claim.md",
+        "loop/inference_queue.py",
+        "tests/test_inference_queue.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.inference-gateway"
+      ],
+      "touches": [
+        "loop/",
+        "tests/"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [
+        ".ai-native/nodes/value-gate.claude.v1.md"
+      ],
+      "source_artifacts": [
+        "atom.inference-admission-queue.v0 (the queue this fixes, PR #363)",
+        "done-line 0159",
+        "bdo's chat challenge, 2026-06-20 ('and we know and stress tested this?')"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record and content-hash source; never mutated (D-5). The atomic-claim fix to the inference admission queue: the bound made true under real parallelism, and the missing concurrency gate added. Caught because bdo asked for a stress test; the fix is stdlib and minimal per his 'not over engineered' steer (D-4)."
+}

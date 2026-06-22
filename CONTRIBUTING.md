@@ -40,8 +40,11 @@ up the discipline without re-deriving it.
 - **The log is truth (D-5).** `.ai-native/log/` is append-only;
   `queues/`/`offsets/` are a cache and must remain a pure fold over the log.
   Appends are line-atomic with torn-tail tolerance.
-- **No one signs their own line (D-2).** A node never judges its own writer's
-  work; every gate reads someone else's output.
+- **Two acceptances, never one (D-2).** Earn your own acceptance first — judge and
+  validate your own work before you share it; that conviction is your case. But you never
+  cast the deciding acceptance: a different reader judges your output, the owner is the
+  last stop. When no independent judge for your work exists yet, forge one within policy —
+  a real, independent SME, never one you control.
 - **bdo authorizes; the merge-node lands (D-4).** Sessions develop on their
   assigned `claude/*` or `codex/*` branch and push there; landing on `main`
   is the independent merge-node's act after bdo confirms the arc, never the

@@ -1,0 +1,43 @@
+{
+  "atom": {
+    "id": "atom.parity-claim-teeth.v0",
+    "story": {
+      "text": "As the engineer caring for epic.repoprompt-parity, I found the wave-1 matrix's §10 teeth too soft: validate() proved only that a `have` row's cited FILE EXISTS, never that the file does the claimed thing. That blind spot let one row stand on a false claim — `multi-root workspaces -> have -> field.py --all`, noted as folding 'ontum + odysseus + holonsearch' — when field.py --all composes every ARC within ontum and reaches none of the three sibling repos (field.py holds no odysseus/holonsearch reference at all). A `have` citing a real file with a false claim is a ghost-in-spirit a file-exists check cannot see, and it is exactly the locally-fine row §10 says a gate must learn to refuse. The arc is bdo's requirements mine; a matrix that reads 'covered' when it isn't corrupts the very backlog the arc is ordered by.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "parity teeth that prove the claim, not just the file — and the honest multi-root verdict",
+      "value": "Strengthens loop/parity.py's §10 teeth: every `have` row now carries an `evidence` substring its cited file must actually contain, and validate() refuses a `have` whose evidence is absent (or missing) — pushing the term-economy grip rule from EXISTENCE to CLAIM. The new tooth immediately bit: the multi-root row's three-repo claim does not resolve under it (field.py contains no `holonsearch`), so it is re-verdicted `build` citing a new genuine gap, atom.multi-root-fold.v0, added to the epic. The matrix is now 2 have, 7 build, 2 dont-double-build, every citation honest.",
+      "why_now": "bdo flagged this session that epic.repoprompt-parity 'might need some TLC repair'. The repair is precisely a soft tooth that let a false `have` pass — and the §10 discipline (a gate that never refuses isn't doing its job) demands it bite. Caught and fixed now, before the arc's later waves are ordered by a matrix that lies about what ontum already has.",
+      "if_accepted": "The parity matrix can no longer harbour a flattering `have`: a row must prove its file does the thing, the one false row is corrected to a real requirement, and the §10 test gains a non-vacuous tooth (a real-file-but-absent-evidence have is caught — the exact ghost-in-spirit shape). The arc's backlog is honest again: one genuine cross-repo gap surfaced where a false `have` hid it.",
+      "if_rejected": "The matrix keeps a tooth that only checks file existence; a `have` can cite any real file and claim anything, and the multi-root row keeps asserting ontum folds three repos when it folds one — a ghost the arc inherits into every later wave.",
+      "cost_of_wrong_call": "Low and fail-safe: loop/parity.py stays a pure read-only fold (writes nothing, judges nothing, D-4); the change is additive (a stricter validator + one row re-verdicted + one epic piece + tests). Reverting is restoring the prior row. No runtime path depends on it.",
+      "mechanism": "loop/parity.py: each `have` row gains `evidence`; _resolves() for a `have` now reads the cited file and fails if the evidence substring is absent (or none given), distinct messages for file-not-found vs ghost-in-spirit. The multi-root row flips have->build, cites atom.multi-root-fold.v0, now a wave-2 piece in epic.repoprompt-parity.json (a cross-repo working-set fold; DON'T double-build field.py — reuse its per-repo ladder). tests/test_parity.py: the positive control now carries evidence; two new teeth prove an evidence-free have and a present-file-but-absent-evidence have are both caught. loop/CLAUDE.md records the sharper tooth. Done-line 0132.",
+      "reading": [
+        "loop/parity.py",
+        "tests/test_parity.py",
+        ".ai-native/epics/epic.repoprompt-parity.json",
+        ".ai-native/done/0132-parity-claim-teeth.md",
+        "loop/CLAUDE.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.repoprompt-parity"],
+      "touches": ["loop/parity.py", "tests/test_parity.py", ".ai-native/epics/epic.repoprompt-parity.json", "loop/CLAUDE.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/parity.py", "causality/term_economy.py", "loop/gaps.py"]
+    }
+  }
+}

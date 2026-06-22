@@ -221,7 +221,7 @@ class GapFoldTest(unittest.TestCase):
                           if g["kind"] == "mock-actor"], [])
 
     def test_organ_kinds_idle_before_dormant(self):
-        # a real census fixture, no mocking: two organs in the temp repo —
+        # a real census fixture, no mocking: two parts in the temp repo —
         # a writer that is wired (entrypoint) but has never landed a word
         # on the record, and a file nothing references at all
         admit_all_real(self.root)
@@ -234,8 +234,8 @@ class GapFoldTest(unittest.TestCase):
         (organ_dir / "dead.py").write_text("x = 1\n", encoding="utf-8")
         found = gaps.gaps(self.root)
         self.assertEqual([(g["kind"], g["subject"]) for g in found],
-                         [("idle-organ", "loop/idle.py"),
-                          ("dormant-organ", "loop/dead.py")])
+                         [("idle-part", "loop/idle.py"),
+                          ("dormant-part", "loop/dead.py")])
         self.assertIn("bdo", found[1]["move"])  # the cut stays the owner's
 
     def test_drift_kind_renders_with_move(self):

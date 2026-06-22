@@ -1,0 +1,62 @@
+{
+  "atom": {
+    "id": "atom.claim.v0",
+    "story": {
+      "from": "bdo's carry-over brief, 2026-06-20 (strategy-metabolism.md §7): the explore lobe must not land alone — exploration creates an immediate need for claiming, or the system grows beautiful overgrowth. Claim is the bridge from a conjectural ScoutCTA to bounded work.",
+      "framing": "The Scout lobe (landed, PR #321) emits one marked call to action. Left alone that is unmanaged possibility floating with no edge. The metabolism is Scout -> Claim -> Build -> Prune; Build is the existing loop, Prune is the next line. Claim is the missing bridge between possibility and execution: it gives a conjecture an edge so a session or bdo can pick it up — or so Prune can later retire it. It does NOT prove the CTA (proving is Build's job: gate -> stamp -> land); it only bounds it.",
+      "work": "loop/claim.py (done-line 0158) — a read-only/propose-only fold that, given a ScoutCTA, FIRST validates it through loop/scout_cta.validate (it only ever bounds a real, grounded conjecture — an invalid/ungrounded one is REFUSED) and then produces one marked claimed_frontier per §7: status:claimed_frontier, source_cta, claim_type in {arc,epic,spike,branch,watch,defer} (derived from the move's own shape, not constant), owner, guard_policy, budget, review_date, exit_condition, expiry. Every claim is BOUNDED (non-empty exit_condition + expiry — an unbounded claim is the overgrowth this organ prevents) and never PROVES (no truth, never minted). tests/test_claim.py proves the teeth: a valid conjecture is bounded, an invalid/ungrounded one is refused, the claim never mints, and the claim_type is derived not constant.",
+      "need": "bdo's confirm-arc on epic.strategy (given — adm.bc55d43121f8 on the trunk) authorizes the loop to carry this piece. Prune (§8, its build requisitions a panel review for intent — his flag, the weakest organ) is the next line. Nothing else owed: read-only, local, stdlib, reversible.",
+      "value": "A Scout conjecture stops being a floating possibility: Claim gives it a typed, budgeted, expiring edge a session or bdo can act on — without proving it (that stays the Build loop's gated job). It is the bridge that keeps exploration from becoming overgrowth, and the half Prune later cleans up.",
+      "text": "From bdo's metabolism (Scout -> Claim -> Build -> Prune), I need a read-only organ that turns a valid ScoutCTA into one bounded claimed_frontier — refusing to bound an unlawful conjecture and never proving it — because a Scout call to action with no edge is unmanaged possibility, and the system has no organ today that bounds a conjecture into workable, expiring intent.",
+      "value_confidence": "high",
+      "owner_stamp": "confirmed-via-arc"
+    },
+    "risk": {
+      "class": "cheap",
+      "reversible": true,
+      "persistence": true,
+      "external": false,
+      "rationale": "A pure read-only fold + a §10 test, stdlib, no network, no git, no log writes. Claim bounds; it never judges, proves, mints, or lands. Reversible by deletion. Prune and the wider metabolism stay later lines and bdo's.",
+      "built_at_risk": true
+    },
+    "briefing": {
+      "headline": "give a Scout conjecture an edge — bounded, not proven",
+      "value": "Scout proposes a move; Claim turns it into a typed, budgeted, expiring unit of intent a session or you can pick up — without pretending it is proven. The bridge between possibility and execution.",
+      "why_now": "The Scout lobe landed; a conjecture with no way to become bounded work is overgrowth. This is the next organ of the metabolism you named.",
+      "if_accepted": "Scout -> Claim is whole; Build (the existing loop) carries owned claims through the pipeline; Prune (with its panel review for intent) rides next to retire dead frontiers.",
+      "if_rejected": "Scout conjectures float with no edge — the overgrowth the metabolism was designed to avoid.",
+      "cost_of_wrong_call": "Low: read-only, local, reversible by deletion; nothing lands, mints, or alters truth.",
+      "mechanism": "loop/claim.py validates a ScoutCTA through the contract, derives a claim_type from the move's shape, and emits one bounded claimed_frontier (exit_condition + expiry), marked proposed; it refuses an unlawful conjecture and never proves. The cut and Prune stay yours (D-4).",
+      "reading": [
+        "strategy-metabolism.md",
+        ".ai-native/done/0158-claim-organ.md",
+        "loop/claim.py",
+        "loop/scout_cta.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.strategy"],
+      "touches": ["loop/", "tests/"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [".ai-native/nodes/value-gate.claude.v1.md"],
+      "source_artifacts": [
+        "bdo's carry-over brief, 2026-06-20",
+        "strategy-metabolism.md (§7 Claim)",
+        "done-line 0158",
+        "atom.scout-fold.v0 (the Scout lobe this bounds the output of)"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "Birth record and content-hash source; never mutated (D-5). The Claim organ of epic.strategy (Scout -> Claim -> Build -> Prune). Read-only/propose-only; Prune is the next line, its build requisitioning a panel review for intent (strategy-metabolism.md §8)."
+}
