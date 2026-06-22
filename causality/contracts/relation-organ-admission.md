@@ -94,7 +94,7 @@ exactly as those name *which node, which mind, which scope*.
 ## The §10 refusal (the teeth)
 
 The contract is non-vacuous because it **refuses a learned part that is not
-fully pinned**. An part admission that is *locally fine* — it names a model
+fully pinned**. A part admission that is *locally fine* — it names a model
 and emits plausible signal — is still refused if any governing field is
 absent, because an under-pinned learned read is precisely the thing that
 would corrupt log-as-truth. Concretely, a checker over this contract must
@@ -120,7 +120,7 @@ refuse:
   resolve). This is the same tooth `term_economy.py` bites with
   (`causality/CLAUDE.md`: "a citation that points to nothing is `ghost`").
 
-A locally-fine **bad input** that this contract must catch: an part
+A locally-fine **bad input** that this contract must catch: a part
 admission that pins `model_id` and `version` and emits a learning-progress
 number, but omits `threshold` and `scope`. Nothing about it looks wrong in
 isolation — it has an id, a model, a version, a timestamp. It is refused

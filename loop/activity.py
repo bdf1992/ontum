@@ -17,7 +17,7 @@ watchers.
 This is the accounting layer the git/gh-gateway proposal deferred (*"the
 witness-log home and its fold"*), widened from git/gh reads to all activity. It
 is the declared half of the shared gateway's witness asymmetry (reads get
-witnessed, not authorized) turned on the harness's own metabolism.
+witnessed, not authorized) turned on the harness's own cycle.
 
 The shape, in the `census`/`gaps`/`heal` grain — a pure read-only fold, no
 network, no git (loop's law), the cut stays bdo's (D-4):
@@ -40,10 +40,10 @@ design (so it cannot be wired later as a silent collector). The register's
 *content* (what each hook collects) is the authored audit; this fold enforces
 that the register can never fall out of sync with what is wired — you cannot add
 a silent collector without declaring it. The runtime witness (every firing -> a
-first-class receipt) is organ 2.
+first-class receipt) is part 2.
 
 `witnessed: false` is not a violation — it is the honest current state, and the
-count of unwitnessed hooks is exactly the work organ 2 must do; the fold surfaces
+count of unwitnessed hooks is exactly the work part 2 must do; the fold surfaces
 it as the bridge, never as a failure.
 
 CLI:
@@ -152,7 +152,7 @@ def reconcile(register, live, codex=None):
     """Cross the declared register against the live wiring. Returns the full
     accounting: which hooks are accounted, the §10 violations (undeclared
     collectors, ghosts), the entries wired in another layer, and the
-    unwitnessed bridge to organ 2."""
+    unwitnessed bridge to part 2."""
     entries = (register or {}).get("hooks", {})
     live_keys = set(live)
     declared = set(entries)
@@ -292,11 +292,11 @@ def render(result):
               f"{len(ghost)} ghost(s). The register must account for exactly "
               f"what is wired before the gateway can audit it; fix the register "
               f"(a session's move, not bdo's). {len(unwit)} of {len(rows)} "
-              f"accounted hooks are still unwitnessed — organ 2's work.")
+              f"accounted hooks are still unwitnessed — part 2's work.")
         return 0
     print(f"result: done — all {len(rows)} wired hook(s) accounted; the "
           f"register and the live wiring agree. {len(unwit)} collect data "
-          f"without witnessing their own firing — the runtime witness (organ 2) "
+          f"without witnessing their own firing — the runtime witness (part 2) "
           f"is what closes that, and the cut stays yours (D-4).")
     return 0
 

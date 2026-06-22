@@ -8,7 +8,7 @@ the merge). Self-critique *across the whole history* stayed a hand-run
 chat exercise, so patterns no single span or session reveals slipped
 through: an atom re-derived again and again, a control valve advertised
 but never opened, a divergence that recurs un-reconciled. This module is
-that critique made an part — a pure fold over the entire log that
+that critique made a part — a pure fold over the entire log that
 surfaces recurring patterns, each carrying the one refinement move.
 
 It is a sibling of `digest`, on a new axis: the digest folds *one span*;
