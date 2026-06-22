@@ -1,0 +1,37 @@
+{
+  "atom": {
+    "id": "atom.reflector-idempotent-mirror.v0",
+    "story": {
+      "text": "The reflector's owner-ask mirror double-fires (#547): within hours #525-#544 duplicated #511-#530, each report's ask group surfacing 2-3x and burying bdo's real asks under duplicates -- the exact opposite of the owner surface 'the queue refuses to flood you' promises. The fold-level idempotence in loop/reflect.py ((g['id'],'open') not in seen) is real but insufficient under the parallel-worktree fleet: the reflection 'open' ack lives on the LOCAL log, a sibling session forks from main BEFORE the ack exists, each opens its own mirror issue and appends a surface.reflected event with the same content-derived id but a different external_ref; .gitattributes union-merges the logs, so the fold keeps the first ack while GitHub keeps BOTH issues. Proven on the live log: evt.41b3ab81eb04 carries two distinct issue URLs (#200 and #211). The local ack cannot guard a fork that predates it; the shared truth is the surface itself. The fix (.claude/skills/reflect/reflect.py, where outward reach already lives -- never in loop/) stamps each minted mirror with a hidden, stable key (the group's atom_id: report_id for owner-ask, the atom version for the stamp queue, the label for divergences, 'daily-digest' for the digest) and, before minting any open, reads the surface's currently-open mirrors once and declines to mint a second for a key already shown -- recording the ack against the existing issue instead. Level-triggered, kind-agnostic, no second engine. Teeth (SS10, tests/test_reflect.py + tests/test_owner_asks.py): an already-mirrored group mints ZERO duplicates while an empty surface mints exactly one (the paired control), and a failed surface read refuses to mint blind rather than guess. Proven non-vacuous: with the dedup skip removed the already-mirrored test FAILS ('minted a duplicate for an already-mirrored group'). Value: bdo's desk stays readable -- one open issue per ask group, the favorite-customer experience the digest exists to give, not a flood of dup tickets.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        ".claude/skills/reflect/reflect.py",
+        "tests/test_reflect.py",
+        "tests/test_owner_asks.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/reflect/reflect.py",
+        "loop/reflect.py",
+        "loop/owner_asks.py",
+        "tests/test_reflect.py"
+      ],
+      "receipts": []
+    }
+  }
+}
