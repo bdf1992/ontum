@@ -1,0 +1,42 @@
+{
+  "atom": {
+    "id": "atom.gate-model-economy.v0",
+    "story": {
+      "text": "As the loop, now that the headless gate rail works (done-line 0138), I should learn which model is worth its cost to judge with — not guess one. bdo's direction this session: instead of pinning one gate model, draw one at RANDOM per run, record the model and what the run cost, and let an audit compare cost vs impact. He chose the shape: cost-only first (randomize + record model+cost+verdict; the impact score is deferred, named, not faked, because a gate verdict has no built-in ground truth), the pool is all three (opus-4.8, sonnet-4.6, haiku-4.5), and the reports ride the existing run/sourcing stats (loop.runs), not a bespoke surface. This is the first turn of the gate economy: capture the truth (which model, what cost) so the cost-vs-impact question can be answered from the log later.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the gate randomizes its model; the run ledger folds cost by model",
+      "value": "gate.py draws the judging model uniformly at random from a pool (ONTUM_GATE_MODELS, default opus-4.8/sonnet-4.6/haiku-4.5; ONTUM_GATE_MODEL still pins one), parses the run's cost (total_cost_usd + tokens) from the claude -p envelope, and carries model+cost into the run record. loop/runs.py grows a per-model cost breakdown (runs, total/avg $, tokens, movement mix) in render and --json — cost-only, impact explicitly deferred and never fabricated.",
+      "why_now": "bdo asked for it this session, directly, after the rail fix (done-line 0138 / PR #288) made headless judging actually work. It is the first increment of the cost-vs-impact economy he named.",
+      "if_accepted": "Every gate run now records which model judged and what it cost, foldable from the log; the cost half of cost-vs-impact is answerable today, and the impact half has a place to land once a ground-truth metric is chosen. The reports ride the run/sourcing stats he pointed at.",
+      "if_rejected": "The gate keeps judging with one fixed model and the economy (is the cheaper model good enough?) stays unmeasured.",
+      "cost_of_wrong_call": "Low and bounded: randomization and cost-capture live in the gate pen's launch step and the run ledger's record/fold; the verdict write (D-4), the prompt lineage, and the trust-rail contract are untouched. Impact is deferred, not faked. Reverting is pinning ONTUM_GATE_MODEL and dropping the breakdown.",
+      "mechanism": "gate.py: GATE_MODEL_POOL + pick_model (pin overrides a uniform draw), _parse_cost (usd + tokens from the envelope), launch_claude returns (…, model, cost), record_run passes them. loop/runs.py: record() + the record CLI accept model/cost; model_economy() folds cost+runs+movement by model (an unpriced run is unpriced, never $0; impact='deferred'); render + --json surface it. tests/test_gate_economy.py joins the suite with §10 teeth (picker draws only from the pool, pin overrides, the fold groups cost by model and reports unpriced runs honestly, a constant fold fails). Done-line 0142.",
+      "reading": [
+        ".claude/skills/gate/gate.py",
+        "loop/runs.py",
+        "tests/test_gate_economy.py",
+        ".ai-native/done/0142-gate-model-economy.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.the-field"],
+      "touches": [".claude/skills/gate/gate.py", "loop/runs.py", "tests/test_gate_economy.py", "tests/test_gate_rail.py", ".ai-native/done/0142-gate-model-economy.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [".claude/skills/gate/gate.py", "loop/runs.py", ".ai-native/done/0138-gate-rail-fix.md"]
+    }
+  }
+}
