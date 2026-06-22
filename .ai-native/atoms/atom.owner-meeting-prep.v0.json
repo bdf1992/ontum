@@ -1,0 +1,50 @@
+{
+  "atom": {
+    "id": "atom.owner-meeting-prep.v0",
+    "story": {
+      "text": "bdo's owner-asks reached him as a growing pile of GitHub issues, not a digest: the `owner-ask-backlog` reflect rule opened one issue PER session report, deduped only by a branch-local reflection ack, via a blind `gh issue create`. The full census proved the damage - each of 6 reports was re-opened as a brand-new issue ~9 times (report 0114 -> issues #454,#462,#479,#490,#501,#511,#512,#525,#539), because a cloud courier or stranded worktree whose ack never landed on main re-minted a duplicate every session. bdo (2026-06-22): 'I need a digest over these owner asks, at most a 30-minute daily meeting' - refined to a prepared, time-boxed meeting an agent runs FOR him. This atom builds the deterministic core every meeting variant needs: a single prepared agenda - the live owner-asks ranked and budget-capped to a 30-minute read - replacing the per-report flood with one ranked surface.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the prepared owner-meeting agenda: one ranked, budget-capped fold over the owner-asks, replacing the per-report blind-create pile",
+      "value": "loop/meeting.py is a pure, read-only, stdlib fold: `live_owner_asks` reads every owner_ask_groups entry not discharged and not baselined (surfaced is not answered); `rank` orders by report freshness then item-count; `meeting_budget`/`set_budget` is an admitted, signed setpoint (default-safe at 3 min/ask over 30 min -> 10 above the fold, bdo's 'the thing you said', never a code constant); `agenda` cuts the ranked source into today's agenda (what fits the budget) and a deferred tail (a count, never dropped). It renders a 'Daily owner meeting' agenda and emits --json. On the live repo it folds 38 owner-ask groups / 103 items into a 10-group, newest-first agenda.",
+      "why_now": "The pile is active harm: 14 standing duplicate issues (now closed via the issue pen), each report opened ~9x, and the grain contradicts the standing hard rule (bdo's only surfaces are arc-confirmation and the daily digest). The prepared agenda is the deterministic core that the live meeting (link + agent + 30 active minutes) is built on; it is shape-independent and needed by every variant, so it lands first.",
+      "if_accepted": "The owner-asks have one prepared, ranked, budget-bounded surface - the foundation for the 30-minute meeting an agent runs for bdo. The per-report owner-ask-backlog rule can then be retired (its blind-create duplication root cause designed out).",
+      "if_rejected": "The owner-asks stay a per-report pile with no ranking and no budget; the duplication root cause (branch-local ack + non-idempotent create) stays live.",
+      "cost_of_wrong_call": "Low and bounded. A pure read-only fold plus one signed dial; imports nothing new; reverting is deleting one module and its test. The teeth are proven non-vacuous (tests/test_meeting.py): a fresher report must lead, the budget cut must drop a non-empty tail to the deferred count, and a discharged ask must be absent - a fold that ignored rank, budget, or discharge fails one of the three.",
+      "mechanism": "loop/meeting.py composes loop.owner_asks.owner_ask_groups and loop.reflect.{baselined_ask_ids,discharged_ask_ids}; the budget is an admitted `meeting_budget` record read back from the log (mirrors inference_queue.set_bound). No network, no second source of truth. tests/test_meeting.py drives the fold over crafted temp roots and asserts over the log. Done-line 0183; proposal .ai-native/proposals/owner-ask-digest.proposal.md (CTA-1/CTA-2 - the meeting surface and the link - stay bdo's).",
+      "reading": [
+        "loop/meeting.py",
+        "tests/test_meeting.py",
+        ".ai-native/proposals/owner-ask-digest.proposal.md",
+        ".ai-native/done/0183-owner-meeting-prep.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [],
+      "touches": [
+        "loop/meeting.py",
+        "tests/test_meeting.py",
+        ".ai-native/done/0183-owner-meeting-prep.md",
+        ".ai-native/proposals/owner-ask-digest.proposal.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "github-issue:410"
+      ],
+      "receipts": []
+    }
+  }
+}
