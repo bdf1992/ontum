@@ -29,7 +29,7 @@ Distinct from its neighbours under `docs/`:
 - **The goal is the fabric, never the harness.** The category error
   report 0004 caught — describing the loop substrate as "what ontum is
   trying to be" — is the one this directory exists to keep corrected. The
-  loop is the metabolism; Ontum is what runs on it.
+  loop is the cycle; Ontum is what runs on it.
 - **Provisional until stamped.** A telling of bdo's north star is his to
   shape. A file here authored by a session carries a provisional mark
   until bdo confirms it; absence and uncertainty are named, never

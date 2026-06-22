@@ -93,16 +93,16 @@ where one atom ends and the next begins.*
 **C4 — The blueprint seam.** *How foundation/structure work is recognized and
 tracked, built BEFORE features.* — **the core gap.**
 - Today: blueprints live as `*.proposal.md` files. They are **invisible to the
-  metabolism**: no id-pressure, no digest line, no pipeline. A proposal that
+  cycle**: no id-pressure, no digest line, no pipeline. A proposal that
   should precede ten atoms shows up as *nothing*.
 - Gap: foundation is not a first-class record. So the system can't tell a session
   "blueprint this arc before building" and can't show bdo a blueprint as progress.
 
-**C5 — The metabolism re-weighting.** *How the digest / pressure folds reward
+**C5 — The cycle re-weighting.** *How the digest / pressure folds reward
 foundation, not just landed throughput.*
 - Today: the digest, gaps, and `epic.landing-throughput-response` all reward
   **landing**. Foundation work scores zero.
-- Gap: the metabolism *structurally reinforces the wrong target* — it pulls every
+- Gap: the cycle *structurally reinforces the wrong target* — it pulls every
   session toward shipping. Fixing the human-level bias (A) without re-weighting
   here just fights the current.
 
@@ -167,7 +167,7 @@ together: the on-path move must be the path of least resistance.*
 
 *This is the governance model the bundle above should rest on. It is C6
 (change-absorption) given a primitive, and the per-directory gateway stack that
-C7 implies. Captured faithfully from bdo's thesis; ontum's existing organs are
+C7 implies. Captured faithfully from bdo's thesis; ontum's existing parts are
 wired in at the end (compose, don't rebuild — §10).*
 
 > **The key move.** *Action policy controls what an agent is allowed to **do**.
@@ -371,7 +371,7 @@ the whole apparatus at a directory's seam = the GATEWAY
 - **Obligation is the fifth bundle term:** *Root creates possibility · Cause
   creates motion · Effect creates difference · Consequence creates obligation.*
 - **ontum already holds the parts under other names:**
-  - `heal.py` is the **consequence-repair** organ (a tooth that bit wrong = a bad
+  - `heal.py` is the **consequence-repair** part (a tooth that bit wrong = a bad
     consequence detected) — the stack's `heal`.
   - the digest's **divergences** are consequences (two locally-fine records that
     *refuse to fit*).
