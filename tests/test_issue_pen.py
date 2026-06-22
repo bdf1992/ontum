@@ -34,10 +34,11 @@ class FakeGh:
     """A stand-in for the gh CLI: records argv, returns a chosen exit code,
     never touches the network."""
 
-    def __init__(self, returncode=0, stderr=""):
+    def __init__(self, returncode=0, stderr="", stdout=""):
         self.calls = []
         self.returncode = returncode
         self.stderr = stderr
+        self.stdout = stdout
 
     def __call__(self, args):
         self.calls.append(list(args))
@@ -47,7 +48,7 @@ class FakeGh:
 
         p = _Proc()
         p.returncode = self.returncode
-        p.stdout = ""
+        p.stdout = self.stdout
         p.stderr = self.stderr
         return p
 
@@ -97,6 +98,41 @@ class IssuePenRecords(unittest.TestCase):
         self.assertEqual(obj["by"], "bdo")
         self.assertEqual(obj["body"], "a note on the record")
         self.assertEqual(obj["kind"], "issue-governance")
+
+    def test_create_appends_wellformed_event_with_number_and_url(self):
+        # gh issue create prints the new issue url on stdout
+        fake = FakeGh(stdout="https://github.com/bdf1992/ontum/issues/42\n")
+        rec = issue.do_create("a real title", "a real statement", "claude",
+                              gh_run=fake, events_path=self.events)
+        self.assertEqual(fake.calls[0][:2], ["issue", "create"])
+        self.assertIn("--title", fake.calls[0])
+        self.assertIn("a real title", fake.calls[0])
+        obj = self._events()[-1]
+        self.assertEqual(obj["type"], "issue.created")
+        self.assertEqual(obj["number"], "42")            # parsed from the url
+        self.assertEqual(obj["by"], "claude")
+        self.assertEqual(obj["title"], "a real title")
+        self.assertEqual(obj["url"], "https://github.com/bdf1992/ontum/issues/42")
+        self.assertEqual(obj["kind"], "issue-governance")
+        self.assertEqual(obj, rec)
+
+    def test_create_empty_title_or_body_or_by_is_refused(self):
+        for title, body, by in (("", "b", "claude"), ("t", "  ", "claude"),
+                                ("t", "b", "")):
+            fake = FakeGh(stdout="https://x/1")
+            with self.subTest(title=title, body=body, by=by):
+                with self.assertRaises(ValueError):
+                    issue.do_create(title, body, by, gh_run=fake,
+                                    events_path=self.events)
+                self.assertEqual(fake.calls, [])         # never reached gh
+                self.assertEqual(self._events(), [])     # nothing on the log
+
+    def test_create_no_record_when_gh_fails(self):
+        fake = FakeGh(returncode=1, stderr="auth required")
+        with self.assertRaises(RuntimeError):
+            issue.do_create("t", "b", "claude", gh_run=fake,
+                            events_path=self.events)
+        self.assertEqual(self._events(), [])
 
     def test_empty_reason_is_refused_no_reach_no_record(self):
         fake = FakeGh()

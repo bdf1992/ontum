@@ -1,11 +1,13 @@
 export const meta = {
   name: 'tend-heal',
-  description: 'Tick-tender: infer over each heal finding and draft the one reconcile move — now ON THE RAIL: pinned to a governed, versioned node prompt (prompt-as-code) with its hash recorded (propose-grain, the heal stays bdo\'s, D-4)',
-  whenToUse: 'Every few minutes, or on demand, to turn loop.heal\'s standing stale-park findings into checked, ready-to-act reconcile drafts. The agents run a GOVERNED prompt (.ai-native/nodes/tend-heal.claude.v1.md), not an inline string — pinned by hash, halted if the prompt fails the requirements door.',
+  description: 'Tick-tender: infer over each heal finding and draft the one reconcile move — ON THE RAIL (governed prompt-as-code, hash recorded) and ON THE BOOKS (every agent run receipted under a training-run posture, monitorable — propose-grain, the heal stays bdo\'s, D-4)',
+  whenToUse: 'Every few minutes, or on demand, to turn loop.heal\'s standing stale-park findings into checked, ready-to-act reconcile drafts. The agents run a GOVERNED prompt (.ai-native/nodes/tend-heal.claude.v1.md), not an inline string — pinned by hash, halted if the prompt fails the requirements door — and each run is booked on the books (loop.agent_run) so it is witnessed, never vanishing.',
   phases: [
+    { title: 'Open', detail: 'open a training-run posture on the books (loop.agent_run open) — nothing auto-trusted as done' },
     { title: 'Pin', detail: 'load the governed node prompt + hash (loop.prompt_req); halt if it fails the door' },
     { title: 'Scout', detail: 'fold loop.heal --json into the small-item list' },
     { title: 'Tend', detail: 'one branded, prompt-pinned agent per finding → a drafted reconcile move' },
+    { title: 'Book', detail: 'book each disposition on the books under the training run (loop.agent_run receipt) — the monitor reads it back' },
   ],
 }
 
@@ -65,6 +67,35 @@ const DRAFT = {
   },
 }
 
+const RUN = {
+  type: 'object', additionalProperties: false, required: ['run'],
+  properties: { run: { type: 'string', description: 'the atr.* training-run id printed by `loop.agent_run open`' } },
+}
+
+const BOOKED = {
+  type: 'object', additionalProperties: false, required: ['booked', 'result'],
+  properties: {
+    booked: { type: 'boolean', description: 'true if the receipt landed on the books' },
+    result: { type: 'string', description: 'the stdout result line (done | needs-you)' },
+  },
+}
+
+// ---- Open: open the training-run posture on the books. Every run below is
+// booked under it (loop.agent_run) — witnessed, never vanishing; nothing here is
+// auto-trusted as done (training, not production).
+phase('Open')
+const opened = await agent(
+  'Run `python -m loop.agent_run open --by tend-heal --note "heal-tender tick"` from the repo root ' +
+  'and return the atr.* run id it prints (the token after "on the books:").',
+  { label: 'open:training-run', phase: 'Open', schema: RUN }
+)
+const RUN_ID = opened && opened.run
+if (!RUN_ID) {
+  log('tend-heal: could not open a training run — HALT (a run that cannot be booked is not run on the books)')
+  return { halted: true, why: 'agent_run open did not return a run id' }
+}
+log(`tend-heal: training run open on the books: ${RUN_ID}`)
+
 // ---- Pin: load the governed prompt; halt if it fails the requirements door.
 phase('Pin')
 const pin = await agent(
@@ -109,4 +140,23 @@ const drafts = await parallel(findings.map((f) => () =>
 const kept = drafts.filter(Boolean)
 const actionable = kept.filter((d) => d.verdict === 'stale-surface-confirmed')
 log(`tend-heal: ${kept.length} checked · ${actionable.length} with a real reconcile draft · prompt ${PROMPT_HASH}`)
-return { node: NODE, promptHash: PROMPT_HASH, tended: kept.length, actionable: actionable.length, drafts: kept }
+
+// ---- Book: each disposition lands on the books under the training run. The
+// booking is itself governed — `loop.agent_run receipt` refuses a prompt_hash
+// that is not this node's, so a run cannot be booked against an ungoverned
+// prompt. The monitor reads it back with `python -m loop.agent_run --run <id>`.
+phase('Book')
+const booked = await parallel(kept.map((d) => () => {
+  const reason = (d.reason || '').replace(/"/g, "'").slice(0, 400)
+  return agent(
+    `Run this from the repo root and return its result line:\n` +
+    `python -m loop.agent_run receipt --run ${RUN_ID} --node ${NODE} ` +
+    `--prompt-hash ${PROMPT_HASH} --subject "${d.subject}" --verdict "${d.verdict}" ` +
+    `--reason "${reason}"\n` +
+    `Set booked=true only if the line begins "result: done".`,
+    { label: `book:${d.subject}`, phase: 'Book', schema: BOOKED }
+  ).catch(() => ({ booked: false, result: 'spawn failed' }))
+}))
+const onBooks = booked.filter((b) => b && b.booked).length
+log(`tend-heal: ${onBooks}/${kept.length} disposition(s) on the books under ${RUN_ID} — monitor: python -m loop.agent_run --run ${RUN_ID}`)
+return { node: NODE, run: RUN_ID, promptHash: PROMPT_HASH, tended: kept.length, actionable: actionable.length, onBooks, drafts: kept }
