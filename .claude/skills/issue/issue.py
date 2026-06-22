@@ -28,7 +28,6 @@ record lands ONLY after the gh call succeeds — a close that GitHub refused is
 never written as if it happened.
 
 Usage:
-  python .claude/skills/issue/issue.py create --title "<t>" --body "<text>" --by <who>
   python .claude/skills/issue/issue.py close <number> --reason "<why>" --by <who>
   python .claude/skills/issue/issue.py comment <number> --body "<text>" --by <who>
 """
@@ -126,41 +125,6 @@ def do_comment(number, body, by, *, repo=None, gh_run=None, events_path=None):
     return rec
 
 
-def do_create(title, body, by, *, repo=None, gh_run=None, events_path=None):
-    """Create an issue, then append ONE issue.created provenance record carrying
-    the new number and url. Refuses an empty title/body or a missing signer
-    before any gh call — and records ONLY after the create succeeds (an issue
-    GitHub refused is never written as if it happened). This is the verb the
-    fence's forbid-raw-`gh issue` left without a paved path: a session could
-    close/comment governed but had no governed way to OPEN one, so a new issue
-    could only go raw — now forbidden — or not at all."""
-    title = (title or "").strip()
-    if not title:
-        raise ValueError("a governed create carries a title — refusing an empty "
-                         "--title")
-    body = (body or "").strip()
-    if not body:
-        raise ValueError("a governed create carries a body — refusing an empty "
-                         "--body (an issue with no statement is not accountable)")
-    by = (by or "").strip()
-    if not by:
-        raise ValueError("a governed create carries a signer — refusing a "
-                         "missing --by (no act on the log is unattributed)")
-    gh_run = gh_run or gh
-    args = ["issue", "create", "--title", title, "--body", body]
-    if repo:
-        args += ["--repo", repo]
-    proc = gh_run(args)
-    if proc.returncode != 0:
-        raise RuntimeError(f"gh issue create failed (exit {proc.returncode}): "
-                           f"{(proc.stderr or proc.stdout or '').strip()}")
-    url = (proc.stdout or "").strip().splitlines()[-1].strip() if proc.stdout else ""
-    number = url.rsplit("/", 1)[-1] if url else None
-    rec = _record("issue.created", number, by, title=title, url=url or None)
-    append_line(events_path or default_events_path(), rec)
-    return rec
-
-
 def cmd_close(ns):
     try:
         rec = do_close(ns.number, ns.reason, ns.by, repo=ns.repo)
@@ -191,31 +155,9 @@ def cmd_comment(ns):
     return 0
 
 
-def cmd_create(ns):
-    try:
-        rec = do_create(ns.title, ns.body, ns.by, repo=ns.repo)
-    except ValueError as e:
-        print(f"result: report — refused: {e}")
-        return 2
-    except RuntimeError as e:
-        print(f"result: needs-you — {e}")
-        return 2
-    where = f" (#{rec['number']})" if rec.get("number") else ""
-    print(f"  created issue{where} {rec.get('url') or ''}; provenance {rec['id']} on the log")
-    print(f"result: done — issue created{where}; the act is recorded ({rec['id']})")
-    return 0
-
-
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
-
-    np_ = sub.add_parser("create", help="open a new issue; record the act")
-    np_.add_argument("--title", required=True, help="the issue title")
-    np_.add_argument("--body", required=True, help="the issue body (the statement)")
-    np_.add_argument("--by", required=True, help="who opened it (the signer)")
-    np_.add_argument("--repo", default=None, help="owner/repo (default: inferred from cwd)")
-    np_.set_defaults(func=cmd_create)
 
     cp = sub.add_parser("close", help="close an issue with a reason; record the act")
     cp.add_argument("number", help="the issue number")
