@@ -56,6 +56,10 @@
         ".ai-native/proposals/noise-makeover.proposal.md"
       ],
       "receipts": []
+    },
+    "reconciliation": {
+      "amend": "rcp.ab5eba7b8523",
+      "note": "The value-gate accepted the value but amended on one mechanical defect: the composition claim incidence.serves=[epic.owner-harness] was asserted but unbacked — the epic did not name this atom as a piece, so policy_facts reported serves_confirmed_arc=false and unbacked_self_claims=[epic.owner-harness]. Reconciled by registering atom.noise-makeover.v0 as a piece of the confirmed epic.owner-harness (it genuinely serves that arc's 'the queue refuses to flood you' horizon), so the serves line is now policy-backed and the receipt trail is honest. This field also bumps the artifact bytes so the value-gate re-fires past its cached AMEND."
     }
   }
 }
