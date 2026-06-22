@@ -23,8 +23,7 @@
     "concern_surface": "systems",
     "incidence": {
       "serves": [
-        "v-next.owner-harness",
-        "v-next.governed-issue-acts"
+        "epic.owner-harness"
       ],
       "touches": [
         ".claude/skills/issue/issue.py",
@@ -47,7 +46,8 @@
       "prompt_versions": [],
       "source_artifacts": [
         "issue #348 (the non-dry dry-run auto-close lesson)",
-        ".claude/skills/issue/issue.py (the close/comment base, #412)"
+        ".claude/skills/issue/issue.py (the close/comment base, #412)",
+        "registered as a piece of epic.owner-harness (the confirmed arc that backs it)"
       ]
     }
   }
