@@ -196,16 +196,20 @@ class PenTest(ReflectBase):
 
         def fake(args):
             calls.append(args)
+            if args[:3] == ["gh", "issue", "list"]:
+                return "[]"  # no existing mirror — the open act mints
             return "https://github.com/owner/repo/issues/7"
 
         code, text = self.apply(fake)
         self.assertEqual(code, 0)
-        self.assertEqual(len(calls), 1)
-        self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
-        self.assertIn("--repo", calls[0])
+        creates = [c for c in calls if c[:3] == ["gh", "issue", "create"]]
+        self.assertEqual(len(creates), 1)
+        self.assertIn("--repo", creates[0])
         code, text = self.apply(fake)
         self.assertEqual(code, 0)
-        self.assertEqual(len(calls), 1)  # no drift, no reach
+        # no drift, no reach: the second run produces no acts, so not even the
+        # idempotence probe fires (the list is only reached when an open act is)
+        self.assertEqual(len([c for c in calls if c[:3] == ["gh", "issue", "create"]]), 1)
         self.assertIn("no drift", text)
 
     def test_apply_refuses_unregistered_surface(self):
@@ -220,6 +224,8 @@ class PenTest(ReflectBase):
         attempts = []
 
         def fail_second(args):
+            if args[:3] == ["gh", "issue", "list"]:
+                return "[]"  # the idempotence probe — not a reach act, no mirror
             attempts.append(args)
             if len(attempts) > 1:
                 raise RuntimeError("gh fell over")
@@ -241,6 +247,60 @@ class PenTest(ReflectBase):
             json.dumps(make_atom(1), indent=2), encoding="utf-8")
         orchestrate.orchestrate(self.root, quiet=True)
         self.to_stamp("atom.reflect-01.v0")
+
+
+class DedupTest(ReflectBase):
+    """Pins #547: the reflector double-fired owner-ask mirrors because a lost
+    (branch-local) log ack let the beat re-open an issue already on the surface.
+    The open act is now idempotent against the LIVE open issues, not only the
+    log. The §10 shape: an open act that already has a mirror must REFUSE to
+    fit (no second create), while a genuinely new one still mints."""
+
+    ADM = {"kind": "github-issues", "address": "owner/repo"}
+
+    def test_open_act_refuses_to_duplicate_an_existing_mirror(self):
+        title = "[owner-ask] 3 item(s) parked on you in report 0124"
+        acts = [{"act": "open", "atom_id": "0124", "artifact_hash": "h1",
+                 "title": title, "body": "b"}]
+        calls = []
+
+        def fake(args):
+            calls.append(args)
+            if args[:3] == ["gh", "issue", "list"]:
+                return json.dumps([{"title": title,
+                                    "url": "https://github.com/owner/repo/issues/5"}])
+            self.fail("must not create a duplicate of an existing mirror")
+
+        applied, err = reflect_pen._apply_acts(
+            self.root, "github-issues", self.ADM, acts, "test", fake)
+        self.assertIsNone(err)
+        self.assertEqual(applied, 1)
+        self.assertTrue(any(a[:3] == ["gh", "issue", "list"] for a in calls))
+        self.assertFalse(any(a[:3] == ["gh", "issue", "create"] for a in calls))
+        # the ack is recorded against the existing issue — the log catches up
+        fold = reconcile.Fold(self.root)
+        refs = [ev.get("external_ref") for ev in fold.events
+                if ev.get("type") == reflect.REFLECTED_EVENT]
+        self.assertIn("https://github.com/owner/repo/issues/5", refs)
+
+    def test_open_act_still_mints_when_no_mirror_exists(self):
+        acts = [{"act": "open", "atom_id": "0125", "artifact_hash": "h2",
+                 "title": "[owner-ask] a genuinely new ask", "body": "b"}]
+        created = []
+
+        def fake(args):
+            if args[:3] == ["gh", "issue", "list"]:
+                return "[]"
+            if args[:3] == ["gh", "issue", "create"]:
+                created.append(args)
+                return "https://github.com/owner/repo/issues/9"
+            self.fail(f"unexpected call: {args[:3]}")
+
+        applied, err = reflect_pen._apply_acts(
+            self.root, "github-issues", self.ADM, acts, "test", fake)
+        self.assertIsNone(err)
+        self.assertEqual(applied, 1)
+        self.assertEqual(len(created), 1)  # the no-match path still mints
 
 
 class HookTest(ReflectBase):
@@ -335,11 +395,14 @@ class AutoTest(ReflectBase):
 
         def fake(args):
             calls.append(args)
+            if args[:3] == ["gh", "issue", "list"]:
+                return "[]"  # no existing mirror — the open act mints
             return "https://github.com/owner/repo/issues/20"
 
         code, text = self.auto(fake)
         self.assertEqual(code, 0)
-        self.assertEqual(len(calls), 1)
+        creates = [c for c in calls if c[:3] == ["gh", "issue", "create"]]
+        self.assertEqual(len(creates), 1)  # one mirror minted (the list is a probe)
         self.assertIn("auto-applied 1 act(s)", text)
         recs = [ev for ev in reconcile.Fold(self.root).events
                 if ev.get("type") == reflect.REFLECTED_EVENT]
@@ -405,14 +468,16 @@ class DigestKindTest(ReflectBase):
 
         def fake(args):
             calls.append(args)
+            if args[:3] == ["gh", "issue", "list"]:
+                return "[]"  # no existing mirror — the open act mints
             return "https://github.com/owner/repo/issues/42"
 
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             code = reflect_pen.auto(self.root, by="reflect-auto", run=fake)
         self.assertEqual(code, 0)
-        self.assertEqual(len(calls), 1)
-        self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
+        creates = [c for c in calls if c[:3] == ["gh", "issue", "create"]]
+        self.assertEqual(len(creates), 1)
 
     def test_pen_speaks_edit_as_gh_issue_edit_in_place(self):
         calls = []

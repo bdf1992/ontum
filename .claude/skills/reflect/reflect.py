@@ -25,6 +25,7 @@ loop.node judge; this pen only opens and closes the reflection.
 """
 
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -51,6 +52,24 @@ def _gh_open(address, act, run):
     ref = run(["gh", "issue", "create", "--repo", address,
                "--title", act["title"], "--body", act["body"]])
     return ref.splitlines()[-1].strip() if ref else ref
+
+
+def _gh_open_titles(address, run):
+    """The titles of every OPEN issue on the surface, by title -> url.
+
+    The log's reflection ack should already keep an open act from re-firing,
+    but that ack can be written on a session BRANCH and never reach main — so
+    the next beat, folding a tree without it, sees the owner-ask as unreflected
+    and mints the issue AGAIN (#547: ~36 owner-ask issues for ~6 reports,
+    burying the real asks). This indexes the live surface so an open act is
+    idempotent against what is ACTUALLY there, not only against what the log
+    happens to show — the dedupe the issue asks for, robust to a lost ack."""
+    out = run(["gh", "issue", "list", "--repo", address, "--state", "open",
+               "--limit", "300", "--json", "title,url"])
+    try:
+        return {it["title"]: it["url"] for it in json.loads(out or "[]")}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return {}  # a malformed list must not block the beat — fail toward open
 
 
 def _gh_edit(address, act, run):
@@ -99,9 +118,28 @@ def _apply_acts(root, surface, adm, acts, by, run):
                    "increment, not a gh-shaped guess")
     address = adm["address"]
     applied = 0
+    # Index the live open issues once, lazily, the first time an open act needs
+    # it — so an open act never double-mints a mirror that is already on the
+    # surface (#547). One list call per run, not per act.
+    open_titles = None
     for act in acts:
         try:
-            if act["act"] != "open" and not act.get("external_ref"):
+            if act["act"] == "open":
+                if open_titles is None:
+                    open_titles = _gh_open_titles(address, run)
+                existing = open_titles.get(act["title"])
+                if existing:
+                    # already mirrored on the surface — record the ack (which
+                    # heals the lost/branch-local ack that let it re-fire) and
+                    # skip the duplicate create. The beat stops burying asks.
+                    record_reflection(root, surface, act["atom_id"],
+                                      act["artifact_hash"], act["act"],
+                                      existing, by)
+                    print(f"dedup: {act['atom_id']} already mirrored at "
+                          f"{existing} — recorded the ack, did not re-open")
+                    applied += 1
+                    continue
+            elif not act.get("external_ref"):
                 return applied, (f"the open record for {act['atom_id']} "
                                  "carries no external_ref; close it by "
                                  "hand and record the act")
