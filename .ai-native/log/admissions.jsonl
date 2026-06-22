@@ -220,3 +220,4 @@
 {"by":"claude","files":[{"after":"sha256:5fe4287d36a9dd7f41b721f8d93954db072eb7aa3fa8fb9a7538d6903ec18341","before":"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","path":".ai-native/proposals/exemplar-spec.proposal.md"}],"id":"adm.54bf999a4e27","reason":"PROPOSED design proposal, prose only","ts":"2026-06-22T07:55:21Z","type":"phrasing"}
 {"branch":"claude/exemplar-spec-open","by":"claude","claim":"exemplar-spec.proposal","id":"adm.462120f422d3","supersedes":null,"ts":"2026-06-22T07:55:54Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.agent-summoning","id":"adm.8566c6ade0b8","supersedes":null,"ts":"2026-06-22T17:12:25Z","type":"arc_confirmed"}
+{"branch":"worktree-agent-ad72e904925ec5f41","by":"claude","claim":"atom.reflector-idempotent-mirror.v0","id":"adm.457ad99360c7","supersedes":null,"ts":"2026-06-22T17:49:00Z","type":"workspace_claimed"}

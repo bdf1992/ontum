@@ -62,6 +62,19 @@ def make_root(tmp, n_atoms):
     return root
 
 
+def gh_stub(on_mutate, open_issues=None):
+    """A fake `run` for the pen. The surface-dedup guard (#547) reads the open
+    mirrors before minting, so a pen stub must speak `gh issue list --json`:
+    this answers it from `open_issues` (default: an empty surface, nothing to
+    dedupe against) and routes create/close/edit to `on_mutate`. So a test's
+    own counter sees only the real mutating calls, exactly as before the guard."""
+    def run(args):
+        if args[:3] == ["gh", "issue", "list"]:
+            return json.dumps(open_issues or [])
+        return on_mutate(args)
+    return run
+
+
 class ReflectBase(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
@@ -198,12 +211,12 @@ class PenTest(ReflectBase):
             calls.append(args)
             return "https://github.com/owner/repo/issues/7"
 
-        code, text = self.apply(fake)
+        code, text = self.apply(gh_stub(fake))
         self.assertEqual(code, 0)
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
         self.assertIn("--repo", calls[0])
-        code, text = self.apply(fake)
+        code, text = self.apply(gh_stub(fake))
         self.assertEqual(code, 0)
         self.assertEqual(len(calls), 1)  # no drift, no reach
         self.assertIn("no drift", text)
@@ -225,10 +238,11 @@ class PenTest(ReflectBase):
                 raise RuntimeError("gh fell over")
             return "https://github.com/owner/repo/issues/8"
 
-        code, text = self.apply(fail_second)
+        code, text = self.apply(gh_stub(fail_second))
         self.assertEqual(code, 2)
         self.assertIn("re-run to resume", text)
-        code, text = self.apply(lambda args: "https://github.com/owner/repo/issues/9")
+        code, text = self.apply(gh_stub(
+            lambda args: "https://github.com/owner/repo/issues/9"))
         self.assertEqual(code, 0)
         fold = reconcile.Fold(self.root)
         refs = sorted(ev["external_ref"] for ev in fold.events
@@ -337,7 +351,7 @@ class AutoTest(ReflectBase):
             calls.append(args)
             return "https://github.com/owner/repo/issues/20"
 
-        code, text = self.auto(fake)
+        code, text = self.auto(gh_stub(fake))
         self.assertEqual(code, 0)
         self.assertEqual(len(calls), 1)
         self.assertIn("auto-applied 1 act(s)", text)
@@ -409,7 +423,7 @@ class DigestKindTest(ReflectBase):
 
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            code = reflect_pen.auto(self.root, by="reflect-auto", run=fake)
+            code = reflect_pen.auto(self.root, by="reflect-auto", run=gh_stub(fake))
         self.assertEqual(code, 0)
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
@@ -418,10 +432,15 @@ class DigestKindTest(ReflectBase):
         calls = []
         ref = reflect_pen._gh_edit(
             "owner/repo",
-            {"act": "edit", "external_ref": "https://github.com/owner/repo/issues/7",
+            {"act": "edit", "atom_id": "daily-digest",
+             "external_ref": "https://github.com/owner/repo/issues/7",
              "body": "the new digest"}, lambda a: (calls.append(a), "ok")[1])
         self.assertEqual(calls[0][:3], ["gh", "issue", "edit"])
         self.assertIn("--body", calls[0])
+        # the marker is re-stamped on edit (#547) so the perennial issue stays
+        # recognisable to a later open-dedup across body changes
+        body = calls[0][calls[0].index("--body") + 1]
+        self.assertIn("ontum-mirror-key: daily-digest", body)
         self.assertEqual(ref, "https://github.com/owner/repo/issues/7")
 
 
@@ -513,6 +532,136 @@ class SurfaceKindTest(ReflectBase):
 
     def test_translator_table_is_pinned_to_the_kinds_table(self):
         self.assertEqual(set(reflect_pen.TRANSLATORS), set(reflect.SURFACE_KINDS))
+
+
+class IdempotentMirrorTest(ReflectBase):
+    """Done-line 0184 (#547): the mirror mints at most ONE open issue per group.
+    The fold's local-log ack is necessary but not sufficient under the fleet —
+    a sibling worktree forks before the ack exists and opens a duplicate, the
+    union-merged log keeping one ack while GitHub keeps both issues. The pen
+    therefore dedupes each open against the SHARED surface truth (open issues
+    carrying the hidden mirror-key), keyed by the group's stable atom_id."""
+
+    def apply(self, run):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = reflect_pen.apply(self.root, "github-issues", by="test", run=run)
+        return code, out.getvalue()
+
+    def _report_with_ask(self, report_id, ask):
+        reports = self.root / "reports"
+        reports.mkdir(exist_ok=True)
+        (reports / f"{report_id}.md").write_text(
+            f"# report\n\n## needs-you\n\n- {ask}\n", encoding="utf-8")
+
+    def test_owner_ask_group_mirrored_once_plans_zero_more(self):
+        """The fold layer, for the kind the bug hit: once a report's ask group
+        has an 'open' ack, the next pass plans no second open. The key is the
+        report_id (the stable group id). Non-vacuous: it is the
+        `(g['id'],'open') not in seen` guard that empties the second pass —
+        remove it and the same group re-plans an open every pass."""
+        self.register()
+        self._report_with_ask("0123-whiteout",
+                               "bdo must decide the whiteout fence bound")
+        from loop.owner_asks import owner_ask_groups
+        groups = owner_ask_groups(self.root)
+        self.assertEqual(len(groups), 1)
+        acts = reflect.owner_ask_drift(self.root, "github-issues")
+        self.assertEqual([a["act"] for a in acts], ["open"])
+        self.assertEqual(acts[0]["atom_id"], "0123-whiteout")  # report_id is key
+        reflect.record_reflection(self.root, "github-issues", acts[0]["atom_id"],
+                                  acts[0]["artifact_hash"], "open",
+                                  "https://x/issues/1", by="test")
+        self.assertEqual(reflect.owner_ask_drift(self.root, "github-issues"), [])
+
+    def test_minted_marker_is_the_key_a_later_pass_reads(self):
+        """The two halves of the surface guard cannot drift: the key `_gh_open`
+        writes into the body is exactly the key `_open_mirror_keys` reads back —
+        the group's atom_id (report_id, e.g. report 0123-whiteout, the bug's
+        own example)."""
+        captured = {}
+
+        def create(args):
+            captured["body"] = args[args.index("--body") + 1]
+            return "https://github.com/owner/repo/issues/5"
+
+        ref = reflect_pen._gh_open(
+            "owner/repo",
+            {"act": "open", "atom_id": "0123-whiteout", "artifact_hash": "ask.abc",
+             "title": "t", "body": "the ask body"}, create)
+        self.assertEqual(ref, "https://github.com/owner/repo/issues/5")
+        self.assertIn("ontum-mirror-key: 0123-whiteout", captured["body"])
+        keys = reflect_pen._open_mirror_keys(
+            "owner/repo",
+            gh_stub(None, open_issues=[{"url": "u", "body": captured["body"]}]))
+        self.assertEqual(keys, {"0123-whiteout": "u"})
+
+    def test_already_mirrored_group_mints_no_duplicate(self):
+        """§10, the fix: the surface already shows an OPEN mirror for this group
+        (a sibling worktree opened it). The pen must record the ack against the
+        existing issue and mint NOTHING — the double-fire (#547) refusing to
+        fit. Paired with the control below for non-vacuity."""
+        self.register()
+        self.to_stamp()
+        existing = "https://github.com/owner/repo/issues/99"
+        open_issues = [{"number": 99, "url": existing,
+                        "body": "mirror body\n\n"
+                                "<!-- ontum-mirror-key: atom.reflect-00.v0 -->"}]
+        mutated = []
+
+        def must_not_create(args):
+            mutated.append(args)
+            self.fail("minted a duplicate for an already-mirrored group (#547)")
+
+        code, text = self.apply(gh_stub(must_not_create, open_issues=open_issues))
+        self.assertEqual(code, 0)
+        self.assertEqual(mutated, [])               # zero create calls
+        self.assertIn("skip-open", text)
+        fold = reconcile.Fold(self.root)
+        opens = [e for e in fold.events
+                 if e.get("type") == reflect.REFLECTED_EVENT and e.get("act") == "open"]
+        self.assertEqual(len(opens), 1)
+        self.assertEqual(opens[0]["external_ref"], existing)  # ack on the kept one
+        # the local ack now present → the next pass is a clean no-op
+        code, text = self.apply(gh_stub(lambda a: self.fail("no drift expected")))
+        self.assertEqual(code, 0)
+        self.assertIn("no drift", text)
+
+    def test_empty_surface_mints_once_proving_the_guard_is_load_bearing(self):
+        """The control for the test above: identical setup, the ONLY difference
+        is the surface shows no existing mirror — so the pen DOES mint exactly
+        one. This is what makes the dedup non-vacuous: drop the `atom_id in
+        open_keys` skip and the already-mirrored case mints here too (its
+        `self.fail` fires), so the pair fails together."""
+        self.register()
+        self.to_stamp()
+        calls = []
+
+        def create(args):
+            calls.append(args)
+            return "https://github.com/owner/repo/issues/7"
+
+        code, text = self.apply(gh_stub(create, open_issues=[]))
+        self.assertEqual(code, 0)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][:3], ["gh", "issue", "create"])
+
+    def test_blind_open_refused_when_the_surface_cannot_be_read(self):
+        """Minting blind is the double-fire bug, so a failed read of the open
+        mirrors halts the open rather than guessing — the guard fails loud, not
+        open, on the one act it governs."""
+        self.register()
+        self.to_stamp()
+
+        def list_fails(args):
+            if args[:3] == ["gh", "issue", "list"]:
+                raise RuntimeError("gh list fell over")
+            self.fail("must not mint while the surface is unreadable")
+
+        code, text = self.apply(list_fails)
+        self.assertEqual(code, 2)
+        self.assertIn("refusing to open blind", text)
+
 
 if __name__ == "__main__":
     unittest.main()
