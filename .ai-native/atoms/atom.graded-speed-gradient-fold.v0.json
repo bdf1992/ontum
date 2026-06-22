@@ -1,0 +1,62 @@
+{
+  "atom": {
+    "id": "atom.graded-speed-gradient-fold.v0",
+    "story": {
+      "text": "As bdo, I said ontum has multiple speeds and they should be one graded dimension, not a binary: 'multiple speeds — a gradient, not binary; the thresholds binary, the state graded' (2026-06-21). Speed is the meta-level an act reaches — respond (use the loop), retune (move a dial), author (add machinery the loop then runs) — crossing every tier of the oversight hierarchy. This atom is the first, witness-grain piece of that arc (epic.graded-speed): loop/gradient.py, a read-only fold that reads my own acts off the shared log and names the band each sits in, and bites the one place the gradient is broken — an authored workflow under .claude/workflows/ whose current bytes carry no enabled arm admission is a slow 'author' act the ledger cannot see. It builds no new control loop (that would double-build the doctrine's §14/D-12 two-time-scale binary, which already slides fast<->medium in code); it reads, names, and flags. The dogfood is the point: on the live log every authored workflow reads untraced, so the author band is the disconnected island the rest of the arc exists to wire.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the speed-gradient witness (done-line 0182, epic.graded-speed piece 1): loop/gradient.py names the respond/retune/author bands off the log and bites untraced-band-crossing, composing review.is_armed's bytes-binding (I-4)",
+      "value": "loop/gradient.py makes ontum's multiple speeds legible as ONE graded dimension bdo named. profile() folds the three log files into a three-band reading by act-verb (respond/fast = events + receipts + tick; retune/medium = setpoint + auto_admit_fence; author/slow = workflow_armed + node_real + surface + herald_introduction + tag), counting a type it does not place as honestly unbanded (absence is information). The naming reconciliation is the design: bands are verbs not speeds because bdo's 'medium' is the doctrine's 'slow loop', so naming by speed would drift two vocabularies. The teeth — untraced_band_crossings() — flag any .claude/workflows/*.js whose current bytes carry no enabled arm: the author band is the highest-leverage, least-governed act (it writes machinery every fast act then runs) and is an island today, which the live dogfood proves.",
+      "why_now": "bdo, 2026-06-21: 'multiple speeds ... a gradient, not binary: the thresholds binary, the state graded.' The double-build check found speed is a re-reading of §14, so the build names the dimension, reconciles one vocabulary collision (medium == slow loop -> bands named by verb), and wires the one disconnected band (author) onto the shared ledger so it is traced all down the line.",
+      "if_accepted": "ontum has its first sensor of the speed dimension: every act reads its band off the log, and no authored machinery crosses the author band untraced without the fold naming it and the one move to arm it. The witness lands before any actuator (the arc's later pieces: the attribute-bearing session record, the A4 run rail, the faithful lint).",
+      "if_rejected": "the speed dimension stays implicit and the author band stays an unwitnessed island; the highest-leverage, least-governed acts keep crossing the ledger unseen.",
+      "cost_of_wrong_call": "Low and contained. gradient.py is a pure, read-only, stdlib fold over the existing log — it builds no control loop, moves no dial, judges nothing, and actuates nothing (D-4, propose-only). It names a band and the one arm move. Reverting is deleting gradient.py and its test. Its only dependency is the review.py/lint.py arming substrate it binds to (I-4), carried in this slice because no other PR carries it.",
+      "mechanism": "loop/gradient.py: BANDS table maps act-verbs to (speed, level, admission types); profile(root) folds events+receipts+admissions into per-band counts + the honest unbanded count; untraced_band_crossings(root) hashes each .claude/workflows/*.js (sha256 over RAW bytes, MUST equal review._hash_bytes per I-4) and flags any whose current bytes carry no enabled workflow_armed admission, distinguishing a never-armed file from a stale arm. gradient(root) composes the band profile + the crossings + a summary; render + --json + a done|report CLI. The arming records it reads are written by .claude/skills/review-workflow/review.py (which imports .claude/skills/author-workflow/lint.py as the one well-formedness authority) — both carried in this PR as gradient's dependency closure. Tests (tests/test_gradient.py, 6, non-vacuous): the untraced tooth FLAGS an unarmed workflow, does NOT flag one armed at its exact current bytes (via a REAL review.arm), and flags it AGAIN once edited (stale arm); _hash_bytes is pinned to review._hash_bytes on the same bytes (I-4); band classification places respond/retune/author and leaves arc_confirmation unbanded; a missing log is absence not a false zero. Done-line 0182.",
+      "reading": [
+        "loop/gradient.py",
+        "tests/test_gradient.py",
+        ".ai-native/proposals/graded-speed.proposal.md",
+        ".ai-native/epics/epic.graded-speed.json",
+        ".ai-native/done/0182-graded-speed-gradient-fold.md",
+        ".claude/skills/review-workflow/review.py",
+        ".claude/skills/author-workflow/lint.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.graded-speed"],
+      "touches": [
+        "loop/gradient.py",
+        "tests/test_gradient.py",
+        "loop/CLAUDE.md",
+        ".claude/workflows/CLAUDE.md",
+        ".claude/workflows/draft-capability.js",
+        ".claude/workflows/atom-trace.js",
+        ".claude/skills/review-workflow/review.py",
+        ".claude/skills/author-workflow/lint.py",
+        ".ai-native/done/0182-graded-speed-gradient-fold.md",
+        ".ai-native/epics/epic.graded-speed.json",
+        ".ai-native/proposals/graded-speed.proposal.md"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".ai-native/proposals/graded-speed.proposal.md",
+        "loop/slowloop.py",
+        "loop/disposer.py",
+        ".claude/skills/review-workflow/review.py"
+      ]
+    }
+  }
+}
