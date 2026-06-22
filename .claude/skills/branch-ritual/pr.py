@@ -515,18 +515,33 @@ def _range_atom_facts(base, head):
     diff = _run(["git", "diff", f"{base}...{head}", "--",
                  ".ai-native/log/receipts.jsonl"])
     receipt_ids = set()
+    added_receipts = []          # the full appended receipt lines (the RAW door)
+    removed_receipt_lines = 0    # any removed history closes the append-only door
     for line in diff.splitlines():
-        if not line.startswith("+") or line.startswith("+++"):
+        if line.startswith("+++") or line.startswith("---"):
+            continue
+        if line.startswith("-"):
+            if line[1:].strip():
+                removed_receipt_lines += 1
+            continue
+        if not line.startswith("+"):
             continue
         try:
             rc = json.loads(line[1:])
         except json.JSONDecodeError:
             continue  # a torn or context line is not a receipt
+        added_receipts.append(rc)
         if rc.get("artifact_id"):
             receipt_ids.add(rc["artifact_id"])
     phrasing_clean = _range_phrasing_clean(base, head, names)
     records_only = pr_audit.records_only(names)
-    return atom_ids, sorted(receipt_ids), phrasing_clean, records_only
+    # The RAW door (done-line 0187): a PR whose ONLY change is appended receipt
+    # lines that each re-derive. The pure file-scope check AND the append-only
+    # check (no removed history) are both required — a diff that rewrites log
+    # history is not an append and falls back to needing an atom.
+    receipts_only = pr_audit.receipts_only(names) and removed_receipt_lines == 0
+    return (atom_ids, sorted(receipt_ids), phrasing_clean, records_only,
+            receipts_only, added_receipts)
 
 
 def cmd_audit(ns):
@@ -546,22 +561,23 @@ def cmd_audit(ns):
     rng = getattr(ns, "range", None)
     if rng:
         base, head = rng
-        atom_ids, receipt_ids, phrasing_clean, recs_only = _range_atom_facts(
-            base, head)
+        (atom_ids, receipt_ids, phrasing_clean, recs_only,
+         recpts_only, added_receipts) = _range_atom_facts(base, head)
         result = pr_audit.audit([{
             "number": getattr(ns, "pr", None) or "(this PR)", "headRefName": head,
             "added_atom_ids": atom_ids, "receipt_artifact_ids": receipt_ids,
             "phrasing_clean": phrasing_clean, "records_only": recs_only,
+            "receipts_only": recpts_only, "added_receipts": added_receipts,
         }])
         pr_audit.render(result)
         if result["orphans"]:
-            _refuse("this PR adds no atom on the log and is neither a "
-                    "phrasing-only nor a records-only edit — open it through the "
-                    "PR pen so it becomes a unit the loop can see and land "
+            _refuse("this PR adds no atom on the log and is not a phrasing-only, "
+                    "records-only, or RAW-receipt-append edit — open it through "
+                    "the PR pen so it becomes a unit the loop can see and land "
                     "(§15/D-5); a PR is not a place to put work the machinery "
                     "never gated. (Purely prose? the phrasing door — `pr.py "
-                    "phrasing`. Only a report/done-line? the records door lands "
-                    "it without an atom.)")
+                    "phrasing`. Only a report/done-line? the records door. Only "
+                    "appended receipts that re-derive? the RAW receipts door.)")
         print("result: done — this PR is atom-backed")
         return
     _run(["git", "fetch", "origin"])
@@ -570,7 +586,8 @@ def cmd_audit(ns):
          "--json", "number,headRefName,author"]))
     facts = []
     for pr in prs:
-        atom_ids, receipt_ids, phrasing_clean, recs_only = _range_atom_facts(
+        (atom_ids, receipt_ids, phrasing_clean, recs_only,
+         recpts_only, added_receipts) = _range_atom_facts(
             "origin/main", f"origin/{pr['headRefName']}")
         facts.append({
             "number": pr["number"],
@@ -580,6 +597,8 @@ def cmd_audit(ns):
             "receipt_artifact_ids": receipt_ids,
             "phrasing_clean": phrasing_clean,
             "records_only": recs_only,
+            "receipts_only": recpts_only,
+            "added_receipts": added_receipts,
         })
     result = pr_audit.audit(facts)
     if getattr(ns, "as_json", False):
@@ -1210,7 +1229,8 @@ def cmd_land(ns):
     # reach fails we do not land a lossy receipt — the land raises and retries,
     # never records a merge it cannot describe.
     _run(["git", "fetch", "origin", base, head])
-    landed_atoms, _receipt_ids, _phrasing_clean, _records_only = _range_atom_facts(
+    (landed_atoms, _receipt_ids, _phrasing_clean, _records_only,
+     _receipts_only, _added_receipts) = _range_atom_facts(
         f"origin/{base}", f"origin/{head}")
     if ns.dry_run:
         print(f"result: report — DRY RUN: would land PR #{ns.number} "
