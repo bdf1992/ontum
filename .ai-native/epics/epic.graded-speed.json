@@ -1,0 +1,29 @@
+{
+  "epic": {
+    "id": "epic.graded-speed",
+    "owner": "bdo",
+    "status": "proposed",
+    "arc": "Make ontum's multiple speeds legible and governed as ONE graded dimension. bdo, 2026-06-21: 'multiple speeds — a gradient, not binary; the thresholds binary, the state graded.' Speed is the meta-level an act reaches (respond / retune / author), crossing every tier of the oversight hierarchy (the orthogonal axis). This is a reframe-and-wire of the doctrine's existing two-time-scale binary (§14, D-12), NOT a new control loop — the fast and medium bands already slide in code.",
+    "context": "Grounded by the graded-speed-foundation workflow and captured in .ai-native/proposals/graded-speed.proposal.md. The double-build check found speed is a re-reading of §14, so the build is naming the dimension, reconciling one vocabulary collision (bdo's 'medium' is the doctrine's 'slow loop' — bands are named by verb), and wiring the one disconnected band (author) onto the shared ledger so it is traced all down the line.",
+    "value": "The author band — the highest-leverage, least-governed act (it writes machinery every fast act then runs) — becomes visible and attributable on the ledger; the fast-norm-administrator can ingress every band. Attribution carries attributes (band, credential, arc, surface, mind, consequence, cost), minted at the gateway and inherited down every act.",
+    "horizon": "Every act reads its speed band off the log; no authored machinery crosses a band untraced; a slow session logs in through the routed gateway and its session record is the attribute-bearing root every act inherits.",
+    "pieces": [
+      {
+        "atom": "atom.graded-speed-gradient-fold.v0",
+        "glue": "The read-only witness (done-line 0182, BUILT): loop/gradient.py names the respond/retune/author bands off the log and bites untraced-band-crossing, composing review.is_armed's bytes-binding. Non-vacuous test green. Dogfood proves the author band is an island. Witness before actuator."
+      },
+      {
+        "atom": "atom.graded-speed-session-record.v0",
+        "glue": "The attribute-bearing session record (the runtime witness, activity.py part 2): a typed record minted at the gateway from which every act inherits the session's attributes (band, credential, arc) and adds its own (surface, mind, consequence, cost). NOT a 'who logged in' stamp — the schema the gradient, consequence-graph, herald, and RGB organ all read from one source. Higher blast (touches hooks); bdo's gesture territory."
+      },
+      {
+        "atom": "atom.graded-speed-run-rail.v0",
+        "glue": "The A4 run rail: a workflow launches by name through a sanctioned path that refuses an unarmed or mutated-since-arm workflow. Closes the 'there but not running' hole — .claude/workflows/ does not resolve by name today."
+      },
+      {
+        "atom": "atom.graded-speed-faithful-lint.v0",
+        "glue": "Make the A2 check faithful to the runtime: lint.py must reject any non-literal node in meta (the runtime's pure-literal rule), with a non-vacuous test (a +-concatenated meta is refused). The gate passed two workflows the runtime rejected this session — a bad gate manufactures broken artifacts at scale."
+      }
+    ]
+  }
+}
