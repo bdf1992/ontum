@@ -79,13 +79,16 @@ def _runner_claude_md(date):
         "  words, your recommendation, the riskiest part flagged — the Taster's\n"
         "  Clause), then take his decision: **confirm · defer · discharge**.\n"
         "- Record each decision into `manifest.json` `decisions[]` as\n"
-        '  `{"id": "<agenda-item-id>", "verdict": "confirm|defer|discharge",\n'
-        '  "note": "<one line>", "by": "bdo"}`, and append the conversation to\n'
-        "  `TRANSCRIPT.md`. Commit both back to this repo.\n"
+        '  `{"id": "<report-id, the bold id shown for the item in AGENDA.md>",\n'
+        '  "verdict": "confirm|defer|discharge", "note": "<one line>",\n'
+        '  "by": "bdo"}`, and append the conversation to `TRANSCRIPT.md`. Commit\n'
+        "  both back to this repo.\n"
         "- **The decisions are the return channel (decoupled pub/sub):** ontum\n"
-        "  subscribes and lands them — a `discharge` closes the owner-ask (citing\n"
-        "  the decision), a `confirm` runs the arc confirmation. You record intent\n"
-        "  here; ontum reconciles it. The calendar repo never needs ontum present.\n"
+        "  subscribes and lands them — today a `discharge` closes the owner-ask\n"
+        "  (ontum records the decision, then discharges citing it); `confirm` and\n"
+        "  `defer` are recorded for ontum to act on (their actuators land later).\n"
+        "  You record intent here; ontum reconciles it — the calendar repo never\n"
+        "  needs ontum present.\n"
         "- Keep to the 30-minute budget; items past what fits are deferred to\n"
         "  tomorrow — say so, don't rush them. **You serve; you don't decide (D-4).**\n"
     )
@@ -207,19 +210,42 @@ def _verdict_act(verdict, subject):
     return "record-only"
 
 
+def _resolve_subjects(manifest):
+    """Map each decision's id to the canonical owner-ask GROUP id. The runner
+    sees the `report_id` in AGENDA.md (the bold per-item id), not the opaque
+    group id, so a decision may be keyed by either — `manifest['agenda']` pairs
+    them. An unresolvable id is passed through unchanged (it will refuse loudly
+    at actuation rather than silently match the wrong ask). PURE."""
+    index = {}
+    for a in manifest.get("agenda", []):
+        gid = a.get("id")
+        if not gid:
+            continue
+        index[gid] = gid
+        if a.get("report_id"):
+            index[a["report_id"]] = gid
+    out = []
+    for d in manifest.get("decisions", []):
+        rid = (d.get("id") or "").strip()
+        out.append({**d, "id": index.get(rid, rid)})
+    return out
+
+
 def plan_consume(fold, mid, decisions):
     """PURE: the meeting decisions not yet landed, each with its mapped act.
     A decision already on the log (by key) is skipped — re-consume is a no-op."""
     seen = consumed_decision_keys(fold)
     plan = []
+    added = set()  # dedupe within this manifest too — two rows, same subject, one act
     for d in decisions or []:
         subject = (d.get("id") or "").strip()
         verdict = (d.get("verdict") or "").strip()
         if not subject or not verdict:
             continue
         key = f"{mid}:{subject}"
-        if key in seen:
+        if key in seen or key in added:
             continue
+        added.add(key)
         plan.append({
             "key": key, "subject": subject, "verdict": verdict,
             "note": (d.get("note") or "").strip(),
@@ -233,10 +259,12 @@ def consume(root, mid, *, by, repo=DEFAULT_REPO, get_json=_gh_get_json):
     decision is recorded as a first-class log event (the closing evidence), then
     actuated through the existing pen: a discharge of an owner-ask cites that
     event. `get_json` is injectable for tests."""
+    root = Path(root)
     manifest = get_json(repo, f"{meeting_dir_from_id(mid)}/manifest.json")
     if not manifest:
         return {"meeting_id": mid, "applied": [], "error": "no manifest on the surface"}
-    plan = plan_consume(Fold(root), mid, manifest.get("decisions", []))
+    decisions = _resolve_subjects(manifest)
+    plan = plan_consume(Fold(root), mid, decisions)
     applied = []
     for p in plan:
         evt = {

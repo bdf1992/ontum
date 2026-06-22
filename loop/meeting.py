@@ -187,7 +187,8 @@ def render(data):
     if not data["today"]:
         lines.append("Nothing parked on you — the agenda is empty. Result: done.")
         return "\n".join(lines)
-    lines.append(f"## Today ({len(data['today'])} group(s), the 30 minutes)")
+    lines.append(f"## Today ({len(data['today'])} group(s), the "
+                 f"{b['total_minutes']} minutes)")
     for n, it in enumerate(data["today"], 1):
         lines.append(f"{n}. **{it['report_id']}** ({it['count']} item(s))")
         for ask in it["asks"]:

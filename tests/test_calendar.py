@@ -115,6 +115,25 @@ class ConsumeTest(unittest.TestCase):
                            get_json=lambda r, p: manifest)
         self.assertEqual(out2["applied"], [])
 
+    def test_a_decision_keyed_by_report_id_resolves_and_discharges(self):
+        # the runner sees report_id in AGENDA.md, not the opaque group id —
+        # a decision keyed by report_id must still resolve and discharge.
+        root = make_root(tempfile.mkdtemp(), {"0111-gone": 1})
+        gid = next(g["id"] for g in meeting.live_owner_asks(root)
+                   if g["report_id"] == "0111-gone")
+        mid = "meeting.2026-06-22-owner-asks"
+        manifest = {
+            "id": mid,
+            "agenda": [{"id": gid, "report_id": "0111-gone", "count": 1}],
+            "decisions": [{"id": "0111-gone", "verdict": "discharge",
+                           "note": "by report id", "by": "bdo"}],
+        }
+        out = cal.consume(root, mid, by="bdo", repo="x/calendar",
+                          get_json=lambda r, p: manifest)
+        self.assertEqual(out["applied"][0]["result"], "discharged")
+        self.assertNotIn("0111-gone",
+                         {it["report_id"] for it in meeting.agenda(root)["today"]})
+
     def test_a_defer_decision_is_recorded_only_not_actuated(self):
         root = make_root(tempfile.mkdtemp(), {"0110-keep": 1})
         gid = next(g["id"] for g in meeting.live_owner_asks(root)
