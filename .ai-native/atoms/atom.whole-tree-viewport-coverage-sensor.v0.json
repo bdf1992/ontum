@@ -1,0 +1,63 @@
+{
+  "atom": {
+    "id": "atom.whole-tree-viewport-coverage-sensor.v0",
+    "story": {
+      "text": "As bdo, I need a per-file mask in my VS Code viewport showing which files agents have NOT discovered yet (undiscovered), alongside edited/red which VS Code paints natively, so I can see at a glance where attention has and has not reached across the whole tree — because I asked for exactly that file-mask (discovered / red / edited). This step is the SENSOR plus a coverage fold: record which files each session reads/edits so 'discovered vs undiscovered' becomes computable data the step-2 extension can paint.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "A file-touch sensor + discovered-coverage fold for the per-file mask",
+      "value": "The forest fold (0186) and the live workspace (0188) make the whole tree of work navigable; this adds the per-FILE layer bdo asked for. A PostToolUse sensor (.claude/hooks/file_touch.py) records every Read/Edit as one {ts, session, action, path} record, and loop/coverage.py folds those into the set of DISCOVERED repo-relative paths (ever read or edited) vs UNDISCOVERED tracked files (never touched), with per-directory counts and a --json dataset the step-2 VS Code extension consumes. It is the activity-accounting runtime witness (organ 2, loop/activity.py done-line 0143) turned on the file tools, declared in activity-register.json so the §10 teeth pass.",
+      "why_now": "bdo asked for the file-mask this session. 'Discovered vs undiscovered' is not data the harness collects yet — edited/red VS Code already paints, but no record says which files an agent's attention ever reached. Without the sensor first, the step-2 mask has nothing to paint. This build is exactly the sensor + the fold, no further.",
+      "if_accepted": "Every session's file reads/edits land on .ai-native/log/file-touch.jsonl (gitignored telemetry), and `python -m loop.coverage --json` reports the discovered set + per-directory undiscovered counts — the data contract for the step-2 extension that paints the mask.",
+      "if_rejected": "The whole-tree viewport stays a forest/workspace read with no per-file discovery signal; bdo cannot see which files agents have never opened, only which were edited (native VS Code).",
+      "cost_of_wrong_call": "Low and reversible: a pure-stdlib PostToolUse sensor that writes one gitignored telemetry line per file-tool use (fail-open, exit 0 always — it can never gate a tool) and a read-only fold that writes nothing. Reverting is removing one hook line, one register entry, and two files; no truth moves, no write path on the append-only log.",
+      "mechanism": "file_touch.py reads the PostToolUse stdin, maps Read->read / Edit|MultiEdit|NotebookEdit->edit, extracts the concrete file_path (notebook_path for NotebookEdit), normalizes it repo-relative when under the repo, and appends {ts, session, action, path} to the gitignored sink — failing open on any error. It is wired in settings.json (matcher Read|Edit|MultiEdit|NotebookEdit) and declared in activity-register.json (the teeth refuse an undeclared collector). loop/coverage.py senses tracked files via `git ls-files`, folds the touch log into the discovered set, and crosses them: a tracked file never touched reads undiscovered, a touched one reads discovered. The §10 teeth are the pure classifiers, proven non-vacuous in tests/test_coverage.py (a constant 'all discovered' is caught). edited/red is NOT computed (native VS Code).",
+      "reading": [
+        ".claude/hooks/file_touch.py",
+        "loop/coverage.py",
+        "tests/test_coverage.py",
+        ".ai-native/done/0189-whole-tree-viewport-coverage-sensor.md",
+        ".ai-native/proposals/whole-tree-viewport.proposal.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.whole-tree-viewport",
+        "v-next.administrator-fleet"
+      ],
+      "touches": [
+        ".claude/hooks/file_touch.py",
+        ".claude/settings.json",
+        ".claude/activity-register.json",
+        ".gitignore",
+        "loop/coverage.py",
+        "tests/test_coverage.py"
+      ],
+      "must_not_collide_with": [
+        "atom.whole-tree-viewport-forest.v0",
+        "atom.whole-tree-viewport-live-workspace.v0"
+      ],
+      "hands_off_to": [
+        "seam.coverage-to-vscode-mask"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-22: the per-file mask — which files agents have NOT discovered (undiscovered), plus edited/red (native VS Code)",
+        ".ai-native/done/0186-whole-tree-viewport-forest.md",
+        ".ai-native/done/0188-whole-tree-viewport-live-workspace.md",
+        ".ai-native/proposals/whole-tree-viewport.proposal.md"
+      ]
+    }
+  }
+}

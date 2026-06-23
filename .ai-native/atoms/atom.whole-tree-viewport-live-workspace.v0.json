@@ -1,0 +1,58 @@
+{
+  "atom": {
+    "id": "atom.whole-tree-viewport-live-workspace.v0",
+    "story": {
+      "text": "As bdo, I need something that makes a VS Code workspace and keeps it up to date and live, so I can open my Explorer and see each live work directory as a navigable root without managing anything, because I said 'all I need is something that makes a vscode workspace, and makes sure it's up to date and live.'",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "A live VS Code workspace projected from the forest fold",
+      "value": "The forest fold (done-line 0186) already folds the whole tree of in-flight work into one decorated model; this projects that model into VS Code's multi-root .code-workspace shape — base roots first (the viewport as 'ontum', then ../gallery/../holonsearch if present), then each LIVE/in-review worktree as a navigable root decorated by status (live / in-review), with its PR number and short branch. A SessionStart hook regenerates the file every session, so the Explorer view stays current with no effort.",
+      "why_now": "bdo asked for exactly this and nothing more: a generated workspace that stays live. The forest model is built; the workspace is a thin, deterministic projection of it plus a fail-open regen hook. Without it, the whole-tree forest is a FOREST.md read, not a thing he can actually open and navigate in his editor.",
+      "if_accepted": "ontum-forest.code-workspace is the live, auto-regenerated workspace: open it once and every live worktree is a root in the Explorer, refreshed at each session start. Live-session detail inside each root and a served view ride later pieces.",
+      "if_rejected": "The forest stays a FOREST.md read; bdo still navigates worktrees by hand, and his single physical checkout stays the load-bearing surface.",
+      "cost_of_wrong_call": "Low and reversible: --workspace is a pure-stdlib, read-only projection of the existing forest fold that writes only one gitignored live cache (never committed, never truth). Reverting is deleting one mode and one hook line; no truth moves, no new write path on the log.",
+      "mechanism": "loop/forest.py gains a --workspace mode (+ --out, --hook): it senses the forest (the same fold as render), then build_workspace projects the model into {folders, settings} — base roots from the PRIMARY checkout first, then each worktree whose status is live-worktree or in-review (the viewport and stranded/merged worktrees excluded) as a decorated root. The default out-path follows the viewport, so a SessionStart hook (--workspace --hook, fail-open exit 0) regenerates the one file bdo opens. The §10 teeth live in the inclusion filter, proven non-vacuous in tests/test_forest_workspace.py.",
+      "reading": [
+        "loop/forest.py",
+        "tests/test_forest_workspace.py",
+        ".ai-native/done/0188-whole-tree-viewport-live-workspace.md",
+        ".ai-native/proposals/whole-tree-viewport.proposal.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.whole-tree-viewport",
+        "v-next.administrator-fleet"
+      ],
+      "touches": [
+        "loop/forest.py",
+        "tests/test_forest_workspace.py",
+        ".claude/settings.json",
+        ".gitignore"
+      ],
+      "must_not_collide_with": [
+        "atom.whole-tree-viewport-forest.v0"
+      ],
+      "hands_off_to": [
+        "seam.forest-to-served-surface"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-22: 'all I need is something that makes a vscode workspace, and makes sure it's up to date and live.'",
+        ".ai-native/done/0186-whole-tree-viewport-forest.md",
+        ".ai-native/proposals/whole-tree-viewport.proposal.md"
+      ]
+    }
+  }
+}

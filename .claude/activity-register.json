@@ -14,6 +14,14 @@
       "sink": ".ai-native/log/tool-use.jsonl",
       "witnessed": true
     },
+    "file_touch": {
+      "wiring": "claude",
+      "events": ["PostToolUse:Read|Edit|MultiEdit|NotebookEdit"],
+      "collects": ["file_path", "action", "session"],
+      "uses_for": "record which files each session touches (read/edit) so 'discovered vs undiscovered' becomes a per-file coverage mask — the activity-accounting runtime witness on the file tools (loop/coverage.py folds it for the step-2 VS Code mask)",
+      "sink": ".ai-native/log/file-touch.jsonl",
+      "witnessed": true
+    },
     "spawn_guard": {
       "wiring": "claude",
       "events": ["PreToolUse:Bash|PowerShell", "PreToolUse:Agent", "PostToolUse:Bash|PowerShell", "PostToolUse:Agent"],
@@ -100,6 +108,14 @@
       "collects": ["worktree-list", "branch-merged-status", "tree-cleanliness"],
       "uses_for": "report worktree chores and stranded branches; cut only provably-merged clean branches",
       "sink": "git worktree state + stdout",
+      "witnessed": false
+    },
+    "forest": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["worktree-list", "branch-status", "pr-states", "tree-cleanliness", "atom-log-fold"],
+      "uses_for": "regenerate the VS Code .code-workspace from the whole-tree forest fold (done-line 0188) so the viewport + sibling repos + each live worktree are navigable roots, kept current every session; fail-open in hook mode",
+      "sink": "ontum-forest.code-workspace (gitignored live cache) + stdout",
       "witnessed": false
     },
     "gesture_surface": {

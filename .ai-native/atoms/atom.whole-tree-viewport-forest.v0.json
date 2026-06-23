@@ -1,0 +1,56 @@
+{
+  "atom": {
+    "id": "atom.whole-tree-viewport-forest.v0",
+    "story": {
+      "text": "As bdo, I need my viewport to be the whole tree, not just a window onto the landed trunk — a decorated, in-repo, auto-managed read of the whole forest of in-flight work (worktrees, branches, parked atoms, open PRs) — so I can see what is happening across the fleet and my physical checkout stops being a blocker, because I said 'I want my viewport to be the whole tree ... a decorated/tagged/flagged instance of the work, in repo, managed automatically ... I don't want MY viewport to be a blocker anymore.'",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The whole-tree forest fold — the decorated read over the whole forest",
+      "value": "Your viewport shows only landed work; the forest of in-flight work is invisible from it and your checkout is load-bearing. This is the v0 read: loop/forest.py is a pure read-only fold that composes the git forest (worktrees + branches + per-branch PR state, the way the git pen's garden senses it) with each atom's pipeline state (reconcile.Fold) into ONE decorated FOREST.md — every work-item flagged parked-atom / stranded / live-worktree / in-review / merged — plus a --json twin.",
+      "why_now": "The forest is already large (dozens of worktrees, scores of branches, parked atoms) and none of it is visible from the trunk-pinned checkout. Without a folded read, the only way to see in-flight work is to walk git by hand, and a dirty or stranded primary tree blocks the one surface you have. The fold makes the checkout one leaf among many.",
+      "if_accepted": "FOREST.md becomes the decorated whole-tree read, regenerable by one command; v1 adds live sessions/environments via watcher.py as a source; the auto-regen hook/tick and the served HTML view ride later pieces; the surface becomes your real reading surface so the checkout stops being load-bearing.",
+      "if_rejected": "The viewport stays a window onto the trunk only; in-flight work stays invisible from it and the physical checkout stays a blocker (the :whiteout utensil keeps treating the symptom).",
+      "cost_of_wrong_call": "Low and reversible: forest.py is a pure read-only fold that composes existing folds (garden's sensing, reconcile.Fold, the digest's atoms_on_main) and writes only the generated FOREST.md on --write — reverting is deleting one module and one generated file. No truth is moved, no new write path, nothing pruned.",
+      "mechanism": "loop/forest.py senses worktrees (git worktree list --porcelain), PR states (gh pr list --state all), per-worktree uncommitted (git status --porcelain) and loose branches the same way git.py garden does, folds each atom's state via reconcile.Fold + orchestrate.next_action + digest.atoms_on_main, and decorates every node with one closed-vocabulary status through two pure classifiers carrying the §10 teeth. 'render' emits FOREST.md, '--json' the dataset, '--write' regenerates the file; default renders to stdout and writes nothing.",
+      "reading": [
+        "loop/forest.py",
+        "tests/test_forest.py",
+        ".ai-native/proposals/whole-tree-viewport.proposal.md",
+        ".ai-native/done/0186-whole-tree-viewport-forest.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.whole-tree-viewport",
+        "v-next.administrator-fleet"
+      ],
+      "touches": [
+        "loop/forest.py",
+        "tests/test_forest.py",
+        "FOREST.md"
+      ],
+      "must_not_collide_with": [
+        "atom.section-queues.v0"
+      ],
+      "hands_off_to": [
+        "seam.forest-to-served-surface"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-22: 'I want my viewport to be the whole tree ... a decorated/tagged/flagged instance of the work, in repo, managed automatically ... I don't want MY viewport to be a blocker anymore.'",
+        ".ai-native/proposals/whole-tree-viewport.proposal.md"
+      ]
+    }
+  }
+}
