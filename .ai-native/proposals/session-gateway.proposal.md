@@ -781,3 +781,371 @@ sensor-before-the-load like `heal`'s own flapping/override), and the disposer
 fence (the bounded actuator, when the bottleneck is witnessed). The sensor ships
 read-only and propose-only; it never clears a park or moves a bar — the heal stays
 a session's or bdo's (D-4).
+
+---
+
+# 14. The provisioning gateway — bind-at-birth, made buildable (bdo + Claude, 2026-06-22)
+
+**Status:** PROPOSED — the converged operational design, offered not claimed.
+bdo names arcs; this takes no stamp it was not given.
+**Provenance:** co-designed in conversation, 2026-06-22, against the live friction
+evidence below and GitHub **#534** ("the session gateway must bind every session
+to a working environment at birth"). §§1–13 above established the *law* (the three
+A's, insulated-not-isolated, the typed-fold algebra, the gateway economy); this
+section makes the **first chapter buildable** — the birth step that turns the
+gateway from a sensor that *names* a deficit (§5) into a pen that *provisions away*
+the deficit before the session can trespass. Where §5's increment #1 was a guard
+("refuse a commit on an unbound HEAD"), #534's lived evidence says the guard alone
+keeps catching the trespass *after* it happens; the missing piece is the
+**provisioning act at SessionStart** that gives the fence something to *allow*.
+
+## 14.1 The purpose (evidence-backed)
+
+The harness friction sessions hit every day is **not diffuse — it is three rules,
+and all three are one missing organ**: a session is born with no bound place to
+work, so it writes into the viewport, and the guards answer in dead-ends. A read
+of `.ai-native/log/tool-use.jsonl` (5,141 records, 2026-06) shows the concentration:
+
+| Rule (guard) | Denials | Sessions hit | Note |
+|---|---|---|---|
+| `foreign-worktree` (workstation_guard) | 174 raw → **18 real** | 14 (real) | 156 of 174 are one `test-write-fence` session; discounted |
+| `viewport-flip` (workstation_guard) | **58** | 32 | a session trying to write/flip the owner's reading surface |
+| `spawn-unbranded` (spawn_guard) | **324 nags + 50 denied** | 67 nagged / 43 denied (87 combined) | a spawned node with no branded `ontum-node:<id>` binding |
+
+Three findings make this a blueprint, not a patch:
+
+1. **One root, three symptoms.** `viewport-flip` (a session reaching for the
+   viewport because nowhere else is bound), `foreign-worktree` (a session writing
+   into a tree that is not its own), and `spawn-unbranded` (a *spawned* session
+   born with no bound identity/branch) are the **same deficit at three seams**:
+   no workstation was provisioned at birth. #534 names exactly this — *"a session
+   is born with no bound place to work, so it works where it should not."*
+
+2. **The guards cannot tell us their own false-positive rate.** In the activity
+   register (`.claude/activity-register.json`), `write_guard` and `freeze_guard`
+   are `witnessed: false` — they log *denials* but never *allows*, so no fold can
+   compute any rule's base rate or false-positive rate. (`workstation_guard` is
+   `witnessed: true`, yet `tool-use.jsonl` still carries it only on the
+   `foreign-worktree`/`viewport-flip` *denial* path — no allow stream, so the
+   base-rate gap holds for it too in practice.) **No fold ranks denials by rule
+   today** — this table was hand-derived for this proposal, which is itself the
+   gap: friction has no standing surface.
+
+3. **The fence is all wall, no door (§13's own diagnosis, now with data).** Every
+   one of these denials is a *dead-end*: the session is told "no" and left to
+   improvise — which is how the whiteout→re-dirty→whiteout loop in #534 forms.
+
+**The purpose every CTA below serves:** *a session is born into a bound, configured
+workstation that is the path of least resistance; the viewport stays clean by
+construction; every denial becomes a sourced paved-path redirect, not a dead-end;
+and friction itself becomes a ranked, witnessed surface the loop can heal.*
+
+## 14.2 The full shape — five pieces
+
+```text
+                       SessionStart  (the birth seam)
+                              │
+              ┌───────────────▼────────────────┐
+              │   (2) THE PROVISIONING GATEWAY  │   one writing act at birth
+              │   a) derive TYPE  (builder /    │   (idempotent, non-destructive)
+              │      steerer-admin / node-fill) │
+              │   b) provision WORKSTATION      │──── reuse if bound ─┐
+              │      per recipe (idempotent)    │                     │
+              │   c) configure ENV (cwd, scope, │              ┌──────▼───────┐
+              │      CLAUDE.md, error-channel)  │              │  workstation │
+              │   d) record BINDING (3 A's)     │              │ branch+tree  │
+              │   e) INFORM (intro = a report)  │              └──────────────┘
+              │   f) progressive config (folds) │
+              └──────┬─────────────────┬────────┘
+                     │                 │ reads (never writes source)
+       writes source ▼                 ▼
+                 ┌────────┐    (1) VIEWPORT = read-only window
+                 │ bench  │        into the multi-root FOREST
+                 │ (branch│        (ontum + siblings + worktrees)
+                 │ /tree) │
+                 └────────┘
+   ── denial path ──────────────────────────────────────────────
+   any guard refuses → carries an ERROR CODE ─► (3) HELP/ERROR-CODE REPO
+        (registered surface) ─► resolves to a sourced paved-path REDIRECT
+   ── observation path ─────────────────────────────────────────
+   every hook firing / event / notification ─► (4a) WITNESS SYSTEM
+        (runtime witness = activity organ 2; the log becomes the topic)
+        │  gaps / error-codes / notifications cross a threshold
+        ▼
+   (4b) OVERSEER  — a NODE SUMMONED BY the witness (D-10, pub/sub like reflect.py)
+        infers over loop.gaps + the witnessed stream; surfaces the one thing
+        worth interrupting for; can compact / escalate-to-close a context window
+   ── participation path ───────────────────────────────────────
+   (5) LIVE INJECTION — context injected into any ACTIVE session's window via a
+        tool (sessions already registered at SessionStart → addressable).
+        An injector BECOMES A PARTICIPANT. DENY-BY-DEFAULT authz (the three A's /
+        inference-gateway RBAC) — the tool and its policy are ONE piece.
+```
+
+**Piece 1 — The viewport becomes a read-only window into the forest, decoupled
+from release habits.** A steerer's viewport is the multi-root *forest* (ontum +
+sibling repos + worktrees), not a writable primary tree. Sessions *read* it; they
+never write source into it. This **retires `viewport-flip` at the root**: that rule
+guarded "keep the primary tree on `main`," but if the viewport is no longer where
+work lands, flipping it stops mattering. The viewport stays clean *by construction*,
+not by the `git.py sync` rescue + `whiteout` cleanup loop carrying the load today
+(`.claude/skills/branch-ritual/git.py`, the rescue-branch sprawl #534 cites).
+
+> **Composes the in-flight forest sensor — does not rebuild it.** As of 2026-06-22
+> the *read* half of this piece is already arriving: `epic.whole-tree-viewport`'s
+> `loop/forest.py` (done-line 0186, observed in `loop/CLAUDE.md`; not yet on this
+> branch) is the read-only fold that *senses* the whole forest of in-flight work
+> (worktrees, branches, parked atoms, open PRs) — bdo's "I want my viewport to be
+> the whole tree … I don't want MY viewport to be a blocker anymore." Piece 1 is
+> the **write-policy** half that the sensor implies but does not itself enforce:
+> *sessions read the forest, work lands on benches, source never lands in the
+> viewport.* The sensor makes the forest visible; this piece makes the viewport
+> non-load-bearing. They are two halves of one move — name the overlap, build the
+> write-policy on top of the sensor, never a second forest fold (§10).
+
+**Piece 2 — The gateway PROVISIONS + CONFIGURES a workstation at SessionStart; it
+does not merely inform.** Today `session_register.py` runs at SessionStart and
+*records* `session_id → {cwd, ts}` (read-only, for the watcher), and the summon
+hook *informs* the session of its summons. Neither **provisions**. The gateway is
+one act at birth, six movements:
+
+- **(a) Derive the session TYPE** — *builder* / *steerer-admin* / *node-fill* —
+  from *how the session was summoned* (the SessionStart payload, the branded spawn
+  rail `ontum-node:<id>`, the worktree it opened in). **Type is not a label; it
+  SELECTS the environment recipe.** (Owner leans: type is **derived**, not chosen
+  from a menu — OD-2 below.)
+- **(b) Provision the workstation per recipe, IDEMPOTENTLY.** Create the
+  branch/worktree *only if the session has no bound one*; **reuse it if it does** —
+  never blind-create. Blind creation is precisely what produced the rescue-branch
+  sprawl #534 exists to kill (and §4's "a branch tied to a mortal session is born
+  to be orphaned"). A *builder* gets a fresh bench off `main`; a *steerer* gets the
+  read-only forest viewport (piece 1) and **no writable tree**; a *node-fill* gets
+  the branded §7 prompt + the trust-rung check before it acts.
+- **(c) Configure the working environment** — cwd set to the bench, env, the
+  tool-scope / posture for the type (generalizing `active_mode()` /
+  `security_mode`, `reconcile.py:184`), the composed `CLAUDE.md` surfaces, and the
+  help/error-code channel (piece 3) wired.
+- **(d) Record the BINDING** — the three A's (§5: authenticated · authorized ·
+  **attributed-to-workspace**) as a *session-scoped admission* on the log. This is
+  #534's acceptance: the binding is a signed record (`--by`, `ts`), and the
+  session's every write attributes back to it.
+- **(e) INFORM** — the context-intro the summon hook already emits becomes a
+  **report of what was set up** (the bench, the scope, the routes), not a
+  free-floating briefing.
+- **(f) Progressive config** — later configuration (more scope, more env) is *more
+  session-scoped admissions, folded live*. **Generalize the existing
+  `active_mode()` per-session admission shape** (`reconcile.py:184`,
+  latest-enabled-wins, scoped to a `session_id` or `*`) — do **not** invent a
+  second substrate. Posture today is one such admission; the binding's other
+  attributes ride the same shape.
+
+  This makes **fork / vary / parallel fall out for free**: spawning a parallel
+  builder = re-running the builder recipe with a *new bench*. This is the "typed
+  primary system."
+
+  > **NOTE (a real contract change):** this provisioning is a **writing
+  > SessionStart hook that mutates the repo** (it creates worktrees) — in the
+  > owner's class, requiring his stamp (the precedent: `reflect_auto.py` and
+  > `git.py sync --hook` are writing hooks bdo stamped). It **must be idempotent
+  > and non-destructive**: it never deletes or overwrites a tree it did not just
+  > create, it reuses an existing binding, and it fails *open and loud* (a broken
+  > provisioner never blocks a session from starting — but it says so).
+
+**Piece 3 — A registered help / error-code repo.** Notifications and guard denials
+carry an **error CODE** that resolves against a **registered** repo of help tips /
+error codes (owner leans: a registered sibling repo — OD-1 below — composing the
+reflect-surface registration pattern, `loop.reflect register --surface … --address
+…`). Today `fence/policy.py`'s `justification` *is* the message, and the non-fence
+guards (`write_guard`, `freeze_guard`, `workstation_guard`) hardcode their own
+stderr strings. Codifying gives three things: (i) **one place to improve wording**;
+(ii) **sourced, versioned, richer responses** (paved-path, examples) instead of a
+buried string literal; (iii) it lets a **friction fold rank by code** — the
+ranked-denials surface §14.1 had to hand-derive. Every denial becomes a sourced
+paved-path **redirect** — literally #534's acceptance: *"refused WITH the bound
+workspace named as the place to write instead."*
+
+**Piece 4 — A witness system + a summoned overseer (the observation tier).** Two
+parts of one organ:
+
+- **(4a) The witness system** = the *runtime witness*, the named-but-unbuilt
+  **organ 2** of activity-accounting (`loop/activity.py`, done-line 0143, "the
+  unwitnessed count is the bridge to part 2"). Every hook firing / event /
+  notification becomes a **first-class receipt on the log** — the sibling of
+  `tool-use.jsonl` that activity organ 1 declared and the git/gh-gateway proposal
+  deferred. The log becomes the **topic** (the pub/sub substrate).
+- **(4b) The overseer** is a **NODE SUMMONED BY the witness system** — not a
+  standing daemon (the no-daemon law). When gaps / error-codes / notifications
+  cross a threshold, the witness *summons* it (the summon rail / D-10, the **same
+  level-triggered pub/sub shape as `reflect.py`**: the log is the topic, a rule the
+  subscription, the threshold the trigger). It infers over `loop.gaps` + the
+  witnessed stream, surfaces **the one thing worth interrupting for**, and can
+  **compact / escalate-to-close** a full context window. This is the
+  continue-probe / session-lifecycle work's named-but-unbuilt **"observation level:
+  oversight fold + tier-3 inference (close / compact / escalate)"** lift
+  (`loop/watcher.py`, `loop/retry.py` are tier-1; this is the tier-3 it pointed at).
+
+**Piece 5 — Live injection: sessions as addressable participants.** Context can be
+injected into any **active** session's window via a tool. Sessions are *already
+registered* at SessionStart (`session_register.py` → the watch registry), so they
+are **addressable**. An agent injecting into a registered session **becomes a
+participant** in it. This generalizes to an **inter-session communication
+substrate**: the overseer joins to surface a gap; an administrator joins to steer
+its fleet; forked/parallel builders talk; a summoned judge speaks its verdict in.
+Sessions stop being islands — this is the real basis for fork/vary/parallel that
+piece 2(f) opens.
+
+> **REQUIRED EDGE:** an open "inject into any active window" tool needs
+> **DENY-BY-DEFAULT authorization** (the three A's / the **inference-gateway RBAC
+> shape**, `loop/inference.py`: `authorize(caller, surface, mind) → permit/refuse`,
+> default-deny over admitted records). No caller speaks into a session without an
+> admitted rule. *Who* may participate in *whose* session, and *as what*, is the
+> gateway's job. **The injection tool and its authorization policy are ONE piece,
+> not two** — shipping the tool without the policy is the §10 non-example below.
+
+## 14.3 The categorized, labelled concept-list
+
+**G1 — Birth provisioning (the keystone).** The SessionStart act that derives type,
+provisions a workstation idempotently, configures it, and records the binding. The
+one piece every other hangs off; the cure for all three friction rules.
+
+**G2 — Type→recipe derivation.** The pure function from summon-signal to a typed
+environment recipe. Versioned/named like `derive_type` (§10.1) — a new type is a
+recipe entry, not new code (the schema-driven agnosticism).
+
+**G3 — The session-scoped binding admission.** The three A's as a record on the
+log, folded live, generalizing `active_mode()`/`security_mode`. The attribute set
+the session's writes attribute back to.
+
+**G4 — Viewport-as-forest-window.** The read-only multi-root surface; the
+decoupling of "where bdo reads" from "where work lands" that retires
+`viewport-flip`.
+
+**G5 — The registered help / error-code repo.** Codified, sourced, versioned error
+codes; the redirect layer that turns a denial into a paved path; the substrate that
+lets friction be ranked.
+
+**G6 — The runtime witness (activity organ 2).** Every firing → a first-class
+receipt; the log as the observation topic.
+
+**G7 — The summoned overseer (observation tier).** The level-triggered node that
+folds the witnessed stream + gaps and surfaces / compacts / escalates. The
+continue-probe tier-3 lift.
+
+**G8 — Live injection + its deny-by-default authz.** The addressable-session tool
+and the RBAC policy that governs participation — one inseparable piece.
+
+**G9 — The friction-ranking fold (the dogfood instrument).** A read-only sibling of
+`gaps`/`census`/`heal` that ranks denials by rule/code over `tool-use.jsonl` + the
+witness receipts — so the §14.1 table becomes a standing surface, and a guard's
+false-positive rate becomes computable once organ-2 witnesses allows.
+
+## 14.4 Calls to action (ordered, against the purpose)
+
+| # | CTA | Kind | Serves |
+|---|-----|------|--------|
+| **CTA-A** | **Build the BUILDER RECIPE — the idempotent provisioning spine.** A writing SessionStart step that, for a builder session, *reuses* an existing bound bench or *creates* a fresh one off `main`, configures cwd, and records the binding admission. Idempotent + non-destructive + fail-open. | bdo's stamp (writing hook) → build | G1, G2, G3 |
+| CTA-B | **Wire the denial→error-code redirect** so `workstation_guard`/`write_guard` refuse *with the bound workspace named* (closes #534's acceptance line). | build | G5 |
+| CTA-C | **Make the viewport a read-only forest window** and retire `viewport-flip` once work no longer lands there. | bdo decides → build | G4 |
+| CTA-D | **Stand up the friction-ranking fold** (`loop`-sibling) over `tool-use.jsonl` — the standing surface for §14.1. | build | G9 |
+| CTA-E | **Build the runtime witness (activity organ 2)** — every firing → a receipt. | build | G6 |
+| CTA-F | **Summon the overseer** on the witnessed stream + gaps (observation tier). | build | G7 |
+| CTA-G | **Ship live injection + its deny-by-default authz as one piece** (the inference-gateway RBAC). | bdo decides → build | G8 |
+| CTA-H | **Register the help / error-code repo** (sibling repo vs in-repo `help/` — OD-1). | bdo's stamp | G5 |
+
+**Why CTA-A is the keystone.** All three friction rules are the *same* missing
+birth step (§14.1 finding 1). The builder recipe is the smallest real piece that
+*proves the provisioning act*: it is the one type with the clearest recipe (a fresh
+bench off `main`), it directly removes the daily pain (a builder stops reaching for
+the viewport because a bench is already its cwd), and it establishes the **binding
+admission shape** (G3) that every other piece reads. Pieces 3–5 are *valuable but
+downstream*: the redirect (CTA-B) needs a binding to name; the overseer (CTA-F)
+needs the witness (CTA-E); injection (CTA-G) needs the addressable-session binding.
+Build the spine first; the rest hangs off it. This is foundation work as
+**first-class progress** (the blueprint-before-build hard rule), not a detour
+toward a shipped result.
+
+## 14.5 Open decisions — each with a recommended default for bdo to stamp
+
+> These are bdo's calls (D-4). A session does not resolve them silently; each
+> carries the session's recommendation as the Taster's-Clause shaped pick.
+
+- **OD-1 — Help/error-code repo location.** *Recommended: a registered **sibling
+  repo***, composing the reflect-surface registration pattern (`loop.reflect
+  register --surface … --address …`) — it keeps error-code content versioned and
+  improvable without churning the ontum tree, and matches the multi-root forest
+  framing of piece 1. *Alternative:* an in-repo `help/` registry (simpler, no
+  cross-repo wiring, but couples error-code edits to ontum's pipeline).
+- **OD-2 — Session type: derived vs chosen.** *Recommended: **DERIVED*** from the
+  summon signal (the spawn rail, the worktree, the payload) — a chosen type is a
+  self-asserted identity, the exact failure the three A's refuse (§5: given/asserted
+  = not inferred). *Alternative:* chosen-from-a-menu (simpler to bootstrap, but
+  re-opens self-grant).
+- **OD-3 — Injection-escalation authz substrate.** *Recommended: govern it by the
+  **inference-gateway RBAC pattern*** (`loop/inference.py`, default-deny over
+  admitted `(caller, surface, mind)` rules) — confirm this is the authz substrate
+  for "who may participate in whose session," rather than minting a second policy
+  engine (which §13.10 / gateway-policy-spine.proposal.md warn against).
+
+## 14.6 What this is NOT (non-goals) and the ties that prevent double-build
+
+- **Not a new arc, not a new substrate.** This is a **chapter** of the anthology
+  §5b/§12b names (it re-homes into `owner-harness`/`substrate`/`inference-gateway`/
+  `virtual-fleet`); bdo names the anthology. It **composes** existing parts and
+  invents no second truth.
+- **Not a rewrite of §§1–13.** §§1–13 are the law (the three A's, insulated-not-
+  isolated, the typed-fold algebra, the gateway economy). This section is only the
+  *first buildable chapter* — the birth-provisioning act — made concrete against
+  #534's evidence.
+- **Does NOT double-build the continue-probe / session-lifecycle work.** Tier-1
+  (registration + idle watcher + soft retry) is built (`loop/watcher.py`,
+  `loop/retry.py`, `session_register.py`, done-line 0135). Piece 4b (the overseer)
+  is the **tier-3 observation lift that work explicitly pointed at** — it *consumes*
+  the existing registration, it does not re-register.
+- **Does NOT double-build activity-accounting.** Organ 1 (the declared register +
+  the reconciliation fold) is built (`loop/activity.py`, `.claude/
+  activity-register.json`, done-line 0143). Piece 4a (the runtime witness) is
+  **organ 2, by name** — the bridge organ 1 declared, not a new accounting system.
+- **Does NOT double-build the fence / policy spine.** The denial→redirect (piece 3)
+  and the injection authz (piece 5) ride `fence/policy.py` + `loop/inference.py` +
+  `loop.reflect` registration — the PEP/PDP/PIP shape gateway-policy-spine.proposal.md
+  already maps. This section spends those parts; it does not re-author them.
+- **Does NOT soften a bright-line guard.** `freeze_guard` stays fail-closed,
+  no-exception (gateway-policy-spine's two-tier model). The provisioning hook is
+  *contextual-tier* (fail-open); the bright lines are untouched.
+- **Not a daemon.** The overseer is *summoned* (D-10), the witness is a hook+fold;
+  no standing process, no broker, no network at runtime.
+
+## 14.7 §10 teeth — what would make this rot (non-examples)
+
+- a provisioning hook that **blind-creates** a worktree instead of reusing a bound
+  one (manufactures the rescue-branch sprawl #534 exists to kill — §4's orphan
+  failure);
+- a provisioning hook that is **destructive** or fails *closed* (blocks a session
+  from starting — worse than the disease);
+- a session **type chosen, not derived** (self-asserted identity — the three A's
+  breach, OD-2);
+- a binding kept as **in-memory or a second store** instead of a session-scoped
+  admission folded from the log (the shared-mutable-state failure §2 forbids);
+- an **error code that resolves to nothing** (a ghost, in the term-economy sense —
+  the redirect must cite a resolvable help record);
+- the **injection tool shipped without its deny-by-default authz** (an open channel
+  into any session = the worst hole in the repo);
+- an **overseer that acts without being summoned** (a standing daemon — the
+  no-daemon law) **or that surfaces everything** (no threshold = noise, the
+  observation tier's own failure mode);
+- a **viewport made writable again** "for convenience" (re-opens `viewport-flip` and
+  the whiteout loop).
+
+## 14.8 What it composes / reuses (the no-double-build ledger)
+
+`session_register.py` (addressable sessions) · `reconcile.py:184 active_mode()`
+(the session-scoped admission shape G3 generalizes) · `loop/inference.py` (the
+deny-by-default RBAC for piece 5 / OD-3) · `fence/policy.py` +
+`workstation_guard`/`write_guard` (the seams piece 3 redirects) · `loop.reflect`
+registration (piece 3 / OD-1) · `loop/activity.py` + `.claude/activity-register.json`
+(organ 1 → piece 4a is organ 2) · `loop/watcher.py` + `loop/retry.py` (tier-1 →
+piece 4b is tier-3) · `loop/gaps.py` (the overseer's input) · the branded spawn rail
+`ontum-node:<id>` (the node-fill recipe's signal) · `git.py sync`/`whiteout` (the
+rescue layer this *demotes* from load-bearing to rare-recovery) · `loop/forest.py`
+(`epic.whole-tree-viewport`, the forest *sensor* piece 1's write-policy composes —
+the read half to piece 1's write half).
