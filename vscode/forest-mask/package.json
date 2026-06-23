@@ -1,0 +1,21 @@
+{
+  "name": "ontum-forest-mask",
+  "displayName": "Ontum Forest Mask",
+  "description": "Per-file Explorer mask: tags each file read / written / in-context / undiscovered from the ontum file-touch sensor log. The painting half of loop/coverage.py.",
+  "version": "0.0.1",
+  "publisher": "ontum",
+  "license": "SEE repo root",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {},
+  "dependencies": {}
+}

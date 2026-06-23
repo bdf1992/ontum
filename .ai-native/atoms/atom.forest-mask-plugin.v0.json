@@ -1,0 +1,64 @@
+{
+  "atom": {
+    "id": "atom.forest-mask-plugin.v0",
+    "story": {
+      "text": "As bdo, I need a per-file MASK on my VS Code Explorer that shows only what an agent has read, written, or has in context — and dims (masks) the files no agent has discovered — so I can see at a glance, in the editor where I already work, how far agent attention has reached across the tree. I asked for exactly that this session (2026-06-23): 'a masking to show only what the agent has read/written or is in context window... start simple and label and tag for now' (no side panel). This is the step-2 PAINTING surface over the file-touch sensor: a plain-JS VS Code FileDecorationProvider that reads the same file-touch log loop/coverage.py folds and tags each file undiscovered / read / written / in-context.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "A plain-JS VS Code FileDecorationProvider that masks the Explorer by agent attention",
+      "value": "The file-touch sensor + loop/coverage.py (the whole-tree-viewport coverage step) make 'discovered vs undiscovered' computable data; this is the surface bdo asked for that PAINTS it. A drop-the-folder VS Code extension (no TypeScript, no npm build, no bundler) registers a FileDecorationProvider that reads .ai-native/log/file-touch.jsonl (the SAME source as loop/coverage.py — no second truth), classifies each file into one of four tiers via a PURE module (tier.js), and decorates it: undiscovered '·' (dimmed — the mask), read 'r', written '✎', in-context '●'. It re-reads the log live on change so the mask updates as agents work.",
+      "why_now": "bdo asked for the file-mask surface this session. The sensor (PR #662, branch claude/whole-tree-viewport) produces the data; without the painting surface it stays a --json dataset bdo never sees in his viewport. This build is exactly the FileDecorationProvider over that log, no further: it labels and tags, the simple start he named.",
+      "if_accepted": "bdo can drop vscode/forest-mask/ into his VS Code extensions dir, reload, and see each file in the Explorer tagged by agent attention — undiscovered files dimmed, read/written/in-context badged and coloured — refreshing live as agents read and edit. The mask lights up once the file-touch sensor (#662) lands and records touches.",
+      "if_rejected": "The coverage sensor's data (loop/coverage.py --json) has no editor surface; bdo can only read discovered/undiscovered counts on the CLI, never see the per-file mask in the viewport he actually works in.",
+      "cost_of_wrong_call": "Low and reversible: a self-contained plain-JS extension under vscode/ that READS one gitignored telemetry log and paints decorations; it writes nothing, touches no truth, imports no sensor code, and runs only inside a VS Code install bdo chooses to load it into. Reverting is deleting the vscode/forest-mask/ folder; no record moves, no append-only log is written, no Python changes.",
+      "mechanism": "tier.js exports a pure classify(touchRecords, repoRelPath, nowMs, recencyMs) -> 'undiscovered' | 'read' | 'written' | 'in-context': undiscovered = never in the records; written = any 'edit' record (outranks read); read = read but never edited; in-context = touched within recencyMs of nowMs (an explicit recency PROXY — true context membership is unobservable). extension.js registers vscode.window.registerFileDecorationProvider, locates the repo root (a workspace folder carrying .ai-native, else walk up), reads + caches .ai-native/log/file-touch.jsonl, maps each uri to its repo-relative path, calls classify, and returns a FileDecoration (badge, themed colour, tooltip); a FileSystemWatcher on the log fires onDidChangeFileDecorations for live refresh. Fail-soft: a missing/empty log -> every file undiscovered, nothing throws. The §10 tooth is the pure classifier, proven non-vacuous by tier.test.js (plain node; a constant 'read' classifier is caught). No dependency, host vscode API + node stdlib only.",
+      "reading": [
+        "vscode/forest-mask/tier.js",
+        "vscode/forest-mask/extension.js",
+        "vscode/forest-mask/tier.test.js",
+        "vscode/forest-mask/package.json",
+        "vscode/forest-mask/README.md",
+        "vscode/CLAUDE.md",
+        ".ai-native/done/0190-forest-mask-plugin.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.whole-tree-viewport",
+        "v-next.administrator-fleet"
+      ],
+      "touches": [
+        "vscode/CLAUDE.md",
+        "vscode/forest-mask/package.json",
+        "vscode/forest-mask/tier.js",
+        "vscode/forest-mask/extension.js",
+        "vscode/forest-mask/tier.test.js",
+        "vscode/forest-mask/README.md"
+      ],
+      "must_not_collide_with": [
+        "atom.whole-tree-viewport-coverage-sensor.v0"
+      ],
+      "hands_off_to": [
+        "seam.coverage-to-vscode-mask"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-23: a masking to show only what the agent has read/written or is in context window... start simple and label and tag for now (no side panel)",
+        ".ai-native/done/0190-forest-mask-plugin.md",
+        "loop/coverage.py (branch claude/whole-tree-viewport)",
+        ".claude/hooks/file_touch.py (branch claude/whole-tree-viewport)"
+      ]
+    }
+  }
+}
