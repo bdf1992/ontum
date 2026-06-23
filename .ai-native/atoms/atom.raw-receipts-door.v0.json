@@ -1,0 +1,49 @@
+{
+  "atom": {
+    "id": "atom.raw-receipts-door.v0",
+    "story": {
+      "text": "bdo's RAW vs RAI cut: a RAW append is a deterministic FACT that re-derives from its own bytes (a receipt id recomputes from its content); an RAI artifact is authored or inferred and cannot. RAW is the doctrine's only free layer and should be admissible; RAI must be gated. The off-log door (loop/pr_audit.py) had it backwards — it discriminated by file EXTENSION, waving through authored .md (RAI: reports, done-lines) while refusing a provable .jsonl receipt append as an off-log orphan. That blocked PR #656, which carries the stranded, real value-gate acceptance rcp.c21c49ac30c1 (its atom's code already landed via #554; the acceptance stranded off-trunk — the #617 integrity gap). As the loop, I want the door to ask 'does it prove itself?' instead of 'what file is it?': a PR whose only change is appended receipt lines lands without an atom WHEN every line re-derives to its stored id, and a fabricated, tampered, or non-receipt change is refused.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the RAW receipts door: a re-deriving receipt-append PR lands without an atom",
+      "value": "A PR whose ONLY change is appended lines to .ai-native/log/receipts.jsonl — no atom, no code, no prose — lands without an atom, exactly when every appended line RE-DERIVES to its stored id. The fourth backed shape in the off-log gate, the sibling of the records (0172) and phrasing (0117) doors. It un-strands a real value-gate acceptance whose work already landed: the #617 integrity gap, where the acceptance receipt for an already-landed atom could never reach main because the append carried .jsonl, not .md.",
+      "why_now": "PR #656 is blocked right now: it carries rcp.c21c49ac30c1, the real value-gate acceptance for atom code that landed via #554, and the off-log gate refuses it as an orphan because it adds no atom and is not records/phrasing-only. The door discriminates by extension (RAI .md waved through, RAW .jsonl refused) — backwards from bdo's RAW vs RAI principle. The integrity gap widens every time an acceptance strands off-trunk.",
+      "if_accepted": "loop.pr_audit gains receipts_only(paths) + receipt_rederives(rc) + receipts_door_reason(added_receipts); orphan_reason/audit gain the fourth backed shape labelled backed_by: [\"receipts-door\"]. pr.py audit gathers the appended receipt lines and the receipts-only/append-only facts from the diff and re-verifies them, so the door cannot be lied to. A receipts-only PR whose every line re-derives lands; PR #656's stranded acceptance can reach main.",
+      "if_rejected": "Real, provable acceptance receipts keep stranding off-trunk whenever their work already landed (the #617 gap persists), and the integrity-critical join between an atom's code on main and its acceptance on the log stays broken — the door keeps trusting file extension over re-derivation, admitting authored RAI while refusing self-proving RAW.",
+      "cost_of_wrong_call": "Fail-safe and bounded: the door only ever WIDENS what lands without an atom, and only for a PR that changes nothing but the receipts log with appended lines that recompute to their stored id by the SAME derivation make_receipt minted them with (reused, not re-invented — I-4). The same proof runs server-side in pr.py audit, and a diff that rewrites log history (removed lines) or touches any other file falls back to needing an atom. The teeth are tested and proven non-vacuous: a fabricated id / tampered field / missing field / merge-receipt scheme each refuse, one bad line poisons the batch, and 7 tests flip under a vacuous always-admit checker. Reverting is deleting the receipts branch in orphan_reason and the three pure functions; nothing depends on it.",
+      "mechanism": "loop/pr_audit.py (pure, stdlib): receipts_only(paths) is the file-scope check (only .ai-native/log/receipts.jsonl); receipt_rederives(rc) recomputes rcp.<short_hash(node|artifact_id|artifact_hash|event_id)> via loop.reconcile.short_hash — the exact key make_receipt hashes — and compares to the stored id, returning False for any missing field or a different id scheme (e.g. rcp.merge.NNN); receipts_door_reason(added_receipts) is None iff there is at least one appended line and every one re-derives, else it names the smuggling. orphan_reason gains receipts_only + added_receipts as the FOURTH way to be backed; audit labels it backed_by: [\"receipts-door\"]. .claude/skills/branch-ritual/pr.py: _range_atom_facts now also returns receipts_only (file-scope AND no removed history) + added_receipts (parsed appended lines), cmd_audit passes them, and the land path unpacks the widened tuple. tests/test_pr_audit.py is the §10 teeth, grounded in a real on-log value-gate receipt; tests/test_merge_land.py's arity-guard updated 4->6. Done-line 0187; full suite green (1510 tests).",
+      "reading": [
+        "loop/pr_audit.py",
+        "tests/test_pr_audit.py",
+        ".claude/skills/branch-ritual/pr.py",
+        ".ai-native/done/0187-raw-receipts-door.md",
+        "loop/reconcile.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": [
+        "loop/pr_audit.py",
+        ".claude/skills/branch-ritual/pr.py",
+        "tests/test_pr_audit.py",
+        "tests/test_merge_land.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": ["loop/pr_audit.py", "loop/reconcile.py", ".ai-native/atoms/atom.records-door.v0.json"],
+      "receipts": []
+    }
+  }
+}

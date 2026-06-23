@@ -34,6 +34,10 @@
       {
         "atom": "atom.issue-pen-open-reopen.v0",
         "glue": "the issue pen gains open + reopen — a session puts an owner decision on bdo's GitHub surface as a recorded act (instead of raw gh or a CLI-at-owner line) and can reverse a wrong/stale close with the same accountability; the #348 recovery lesson, governing the owner surface."
+      },
+      {
+        "atom": "atom.noise-makeover.v0",
+        "glue": "the queue refuses to flood you, made mechanical: an accreting owner inbox (open-only owner-ask mirrors, process-bound gate-tracker closes) is made over into one synthesized digest line, proven-resolved noise auto-silenced under a fence bdo stamps, and the genuinely-unresolved escalated by name (#628). Serves the arc's 'the queue refuses to flood you' value — a read-only fold (loop/reconcile_noise.py) computes each noise subject's resolution from the log alone, and the actuator silences only what bdo's noise_silence_fence authorizes (cooling-only, default-inert)."
       }
     ]
   }
