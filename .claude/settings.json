@@ -107,6 +107,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Read|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/file_touch.py\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "SessionStart": [

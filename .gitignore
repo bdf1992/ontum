@@ -11,6 +11,11 @@ causality/welcome-preview.png
 # sensor trace, not truth: the command watcher's log (done-line 0011) — deletable
 .ai-native/log/tool-use.jsonl
 
+# sensor trace, not truth: the file-touch sensor's log — which files each session
+# read/edited, folded by loop/coverage.py into the discovered/undiscovered mask;
+# a telemetry cache rebuilt by replaying sessions, deletable
+.ai-native/log/file-touch.jsonl
+
 # sensor trace: what Codex really hands a hook (done-line 0029) — deletable
 .ai-native/log/codex-hook-probe.jsonl
 

@@ -14,6 +14,14 @@
       "sink": ".ai-native/log/tool-use.jsonl",
       "witnessed": true
     },
+    "file_touch": {
+      "wiring": "claude",
+      "events": ["PostToolUse:Read|Edit|MultiEdit|NotebookEdit"],
+      "collects": ["file_path", "action", "session"],
+      "uses_for": "record which files each session touches (read/edit) so 'discovered vs undiscovered' becomes a per-file coverage mask — the activity-accounting runtime witness on the file tools (loop/coverage.py folds it for the step-2 VS Code mask)",
+      "sink": ".ai-native/log/file-touch.jsonl",
+      "witnessed": true
+    },
     "spawn_guard": {
       "wiring": "claude",
       "events": ["PreToolUse:Bash|PowerShell", "PreToolUse:Agent", "PostToolUse:Bash|PowerShell", "PostToolUse:Agent"],
