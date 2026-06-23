@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 780" width="980" height="780">
+  <rect width="980" height="780" fill="url(#bg)"/>
+  <rect width="980" height="780" fill="url(#dots)"/>
+  <defs>
+      <radialGradient id="bg" cx="50%" cy="34%" r="80%">
+        <stop offset="0%" stop-color="#fbfaf6"/><stop offset="100%" stop-color="#f0ece1"/>
+      </radialGradient>
+      <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+        <circle cx="1.2" cy="1.2" r="1.1" fill="#e7e2d6"/>
+      </pattern>
+      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#2a2418" flood-opacity="0.10"/>
+      </filter>
+      <marker id="arX" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#cf6a3f"/></marker><marker id="arY" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3f86a6"/></marker><marker id="arZ" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8869b4"/></marker><marker id="arF" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d6a022"/></marker>
+    </defs>
+  <g filter="url(#soft)"><g><polygon points="470.0,274.0 639.7,372.0 470.0,470.0 300.3,372.0" fill="#f4f0e6" stroke="#cdc6b6" stroke-width="1.0" stroke-linejoin="round" opacity="1.0"/>
+<polygon points="300.3,568.0 470.0,666.0 470.0,470.0 300.3,372.0" fill="#e8e2d4" stroke="#cdc6b6" stroke-width="1.0" stroke-linejoin="round" opacity="1.0"/>
+<polygon points="639.7,568.0 470.0,666.0 470.0,470.0 639.7,372.0" fill="#ded7c6" stroke="#cdc6b6" stroke-width="1.0" stroke-linejoin="round" opacity="1.0"/>
+<line x1="470.0" y1="470.0" x2="551.1" y2="329.4" stroke="#a9a292" stroke-width="1.4" stroke-dasharray="2 6" opacity=".8"/>
+<rect x="546.1" y="324.4" width="10" height="10" rx="2" transform="rotate(45 551.1 329.4)" fill="none" stroke="#a9a292" stroke-width="1.4"/>
+<line x1="470.0" y1="470.0" x2="388.9" y2="329.4" stroke="#a9a292" stroke-width="1.4" stroke-dasharray="2 6" opacity=".8"/>
+<rect x="383.9" y="324.4" width="10" height="10" rx="2" transform="rotate(45 388.9 329.4)" fill="none" stroke="#a9a292" stroke-width="1.4"/>
+<line x1="470.0" y1="470.0" x2="470.0" y2="653.9" stroke="#a9a292" stroke-width="1.4" stroke-dasharray="2 6" opacity=".8"/>
+<rect x="465.0" y="648.9" width="10" height="10" rx="2" transform="rotate(45 470.0 653.9)" fill="none" stroke="#a9a292" stroke-width="1.4"/>
+
+    <line x1="470.0" y1="470.0" x2="697.4" y2="601.3"
+          stroke="#cf6a3f" stroke-width="2.4" stroke-linecap="round" marker-end="url(#arX)"/>
+    <g transform="translate(709.4,601.3)">
+      <text text-anchor="start" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="14" font-weight="700" fill="#cf6a3f" dy="-2">X¹</text>
+      <text text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Inter,system-ui,sans-serif" font-size="10.5" fill="#9b9485" dy="13">axis · dim 1</text>
+    </g>
+
+    <line x1="470.0" y1="470.0" x2="242.6" y2="601.3"
+          stroke="#3f86a6" stroke-width="2.4" stroke-linecap="round" marker-end="url(#arY)"/>
+    <g transform="translate(230.6,601.3)">
+      <text text-anchor="end" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="14" font-weight="700" fill="#3f86a6" dy="-2">X²</text>
+      <text text-anchor="end" font-family="ui-sans-serif,-apple-system,'Segoe UI',Inter,system-ui,sans-serif" font-size="10.5" fill="#9b9485" dy="13">axis · dim 2</text>
+    </g>
+
+    <line x1="470.0" y1="470.0" x2="470.0" y2="207.4"
+          stroke="#8869b4" stroke-width="2.4" stroke-linecap="round" marker-end="url(#arZ)"/>
+    <g transform="translate(482.0,207.4)">
+      <text text-anchor="start" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="14" font-weight="700" fill="#8869b4" dy="-2">X³</text>
+      <text text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Inter,system-ui,sans-serif" font-size="10.5" fill="#9b9485" dy="13">axis · dim 3</text>
+    </g>
+<line x1="645.7" y1="411.2" x2="825.9" y2="411.2" stroke="#d6a022" stroke-width="3.4" stroke-linecap="round" marker-end="url(#arF)"/>
+<text x="737.7" y="401.2" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="13" font-weight="700" fill="#d6a022">FORWARD</text>
+<text x="737.7" y="429.2" text-anchor="middle" font-family="ui-sans-serif,-apple-system,'Segoe UI',Inter,system-ui,sans-serif" font-size="10" fill="#9b9485">to the next cell</text>
+<circle cx="470.0" cy="470.0" r="4.5" fill="#2c2823"/>
+<text x="479.0" y="488.0" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="11" fill="#9b9485">origin</text>
+<text x="470.0" y="152.5" text-anchor="middle" font-family="ui-sans-serif,-apple-system,'Segoe UI',Inter,system-ui,sans-serif" font-size="17" font-weight="650" fill="#2c2823">Coordinate System</text>
+<text x="470.0" y="172.5" text-anchor="middle" font-family="ui-sans-serif,-apple-system,'Segoe UI',Inter,system-ui,sans-serif" font-size="11.5" fill="#9b9485">a reusable cell · 3 axes + forward + open slots</text></g></g>
+  <text x="32" y="754" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="11" fill="#9b9485">grammar/coord.py · step 1 — the reusable cell (above / below / parallel / tree compose from this)</text>
+</svg>

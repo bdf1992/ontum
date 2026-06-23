@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cnex · conal–axial frame</title>
+<link rel="stylesheet" href="./styles.css">
+<!-- local Three.js, no runtime network -->
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+</head>
+<body>
+
+<div id="title"><b>CNEX · CONAL–AXIAL FRAME</b>
+  <span>3 double-cones · 6 faces · 8 triads · 12 seams · 1 neck</span></div>
+
+<div id="bar">
+  <button class="btn" id="bKnoll" title="lay the parts flat, sorted by kind">knoll</button>
+  <button class="btn" id="bReset" title="recenter the camera">reset view</button>
+</div>
+
+<div id="hint">drag to orbit · scroll to zoom · click an element</div>
+
+<div class="panel" id="inspect"></div>
+
+<canvas id="c"></canvas>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>

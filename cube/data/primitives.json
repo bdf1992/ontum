@@ -1,0 +1,22 @@
+{
+  "neck": {
+    "title": "neck",
+    "blurb": "The 7th meeting point: the locus where polarity inverts. The shared apex of all three double-cones — the setpoint 0, the bound, the flux, the frame. Generative negative space, not a normal point."
+  },
+  "face": {
+    "title": "face",
+    "blurb": "A typed surface — the wide mouth of one cone, the outer tip of a double-cone. Its normal is a volumetric axis, not a line. Six faces = six tips of three bicones."
+  },
+  "bicone": {
+    "title": "double-cone",
+    "blurb": "One axis (region / flow / reach) read as two cones meeting tip-to-tip at the neck. The negative cone-field, the neck, the positive cone-field. State resolves in the cone's surface/volume, not on the spine."
+  },
+  "edge": {
+    "title": "chiral seam",
+    "blurb": "A boundary between two faces, drawn as a torus ring. Ingress is not the inverse of egress: same seam, different crossing, different consequence."
+  },
+  "corner": {
+    "title": "triad",
+    "blurb": "A triadic junction where three typed surfaces meet — one landmark drawn from each of the three axes. Eight corners, each a distinct (region, flow, reach) triple."
+  }
+}

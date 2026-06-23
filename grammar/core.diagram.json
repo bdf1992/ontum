@@ -1,0 +1,41 @@
+{
+  "size": [1280, 600],
+  "title": "ontum core system — one request, one crossing, an accountable return",
+  "regions": [
+    {"id": "external", "label": "EXTERNAL SPACE — the target system", "x": 32, "y": 64, "w": 300, "h": 486},
+    {"id": "boundary", "label": "BOUNDARY — fence / seam", "x": 372, "y": 64, "w": 176, "h": 486},
+    {"id": "internal", "label": "INTERNAL SPACE — ontum", "x": 588, "y": 64, "w": 660, "h": 486}
+  ],
+  "nodes": [
+    {"id": "request", "type": "pill", "region": "external", "x": 68, "y": 176, "w": 228, "h": 74, "label": "a request"},
+    {"id": "receipt", "type": "pill", "region": "external", "x": 68, "y": 392, "w": 228, "h": 74, "label": "accountable receipt"},
+
+    {"id": "gateway", "type": "rhombus", "region": "boundary", "x": 396, "y": 236, "w": 128, "h": 100, "label": "GATEWAY"},
+
+    {"id": "settings", "type": "rounded", "region": "internal", "x": 612, "y": 118, "w": 188, "h": 72, "label": "SETTINGS · ADMIT"},
+    {"id": "sessions", "type": "rounded", "region": "internal", "x": 612, "y": 250, "w": 188, "h": 80, "label": "SESSIONS · STEP"},
+    {"id": "names", "type": "rounded", "region": "internal", "x": 612, "y": 396, "w": 188, "h": 72, "label": "NAMES · HASH"},
+
+    {"id": "repository", "type": "rounded", "region": "internal", "x": 824, "y": 118, "w": 188, "h": 72, "label": "REPOSITORY · CITE"},
+    {"id": "records", "type": "rounded", "region": "internal", "x": 824, "y": 250, "w": 188, "h": 80, "label": "RECORDS · APPEND"},
+    {"id": "peers", "type": "rounded", "region": "internal", "x": 824, "y": 396, "w": 188, "h": 72, "label": "PEERS · FOLD"},
+
+    {"id": "resource", "type": "rounded", "region": "internal", "x": 1036, "y": 118, "w": 188, "h": 72, "label": "RESOURCE · SOURCE"},
+    {"id": "reason", "type": "rounded", "region": "internal", "x": 1036, "y": 250, "w": 188, "h": 80, "label": "REASON · VERDICT"}
+  ],
+  "edges": [
+    {"from": "request", "to": "gateway", "label": "1 · SOURCE — ingress"},
+    {"from": "gateway", "to": "sessions", "label": "2 · STEP — enter"},
+    {"from": "sessions", "to": "records", "label": "3 · FOLD"},
+    {"from": "sessions", "to": "repository", "label": "3 · CITE"},
+    {"from": "records", "to": "reason", "label": "4 · VERDICT"},
+    {"from": "reason", "to": "records", "label": "5 · APPEND", "via": [[1056, 352], [956, 352]]},
+    {"from": "peers", "to": "reason", "label": "second eyes", "style": "dashed"},
+    {"from": "reason", "to": "gateway", "label": "6 · EGRESS", "via": [[1112, 522], [460, 522]]},
+    {"from": "gateway", "to": "receipt", "label": "receipt out"},
+    {"from": "settings", "to": "gateway", "label": "governs", "style": "tether"},
+    {"from": "names", "to": "gateway", "label": "seals", "style": "tether"},
+    {"from": "resource", "to": "sessions", "label": "bounds", "style": "tether", "via": [[1130, 96], [806, 96], [806, 344]]}
+  ],
+  "caption": "Deliberately not shown: the topology axes (Internal/External · Ingress/Egress · Local/Global), the 64-cell systems×pointers matrix, and the recursive projection mesh — see grammar/."
+}
