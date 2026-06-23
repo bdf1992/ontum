@@ -1,0 +1,12 @@
+{
+  "_doc": "Declared registry of standing processes the loop expects to be running (bdo 2026-06-22, the watchdog ask). loop/health.py checks each: its OS task registered+enabled, and its freshness signal recent. A down process is surfaced at session start so bdo and any session both know. Machine-specific paths are expected here (this is config for bdo's machine); add an entry when a new standing process is stood up.",
+  "processes": [
+    {
+      "name": "ontum-loop-tick",
+      "why": "the standing loop tick: advance the pipeline + drain value-confirm reviews every 30 min, committing to loop/auto-tick",
+      "os_task": "ontum-loop-tick",
+      "freshness_file": "C:/Users/bdf19/ontum-loop-tick.log",
+      "max_age_minutes": 75
+    }
+  ]
+}

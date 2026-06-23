@@ -128,6 +128,130 @@ class RecordsOnly(unittest.TestCase):
         self.assertEqual(result["clean"][0]["backed_by"], ["records-door"])
 
 
+class ReceiptsDoor(unittest.TestCase):
+    """The RAW door's teeth (done-line 0187, bdo's RAW vs RAI cut): a PR whose
+    ONLY change is appended receipt lines is backed without an atom iff every
+    appended line RE-DERIVES to its stored id. A RAW append is a deterministic
+    fact that proves itself by recomputation; a fabricated or tampered line is
+    RAI/smuggling and refuses the whole PR. This is the #617 stranded-acceptance
+    fix: the door that the old extension-blind gate refused for carrying `.jsonl`
+    instead of `.md`.
+
+    `REAL_RECEIPT` is a genuine value-gate receipt off the live log — its id
+    re-derives by the exact derivation `make_receipt` minted it with, so the
+    fixtures are grounded in real bytes, not a constant the checker could be
+    written to satisfy vacuously (§10)."""
+
+    REAL_RECEIPT = {
+        "id": "rcp.d0facd1da7dc",
+        "event_id": "evt.a8859493a9b5",
+        "node": "value-gate.claude.v1",
+        "artifact_id": "atom.agent-runs-on-the-books-hardening.v0",
+        "artifact_hash": ("sha256:c67b9275f9157f39b19999e892dd4fb98f4"
+                          "8ce9784754da5313cd32a820cf798"),
+        "verdict": "accept",
+        "next_suggested_event": "value.accepted",
+    }
+
+    def test_a_real_receipt_re_derives(self):
+        # the load-bearing leg: a faithful append proves itself
+        self.assertTrue(pr_audit.receipt_rederives(self.REAL_RECEIPT))
+
+    def test_tampering_any_keyed_field_breaks_the_derivation(self):
+        # change the hash the receipt claims to have judged — the id no longer
+        # recomputes, so the line is exposed as not-a-fact (the §10 flip)
+        tampered = {**self.REAL_RECEIPT,
+                    "artifact_hash": "sha256:" + "0" * 64}
+        self.assertFalse(pr_audit.receipt_rederives(tampered))
+        # and the node it claims to be (a smuggled different judge)
+        self.assertFalse(pr_audit.receipt_rederives(
+            {**self.REAL_RECEIPT, "node": "owner.bdo"}))
+
+    def test_a_fabricated_id_is_refused(self):
+        fake = {**self.REAL_RECEIPT, "id": "rcp.deadbeef0000"}
+        self.assertFalse(pr_audit.receipt_rederives(fake))
+
+    def test_a_missing_keyed_field_does_not_re_derive(self):
+        for missing in ("event_id", "node", "artifact_id", "artifact_hash", "id"):
+            rc = {k: v for k, v in self.REAL_RECEIPT.items() if k != missing}
+            self.assertFalse(pr_audit.receipt_rederives(rc), missing)
+
+    def test_a_merge_receipt_id_scheme_does_not_re_derive(self):
+        # a rcp.merge.NNN land receipt is minted by a different scheme and no PR
+        # appends one — the door must refuse it, not admit it
+        self.assertFalse(pr_audit.receipt_rederives(
+            {"id": "rcp.merge.549", "node": "merge-node.claude.v1",
+             "artifact_id": "atom.x.v0", "verdict": "landed"}))
+
+    def test_receipts_only_door_admits_a_re_deriving_append(self):
+        # the whole-PR verdict: receipts-only + every line re-derives -> backed
+        self.assertIsNone(pr_audit.orphan_reason(
+            added_atom_ids=[], receipt_artifact_ids=[],
+            receipts_only=True, added_receipts=[self.REAL_RECEIPT]))
+
+    def test_receipts_only_door_refuses_a_fabricated_append(self):
+        reason = pr_audit.orphan_reason(
+            added_atom_ids=[], receipt_artifact_ids=[],
+            receipts_only=True,
+            added_receipts=[{**self.REAL_RECEIPT, "id": "rcp.deadbeef0000"}])
+        self.assertIsNotNone(reason)
+        self.assertIn("does NOT re-derive", reason)
+
+    def test_one_bad_line_poisons_the_whole_batch(self):
+        # a real receipt alongside a tampered one still refuses (no slipping a
+        # fake in behind a real append)
+        tampered = {**self.REAL_RECEIPT, "artifact_hash": "sha256:" + "0" * 64,
+                    "id": "rcp.d0facd1da7dc"}
+        reason = pr_audit.orphan_reason(
+            added_atom_ids=[], receipt_artifact_ids=[],
+            receipts_only=True, added_receipts=[self.REAL_RECEIPT, tampered])
+        self.assertIsNotNone(reason)
+
+    def test_receipts_only_with_no_parseable_append_is_refused(self):
+        # a receipts-only diff that adds nothing re-derivable (e.g. a history
+        # edit) has nothing to back
+        reason = pr_audit.orphan_reason(
+            added_atom_ids=[], receipt_artifact_ids=[],
+            receipts_only=True, added_receipts=[])
+        self.assertIsNotNone(reason)
+        self.assertIn("nothing here to re-derive", reason)
+
+    def test_receipts_only_false_falls_back_to_needing_an_atom(self):
+        # the door is narrow: when the change set is NOT receipts-only (the reach
+        # found another touched file, or removed log history), a re-deriving
+        # receipt does not exempt the PR — it still needs an atom
+        reason = pr_audit.orphan_reason(
+            added_atom_ids=[], receipt_artifact_ids=[],
+            receipts_only=False, added_receipts=[self.REAL_RECEIPT])
+        self.assertIsNotNone(reason)
+        self.assertIn("no atom", reason)
+
+    def test_receipts_only_file_scope_is_non_vacuous(self):
+        self.assertTrue(pr_audit.receipts_only([".ai-native/log/receipts.jsonl"]))
+        # a single other path closes it — no work can ride a receipt append
+        self.assertFalse(pr_audit.receipts_only(
+            [".ai-native/log/receipts.jsonl", "loop/pr_audit.py"]))
+        self.assertFalse(pr_audit.receipts_only(
+            [".ai-native/log/receipts.jsonl", ".ai-native/log/events.jsonl"]))
+        self.assertFalse(pr_audit.receipts_only([]))
+
+    def test_audit_labels_a_receipts_pr_backed_by_the_receipts_door(self):
+        result = pr_audit.audit([{
+            "number": 656, "headRefName": "claude/strand-acceptance",
+            "added_atom_ids": [], "receipt_artifact_ids": [],
+            "receipts_only": True, "added_receipts": [self.REAL_RECEIPT]}])
+        self.assertEqual(result["orphans"], [])
+        self.assertEqual(result["clean"][0]["backed_by"], ["receipts-door"])
+
+    def test_audit_orphans_a_fabricated_receipts_pr(self):
+        result = pr_audit.audit([{
+            "number": 999, "headRefName": "claude/smuggle",
+            "added_atom_ids": [], "receipt_artifact_ids": [],
+            "receipts_only": True,
+            "added_receipts": [{**self.REAL_RECEIPT, "id": "rcp.deadbeef0000"}]}])
+        self.assertEqual([o["number"] for o in result["orphans"]], [999])
+
+
 class Audit(unittest.TestCase):
     def test_the_two_real_pr_shapes_split(self):
         facts = [

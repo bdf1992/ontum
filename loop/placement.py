@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The placement fold — a worker belongs in its own worktree, not the viewport.
 
-Done-line 0160, the placement organ of the session gateway
+Done-line 0160, the placement part of the session gateway
 (`session-gateway.proposal.md` §11 increment #4; bdo's "gateway start, platform
 level", 2026-06-20). The workstation fence just landed (#341/#346) FORBIDS a
 worker writing or flipping the **viewport** (the shared trunk primary checkout,

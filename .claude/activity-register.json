@@ -1,5 +1,5 @@
 {
-  "_doc": "The data-practices register — what every wired harness hook COLLECTS, what it USES that for, where the data GOES, and whether its own firing is WITNESSED (recorded). bdo, 2026-06-20: 'account for all activity, even Claude hooks like session start and tool call, and start auditing their data collection and usage for a shared gateway.' This is the declared half; loop/activity.py reconciles it against the live .claude/settings.json wiring and REFUSES an undeclared collector (a wired hook absent here) or a ghost (an entry no longer wired) — done-line 0143. The 'collects' field names the data each hook reads; 'witnessed' is whether the hook records THAT IT FIRED (most are false today — that gap is what organ 2, the runtime witness, closes). Authored declaration, version-controlled, human-legible; a new entry is added by the session that wires a new hook, never silently.",
+  "_doc": "The data-practices register — what every wired harness hook COLLECTS, what it USES that for, where the data GOES, and whether its own firing is WITNESSED (recorded). bdo, 2026-06-20: 'account for all activity, even Claude hooks like session start and tool call, and start auditing their data collection and usage for a shared gateway.' This is the declared half; loop/activity.py reconciles it against the live .claude/settings.json wiring and REFUSES an undeclared collector (a wired hook absent here) or a ghost (an entry no longer wired) — done-line 0143. The 'collects' field names the data each hook reads; 'witnessed' is whether the hook records THAT IT FIRED (most are false today — that gap is what part 2, the runtime witness, closes). Authored declaration, version-controlled, human-legible; a new entry is added by the session that wires a new hook, never silently.",
   "wiring_sources": {
     "claude": ".claude/settings.json — the Claude Code hook wiring; this layer is the fold's floor and its teeth bite here",
     "codex": ".codex/hooks.json — the rendered Codex layer; reconciled only if present (deferred, done-line 0143 not-in-scope)",
@@ -77,6 +77,14 @@
       "uses_for": "run one guaranteed setpoint-bounded tick of the level-triggered loop so atoms flow toward value-confirm (the in-harness driver, done-line 0178); tick-only and fail-open in hook mode — never drains, never fake-stamps (the mock-human valve is shut)",
       "sink": ".ai-native/log/ (a tick admission + pipeline events/receipts when the beat advances work) + stdout",
       "witnessed": true
+    },
+    "health": {
+      "wiring": "claude",
+      "events": ["SessionStart"],
+      "collects": ["expected-process-registry", "os-task-state (schtasks query)", "freshness-file-mtime", "log-fold (live activity by actor)"],
+      "uses_for": "the watchdog (bdo 2026-06-22): surface at session start whether every expected standing process (the loop tick) is up or DOWN, the schedule, and what is live for both bdo and the session; speaks ambiently only when something is DOWN",
+      "sink": "stdout (read-only; writes nothing)",
+      "witnessed": false
     },
     "git:sync": {
       "wiring": "claude",

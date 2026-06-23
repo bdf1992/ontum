@@ -208,19 +208,20 @@ class MergeReceiptReachesTheLog(unittest.TestCase):
 class CmdLandUnpacksAtomFacts(unittest.TestCase):
     """The write-through join (D-13): cmd_land reaches with git for the PR's
     atom facts BEFORE the merge and carries them on the receipt. The seam that
-    breaks silently: _range_atom_facts returns FOUR values
-    (atom_ids, receipt_ids, phrasing_clean, records_only), and cmd_land must
-    unpack all four or every land — dry-run included — dies with ValueError
-    before anything is judged. No existing test exercised this path, so it
-    shipped CI-green; these teeth make the crash class visible (§10), and pin
-    that the receipt's landed_atoms is the FIRST facts value (the atom ids),
-    never receipt_ids.
+    breaks silently: _range_atom_facts returns SIX values
+    (atom_ids, receipt_ids, phrasing_clean, records_only, receipts_only,
+    added_receipts), and cmd_land must unpack all of them or every land —
+    dry-run included — dies with ValueError before anything is judged. No
+    existing test exercised this path, so it shipped CI-green; these teeth make
+    the crash class visible (§10), and pin that the receipt's landed_atoms is
+    the FIRST facts value (the atom ids), never receipt_ids.
     """
 
-    # the real four-value signature of _range_atom_facts (done-line 0172 added
-    # records_only), with each value distinct so a fix that grabbed the wrong
-    # element is caught.
-    FACTS = (["atom.alpha.v0"], ["rcp.unrelated"], True, False)
+    # the real six-value signature of _range_atom_facts (done-line 0172 added
+    # records_only; done-line 0187 added receipts_only + added_receipts for the
+    # RAW door), with each value distinct so a fix that grabbed the wrong element
+    # is caught.
+    FACTS = (["atom.alpha.v0"], ["rcp.unrelated"], True, False, False, [])
 
     def _land_ns(self, dry_run):
         return argparse.Namespace(
@@ -239,9 +240,9 @@ class CmdLandUnpacksAtomFacts(unittest.TestCase):
             return ""
         return run
 
-    def test_dry_run_unpacks_four_value_facts_without_crashing(self):
+    def test_dry_run_unpacks_six_value_facts_without_crashing(self):
         # the crash the report names: with too few values this raises
-        # ValueError; with the real 4-value unpack it reports the atoms.
+        # ValueError; with the real 6-value unpack it reports the atoms.
         import contextlib
         import io
         with mock.patch.object(pr, "_run", self._fake_run()), \

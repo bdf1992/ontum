@@ -1,0 +1,54 @@
+{
+  "atom": {
+    "id": "atom.volume-scoreboard.v0",
+    "story": {
+      "text": "As the loop, I need a whole BODY of targets — not one dial — that I measure actual-vs-target and feel as pressure, so I can fill a volume of work (opened/closed, merges, owner acts, and more) the way orchestrate already heats and cools one dial, because bdo asked the loop to 'fill a volume based on a setpoint ... the numbers are examples and the named items are suggestions — we define the volume, the expectations, and the rewards and consequences, not the model.'",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The volume scoreboard: the one-dial thermostat widened to the whole body",
+      "value": "You asked the loop to fill a volume against a setpoint — a body of targets, not the single step_budget_per_tick dial. This is the sensor: each dimension is an admitted record (name, measure, target, period); the meter scores actual-vs-target and reports under/at/over as pressure. Generative by your rule — the numbers are examples and the dimensions are declared, never coded.",
+      "why_now": "orchestrate runs the heat/cool reflex on one dial. To spend agents to fill work the loop needs that same reflex across many dimensions — and a scoreboard that refuses to count a dimension it cannot honestly measure (no-gauge), so pressure is never faked.",
+      "if_accepted": "Dimensions are declared by you (--by); the loop reads the meter to pick under-target work; new dimensions add a measure + an admitted target, never a schema change. The slow loop can later infer a resting target per dimension (D2 in the agent-summoning ledger).",
+      "if_rejected": "The loop keeps one dial; 'fill a volume' stays prose with no sensor; agent-spend has no scoreboard to aim at.",
+      "cost_of_wrong_call": "Low and reversible: volume.py is a read-only fold plus one signed admit verb; it writes only admitted dimension records (superseding, never erasing). No truth moved, no gate logic. Reverting is deleting a module.",
+      "mechanism": "MEASURES are small pluggable counters over the log (issues opened/closed/reopened, owner acts, merges, verdicts written) read over a window; read_volume folds the latest admitted volume_dim per name; meter scores actual/target -> under/at/over; a measure with no counter reads no-gauge (never filled). admit declares a dimension, refusing a missing --by and a non-positive target.",
+      "reading": [
+        "loop/volume.py",
+        "tests/test_volume.py",
+        ".ai-native/proposals/agent-summoning-requirements.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.virtual-fleet"
+      ],
+      "touches": [
+        "loop/volume.py",
+        "tests/test_volume.py"
+      ],
+      "must_not_collide_with": [
+        "atom.section-queues.v0"
+      ],
+      "hands_off_to": [
+        "seam.volume-to-orchestrate"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-21: 'fill a volume based on a setpoint ... the numbers are examples'",
+        ".ai-native/proposals/authoring-platform.proposal.md",
+        "registered as a piece of epic.virtual-fleet (the confirmed arc that backs it)"
+      ]
+    }
+  }
+}
