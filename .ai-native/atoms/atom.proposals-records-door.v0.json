@@ -1,0 +1,54 @@
+{
+  "atom": {
+    "id": "atom.proposals-records-door.v0",
+    "story": {
+      "text": "As bdo, I need a proposal-only PR to land on main as a record without ceremony — the same door reports and done-lines already pass through — so the blueprints my arcs owe before building ('blueprint before build', #348) stop stranding off-trunk on the proposal-landing friction (#355), because I said 'land blueprints as proposal-records' (2026-06-23).",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "The proposals records door — a blueprint lands as a record, no atom needed",
+      "value": "A proposal is design captured ahead of a build — the bundle a non-trivial arc owes first. Today it has no atom to carry (the build comes later), so a proposal-only PR reads as an off-log orphan and strands off main, exactly the proposal-landing friction #355 names. This widens the records door (done-line 0172) to add .ai-native/proposals/ alongside reports/ and done/: a proposal-only branch is backed without an atom, the same shape as the phrasing and records doors.",
+      "why_now": "bdo said 'land blueprints as proposal-records' (2026-06-23) and 'blueprint before build' makes a proposal first-class progress (#348/CTA-3). With blueprints required before building but unable to reach main on their own, the foundation work the owner steers from accretes off-trunk where he cannot see it. One line in RECORD_DIRS fixes it.",
+      "if_accepted": "A proposal-only PR lands as a record through the same off-log gate that already passes reports and done-lines; blueprints reach the surface bdo steers from instead of stranding on dozens of off-trunk branches.",
+      "if_rejected": "Proposals stay off-log orphans: a blueprint-only PR is refused at the gate and strands off main, and 'blueprint before build' keeps producing work that cannot land until a build atom is attached after the fact.",
+      "cost_of_wrong_call": "Low and reversible: the change is one entry in RECORD_DIRS and a docstring; the door's teeth are unchanged (a single code/atom/log/config change still closes it, so a proposal cannot smuggle work), proven by the existing and added §10 tests. Reverting is removing one tuple entry.",
+      "mechanism": "loop/pr_audit.py adds '.ai-native/proposals/' to RECORD_DIRS, so records_only() (and through it orphan_reason's THIRD backed shape) treats a proposals-only .md branch as records-only. The reach (pr.py audit) recomputes records_only from the diff, so the door cannot be lied to. tests/test_pr_audit.py adds a case proving a proposals-only branch is records-only and a case proving a proposal + a .py file is NOT (the teeth stay).",
+      "reading": [
+        "loop/pr_audit.py",
+        "tests/test_pr_audit.py",
+        ".ai-native/done/0172-records-door.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        "loop/pr_audit.py",
+        "tests/test_pr_audit.py"
+      ],
+      "must_not_collide_with": [
+        "atom.records-door.v0"
+      ],
+      "hands_off_to": [
+        "seam.proposal-to-main"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "bdo 2026-06-23: 'land blueprints as proposal-records'",
+        "#355: the proposal-landing friction",
+        ".ai-native/done/0172-records-door.md"
+      ]
+    }
+  }
+}

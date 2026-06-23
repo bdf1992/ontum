@@ -90,13 +90,30 @@ class OrphanReason(unittest.TestCase):
 
 
 class RecordsOnly(unittest.TestCase):
-    """The records door's pure check (done-line 0172): only reports/done-line
-    markdown, nothing else. Non-vacuous — a single non-record path closes it,
-    so a report PR cannot smuggle code/atoms/logs in under the exemption."""
+    """The records door's pure check (done-line 0172; widened to proposals
+    2026-06-23): only reports/done-line/proposal markdown, nothing else.
+    Non-vacuous — a single non-record path closes it, so a record PR cannot
+    smuggle code/atoms/logs in under the exemption."""
 
     def test_reports_and_done_lines_qualify(self):
         self.assertTrue(pr_audit.records_only(
             [".ai-native/reports/0123-x.md", ".ai-native/done/0172-y.md"]))
+
+    def test_proposals_qualify(self):
+        # bdo 2026-06-23, "land blueprints as proposal-records" (#355): a
+        # proposal records work *proposed*; a blueprint-only PR is records-only.
+        self.assertTrue(pr_audit.records_only(
+            [".ai-native/proposals/proposals-records-door.proposal.md"]))
+        # mixed with the older record kinds still qualifies — all records
+        self.assertTrue(pr_audit.records_only(
+            [".ai-native/proposals/x.proposal.md",
+             ".ai-native/reports/0123-x.md", ".ai-native/done/0188-y.md"]))
+
+    def test_a_proposal_plus_a_code_file_closes_the_door(self):
+        # the teeth stay: a proposal cannot smuggle a code change in under the
+        # exemption — a single .py file makes the branch need an atom again
+        self.assertFalse(pr_audit.records_only(
+            [".ai-native/proposals/x.proposal.md", "loop/pr_audit.py"]))
 
     def test_windows_separators_normalize(self):
         self.assertTrue(pr_audit.records_only(
