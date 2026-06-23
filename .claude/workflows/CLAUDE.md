@@ -1,11 +1,50 @@
-# .claude/workflows/ — the tick-tenders (work-consuming processes)
+# .claude/workflows/ — authored AI workflows (the Workflow tool's land)
 
-Load-bearing **workflow scripts** (the `Workflow` tool's land) that **consume
-work** — they are granted a **named section of the ledger** and work its open
-items, surfacing each as work-to-close. The model (bdo, 2026-06-21: *"free to
-work over a named section of the log/ledger and surface work to close ... a
-process for their workflow which consumes work"*) is producer/consumer over the
-log:
+Authored AI workflows live here. This is the **native** home: the
+Workflow tool resolves a named workflow (`Workflow({name: "<slug>"})`)
+from this directory, so a script that lands here is launchable by name
+with no extra wiring. The branded wrapper over the native workflow
+surface
+([`workflow-authoring-wrapper.proposal.md`](../../.ai-native/proposals/workflow-authoring-wrapper.proposal.md))
+rides this convention instead of inventing one.
+
+Two kinds of workflow share this directory today: **authored helpers**
+(`atom-trace`, `draft-capability`, …) and the **tick-tenders** — the
+work-consuming processes documented below.
+
+## What a workflow file is
+
+One JavaScript file per workflow, `<slug>.js`. It is a script against the
+native Workflow orchestration: it **must** begin with a pure-literal
+`export const meta = { name, description, phases }` block, then a body
+using `agent()` / `parallel()` / `pipeline()` / `phase()`. The `meta.name`
+is the launch handle and should equal the file's `<slug>`.
+
+## The naming + safety convention (A1)
+
+- **Name** = a short kebab-case verb-or-noun that says what it does
+  (`subsystem-map`, `review-diff`, `find-flaky-tests`). The file is
+  `<name>.js`; `meta.name` matches.
+- **Read-only by default.** A workflow that only reads (search, map,
+  audit, synthesize) is safe to author and run freely. A workflow whose
+  agents **mutate** files declares it in its `meta.description` and uses
+  `isolation: 'worktree'` per mutating agent — and, per the wrapper, does
+  not run unattended until the review gate (A3) and the authority dial
+  exist. Until then: review before run.
+- **Args, not hard-coding.** Parameterize over `args` (a path, a
+  question, a config object) so one authored workflow serves many runs.
+- **Authored here, reviewed before armed.** A2 (the authoring agent)
+  drafts into this directory; A3 (the review interface) renders a draft
+  as *what it does · phases · blast radius · riskiest step* and arms it.
+
+## The tick-tenders (work-consuming processes)
+
+Load-bearing **workflow scripts** that **consume work** — they are
+granted a **named section of the ledger** and work its open items,
+surfacing each as work-to-close. The model (bdo, 2026-06-21: *"free to
+work over a named section of the log/ledger and surface work to close ...
+a process for their workflow which consumes work"*) is producer/consumer
+over the log:
 
 - **Producer** — `loop/section.py` NAMES the work queues (a read-only fold, the
   loop/ side). Each *section* is a bounded slice of the incomplete flow:
@@ -17,18 +56,15 @@ log:
   closeable work. They live here (`.claude`, where inference + network are
   allowed), never in `loop/` (stdlib, no inference — that law is unchanged).
 
-Each script begins with `export const meta = {...}` and uses
-`agent()`/`parallel()`/`workflow()`. They are **propose-grain by construction**:
-a tender writes no verdict and clears no park — the cut stays a session's or
-bdo's (D-4). The one place real state advances is the value-confirm **drain**,
-which only reuses the already-sanctioned `loop.heartbeat` rail.
-
-## The package
+They are **propose-grain by construction**: a tender writes no verdict and
+clears no park — the cut stays a session's or bdo's (D-4). The one place
+real state advances is the value-confirm **drain**, which only reuses the
+already-sanctioned `loop.heartbeat` rail.
 
 | script | section it consumes | what it produces |
 |---|---|---|
 | `tend.js` | **any** named section (`args.section`) | the generic consumer — works a bounded batch, surfaces each as ready-to-close / drafted / owner / blocked. A new section is consumable with no new workflow. |
-| `tend-heal.js` | `stale-park` (tuned) | a checked reconcile draft — does an owner surface still show the healed bite? |
+| `tend-heal.js` | `stale-park` (tuned) | a checked reconcile draft — does an owner surface still show the healed bite? Runs a governed prompt (`.ai-native/nodes/tend-heal.claude.v1.md`, pinned by hash) and books each agent run (`loop.agent_run`) so it is witnessed. |
 | `tend-gaps.js` | `gaps` (tuned) | a ready-to-act draft per gap (exercise / silence-by-design / build / needs-owner) |
 | `tend-inbox.js` | `owner-asks` (tuned + **actuates**) | investigates each parked item vs current reality; **closes** the verified-stale mirrors through the issue pen, shapes the residue for bdo |
 | `tend-loop.js` | **the conductor** — one tick | optional value-confirm drain + the tenders, compiled into one journalled tick-report |
@@ -54,7 +90,7 @@ directive (#348); the fix added the recovery verb `issue.py reopen` and made
 close opt-in behind a non-empty-queue guard. **A consumer that can close must be
 able to un-close, accountably.**
 
-## The conductor's dials (`tend-loop` args)
+### The conductor's dials (`tend-loop` args)
 
 | dial | default | meaning |
 |---|---|---|
@@ -66,7 +102,7 @@ Drafts are journalled to `.ai-native/log/tenders.jsonl` (gitignored sensor
 trace, deletable) so a mortal session's inference survives to the next one.
 The truth is always the log the drain advanced — the journal is propose-grain.
 
-## The 5-minute tick — bdo's one gesture
+### The 5-minute tick — bdo's one gesture
 
 The tenders are reversible (files + drafts). **Recurring autonomous spend is
 not** — so standing the tick up every 5 minutes is bdo's activation gesture,
@@ -83,3 +119,9 @@ claude -p "/tend-loop"           # via a Task Scheduler / cron entry, repo root
 Start with `drainLimit 0` (tenders only). Watch a few ticks' journals. Then
 raise the drain one notch at a time as the gate earns trust — that dial is the
 only knob between "drafts the work" and "lands the work", and it is yours.
+
+## Rule of this directory
+
+A workflow is **config-as-code** (§7): versioned, reviewed, landed as a
+stamped increment — never a throwaway. When the bespoke live portal
+arrives, these files and their review surface carry straight over.

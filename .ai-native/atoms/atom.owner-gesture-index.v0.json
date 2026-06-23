@@ -1,0 +1,50 @@
+{
+  "atom": {
+    "id": "atom.owner-gesture-index.v0",
+    "story": {
+      "text": "As an AI re-homing stranded work, I need the owner-gesture index (loop/owner.py) to land as an atom on the log, because it was built and pushed (PR #510) but never announced, so the off-log gate refuses it as invisible work. The index answers 'bdo needs to decide X -- what is the gesture surface?' by folding each owner-decision KIND to the one opener pen that surfaces it on GitHub, and REFUSING any CLI-at-owner route -- the structural enforcement of the no-offload hard rule, so a session that cannot find the surface can never fall back to handing bdo a command.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the owner-gesture index: a read-only fold mapping each owner-decision kind to its one opener pen, refusing the CLI-at-owner route, landable under epic.owner-harness",
+      "value": "loop/owner.py is a pure read-only fold (the gaps/parity grain) that maps each kind of owner decision (arc-confirm, realness, rung, policy, issue) to the ONE opener pen that surfaces it as a GitHub gesture, and refuses a row that smells like a CLI-at-owner route (an `--by bdo` confirm command dressed as an opener). It makes the no-offload hard rule findable: a session asking 'what is bdo's gesture surface for X?' gets the pen, never a command to hand him. Rows whose opener does not resolve are flagged no-surface as real gaps rather than papered over.",
+      "why_now": "The implementation was built and pushed on PR #510 but never carried an atom, so the off-log gate refuses the branch as invisible work. This atom announces it so it can enter the pipeline and land.",
+      "if_accepted": "The owner-gesture index becomes a real surface on the log; sessions resolve bdo's gesture surfaces through one fold and can never legitimise handing him a CLI line.",
+      "if_rejected": "loop/owner.py stays stranded off-log; the no-offload rule keeps no findable index and sessions keep re-deriving the surface map.",
+      "cost_of_wrong_call": "Low and reversible: owner.py is a pure read-only fold -- no gate logic, no write path, no truth moved. Reverting is deleting one read-only module and its test.",
+      "mechanism": "loop/owner.py: a stdlib read-only fold over the opener pens on disk; validate() is the §10 teeth -- a row whose opener does not resolve to a real pen is a ghost, and a CLI-at-owner route is refused (tests/test_owner.py proves the check is non-vacuous). CLI ends done|report.",
+      "reading": [
+        "loop/owner.py",
+        "tests/test_owner.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.owner-harness"
+      ],
+      "touches": [
+        "loop/owner.py",
+        "tests/test_owner.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/owner.py",
+        "tests/test_owner.py"
+      ]
+    }
+  }
+}

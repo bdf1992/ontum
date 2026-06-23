@@ -248,7 +248,7 @@ def surface_drift_gaps(root):
     return out
 
 
-def organ_gaps(root):
+def part_gaps(root):
     """The census verdicts (done-line 0029), as work. Imported lazily and
     walked last: this is the one fold that reads the tree, not the log."""
     from loop import census as census_mod
@@ -285,7 +285,7 @@ def gaps(root, first_kind_only=False):
         # of mock stages (the hook runs in repos that are not this one)
         return []
     folds = (mock_stage_gaps, mock_actor_gaps, unadmitted_actor_gaps,
-             parked_piece_gaps, surface_drift_gaps, organ_gaps)
+             parked_piece_gaps, surface_drift_gaps, part_gaps)
     out = []
     for fold_fn in folds:
         batch = fold_fn(root)

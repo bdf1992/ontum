@@ -1,0 +1,50 @@
+{
+  "atom": {
+    "id": "atom.rename-ledger.v0",
+    "story": {
+      "text": "A vocabulary rename (organ->part, metabolism->cycle) kept RECURRING as stranded one-off sed branches that each re-decided the same swap by hand and broke grammar on the way ('an part that senses', misaligned tables). The recurrence WAS the per-file re-decision. This recasts a rename as the repo's own spine applied to vocabulary: the decision is an ADMITTED RECORD on the log (loop.rename admit, written once, signed --by, superseding like a tag - never a constant in code), and application is a DETERMINISTIC, idempotent fold over the live tree (loop.rename apply). Re-running status reports zero in-scope occurrences - the checkable form of 'it stops occurring'. A handle-safe boundary preserves identifiers/filenames/handles; the existing phrasing checker gates each edit so the prose tier is provably prose-only; census.py's wholesale identifier rename is the code tier. It also repairs the 'an part' article damage prior sed left on main.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "rename as a recorded decision + a deterministic applier (loop/rename.py) - so a rename stops recurring as stranded sed branches",
+      "value": "loop/rename.py: `admit --from X --to Y --by bdo` writes the rename decision ONCE as a `rename` admission (folded by admitted_renames, latest-per-source wins, withdraw drops - the tags.py shape). `apply` is a deterministic, idempotent fold over the in-scope tree with a handle-safe word boundary (joins on `_ . / -`, plus a (?!\\.\\w) guard so a sentence period renames but `.md` does not) and an article-repair pass that heals a prior rename's 'an part' wherever it sits. Each edit is gated by loop.phrasing.phrasing_only (I-4), so the prose tier is provably prose-only and lands via the light lane; a file whose rename would touch a code token (census.py identifiers) is refused and flagged for the code tier.",
+      "why_now": "organ->part / metabolism->cycle was landing piecemeal and breaking grammar; bdo (2026-06-22) named the fix: 'we write down that it was renamed, ONCE, then we rename it EVERYWHERE.' Without a recorded decision + deterministic applier, every future rename is another hand-sed and another stranded branch.",
+      "if_accepted": "A rename is decided once and applied everywhere, reproducibly; re-running status proves zero in-scope occurrences remain. organ->part and metabolism->cycle are fully applied (prose + code tiers), the prior 'an part' damage repaired, and any future rename is one admit line + a re-run.",
+      "if_rejected": "Renames keep recurring as one-off sed branches that re-decide the swap and strand work, with broken grammar accreting on main.",
+      "cost_of_wrong_call": "Low and bounded. loop/rename.py is stdlib, no network, no git; it composes the existing phrasing checker rather than a second checker. Reverting is deleting the pen + test and superseding the two rename admissions (history stands). The teeth are proven non-vacuous: tests/test_rename.py renames bare words + repairs articles, refuses code tokens via the phrasing gate, preserves compounds/handles, and excludes the record trees.",
+      "mechanism": "loop/rename.py: admitted_renames folds `rename` admissions (latest-per-source, withdraw drops); rename_text applies each rule with the handle-safe boundary + article repair (pure, idempotent); _in_scope excludes log/done/reports/atoms/epics/agendas/nodes, docs/phase-2, docs/sources, exports, generated outputs, and the self-referential pen/test; apply re-proves phrasing_only at the write seam and records one rename_applied admission. The two decisions are on the log (organ->part, metabolism->cycle, by bdo). tests/test_rename.py is the §10 spec.",
+      "reading": [
+        "loop/rename.py",
+        "tests/test_rename.py",
+        "loop/phrasing.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [],
+      "touches": [
+        "loop/rename.py",
+        "tests/test_rename.py",
+        "loop/census.py",
+        "loop/gaps.py",
+        "loop/activity.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "github-pr:553"
+      ],
+      "receipts": []
+    }
+  }
+}

@@ -267,7 +267,29 @@ def digest(root, since=None, until=None):
         # reached main. All-time, not span — "on main" is a standing fact, not a
         # window. Empty until the first post-D-13 land carries its atoms.
         "atoms_on_main": sorted(atoms_on_main(fold)),
+        # the noise make-over's useful sound (#628): one synthesized line — what
+        # the record proves resolved on the owner's accreting surfaces, and what
+        # genuinely still needs him. Guarded + lazy (reconcile_noise imports
+        # reflect, which imports this module): any failure degrades to None, the
+        # digest never breaks on a side surface.
+        "noise_makeover": _noise_summary(root),
     }
+
+
+def _noise_summary(root):
+    """The noise make-over's one synthesized line for the digest, or None.
+    Lazy import to avoid the reconcile_noise → reflect → digest cycle, and
+    fully guarded — a side surface must never break the owner's digest."""
+    try:
+        from loop import reconcile_noise
+        mo = reconcile_noise.make_over(root)
+        return {
+            "line": mo["digest_line"],
+            "silenceable": len(mo["silenceable"]),
+            "escalating": len(mo["escalating"]),
+        }
+    except Exception:
+        return None
 
 
 _VERSION_RE = re.compile(r"^(?P<base>.+)\.v(?P<ver>\d+)$")
@@ -554,6 +576,13 @@ def render(d):
             lines.append(f"- _…+{extra} earlier landing(s) in span, folded into "
                          "the count below_")
         lines.append("")
+
+    # 2.6 the noise make-over's useful sound — the inbox made over into signal
+    #     (#628): what the record proves resolved on bdo's accreting surfaces and
+    #     what genuinely still needs him. One line; absent when nothing to say.
+    nm = d.get("noise_makeover")
+    if nm and (nm.get("silenceable") or nm.get("escalating")):
+        lines += [f"## Inbox make-over", f"{nm['line']}", ""]
 
     # 3. the field, one glance — the dial in play and how it ran
     sp = d["setpoint"]

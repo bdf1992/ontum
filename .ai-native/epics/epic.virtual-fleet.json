@@ -7,10 +7,30 @@
     "value": "The loop staffs itself. bdo declares the shape of the workforce once and the system keeps reality converged to it: open summonses get judges without a human noticing, landable PRs get a lander, down minds get restarted, and over-capacity gets refused by the same record that declared it. Managing sessions stop being the workers (the conductor steers; the fleet plays), and the cost of every provision is a receipt bdo can read, not a session's unrecorded heroics.",
     "horizon": "bdo can say 'the fleet is declared' and mean it: a single read-only plan shows every seat, its declared fill condition, who occupies it now, by whose authority, and what apply would do next; an ambient apply beat converges the diff one receipted step per tick within setpoint budgets and trust rungs; the merge-node, the gates, and the minds are all fleet-managed occupants; and a managing session's job has become reading the plan and amending declarations — the loop runs the fleet, bdo steers the declarations, and nothing provisions outside the rails.",
     "pieces": [
-      {"atom": "atom.fleet-declaration.v0", "glue": "desired occupancy as admitted records: which seat must be filled under which condition (an open summons at an admitted gate; landables under a confirmed arc; a registered mind's backing expected alive), capacity caps read from setpoints, the trust ladder as the ceiling no declaration can exceed. The vocabulary is the Field's occupant rung; the records are bdo-signed like every dial."},
-      {"atom": "atom.fleet-plan.v0", "glue": "terraform plan as a pure fold: declared vs running, read-only — unfilled summonses, down backings, idle declared seats, over-capacity — each diff carrying evidence ids and the one apply step that would converge it. Extends loop/field.py's occupancy rung across all arcs; writes nothing; the census and merge folds are its inputs."},
-      {"atom": "atom.fleet-apply.v0", "glue": "the provisioner pen: one converging step per invocation, through existing rails only — spawn the branded judge an open summons names (the spawn rail checks the rung), run mind-infra converge for a down backing, summon an independent merge-node when landables exist. Every provision is a receipt on the runs ledger citing the declaration that wanted it; a seat the ladder refuses to fill is reported drift, never an escalation (D-4)."},
-      {"atom": "atom.conductor.v0", "glue": "the managing session reshaped (bdo's worker-node direction, 2026-06-11): a session whose loop is read the plan, run one apply step, read the plan again — the conductor that steers occupancy instead of performing it. The ambient beat candidate: plan/apply wired the way reflect_auto rides the Stop hook, so the fleet converges a little after every turn without anyone being the worker."}
+      {
+        "atom": "atom.fleet-declaration.v0",
+        "glue": "desired occupancy as admitted records: which seat must be filled under which condition (an open summons at an admitted gate; landables under a confirmed arc; a registered mind's backing expected alive), capacity caps read from setpoints, the trust ladder as the ceiling no declaration can exceed. The vocabulary is the Field's occupant rung; the records are bdo-signed like every dial."
+      },
+      {
+        "atom": "atom.fleet-plan.v0",
+        "glue": "terraform plan as a pure fold: declared vs running, read-only — unfilled summonses, down backings, idle declared seats, over-capacity — each diff carrying evidence ids and the one apply step that would converge it. Extends loop/field.py's occupancy rung across all arcs; writes nothing; the census and merge folds are its inputs."
+      },
+      {
+        "atom": "atom.fleet-apply.v0",
+        "glue": "the provisioner pen: one converging step per invocation, through existing rails only — spawn the branded judge an open summons names (the spawn rail checks the rung), run mind-infra converge for a down backing, summon an independent merge-node when landables exist. Every provision is a receipt on the runs ledger citing the declaration that wanted it; a seat the ladder refuses to fill is reported drift, never an escalation (D-4)."
+      },
+      {
+        "atom": "atom.conductor.v0",
+        "glue": "the managing session reshaped (bdo's worker-node direction, 2026-06-11): a session whose loop is read the plan, run one apply step, read the plan again — the conductor that steers occupancy instead of performing it. The ambient beat candidate: plan/apply wired the way reflect_auto rides the Stop hook, so the fleet converges a little after every turn without anyone being the worker."
+      },
+      {
+        "atom": "atom.volume-scoreboard.v0",
+        "glue": "the volume scoreboard — the body of admitted target-dimensions the fleet fills (actual-vs-target per dimension as under/at/over pressure), the setpoint widened from one dial to the whole workforce; read-only fold + a bdo-signed admit verb."
+      },
+      {
+        "atom": "atom.health-board.v0",
+        "glue": "the watchdog: a session-start health board that checks whether every expected standing process (the loop tick) is up or DOWN, shows the schedule, and shows what is live for both bdo and the session — the eyes that catch a down mind the fleet must restart."
+      }
     ]
   }
 }

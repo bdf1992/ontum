@@ -1,0 +1,47 @@
+{
+  "atom": {
+    "id": "atom.agent-runs-on-the-books-hardening.v0",
+    "story": {
+      "text": "bdo had the landed atom.agent-runs-on-the-books.v0 redteamed (a 5-surface adversarial review, each finding adversarially verified — 11 confirmed of 23 attempts). The safety claim held under attack (nothing auto-trusted: training:true receipts carry no artifact_hash, so the pipeline's (node, artifact_hash) keying can never select them), but the redteam confirmed the governance and observability claims were OVERCLAIMED, and one host-reachable hole. This atom is the follow-up that closes the confirmed findings and corrects the over-claims to what is actually enforced.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "harden agent_run + tend-heal per the redteam: close the injection, the verdict-masking, the unenforced posture; tell the truth about what the teeth prove",
+      "value": "Six fixes across loop/agent_run.py and .claude/workflows/tend-heal.js. (1) Command injection (the one host-reachable finding): the Book phase now POSIX single-quote-escapes every interpolated field and SKIPS any subject that is not an id/handle, and book_receipt refuses a non-id subject — no agent string can carry a command into the host. (2) Verdict-masking: the receipt id now includes verdict, so a re-book with a DIFFERENT verdict is a distinct, visible record (a later already-reconciled can no longer silently hide an earlier needs-owner); a same-verdict re-book stays idempotent. (3) Unenforced posture: book_receipt now requires run_id to resolve to an OPEN training run — a receipt under a never-opened or closed posture is refused. (4) Monitor honesty: overview dedups by receipt id (so it agrees with fold_run, not a second truth) and SURFACES orphan receipts booked under no opener instead of hiding them. (5) Subject is constrained to an id charset at the write seam. (6) The docstrings and refusal messages are corrected to state what is actually proven — a booked receipt cites an open posture and the exact governed prompt by hash, but NOT that the agent faithfully executed it (the verdict is the agent's claim); the over-claims 'you cannot book an ungoverned run' and 'the EXACT prompt that ran' are replaced with the true, bounded statement.",
+      "why_now": "The work is landed and live; the redteam found a real (if LLM-mediated) host-RCE path in the Book phase and three integrity/observability defects, plus two over-claims in my own prose. Fixing them now, under the already-confirmed arc, keeps the governance mechanism honest before more of the arc is built on it.",
+      "if_accepted": "The agent-runs layer says only what it enforces, refuses a fabricated/closed posture and a metacharacter subject, makes a divergent verdict visible instead of masked, and the monitor agrees with itself and screams orphans. The deferred items (binding the receipt to spawn provenance so 'attributable to what ran' becomes true; re-hashing executed bytes; read-time fold teeth; the spawn_guard NODE_ACT misclassification) are named, not hidden.",
+      "if_rejected": "The landed layer keeps a host-reachable injection vector, silently masks escalations, accepts receipts under non-existent postures, and overstates its own guarantees.",
+      "cost_of_wrong_call": "Low. All changes tighten refusals or correct prose in a read-mostly, propose-grain training organ; nothing new is actuated. Reverting is reverting two files. The teeth are proven non-vacuous (see mechanism).",
+      "mechanism": "loop/agent_run.py: book_receipt gains a Fold-based open-posture check (refuse unopened/closed run), a SUBJECT_RE id check, and verdict in the receipt-id hash; overview dedups by id and returns an `orphans` group; the module + book_receipt docstrings and the prompt_hash refusal message are corrected. .claude/workflows/tend-heal.js: a POSIX single-quote `sh()` escaper + an `idOk` subject guard wrap the Book-phase command, and the DRAFT schema constrains subject by pattern. tests/test_agent_run.py adds six teeth: unopened-run refused, closed-run refused, bad-subject refused, divergent-verdict visible (not masked), overview==fold_run count, orphan surfaced. Full suite green.",
+      "reading": [
+        "loop/agent_run.py",
+        "tests/test_agent_run.py",
+        ".claude/workflows/tend-heal.js",
+        ".ai-native/atoms/atom.agent-runs-on-the-books.v0.json"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [],
+      "touches": [
+        "loop/agent_run.py",
+        "tests/test_agent_run.py",
+        ".claude/workflows/tend-heal.js"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "atom.agent-runs-on-the-books.v0",
+        "loop/agent_run.py"
+      ]
+    }
+  }
+}
