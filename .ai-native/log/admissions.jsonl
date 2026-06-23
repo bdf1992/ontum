@@ -228,6 +228,8 @@
 {"by":"claude","files":[{"after":"sha256:5fe4287d36a9dd7f41b721f8d93954db072eb7aa3fa8fb9a7538d6903ec18341","before":"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","path":".ai-native/proposals/exemplar-spec.proposal.md"}],"id":"adm.54bf999a4e27","reason":"PROPOSED design proposal, prose only","ts":"2026-06-22T07:55:21Z","type":"phrasing"}
 {"branch":"claude/exemplar-spec-open","by":"claude","claim":"exemplar-spec.proposal","id":"adm.462120f422d3","supersedes":null,"ts":"2026-06-22T07:55:54Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.agent-summoning","id":"adm.8566c6ade0b8","supersedes":null,"ts":"2026-06-22T17:12:25Z","type":"arc_confirmed"}
+{"branch":"worktree-agent-ad72e904925ec5f41","by":"claude","claim":"atom.reflector-idempotent-mirror.v0","id":"adm.457ad99360c7","supersedes":null,"ts":"2026-06-22T17:49:00Z","type":"workspace_claimed"}
+{"branch":"worktree-agent-ad72e904925ec5f41","by":"value-gate.claude.v1","claim":"atom.reflector-idempotent-mirror.v0","id":"adm.65f47508d53c","supersedes":"adm.457ad99360c7","ts":"2026-06-22T18:23:59Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.calendar","id":"adm.3f230749cce0","supersedes":null,"ts":"2026-06-22T18:02:23Z","type":"arc_confirmed"}
 {"branch":"claude/graded-speed-gradient","by":"claude","claim":"atom.graded-speed-gradient-fold.v0","id":"adm.e9bf71b67981","supersedes":null,"ts":"2026-06-22T18:29:44Z","type":"workspace_claimed"}
 {"by":"bdo","enabled":true,"epic":"epic.graded-speed","id":"adm.d0e9d49487d9","supersedes":null,"ts":"2026-06-22T18:37:46Z","type":"arc_confirmed"}
@@ -235,3 +237,5 @@
 {"branch":"claude/capture-vision-proposals","by":"claude","claim":"capture-vision-proposals","id":"adm.265c9bff4990","supersedes":null,"ts":"2026-06-22T18:38:41Z","type":"workspace_claimed"}
 {"by":"claude","files":[{"after":"sha256:df212f150d79a790272a396af7583811af98429464b3aaf8118283ace84ba63d","before":"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","path":".ai-native/proposals/production-provenance-ladder.proposal.md"}],"id":"adm.4a937c62f5a4","reason":"PROPOSED design exemplar, prose only","ts":"2026-06-22T19:28:10Z","type":"phrasing"}
 {"branch":"claude/production-provenance-ladder","by":"claude","claim":"production-provenance-ladder.exemplar","id":"adm.31d8c668e6c4","supersedes":null,"ts":"2026-06-22T19:28:44Z","type":"workspace_claimed"}
+{"branch":"claude/agent-runs-hardening","by":"claude","claim":"atom.agent-runs-on-the-books-hardening.v0","id":"adm.36187dddb0e7","supersedes":null,"ts":"2026-06-22T19:18:51Z","type":"workspace_claimed"}
+{"branch":"worktree-agent-aa9aca36d57abb1be","by":"claude","claim":"atom.raw-receipts-door.v0","id":"adm.c763d659e5d3","supersedes":null,"ts":"2026-06-22T22:06:47Z","type":"workspace_claimed"}

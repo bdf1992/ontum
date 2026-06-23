@@ -24,14 +24,19 @@ It mirrors `loop/train.py` exactly, one axis over: `train.py` opens a
 `agent_training_run` posture and folds *agent-run* receipts. Same discipline —
 it REPORTS, it never installs; the read-back refuses to invent from no evidence.
 
-The teeth (§10): a run receipt must cite a node whose governed prompt RESOLVES
-and PASSES the requirements door (`prompt_req.deliver`), and carry that node's
-current prompt hash — a receipt for a ghost node, or one claiming a prompt hash
-the node does not have, is REFUSED at the write seam (the term-economy
-ghost-citation refusal, on agent runs). An on-the-books receipt is attributable
-to a real governed prompt by construction; you cannot book an ungoverned run.
-A training run with no receipts folds to an empty monitor read, never a false
-"all clear".
+The teeth (§10), at the write seam: a run receipt is REFUSED unless it cites an
+OPEN training-run posture, an id-shaped subject, and a node whose governed prompt
+RESOLVES, passes the requirements door, and matches the carried hash (the
+term-economy ghost-citation refusal, on agent runs). What that PROVES is bounded
+and worth stating plainly: a booked receipt cites a real open posture and the
+exact governed prompt *by hash* — it does NOT prove the agent faithfully ran that
+prompt. The `verdict` is the agent's claim, attributable to the prompt it was
+*given*, not a checksum of what it *did* (binding to spawn provenance is deferred,
+named in the hardening atom). So "you cannot book a receipt for a non-existent
+posture, a bad subject, or an ungoverned/wrong-hash node" — not "you cannot book
+an untrue verdict". A training run with no receipts folds to an empty monitor
+read, never a false "all clear"; and the monitor counts only deduped receipts and
+screams any orphan booked under no opener.
 
 Read-only but for the two sanctioned appends (open a run, receipt a run), both
 through `reconcile.append_line`. Stdlib only; no network, no subprocess — the
@@ -39,6 +44,7 @@ loop/ law. Ends with a clear stdout result (D-6): done | report | needs-you.
 """
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -49,6 +55,12 @@ from loop.reconcile import (
 
 OPENER_TYPE = "agent_training_run"   # the posture admission (on admissions.jsonl)
 RECEIPT_TYPE = "agent_run"           # one agent run on the books (on receipts.jsonl)
+
+# A subject is an id/handle (an atom id, a finding subject) — never free text.
+# Refusing anything outside this charset at the write seam means a subject can
+# carry no shell metacharacter into a downstream booking command (redteam: the
+# Book phase interpolated subject into a shell string — defense-in-depth here).
+SUBJECT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:\-]*$")
 
 
 def _admissions_path(root):
@@ -123,16 +135,44 @@ def training_runs(fold):
 # ---------------------------------------------------------------- the write seam
 
 def book_receipt(root, run_id, node, prompt_hash, subject, verdict, reason):
-    """Book one agent run ON THE BOOKS. The §10 teeth at the write seam:
+    """Book one agent run ON THE BOOKS. The §10 teeth at the write seam, in order:
 
+    - the **run posture** named by `run_id` must EXIST and be OPEN — a receipt
+      under a never-opened or already-closed posture is ungoverned — REFUSED
+      (the open/close lifecycle is a gate, not decoration; redteam fix);
+    - `subject` must be an id/handle (`SUBJECT_RE`), never free text — so it can
+      carry no shell metacharacter downstream — REFUSED otherwise;
     - the node's governed prompt must RESOLVE and PASS the requirements door
-      (`prompt_req.deliver`), else the run is ungoverned — REFUSED;
+      (`prompt_req.deliver`), else there is no governed prompt to cite — REFUSED;
     - the `prompt_hash` must match the node's current governed hash — a receipt
       claiming a different prompt is a ghost-in-spirit — REFUSED.
 
-    On success appends one `agent_run` receipt (idempotent by (run, node,
-    subject)) and returns its id. Raises ValueError naming the refusal otherwise
-    — the refusal IS the fail notification, never a silent pass."""
+    What this PROVES and what it does NOT: a booked receipt cites an open
+    training run and a real governed prompt by its current hash. It does **not**
+    prove the agent faithfully executed that prompt — the `verdict` is the
+    agent's claim, attributable to the prompt it was *given*, not a checksum of
+    what it *did*. Binding the receipt to the actual run (spawn provenance) is
+    deferred (named in the hardening atom).
+
+    The receipt id includes `verdict`, so a re-book with a *different* verdict is
+    a distinct, visible record (the §10 "two records refuse to fit" ethos) rather
+    than silently masking the earlier one; a re-book with the *same* verdict is
+    idempotent. Returns the id; raises ValueError naming the refusal otherwise —
+    the refusal IS the fail notification, never a silent pass."""
+    run = next((r for r in training_runs(Fold(root)) if r["id"] == run_id), None)
+    if run is None:
+        raise ValueError(
+            f"no such training run '{run_id}' — open one with `agent_run open` "
+            f"first; a receipt under an unopened posture is ungoverned")
+    if run["closed"]:
+        raise ValueError(
+            f"training run '{run_id}' is closed — its posture no longer accepts "
+            f"runs; open a new one")
+    if not subject or not SUBJECT_RE.match(subject):
+        raise ValueError(
+            f"subject {subject!r} is not a valid id/handle (must match "
+            f"{SUBJECT_RE.pattern}) — a subject is an id, never free text that "
+            f"could carry shell metacharacters into a booking command")
     d = prompt_req.deliver(root, node)
     if not d["found"]:
         raise ValueError(
@@ -145,9 +185,9 @@ def book_receipt(root, run_id, node, prompt_hash, subject, verdict, reason):
     if prompt_hash != d["prompt_hash"]:
         raise ValueError(
             f"prompt_hash mismatch for '{node}': receipt claims {prompt_hash!r} "
-            f"but the governed prompt is {d['prompt_hash']!r} — a run is "
-            f"attributable to the EXACT prompt that ran, or it is not booked")
-    rid = "arun." + short_hash(run_id, node, subject)
+            f"but the governed prompt is {d['prompt_hash']!r} — a run cites the "
+            f"exact governed prompt by hash, or it is not booked")
+    rid = "arun." + short_hash(run_id, node, subject, verdict)
     append_line(_receipts_path(root), {
         "id": rid,
         "type": RECEIPT_TYPE,
@@ -206,17 +246,26 @@ def fold_run(root, run_id):
 
 def overview(root):
     """Every training run and its booked-receipt count — the read a monitor
-    opens with."""
+    opens with. Counts are deduped by receipt id (so this agrees with
+    `fold_run`, not a second truth), and any receipt booked under a run id no
+    opener admission names is surfaced as an `orphan` — never silently dropped
+    (redteam: an orphan must scream, not vanish from the monitor's front door)."""
     fold = Fold(root)
     runs = training_runs(fold)
+    known = {r["id"] for r in runs}
     raw, _dropped = read_jsonl(_receipts_path(root))
-    counts = {}
+    by_id = {}                                   # dedup by id, like _run_receipts
     for r in raw:
         if r.get("type") == RECEIPT_TYPE:
-            counts[r.get("run")] = counts.get(r.get("run"), 0) + 1
+            by_id[r.get("id")] = r.get("run")
+    counts = {}
+    for run_id in by_id.values():
+        counts[run_id] = counts.get(run_id, 0) + 1
     for run in runs:
         run["count"] = counts.get(run["id"], 0)
-    return {"runs": runs}
+    orphans = [{"id": rid, "count": c} for rid, c in sorted(counts.items())
+               if rid not in known]
+    return {"runs": runs, "orphans": orphans}
 
 
 # ---------------------------------------------------------------- render
@@ -231,6 +280,11 @@ def render_overview(d):
         state = "closed" if r["closed"] else "open"
         lines.append(f"- `{r['id']}` — by {r['by']} ({state}); {r['count']} "
                      f"agent run(s) booked" + (f" — {r['note']}" if r.get("note") else ""))
+    orphans = d.get("orphans") or []
+    if orphans:
+        lines += ["", "## ⚠ orphan receipts — booked under no opened posture (ungoverned)"]
+        for o in orphans:
+            lines.append(f"- `{o['id']}` — {o['count']} receipt(s), no opener admission")
     lines += ["", "_`python -m loop.agent_run --run <id>` reads one run's "
               "monitor fold._"]
     return "\n".join(lines)

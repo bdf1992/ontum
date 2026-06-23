@@ -23,6 +23,7 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
 from loop import agent_run, prompt_req
+from loop.reconcile import append_line, now_ts
 
 # a full, door-passing node prompt (mirrors test_prompt_req's FULL) — written
 # into the temp root's nodes/ so deliver() resolves it without the real tree.
@@ -100,14 +101,80 @@ class TrainingRunBooks(unittest.TestCase):
         d = agent_run.fold_run(self.root, run)
         self.assertTrue(d["opener"]["closed"])               # closed, not erased
 
-    def test_rebook_is_idempotent(self):
+    def test_rebook_same_verdict_is_idempotent(self):
         run = agent_run.open_run(self.root, by="test-bdo")
         a = agent_run.book_receipt(self.root, run, self.node, self.hash,
                                    "atom.x", "already-reconciled", "r1")
         b = agent_run.book_receipt(self.root, run, self.node, self.hash,
                                    "atom.x", "already-reconciled", "r2")
-        self.assertEqual(a, b)                                # same (run,node,subject)
+        self.assertEqual(a, b)                                # same (run,node,subject,verdict)
         self.assertEqual(agent_run.fold_run(self.root, run)["count"], 1)
+
+    # --- hardening (redteam follow-up) ---
+
+    def test_book_under_unopened_run_is_refused(self):
+        # the run posture must exist — a receipt under a never-opened id is ungoverned
+        with self.assertRaises(ValueError) as cm:
+            agent_run.book_receipt(self.root, "atr.never-opened", self.node,
+                                   self.hash, "atom.x", "already-reconciled", "r")
+        self.assertIn("no such training run", str(cm.exception).lower())
+
+    def test_book_under_closed_run_is_refused(self):
+        run = agent_run.open_run(self.root, by="test-bdo")
+        agent_run.close_run(self.root, run, by="test-bdo")
+        with self.assertRaises(ValueError) as cm:
+            agent_run.book_receipt(self.root, run, self.node, self.hash,
+                                   "atom.x", "already-reconciled", "r")
+        self.assertIn("closed", str(cm.exception).lower())
+
+    def test_bad_subject_is_refused(self):
+        # a subject carrying shell metacharacters can never reach the books
+        run = agent_run.open_run(self.root, by="test-bdo")
+        for bad in ('x";rm -rf ~;echo "', "$(id)", "a b", "back`tick`"):
+            with self.subTest(subject=bad):
+                with self.assertRaises(ValueError) as cm:
+                    agent_run.book_receipt(self.root, run, self.node, self.hash,
+                                           bad, "already-reconciled", "r")
+                self.assertIn("not a valid id", str(cm.exception).lower())
+        self.assertEqual(agent_run.fold_run(self.root, run)["count"], 0)
+
+    def test_divergent_verdict_rebook_is_visible_not_masked(self):
+        # the escalation-erasure attack: a later already-reconciled must NOT hide
+        # an earlier needs-owner — both render (verdict is in the id)
+        run = agent_run.open_run(self.root, by="test-bdo")
+        agent_run.book_receipt(self.root, run, self.node, self.hash,
+                               "atom.x", "needs-owner", "touches the truth log")
+        agent_run.book_receipt(self.root, run, self.node, self.hash,
+                               "atom.x", "already-reconciled", "nothing to do")
+        d = agent_run.fold_run(self.root, run)
+        self.assertEqual(d["count"], 2)                       # both on the books
+        self.assertEqual(d["by_verdict"], {"already-reconciled": 1, "needs-owner": 1})
+
+    def test_overview_count_agrees_with_fold_run(self):
+        run = agent_run.open_run(self.root, by="test-bdo")
+        agent_run.book_receipt(self.root, run, self.node, self.hash,
+                               "atom.x", "already-reconciled", "r1")
+        agent_run.book_receipt(self.root, run, self.node, self.hash,
+                               "atom.x", "already-reconciled", "r2")  # true dup
+        ov = agent_run.overview(self.root)
+        fold = agent_run.fold_run(self.root, run)
+        ov_count = next(r["count"] for r in ov["runs"] if r["id"] == run)
+        self.assertEqual(ov_count, fold["count"])             # one truth, not two
+        self.assertEqual(ov_count, 1)
+        self.assertEqual(ov.get("orphans"), [])
+
+    def test_orphan_receipt_is_surfaced_not_hidden(self):
+        # a receipt that reached the log under no opener (e.g. a raw append that
+        # bypassed book_receipt) must SCREAM in overview, never vanish
+        append_line(agent_run._receipts_path(self.root), {
+            "id": "arun.orphan", "type": agent_run.RECEIPT_TYPE,
+            "run": "atr.no-opener", "node": self.node, "prompt_hash": self.hash,
+            "subject": "atom.x", "verdict": "already-reconciled", "reason": "r",
+            "training": True, "ts": now_ts(),
+        })
+        ov = agent_run.overview(self.root)
+        orphan_ids = {o["id"] for o in ov.get("orphans", [])}
+        self.assertIn("atr.no-opener", orphan_ids)            # not hidden
 
 
 if __name__ == "__main__":
