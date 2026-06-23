@@ -6,14 +6,14 @@ and emits, deterministically,
 - .codex/rules/ontum.rules   the firm denials as native prefix_rule
                              entries (Starlark; Codex validates the
                              inline match/not_match examples at load)
-- .codex/hooks.json          the ambient summons: SessionStart and
-                             UserPromptSubmit run `python -m
-                             loop.summon --hook`, the same briefing a
-                             Claude session is handed; plus the hook
-                             seam probe (fence/probe_codex.py) on
+- .codex/hooks.json          the ambient session beat: SessionStart runs
+                             the guaranteed tick and the summons briefing;
+                             UserPromptSubmit runs the summons briefing;
+                             plus the hook seam probe
+                             (fence/probe_codex.py) on
                              PreToolUse/PostToolUse/PermissionRequest,
                              recording real payloads until the contract
-                             is observed (done-line 0029)
+                             is observed (done-lines 0029, 0178)
 
 Outputs are committed but never hand-edited - tests/test_fence.py
 refuses a stale render. Codex loads the layer only once the project is
@@ -35,6 +35,7 @@ RULES_OUT = ROOT / ".codex" / "rules" / "ontum.rules"
 HOOKS_OUT = ROOT / ".codex" / "hooks.json"
 
 SUMMON = "python -m loop.summon --hook"
+HEARTBEAT = "python -m loop.heartbeat --hook"
 PROBE = "python fence/probe_codex.py"
 
 
@@ -60,6 +61,12 @@ HOOKS = {
         "SessionStart": [
             {
                 "hooks": [
+                    {
+                        "type": "command",
+                        "command": HEARTBEAT,
+                        "timeout": 30,
+                        "statusMessage": "ontum: heartbeat tick",
+                    },
                     {
                         "type": "command",
                         "command": SUMMON,

@@ -41,6 +41,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python -m loop.heartbeat --hook",
+            "timeout": 30,
+            "statusMessage": "ontum: heartbeat tick"
+          },
+          {
+            "type": "command",
             "command": "python -m loop.summon --hook",
             "timeout": 30,
             "statusMessage": "ontum: open summons"

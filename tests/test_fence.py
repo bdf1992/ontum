@@ -172,7 +172,7 @@ class RenderedSurface(unittest.TestCase):
         self.assertIn('["gh", "pr", ["close", "reopen"]]',
                       render_codex.render_rules())
 
-    def test_hooks_carry_only_summon_and_probe(self):
+    def test_hooks_carry_only_summon_heartbeat_and_probe(self):
         hooks = json.loads(render_codex.render_hooks())["hooks"]
         commands = [h["command"]
                     for groups in hooks.values()
@@ -182,10 +182,21 @@ class RenderedSurface(unittest.TestCase):
         for command in commands:
             self.assertTrue(
                 command == "python -m loop.summon --hook"
+                or command == "python -m loop.heartbeat --hook"
                 or command.startswith("python fence/probe_codex.py "),
                 f"unexpected hook command: {command!r} — the Codex hook "
-                "surface stays read-only (D-10): the summons briefing "
-                "and the seam probe, nothing that acts")
+                "surface carries only the safe heartbeat tick, the summons "
+                "briefing, and the seam probe")
+
+    def test_session_start_runs_heartbeat_before_summon(self):
+        hooks = json.loads(render_codex.render_hooks())["hooks"]
+        commands = [h["command"]
+                    for group in hooks["SessionStart"]
+                    for h in group["hooks"]]
+        self.assertEqual(commands[:2], [
+            "python -m loop.heartbeat --hook",
+            "python -m loop.summon --hook",
+        ])
 
     def test_probe_events_cover_the_tool_seam(self):
         hooks = json.loads(render_codex.render_hooks())["hooks"]
