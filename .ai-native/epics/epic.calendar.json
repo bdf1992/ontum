@@ -1,0 +1,33 @@
+{
+  "epic": {
+    "id": "epic.calendar",
+    "owner": "bdo",
+    "priority": "bdo's arc, named 2026-06-22 ('epic.calendar') in the session that built the owner-meeting and the calendar bridge. It grew from a concrete ask — 'a digest over these owner asks, at most a 30-minute daily meeting' — through a root-cause finding (the owner-ask issue flood: a branch-local dedup ack + a non-idempotent blind gh-issue-create, ~9x per report) into a substrate: a private `calendar` repo (bdf1992/calendar) as the central pub/sub place where every meeting lands, reachable from any device because git is the cross-device layer. Awaits no further naming — bdo confirmed it to land the first piece (PR #579).",
+    "arc": "ontum gains a calendar: a governed, cross-device substrate where meetings are prepared by agents, joined by the owner from any device, and their decisions land back as real records. The owner reads ONE bounded surface a day (a prepared, time-boxed meeting an agent runs for him), never a pile of issues. The design routes around a real platform limit — Claude Code has no cross-device session sync, no shareable session link, no session templates — by syncing the ENVIRONMENT (a git repo) instead of the session. ontum is the first producer; the calendar repo is standalone (decoupled pub/sub), so any system can publish a meeting and the owner can subscribe by opening it.",
+    "context": "Three things this arc holds. (1) NO SECOND SOURCE OF TRUTH. ontum's append-only log stays the record of fact; a meeting record in the calendar repo is the delivery surface, and the owner's decisions become real ontum records only through `consume` (the subscribe leg, citing the logged decision). (2) REACH LIVES IN THE PEN, NEVER loop/. The prepared agenda is a pure fold (loop/meeting.py); every gh call is in the skill pen (.claude/skills/calendar/calendar.py), behind injectable put_file/get_json — the reflect.py split, so loop/ stays network-free and the reach is tested without a network. (3) THE CALENDAR IS GENERAL. owner-meeting is one meeting TYPE; design reviews, arc confirmations, retros are new `type` values on the same record shape. The first piece proves the whole lifecycle (prepare -> publish -> open -> run -> transcribe -> land-back) on one real content shape, requiring none of the rest.",
+    "value": "A meeting in ontum becomes an act on the record, not a calendar invite that vanishes: it carries who prepared it, what was parked, what the owner decided, and where each decision landed. The owner steers from any device through the one surface he already reads. And because the prepared agenda is a fold over the owner-asks, the meeting can never drift from what is actually parked on him — the pile that this arc was born to kill cannot grow back.",
+    "horizon": "Done at epic scale: ontum has a calendar substrate where (a) the daily owner-meeting is prepared, published, run, and its decisions consumed back, end to end; (b) a SCHEDULED producer keeps the upcoming meeting always-ready without a human publishing it by hand; (c) the confirm and defer decisions actuate (today only discharge is wired); (d) REAL-CALENDAR integration is live — an .ics feed generated from the meeting manifests (date/title/type/budget_minutes), subscribe-able in Google/Apple/Outlook on any device, so meetings appear in the owner's actual calendar (note: GitHub has no native calendar to integrate with; a GitHub Projects roadmap mirror is an optional GH-native board, not a substitute for the .ics feed); and (e) the per-report owner-ask reflect rule is retired, its blind-create duplication root cause designed out. A new meeting type or integration is added only when a real need refuses to fit the existing shape (the §10 test), never to fill a zoo.",
+    "pieces": [
+      {
+        "atom": "atom.owner-meeting-prep.v0",
+        "status": "IN FLIGHT (PR #579) — the owner-meeting + the calendar bridge, as one arc-opening cell",
+        "glue": "The pure prep fold (loop/meeting.py: rank the live owner-asks freshest-first, budget-cap to a ~30-minute agenda via an admitted meeting_budget dial, defer the rest, exclude discharged) AND the producer/subscriber pen (.claude/skills/calendar/: publish writes the meeting record to bdf1992/calendar and logs the publish; consume lands the meeting's decisions back, recording each as a first-class event and actuating a discharge that cites it, idempotently, resolving report_id|group-id to the canonical ask). Proven live: published today's real agenda (43 groups, 120 items) to the calendar repo. done-line 0183, proposal owner-ask-digest, §10 teeth in tests/test_meeting.py + tests/test_calendar.py. Independent review (8 angles) caught and fixed the decision-channel id mismatch before landing."
+      },
+      {
+        "atom": "atom.calendar-scheduled-producer.v0",
+        "status": "NEXT — the always-ready leg (CTA-2)",
+        "glue": "Wire ontum to publish the daily owner-meeting on a schedule (the existing standing-tick / scheduled-routine rail), so the upcoming meeting is waiting when the owner opens it — replacing the by-hand first publish. The publish is already a recorded, idempotent act; this is the cron that fires it."
+      },
+      {
+        "atom": "atom.calendar-ics-feed.v0",
+        "status": "DEFERRED — real-calendar integration (CTA-3)",
+        "glue": "Generate an .ics feed from the meeting manifests (date/title/type/budget_minutes already present) so meetings appear in the owner's actual calendar (Google/Apple/Outlook) on any device, each event linking to its meeting folder. Outward, authenticated; the calendar repo's integrations/ names it. GitHub has no native calendar; an optional GitHub Projects roadmap mirror is a board, not a subscribe-able feed."
+      },
+      {
+        "atom": "atom.calendar-confirm-defer-actuators.v0",
+        "status": "DEFERRED — the rest of the return leg",
+        "glue": "Wire the confirm (arc confirmation) and defer decisions through consume (today only discharge actuates; confirm/defer are recorded-only). Each rides the existing pen (confirm-arc), keeping the decoupled, cited, idempotent shape."
+      }
+    ]
+  }
+}
