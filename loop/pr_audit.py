@@ -24,20 +24,31 @@ its disposition (re-home through the pen, or close) bdo's call (D-4).
 from __future__ import annotations
 
 ATOM_DIR = ".ai-native/atoms/"
-RECORD_DIRS = (".ai-native/reports/", ".ai-native/done/")
+RECORD_DIRS = (".ai-native/reports/", ".ai-native/done/",
+               ".ai-native/proposals/")
 RECEIPTS_LOG = ".ai-native/log/receipts.jsonl"
 
 
 def records_only(changed_paths):
-    """True iff the branch changes ONLY records — session reports or done-lines
-    (`.ai-native/reports|done/NNNN-*.md`) and nothing else (done-line 0172,
-    bdo's records door). A record is *of* work, not work: a report written after
-    its work PR already landed has no atom to carry and can never bundle
-    retroactively, yet it belongs on main as the durable record. Such a PR is
-    backed without an atom, the same shape as the phrasing door — and just as
-    narrow: a single code, atom, log, or config change makes this False and the
-    branch falls back to needing an atom (a report PR cannot smuggle work). An
-    empty change set is not records-only (nothing to land)."""
+    """True iff the branch changes ONLY records — session reports, done-lines,
+    or proposals (`.ai-native/reports|done|proposals/*.md`) and nothing else
+    (done-line 0172, bdo's records door; widened to proposals 2026-06-23, bdo's
+    "land blueprints as proposal-records"). A record is *of* work, not work, so
+    it is backed without an atom — the same shape as the phrasing door.
+
+    Reports and done-lines record work *done*; a proposal records work
+    *proposed* — the blueprint a non-trivial arc owes before building ("blueprint
+    before build", #348/CTA-3). The distinction is honest: a proposal is design
+    captured ahead of the build, not a receipt of a build. But it is still a
+    record — bdo named proposals as records (2026-06-23) so the bundle lands on
+    main as the durable design instead of stranding off-trunk on the
+    proposal-landing friction (#355), where a blueprint-only PR has no atom to
+    carry and would otherwise never reach the surface bdo steers from.
+
+    Just as narrow as the other doors: a single code, atom, log, or config
+    change makes this False and the branch falls back to needing an atom (a
+    proposal PR cannot smuggle work). An empty change set is not records-only
+    (nothing to land)."""
     paths = [p.replace("\\", "/") for p in changed_paths if p.strip()]
     if not paths:
         return False
@@ -137,13 +148,16 @@ def orphan_reason(added_atom_ids, receipt_artifact_ids, phrasing_clean=False,
     cannot be lied to: a code or schema change makes it False and the branch
     falls back to needing an atom.
 
-    The THIRD way to be backed (done-line 0172, bdo's records door): a branch
-    that changes ONLY records — reports/done-lines (`records_only`) — needs no
-    atom, because a record is *of* work, not a work-particle. A session report
-    written after its work landed cannot bundle retroactively and would otherwise
-    strand off main forever. Like the phrasing proof, `records_only` is recomputed
-    by the reach (`pr.py audit`) from the diff, so it cannot be lied to: any
-    non-record change falls back to needing an atom.
+    The THIRD way to be backed (done-line 0172, bdo's records door; widened to
+    proposals 2026-06-23): a branch that changes ONLY records —
+    reports/done-lines/proposals (`records_only`) — needs no atom, because a
+    record is *of* work, not a work-particle. A session report written after its
+    work landed cannot bundle retroactively, and a proposal is the blueprint
+    *proposed* ahead of a build ("blueprint before build", #348); both would
+    otherwise strand off main forever (the proposal-landing friction, #355).
+    Like the phrasing proof, `records_only` is recomputed by the reach
+    (`pr.py audit`) from the diff, so it cannot be lied to: any non-record
+    change falls back to needing an atom.
 
     The FOURTH way to be backed (done-line 0187, bdo's RAW door): a branch whose
     ONLY change is appended lines to the receipts log (`receipts_only`) is backed
