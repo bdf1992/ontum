@@ -365,6 +365,51 @@ function renderMentionMenu(targets) {
   );
 }
 
+// renderAttachTray(attachments) -> the inner HTML of the composer's attachment
+// tray (row 15). Each attachment from attach.displayAttachment (a data-free
+// view — name/kind/bytes/error, never the base64 payload) is a chip carrying
+// `data-attachment="<name>"` + `data-kind` + a Remove button (`data-attach-name`
+// for the delegated remove handler). An errored attachment (missing/too large)
+// shows its honest error, not a fake success. The tray is hidden until at least
+// one attachment is staged; the attachments ride the NEXT turn as content blocks
+// ahead of the typed text (engine.encodeUserMessage folds them in). An empty
+// list paints nothing (the container + wiring still ship). All escaped.
+function renderAttachTray(attachments) {
+  const list = Array.isArray(attachments) ? attachments : [];
+  if (list.length === 0) return '';
+  const items = list
+    .map((a) => {
+      const name = escapeHtml(a && a.name ? a.name : 'attachment');
+      const kind = escapeHtml(a && a.kind ? a.kind : 'text');
+      const bytes = a && typeof a.bytes === 'number' ? a.bytes : 0;
+      const err = a && a.error ? escapeHtml(a.error) : '';
+      const meta = err ? 'error: ' + err : kind + ' · ' + formatBytes(bytes);
+      return (
+        `<li class="ontum-attach-chip" data-attachment="${name}" ` +
+        `data-kind="${kind}"${err ? ' data-error="true"' : ''}>` +
+        `<span class="ontum-attach-name">${name}</span>` +
+        `<span class="ontum-attach-meta">${escapeHtml(meta)}</span>` +
+        `<button class="ontum-attach-remove" type="button" ` +
+        `data-attach-name="${name}" aria-label="Remove ${name}">&times;</button>` +
+        `</li>`
+      );
+    })
+    .join('\n        ');
+  return (
+    `<ul class="ontum-attach-list" data-count="${list.length}">\n        ` +
+    items +
+    `\n      </ul>`
+  );
+}
+
+// formatBytes(n) -> a short human size for an attachment chip (B / KB / MB).
+function formatBytes(n) {
+  const b = typeof n === 'number' && n >= 0 ? n : 0;
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  return (b / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
 // renderMcpPanel(servers) -> the inner HTML of the Sessions aside's MCP region
 // (row 13). Each server from mcp.listMcpServers (a fold of the on-disk MCP
 // config the CLI reads, annotated with the LIVE engine tools list) is a
@@ -561,6 +606,12 @@ function renderShell(opts) {
   // file list (mentions.listMentionTargets); absent -> an empty palette (the
   // container + wiring still ship, so a later render with files lights up).
   const mentionHtml = renderMentionMenu(o.mentionTargets);
+  // Row 15 — the attachment tray. The host passes the staged attachments
+  // (data-free views from attach.displayAttachment); absent/empty -> no chips
+  // (the tray container + the attach button + the wiring still ship, so a later
+  // render with attachments lights up). The attachments ride the next turn as
+  // content blocks ahead of the typed text (engine.encodeUserMessage folds them).
+  const attachHtml = renderAttachTray(o.attachments);
   // Row 13 — the MCP servers + tools panel. The host passes the discovered MCP
   // servers (mcp.listMcpServers — the on-disk config folded + annotated with the
   // live engine tools); absent -> an honest "no MCP servers" note (the region +
@@ -1060,7 +1111,11 @@ function renderShell(opts) {
     <div class="ontum-mention" data-region="mention" hidden>
       ${mentionHtml}
     </div>
+    <div class="ontum-attach" data-region="attach">
+      ${attachHtml}
+    </div>
     <div class="ontum-compose-row">
+      <button class="ontum-attach-add" type="button" aria-label="Attach an image or file" title="Attach an image or file">&#128206;</button>
       <textarea
         class="ontum-compose-input"
         rows="1"
@@ -1181,6 +1236,35 @@ function renderShell(opts) {
           decision: decision,
           toolId: toolId,
         });
+      }
+    });
+
+    // Row 15 — image / file attach. The composer's attach button asks the host
+    // to open its file picker (the live picker is a VS Code host dialog); the
+    // host reads + classifies the chosen file (attach.readAttachment) and
+    // re-renders the tray with the staged chip. A chip's Remove button (delegated
+    // on document so chips rendered LATER are wired too) posts
+    // { type:'ontum:remove-attachment', name } so the host drops it from the
+    // staged set. The staged attachments ride the NEXT turn as content blocks
+    // ahead of the typed text (the host threads them into driveTurn).
+    (function wireAttach() {
+      var add = document.querySelector('.ontum-attach-add');
+      if (add) {
+        add.addEventListener('click', function () {
+          if (vscode) vscode.postMessage({ type: 'ontum:attach-file' });
+        });
+      }
+    })();
+    document.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest
+        ? ev.target.closest('button.ontum-attach-remove')
+        : null;
+      if (!btn) return;
+      var name = btn.getAttribute('data-attach-name');
+      var chip = btn.closest('.ontum-attach-chip');
+      if (chip && chip.parentElement) chip.parentElement.removeChild(chip);
+      if (vscode) {
+        vscode.postMessage({ type: 'ontum:remove-attachment', name: name });
       }
     });
 
@@ -1442,6 +1526,7 @@ module.exports = {
   renderPermissionControl,
   renderSlashMenu,
   renderMentionMenu,
+  renderAttachTray,
   renderMcpPanel,
   renderEnvPanel,
   makeNonce,

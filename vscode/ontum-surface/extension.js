@@ -21,6 +21,11 @@ const { tailTranscript } = require('./livetail');
 const { driveTurn, partialDelta, normalizePermissionMode } = require('./engine');
 const { listSlashCommands } = require('./slash');
 const { listMentionTargets, withSelectionContext } = require('./mentions');
+const {
+  readAttachment,
+  attachmentBlocks,
+  displayAttachment,
+} = require('./attach');
 const { nextModeOnPlanDecision, isPlanDecision } = require('./plan');
 const { listMcpServers, userConfigPathFor } = require('./mcp');
 const { listEnvironment } = require('./environment');
@@ -75,6 +80,19 @@ let selectionImpl = null;
 // configured servers with what is genuinely available + invocable. Null until a
 // turn has run (the configured-but-not-yet-loaded view is the honest default).
 let lastEngineTools = null;
+// Row 15 — the attachments staged for the NEXT turn (image / file attach). Each
+// is an attach.readAttachment record (name/kind/mediaType/bytes + base64 data or
+// utf8 text, or an honest error). sendPrompt encodes them into content blocks
+// ahead of the typed text and clears the set; the composer's attach button +
+// remove chips drive it. Empty by default (a plain turn carries no attachments,
+// preserving every earlier row's verbatim-stdin behaviour).
+let pendingAttachments = [];
+// Row 15 — the file picker the attach button opens. In production this is the
+// VS Code host dialog (vscode.window.showOpenDialog); a host-free test injects a
+// fake picker via __setAttachPickerForTest returning the chosen path(s), so the
+// "the attachment rode the turn as a content block" round-trip is proven without
+// a host dialog. Null -> the production picker.
+let attachPickerImpl = null;
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -202,6 +220,66 @@ function currentSelection() {
   }
 }
 
+// addAttachment(file) -> read + classify a file off disk (attach.readAttachment)
+// and stage it for the next turn (row 15). Returns the staged record (incl. an
+// honest error record for a missing/oversized file — staged so the human sees
+// why it was refused, encoded to no block). A duplicate name replaces the prior
+// staging (re-attaching the same file refreshes it). Never throws.
+function addAttachment(file) {
+  if (!file) return null;
+  const rec = readAttachment({ file: String(file) });
+  // De-dup by name so re-picking the same file does not stack chips.
+  pendingAttachments = pendingAttachments.filter((a) => a.name !== rec.name);
+  pendingAttachments.push(rec);
+  return rec;
+}
+
+// removeAttachment(name) -> drop a staged attachment by name (the chip's Remove
+// button posts it). Returns true when one was removed. No-op for an unknown name.
+function removeAttachment(name) {
+  const before = pendingAttachments.length;
+  pendingAttachments = pendingAttachments.filter((a) => a.name !== name);
+  return pendingAttachments.length < before;
+}
+
+// getAttachments() -> the data-free tray views of the staged attachments
+// (attach.displayAttachment — name/kind/bytes/error, never the base64 payload).
+// Fed to renderShell (row 15) and exposed so a host-free test can assert the
+// staging round-trip without leaking the bytes into the assertion.
+function getAttachments() {
+  return pendingAttachments.map(displayAttachment);
+}
+
+// pickAttachment() -> open the host file picker (or the injected test picker),
+// stage each chosen file (addAttachment), and re-render the tray (row 15). The
+// live picker is a VS Code host dialog (vscode.window.showOpenDialog); the
+// __setAttachPickerForTest seam returns the chosen path(s) host-free. Resolves
+// to the staged records. Never throws.
+async function pickAttachment() {
+  let files = [];
+  try {
+    if (typeof attachPickerImpl === 'function') {
+      files = (await attachPickerImpl()) || [];
+    } else {
+      const uris =
+        (await vscode.window.showOpenDialog({
+          canSelectMany: true,
+          openLabel: 'Attach',
+        })) || [];
+      files = uris.map((u) => (u && u.fsPath ? u.fsPath : String(u)));
+    }
+  } catch (_) {
+    files = [];
+  }
+  const staged = [];
+  for (const f of files) {
+    const rec = addAttachment(f);
+    if (rec) staged.push(rec);
+  }
+  if (staged.length) renderPanel();
+  return staged;
+}
+
 // selectedFile() -> the transcript file path of the selected session, or null.
 function selectedFile() {
   if (!selectedSessionId) return null;
@@ -304,10 +382,17 @@ async function sendPrompt(text) {
   // through verbatim — the engine reads them as context (the surface offered
   // the completion palette; it does not re-implement file reading).
   const prompt = withSelectionContext(base, currentSelection());
+  // Row 15 — encode the staged attachments into content blocks ahead of the
+  // typed text (image/document base64, text inlined). An errored attachment
+  // folds to no block. The set is cleared after the turn is driven so it rides
+  // exactly one turn (the composer re-renders without the chips).
+  const attachments = attachmentBlocks(pendingAttachments);
+  const hadAttachments = pendingAttachments.length > 0;
   let reply;
   try {
     reply = await driveTurn({
       prompt,
+      attachments,
       cwd: currentCwd(),
       // Row 9 — run under the human's chosen permission mode (the composer's
       // permission surface set it; defaults to the conservative 'default').
@@ -324,6 +409,13 @@ async function sendPrompt(text) {
       text: (err && err.message) || 'engine failed to start',
       cost: null,
     };
+  }
+  // Row 15 — the attachments rode this one turn; clear the staged set so they do
+  // not ride the next. Re-render so the composer's tray empties (only when there
+  // were chips to clear, so a plain turn does not trigger a needless repaint).
+  if (hadAttachments) {
+    pendingAttachments = [];
+    renderPanel();
   }
   // Row 13 — record the LIVE tools the turn's init event reported (it names the
   // MCP tools the inherited env actually loaded, `mcp__server__tool`), so a
@@ -447,6 +539,10 @@ function renderPanel() {
     // Row 12 — the discovered @-mention palette (a bounded workspace file fold).
     // The composer filters it as the human types an '@' token.
     mentionTargets: readMentionTargets(),
+    // Row 15 — the staged attachments (data-free tray views). The composer's
+    // attach button + remove chips drive them; they ride the next turn as
+    // content blocks ahead of the typed text.
+    attachments: getAttachments(),
     // Row 13 — the discovered MCP servers (configured on disk) annotated with
     // the tools the live engine env exposed for them (`mcp__server__tool`).
     mcpServers: readMcpServers(),
@@ -499,6 +595,12 @@ function openSurface(context) {
       } else if (msg && msg.type === 'ontum:set-permission-mode') {
         // Row 9 — the human chose a permission mode; the next turn runs under it.
         setPermissionMode(msg);
+      } else if (msg && msg.type === 'ontum:attach-file') {
+        // Row 15 — open the host file picker; stage + re-render the chosen files.
+        pickAttachment();
+      } else if (msg && msg.type === 'ontum:remove-attachment') {
+        // Row 15 — drop a staged attachment the human removed; re-render the tray.
+        if (removeAttachment(msg.name)) renderPanel();
       }
     });
   }
@@ -565,6 +667,15 @@ function __setSelectionForTest(fn) {
   selectionImpl = fn || null;
 }
 
+// __setAttachPickerForTest(fn) -> inject the attach file picker (row 15). A
+// host-free test passes a function returning the chosen path(s) so the "the
+// attachment rode the turn as a content block" round-trip is proven without a
+// VS Code host dialog; pass null to restore the production picker
+// (vscode.window.showOpenDialog).
+function __setAttachPickerForTest(fn) {
+  attachPickerImpl = fn || null;
+}
+
 module.exports = {
   activate,
   deactivate,
@@ -609,6 +720,14 @@ module.exports = {
   // Row 12 — exposed so a host-free test can inject a fake editor selection and
   // assert the driven turn carried it as context (the selection-context surface).
   __setSelectionForTest,
+  // Row 15 — exposed so a host-free test can drive + assert the image/file
+  // attach round-trip (stage a file → it rides the next turn as a content block
+  // ahead of the typed text → the staged set clears after send).
+  addAttachment,
+  removeAttachment,
+  getAttachments,
+  pickAttachment,
+  __setAttachPickerForTest,
   VIEW_TYPE,
   OPEN_COMMAND,
 };

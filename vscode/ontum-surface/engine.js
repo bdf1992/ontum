@@ -36,18 +36,28 @@
 
 const { foldTranscript } = require('./transcript');
 
-// encodeUserMessage(text) -> the single stream-json input line the CLI reads on
-// stdin: a user-message envelope, newline-terminated (the channel is the same
-// newline-delimited JSON the rest of the loop folds). Content is sent as an
-// array of text blocks — the canonical Messages-API shape the engine accepts.
-function encodeUserMessage(text) {
-  const msg = {
-    type: 'user',
-    message: {
-      role: 'user',
-      content: [{ type: 'text', text: String(text == null ? '' : text) }],
-    },
-  };
+// encodeUserMessage(text, attachments) -> the single stream-json input line the
+// CLI reads on stdin: a user-message envelope, newline-terminated (the channel
+// is the same newline-delimited JSON the rest of the loop folds). Content is an
+// array of content blocks — the canonical Messages-API shape the engine accepts.
+//
+// `attachments` (row 15) is an optional array of already-built content blocks
+// (attach.attachmentBlocks: image/document/text), folded in AHEAD of the typed
+// text — the convention the API expects (the image/file leads, the question
+// follows). With NO attachments the content is EXACTLY `[{type:'text',text}]`,
+// so every earlier row's verbatim-stdin proof (the prompt is content[0].text)
+// still holds — row 15 is purely additive. Only well-formed blocks
+// ({type:string}) are admitted, so a malformed attachment can never corrupt the
+// envelope.
+function encodeUserMessage(text, attachments) {
+  const content = [];
+  if (Array.isArray(attachments)) {
+    for (const b of attachments) {
+      if (b && typeof b === 'object' && typeof b.type === 'string') content.push(b);
+    }
+  }
+  content.push({ type: 'text', text: String(text == null ? '' : text) });
+  const msg = { type: 'user', message: { role: 'user', content } };
   return JSON.stringify(msg) + '\n';
 }
 
@@ -338,6 +348,8 @@ function assembleStream(events) {
 // output events (torn-tail tolerant, the same fold law as the store), and
 // resolves with foldReply(events) once the process closes.
 //   opts.prompt          — the user text to send (required).
+//   opts.attachments     — optional content blocks (row 15: image/file attach)
+//                          folded ahead of the prompt by encodeUserMessage.
 //   opts.cwd             — working dir for the engine (defaults to process.cwd).
 //   opts.bin             — the engine binary (default 'claude').
 //   opts.spawn           — injectable spawn (default child_process.spawn) so a
@@ -468,7 +480,7 @@ function driveTurn(opts) {
     // single turn and exits (the --print one-shot contract).
     try {
       if (child.stdin && typeof child.stdin.write === 'function') {
-        child.stdin.write(encodeUserMessage(o.prompt));
+        child.stdin.write(encodeUserMessage(o.prompt, o.attachments));
         if (typeof child.stdin.end === 'function') child.stdin.end();
       }
     } catch (err) {
