@@ -21,7 +21,7 @@ set MODEL=claude-opus-4-8
 cd /d %WT%
 
 echo ==== overnight tick %DATE% %TIME% (model %MODEL%) ==== >> %LOG%
-git pull --no-edit origin claude/overnight-branded-surface >> %LOG% 2>&1
+git pull --no-edit origin claude/branded-surface-close >> %LOG% 2>&1
 
 claude -p "Run ONE overnight administer tick for the branded Claude surface. Read vscode/ontum-surface/ADMINISTER.md and follow it exactly: check the stop conditions FIRST (marker-met / STOPPED-infeasible / clock at-or-after 08:00), then do ONE bounded increment, verify it with a real check, update PROGRESS.md and PARITY-CHECKLIST.md, and COMMIT through the git pen (.claude/skills/branch-ritual/git.py — never raw git add/commit). Do NOT push — the wrapper pushes synchronously after you exit (a backgrounded in-tick push gets cut when this headless process ends). If the marker is met, run the self-grade + /code-review ultra peer grade + open the PR with GRADES.md per ADMINISTER.md, then set STATE so later ticks exit." --model %MODEL% --permission-mode bypassPermissions --append-system-prompt "You are an UNATTENDED overnight tick. Be conservative: exactly one increment, honest checkable evidence, commit (do NOT push — the wrapper does), then stop. Never push to main, never merge, never bypass the command_guard fence. Under-claim before you over-claim." <NUL >> %LOG% 2>&1
 
