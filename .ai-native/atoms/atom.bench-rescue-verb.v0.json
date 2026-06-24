@@ -1,0 +1,48 @@
+{
+  "atom": {
+    "id": "atom.bench-rescue-verb.v0",
+    "story": {
+      "text": "As bdo, I need ANY worktree's uncommitted work preserved on demand, not just the viewport's. The whiteout utensil (done-line 0170, #415) made the dirty VIEWPORT recoverable without losing a byte — it preserves the whole pile on a dated rescue branch before it cleans the tree. But the forest is more than the viewport: stranded benches, worktrees, and forest leaves can each carry uncommitted work the loop cannot see and a session cannot safely sort. Until now there was no envelope for them — they were rescuable only by hand. This generalizes whiteout's proof-carrying rescue core into a `rescue <worktree>` verb that aims the same preserve-before-clean motion at any worktree, so the work-forest can never strand.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "any worktree's pile is one verb from preserved",
+      "value": "The git pen gains a `rescue` verb: for any worktree, if it carries uncommitted changes, the pen creates/checks-out a dated rescue branch IN THAT WORKTREE, stages the whole pile (`add -A`), commits it (the pile preserved on the branch BEFORE anything is cleaned), and pushes it. A clean worktree is a safe no-op. Detached-HEAD worktrees branch from current HEAD. The proof-carrying rescue core is extracted into one shared `preserve_pile` function, called by both `whiteout` (the viewport, which then walks the clean tree back to the trunk and fast-forwards) and `rescue` (any bench, which leaves the pile on the rescue branch) — one rescue definition, never forked (I-4).",
+      "why_now": "Iteration 1 of bdo's forest-never-strands experiment: make a stranded work-forest structurally impossible. The viewport already had its rescue envelope (whiteout); the rest of the forest had none. This is the smallest real piece that gives every worktree the same protection.",
+      "if_accepted": "Any stranded bench's uncommitted pile can be preserved-and-pushed with one command, so a session (or an automated tender) can clear a worktree without losing work — the forest never strands.",
+      "if_rejected": "The viewport stays the only worktree with a rescue envelope; benches and forest leaves keep stranding uncommitted work that must be sorted by hand, the friction the experiment exists to remove.",
+      "cost_of_wrong_call": "Low and bounded. The rescue core is whiteout's, already proven; this refactors it into a shared function (both callers keep their behavior, the whiteout tests stay green) and adds one new verb. It mutates only the named worktree, never the trunk; a clean tree is a no-op; on any git failure it restores the worktree to where it started, leaving no half-made branch. Read-only on every other tree. Reverting is removing one verb and inlining the core.",
+      "mechanism": "preserve_pile(worktree, git, label) captures the worktree's starting ref (branch name, or HEAD sha when detached), no-ops on a clean tree, else opens a dated rescue branch (rescue_branch_name, now label-parameterized so whiteout keeps `claude/rescue-viewport-<date>` and rescue uses the worktree's own ref-safe label), stages + commits + pushes the pile, and on any failure rolls the worktree back to its start. recover_dirty_viewport now calls preserve_pile and adds only the viewport tail (return to trunk + fast-forward). cmd_rescue wires the verb (positional or --worktree). tests/test_git_rescue.py joins the suite with the §10 teeth: a temp git repo + a real `git worktree add` bench with a pile is rescued (clean tree + the exact pile on a pushed rescue branch), a clean bench is a safe no-op, a detached-HEAD bench is handled, and test_a_noop_rescuer_is_caught proves the assertions are non-vacuous (a no-op rescuer leaves the pile dirty and mints no branch). Done-line 0193.",
+      "reading": [
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_git_rescue.py",
+        ".ai-native/done/0193-bench-rescue-verb.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        ".claude/skills/branch-ritual/git.py",
+        "tests/test_git_rescue.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/branch-ritual/git.py",
+        ".ai-native/done/0170-whiteout-utensil.md",
+        ".ai-native/done/0193-bench-rescue-verb.md"
+      ],
+      "receipts": []
+    }
+  }
+}
