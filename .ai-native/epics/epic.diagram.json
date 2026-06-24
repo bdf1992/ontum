@@ -52,6 +52,11 @@
         "atom": "atom.diagram-experience.v0",
         "status": "wave 4 — complexity + the served surface",
         "glue": "Recursive zoom (a node expands into its own gated sub-diagram, each level with its 'what is not shown' caption — Moody's complexity-management + cognitive-integration; the mechanized form of taste's 'split into one diagram per shape, linked in prose'). The causality look-and-feel (cream paper, hand-drawn marker, anima) as a reskin of the renderer, served live. A governed, growing diagram family in causality/patterns/pattern-commons.v1.json (consult first, deposit exemplars; the experience skill's ritual, not its external foundry commons). The experience layer is skin + surface, never counted as diagramming rigor — the rigor stays in the gate."
+      },
+      {
+        "atom": "atom.diagram-canvas-first-cut.v0",
+        "status": "in-flight — the editable-canvas first cut, PR #709 (done-line 0192)",
+        "glue": "CTA-A = A1 (bdo's stamp on .ai-native/proposals/diagram-canvas.proposal.md, 2026-06-23): the smallest first cut that BRIDGES the diagrammer's two halves — the deterministic renderer + refusing gate (the rigor) and an editable, schema-driven, persisted graph engine. diagrams/ gains canvas.html + canvas.js (a diagram SCHEMA mirroring compose.py's part-types; select / move-writes-x-y / schema-driven inspector / toJSON-fromJSON to localStorage + file; declared show/hide/lock/reorder layers, membership declared not geometric), and an export path that runs the qa.py preflight so the canvas cannot ship a picture the gate refuses. The canvas EDITS the compose.py spec (the spec stays truth; the canvas is an editor over it) and reuses causality/canvas.js's schema/persistence DISCIPLINE by pattern, never the artifact (§10, no double-build). compose.py honors declared layers behind `if spec.get('layers')` (backward-compatible, byte-identical for existing examples); qa.py gains check_layer_membership (a part on an undeclared band refused, cited under C4 containment). The §10 pair holds: an honest layered spec renders, a layer-orphan is refused; the canvas round-trips through toJSON/fromJSON with teeth. Done-line 0192."
       }
     ]
   }
