@@ -292,14 +292,30 @@ def issue_comment(address, ref, comment):
     gh(["issue", "comment", str(ref), "--repo", address, "--body", comment])
 
 
-def _verdict_objects(text):
+def _verdict_objects(text, _depth=0):
     """Every balanced-brace JSON object in the text that carries a string
     `verdict` key, in order. A brace-matching scan (not a `.*?` regex), so a
     `}` inside the reason can't truncate the object and a missing/markdown
     `VERDICT` sentinel can't hide a well-formed verdict the mind did return —
     the brittleness that left a correct `reject_no_value` unparsed on issue
-    #58. Decoding is the filter: only objects that actually parse survive."""
+    #58. Decoding is the filter: only objects that actually parse survive.
+
+    Robust to an UN-UNWRAPPED `claude -p --output-format json` envelope: if a
+    parsed object is the envelope itself (it carries a string `result` key but
+    no `verdict`), recurse into that `result` string. A stray non-JSON preamble
+    on the child's stdout (the corrupted-`.claude.json` warning that prefixed a
+    real opus run, costing $0.82) defeats the top-level `json.loads(raw)` in
+    `launch_claude`, so `text` keeps the whole raw envelope and the verdict the
+    mind emitted sits DOUBLE-ESCAPED inside `result` (`{\\"verdict\\": ...}`,
+    literal backslashes) where a direct decode fails. Decoding the envelope
+    un-escapes its `result`, recovering the SAME structured verdict object the
+    mind really returned — never a verdict inferred from prose: the recursion
+    only re-reads JSON the model already emitted as a structured object, and a
+    `result` carrying no verdict object still yields nothing. Bounded depth so a
+    pathologically nested payload can't spin."""
     out = []
+    if _depth > 4:  # an envelope inside an envelope inside… is not a real run
+        return out
     for i, ch in enumerate(text):
         if ch != "{":
             continue
@@ -315,8 +331,11 @@ def _verdict_objects(text):
                     except json.JSONDecodeError:
                         pass
                     else:
-                        if isinstance(obj, dict) and isinstance(obj.get("verdict"), str):
-                            out.append(obj)
+                        if isinstance(obj, dict):
+                            if isinstance(obj.get("verdict"), str):
+                                out.append(obj)
+                            elif isinstance(obj.get("result"), str):
+                                out.extend(_verdict_objects(obj["result"], _depth + 1))
                     break
     return out
 
@@ -364,6 +383,25 @@ def _parse_cost(envelope):
     }
 
 
+def _select_verdict(text):
+    """The ONE selection over the parsed verdict objects, shared by the live
+    launch and the saved-trace recovery (I-4 — no twin selection to drift):
+    prefer the object the mind tagged with the VERDICT sentinel, else the LAST
+    well-formed verdict object anywhere in the text (the mind judged; the
+    sentinel is a convention, not the verdict itself). Returns (verdict, reason)
+    or (None, None) when the text carries NO structured verdict object — the
+    unconfirmable path, preserved so the gate can still refuse and report a
+    stream it cannot confirm; never a verdict guessed from prose."""
+    tagged = re.search(r'VERDICT\b[^\{]*(\{)', text, re.DOTALL)
+    objs = _verdict_objects(text[tagged.start(1):]) if tagged else _verdict_objects(text)
+    if not objs:
+        objs = _verdict_objects(text)  # sentinel slice was empty/garbled
+    if not objs:
+        return None, None
+    v = objs[-1]
+    return v["verdict"], v.get("reason", "")
+
+
 def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subprocess.run):
     """Launch the mortal process: real inference, captured, and ALWAYS traced.
     The model is drawn (or pinned) per run; the run's cost is parsed from the
@@ -403,18 +441,15 @@ def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subproc
     if proc.returncode != 0 and not text.strip():
         raise RuntimeError(f"claude -p failed (exit {proc.returncode}); "
                            f"trace: {trace}; stderr: {(proc.stderr or '').strip()[:300]}")
-    # Prefer a verdict object the mind tagged with the VERDICT sentinel; fall
-    # back to the last well-formed verdict object anywhere in the reasoning
-    # (the mind judged; the sentinel is a convention, not the verdict itself).
-    tagged = re.search(r'VERDICT\b[^\{]*(\{)', text, re.DOTALL)
-    objs = _verdict_objects(text[tagged.start(1):] if tagged else text)
-    if not objs:
-        objs = _verdict_objects(text)  # sentinel slice was empty/garbled
-    if not objs:
+    # The one shared selection (sentinel-preferred, last-object fallback). It is
+    # robust to an un-unwrapped envelope: when a corruption preamble defeats the
+    # json.loads(raw) above, `text` is the whole raw envelope and the verdict
+    # sits double-escaped inside `result` — `_verdict_objects` recurses into it.
+    verdict, reason = _select_verdict(text)
+    if verdict is None:
         raise ValueError(f"the process returned no parseable verdict object; "
                          f"trace: {trace}; tail: {text.strip()[-300:]}")
-    v = objs[-1]
-    return v["verdict"], v.get("reason", ""), text, trace, model, cost
+    return verdict, reason, text, trace, model, cost
 
 
 def write_verdict(atom_id, node_id, verdict, reason):
@@ -710,6 +745,84 @@ def cmd_drain(ns):
     return 0
 
 
+# ---------------------------------------------------------------------------
+# recovery from saved traces (no new inference) — the bug-recovery half
+# ---------------------------------------------------------------------------
+
+# bdo (2026-06-24): "it's a bug and it should be fixed, but we should ALSO be
+# able to recover and continue from the bug itself by fixing it now and moving
+# on those it broke on without reruns." A parse bug that loses a verdict the
+# mind really emitted should never force a paid re-run: every headless run is
+# already PERSISTED in full (write_trace, the gitignored debug cache), so the
+# verdicts are recoverable from data already produced. This re-reads them.
+
+
+def recover(atom_id, runs_dir=None):
+    """Re-derive a panel result for an atom from its SAVED gate-run traces — zero
+    new inference. Reads every persisted trace for the atom, re-parses each
+    stream's `parsed_text` with the hardened `_select_verdict` (the same one the
+    live launch uses, I-4), and re-runs `compile_panel`. It only re-extracts what
+    the models ALREADY said (the trace is the model's own output, persisted); it
+    invents nothing and writes nothing. Returns (results, decision, verdict,
+    detail, traces): `results` is the compile_panel-shaped per-stream list, in
+    filename (timestamp) order; `traces` is the list of trace paths read."""
+    runs_dir = Path(runs_dir) if runs_dir else GATE_RUNS
+    safe_atom = re.sub(r"[^A-Za-z0-9._-]", "_", atom_id)  # mirror write_trace
+    traces = []
+    if runs_dir.exists():
+        traces = sorted(t for t in runs_dir.glob("*.json")
+                        if f"-{safe_atom}-" in t.name)
+    results = []
+    for t in traces:
+        try:
+            info = json.loads(t.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as e:
+            results.append({"model": t.name, "verdict": None, "reason": None,
+                            "cost": None, "ok": False,
+                            "error": f"unreadable trace: {e}", "trace": t.name})
+            continue
+        text = info.get("parsed_text") or info.get("stdout") or ""
+        verdict, reason = _select_verdict(text)
+        results.append({
+            "model": info.get("model") or t.name,
+            "verdict": verdict, "reason": reason, "cost": info.get("cost"),
+            "ok": verdict is not None,
+            "error": None if verdict is not None else "no parseable verdict in saved trace",
+            "trace": t.name,
+        })
+    decision, verdict, detail = compile_panel(results)
+    return results, decision, verdict, detail, traces
+
+
+def cmd_recover(ns):
+    runs_dir = ns.runs_dir or GATE_RUNS
+    results, decision, verdict, detail, traces = recover(ns.atom, runs_dir)
+    if not traces:
+        print(f"result: needs-you — no saved gate-run traces for {ns.atom} under "
+              f"{runs_dir}; nothing to recover from (the traces are the gitignored "
+              "debug cache — a run must have been traced to be recovered).")
+        return 2
+    print(f"recovering {ns.atom} from {len(traces)} saved trace(s) — DRY RUN: "
+          "re-reading model output already produced, NO new inference, NOTHING "
+          "written to the log:")
+    for r in results:
+        shown = r["verdict"] or "UNRECOVERABLE"
+        tail = "" if r["ok"] else f" — {r['error']}"
+        print(f"  {r['model']}: {shown}  [{r['trace']}]{tail}")
+    print()
+    if decision == "unanimous":
+        print(f"result: report — recovered panel decision: UNANIMOUS `{verdict}` "
+              f"({detail}). DRY RUN — nothing written. Recording a recovered "
+              "verdict is a separate PRIVILEGED step (it lands through loop.node "
+              "judge / the one pen, D-4), never this tool's to take.")
+    else:
+        print(f"result: report — recovered panel decision: ESCALATE ({detail}). "
+              "DRY RUN — nothing written. The split or failure is real and stays "
+              "bdo's (D-4); this tool only re-derives what the models said, it "
+              "never lands a verdict.")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -732,6 +845,13 @@ def main(argv=None):
                          "rest are picked up the next, level-triggered, pass)")
     dp.add_argument("--dry-run", action="store_true", help="list the queue; fire nothing")
     dp.set_defaults(func=cmd_drain)
+    rp = sub.add_parser("recover", help="re-derive a panel result from SAVED "
+                        "gate-run traces — DRY RUN, no inference, writes nothing")
+    rp.add_argument("--atom", required=True, help="the atom id to recover")
+    rp.add_argument("--runs-dir", type=Path, default=None,
+                    help="the gate-runs trace dir (default: this repo's "
+                         ".ai-native/log/gate-runs)")
+    rp.set_defaults(func=cmd_recover)
     ns = ap.parse_args(argv)
     return ns.func(ns)
 
