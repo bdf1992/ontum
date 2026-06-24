@@ -2,7 +2,7 @@
   "atom": {
     "id": "atom.session-gateway-bind-at-birth.v0",
     "story": {
-      "text": "As bdo, I confirmed (2026-06-23) that I want the FIRST CHAPTER of the session gateway built for real — bind-at-birth (issue #534) — and I sharpened it with one load-bearing refinement: the workstation manifest is not documentation, it is a PORTAL. Its presence in the workstation is the fact: if a tool's portal is present, the gateway produced it and this session is AUTHORIZED to use that tool. The set of portals present IS the environment this session is capable of using, derived from its consequences and its START (its derived type). This turns the three A's (authenticated, authorized, attributed) into something physical and checkable. Today a session has no birth contract: it infers its state from a shared HEAD (the branch-collision root cause, proposal §2) and the merge-node's unadmitted landings show self-asserted identity. This builds the smallest real spine: derive the session's type, write ONE idempotent session_binding carrying the three A's, and emit the capability-filtered workstation portals for the current tree — presence equals authorized.",
+      "text": "This atom serves epic.session-write-posture, the CONFIRMED arc (bdo's arc_confirmed stamp adm.0de65a08accb, 2026-06-24) whose horizon names 'the session-gateway's typed sessions' — the epic's value line says this witness-and-posture work 'seed[s] the runtime witness (activity organ 2) and the session-gateway's typed sessions.' This is that typed-session seed. As bdo, I confirmed (2026-06-23) that I want the FIRST CHAPTER of the session gateway built for real — bind-at-birth (issue #534) — and I sharpened it with one load-bearing refinement: the workstation manifest is not documentation, it is a PORTAL. Its presence in the workstation is the fact: if a tool's portal is present, the gateway produced it and this session is AUTHORIZED to use that tool. The set of portals present IS the environment this session is capable of using, derived from its consequences and its START (its derived type). This turns the three A's (authenticated, authorized, attributed) into something physical and checkable. Today a session has no birth contract: it infers its state from a shared HEAD (the branch-collision root cause, proposal §2) and the merge-node's unadmitted landings show self-asserted identity. This builds the smallest real spine: derive the session's type, write ONE idempotent session_binding carrying the three A's, and emit the capability-filtered workstation portals for the current tree — presence equals authorized.",
       "value_confidence": "high",
       "owner_stamp": "pending"
     },
@@ -25,7 +25,7 @@
     "concern_surface": "systems",
     "incidence": {
       "serves": [
-        "v-next.session-gateway"
+        "epic.session-write-posture"
       ],
       "touches": [
         "loop/session_gateway.py",
