@@ -4,7 +4,7 @@
     "story": {
       "text": "As bdo, I need our diagramming tool upgraded so each generated part is a first-class component on an editable, layered, save-stated canvas — select it, move it, inspect and edit its attributes, lay it on a named band — while the deterministic renderer (compose.py) and the refusing gate (qa.py) stay the rigor, because I said 'let's upgrade our diagramming tool' and stamped CTA-A = A1: the editable canvas lives in diagrams/, reusing causality/canvas.js's schema/persistence DISCIPLINE by pattern, never the artifact, and exports through the qa.py gate. This is the smallest first cut: the component tier proving the gesture on a real shape, with the carried-forward rigor intact.",
       "value_confidence": "high",
-      "owner_stamp": "pending"
+      "owner_stamp": "CTA-A = A1, .ai-native/proposals/diagram-canvas.proposal.md, 2026-06-23"
     },
     "briefing": {
       "headline": "An editable, layered diagram canvas that edits the compose.py spec and exports through the gate",
@@ -28,7 +28,7 @@
     },
     "concern_surface": "experience",
     "incidence": {
-      "serves": ["v-next.diagram-canvas"],
+      "serves": ["epic.diagram"],
       "touches": [
         "diagrams/canvas.html",
         "diagrams/canvas.js",
