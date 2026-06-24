@@ -14,7 +14,8 @@
 const fs = require('fs');
 const os = require('os');
 const vscode = require('vscode');
-const { renderShell, renderTranscriptRows } = require('./shell');
+const { renderShell, renderTranscriptRows, renderUsageBar } = require('./shell');
+const { accumulateUsage } = require('./usage');
 const { listSessions, storeDirFor } = require('./sessions');
 const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
@@ -113,6 +114,15 @@ let attachPickerImpl = null;
 // to terminate the engine process. Cleared the moment the turn settles, so a
 // late Stop click is a harmless no-op (interruptTurn returns false).
 let activeTurnControl = null;
+// Row 18 — the cost/usage display state. `lastReply` is the most recent driven
+// turn's folded reply (engine.foldReply — its cost/usage/durationMs/numTurns),
+// so a re-render repaints the meter with the last turn's usage; `sessionUsage`
+// is the running session total (usage.accumulateUsage) — the cumulative spend
+// across the turns this panel drove. Both null until a turn has reported usage
+// (the honest "No usage reported yet." default). Every value is the engine's own
+// reported usage, never an estimate.
+let lastReply = null;
+let sessionUsage = null;
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -457,6 +467,14 @@ async function sendPrompt(text) {
     lastEngineTools = reply.tools;
     renderPanel(); // repaint so the MCP panel reflects the now-loaded servers
   }
+  // Row 18 — fold this turn's reported cost/usage into the running session
+  // total and record it as the last turn, so the meter shows both the last
+  // turn's usage and the cumulative session spend. accumulateUsage only counts a
+  // turn that actually reported usage (a Stop / spawn-error that reported nothing
+  // does not inflate the tab). lastReply drives the meter's last-turn line on a
+  // re-render (renderPanel).
+  lastReply = reply;
+  sessionUsage = accumulateUsage(sessionUsage, reply);
   if (panel && panel.webview && typeof panel.webview.postMessage === 'function') {
     panel.webview.postMessage({
       type: 'ontum:turn-reply',
@@ -465,6 +483,9 @@ async function sendPrompt(text) {
       subtype: reply.subtype || '',
       cost: typeof reply.cost === 'number' ? reply.cost : null,
       sessionId: reply.sessionId || null,
+      // Row 18 — the host-rendered cost/usage meter (one source of truth with
+      // the first paint); the composer swaps it in place on receipt.
+      usageHtml: renderUsageBar(reply, sessionUsage),
     });
   }
   return reply;
@@ -578,6 +599,15 @@ function isTurnRunning() {
   return activeTurnControl != null;
 }
 
+// getSessionUsage() -> the running session cost/usage total (row 18), folded by
+// usage.accumulateUsage across the turns this panel drove (or null before any
+// reported usage). Exposed so a host-free test can assert the cost/usage meter
+// accumulates the engine's own reported usage across turns. Read-only — the
+// surface accumulates the engine's reports, it does not meter independently.
+function getSessionUsage() {
+  return sessionUsage;
+}
+
 // startTail() -> begin watching the selected session's file for appends. The
 // full transcript was just painted by renderPanel, so we anchor the offset at
 // the current end and only future appends stream in. fs.watchFile polls (works
@@ -639,6 +669,11 @@ function renderPanel() {
     // Row 14 — the inherited environment (settings layers / hooks / skills),
     // folded from the same on-disk config the CLI reads.
     environment: readEnvironment(),
+    // Row 18 — the cost/usage meter: the last driven turn's reply (its reported
+    // cost/usage) + the running session total, so a re-render keeps the meter in
+    // sync. Null until a turn has run (the honest "No usage reported yet.").
+    lastReply,
+    sessionUsage,
   });
 }
 
@@ -835,6 +870,9 @@ module.exports = {
   // settles as an honest interrupted reply; a late Stop is a no-op).
   interruptTurn,
   isTurnRunning,
+  // Row 18 — exposed so a host-free test can assert the cost/usage meter
+  // accumulates the engine's own reported usage across the turns it drove.
+  getSessionUsage,
   VIEW_TYPE,
   OPEN_COMMAND,
 };

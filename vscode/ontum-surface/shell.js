@@ -22,6 +22,13 @@ const {
   normalizeResumeTarget,
 } = require('./engine');
 const { planFromToolUse, isPlanMode } = require('./plan');
+const {
+  foldUsage,
+  usageSummary,
+  formatUsd,
+  formatTokens,
+  formatDuration,
+} = require('./usage');
 
 // A small, dependency-free nonce for the webview Content-Security-Policy.
 // (Webview scripts must carry a nonce the CSP whitelists; without one the
@@ -345,6 +352,78 @@ function renderResumeControl(target, selectedId) {
     btn('new') +
     btn('continue') +
     btn('resume') +
+    '</div>'
+  );
+}
+
+// renderUsageBar(reply, sessionTotal) -> the inner HTML of the composer's
+// cost/usage meter (row 18). Normal Claude Code shows what a turn cost — the
+// dollars, the tokens in/out (incl. prompt-cache), the wall time, the model
+// turns — and a session-cumulative total. This paints the LAST turn's usage
+// (usage.foldUsage of the engine reply) and, when supplied, the running session
+// total (usage.accumulateUsage). Every value is the engine's own reported usage
+// or an honest em-dash (usage.js never estimates); a turn that reported no usage
+// (errored before its result / a Stop) paints a calm "No usage reported yet."
+// rather than a fake row of zeros. The `data-*` mirrors let a cold reader / test
+// read the exact reported numbers without scraping the human labels.
+function renderUsageBar(reply, sessionTotal) {
+  const u = foldUsage(reply);
+  if (!u.hasData) {
+    return (
+      '<div class="ontum-usage" data-region="usage" data-has-usage="false">' +
+      '<span class="ontum-usage-label">Usage</span>' +
+      '<span class="ontum-usage-empty">No usage reported yet.</span>' +
+      '</div>'
+    );
+  }
+  const t = u.tokens;
+  const stat = (label, value, key) =>
+    `<span class="ontum-usage-stat" data-usage="${escapeHtml(key)}" ` +
+    `title="${escapeHtml(label)}">${escapeHtml(value)}</span>`;
+  const parts = [stat('Cost (USD)', formatUsd(u.cost), 'cost')];
+  if (t.total !== null) {
+    parts.push(stat('Total tokens', formatTokens(t.total) + ' tok', 'tokens'));
+    if (t.input !== null) parts.push(stat('Input tokens', formatTokens(t.input) + ' in', 'input'));
+    if (t.output !== null) parts.push(stat('Output tokens', formatTokens(t.output) + ' out', 'output'));
+    if (t.cacheRead !== null) {
+      parts.push(stat('Cache-read tokens', formatTokens(t.cacheRead) + ' cache-read', 'cache-read'));
+    }
+    if (t.cacheCreation !== null) {
+      parts.push(stat('Cache-write tokens', formatTokens(t.cacheCreation) + ' cache-write', 'cache-write'));
+    }
+  }
+  if (u.durationMs !== null) parts.push(stat('Duration', formatDuration(u.durationMs), 'duration'));
+  if (u.numTurns !== null) {
+    parts.push(stat('Model turns', u.numTurns + (u.numTurns === 1 ? ' turn' : ' turns'), 'turns'));
+  }
+  // The session-cumulative total (usage.accumulateUsage), shown when supplied
+  // and it has spent anything — so a cold reader sees the running tab, not just
+  // the last turn.
+  let totalHtml = '';
+  const st = sessionTotal && typeof sessionTotal === 'object' ? sessionTotal : null;
+  if (st && (typeof st.cost === 'number' || (st.tokens && typeof st.tokens.total === 'number'))) {
+    const stTokens = st.tokens && typeof st.tokens === 'object' ? st.tokens : {};
+    totalHtml =
+      '<span class="ontum-usage-total" data-region="usage-total" ' +
+      `data-usage-total-cost="${escapeHtml(formatUsd(st.cost))}" ` +
+      `data-usage-total-turns="${escapeHtml(String(st.turns == null ? '' : st.turns))}">` +
+      'Session: ' +
+      escapeHtml(formatUsd(st.cost)) +
+      ' \u00b7 ' +
+      escapeHtml(formatTokens(stTokens.total) + ' tok') +
+      (st.turns != null
+        ? ' \u00b7 ' + escapeHtml(st.turns + (st.turns === 1 ? ' turn' : ' turns'))
+        : '') +
+      '</span>';
+  }
+  return (
+    '<div class="ontum-usage" data-region="usage" data-has-usage="true" ' +
+    `data-usage-cost="${escapeHtml(formatUsd(u.cost))}" ` +
+    `data-usage-tokens="${escapeHtml(t.total === null ? '' : String(t.total))}" ` +
+    `data-usage-summary="${escapeHtml(usageSummary(reply))}">` +
+    '<span class="ontum-usage-label">Usage</span>' +
+    parts.join('') +
+    totalHtml +
     '</div>'
   );
 }
@@ -681,6 +760,13 @@ function renderShell(opts) {
   // Environment — the same on-disk config the CLI folds); absent -> honest
   // empty notes (the region + wiring still ship, so a later render lights up).
   const envHtml = renderEnvPanel(o.environment);
+  // Row 18 — the cost/usage meter in the composer foot. The host passes the
+  // last turn's reply (engine.foldReply — cost/usage/durationMs/numTurns) and
+  // the running session total (usage.accumulateUsage); absent -> an honest "No
+  // usage reported yet." (the region + the turn-reply update wiring still ship,
+  // so the first turn lights it up). Every value is the engine's own reported
+  // usage, never an estimate.
+  const usageHtml = renderUsageBar(o.lastReply, o.sessionUsage);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -968,6 +1054,31 @@ function renderShell(opts) {
     .ontum-compose-status[data-status="error"] { color: #c2685a; }
     .ontum-compose-status[data-status="done"] { color: var(--ontum-dim); }
     .ontum-compose-status[data-status="sending"] { color: var(--ontum-accent); }
+    /* Row 18 — the cost/usage meter. */
+    .ontum-usage {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+      font-size: 0.74rem;
+      color: var(--ontum-dim);
+    }
+    .ontum-usage-label {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+    .ontum-usage-stat {
+      padding: 0.05rem 0.4rem;
+      border: 1px solid var(--ontum-line, rgba(255,255,255,0.12));
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    .ontum-usage-stat[data-usage="cost"] { color: var(--ontum-accent); font-weight: 600; }
+    .ontum-usage-total { margin-left: auto; font-style: italic; opacity: 0.9; }
+    .ontum-usage-empty { font-style: italic; opacity: 0.8; }
     /* Row 9 — the permission-mode surface. */
     .ontum-compose-foot {
       display: flex;
@@ -1229,6 +1340,10 @@ function renderShell(opts) {
       ${planBadge}
       <p class="ontum-compose-status" data-status="idle" hidden></p>
     </div>
+    <!-- Row 18 — the cost/usage meter. Updated in place by the ontum:turn-reply
+         handler with the engine's own reported usage (cost/tokens/duration/turns)
+         + the running session total. -->
+    ${usageHtml}
   </footer>
   <script nonce="${nonce}">
     // Acquire the webview API when hosted; a no-op outside VS Code so the same
@@ -1656,6 +1771,21 @@ function renderShell(opts) {
             if (section) section.scrollTop = section.scrollHeight;
           }
         }
+        // Row 18 — swap the cost/usage meter in place with the host-rendered bar
+        // (the engine's own reported usage + the running session total). The host
+        // sends the pre-rendered usageHtml so the surface stays a single source of
+        // truth (the same escaped fold renderUsageBar produced at first paint).
+        if (m.usageHtml) {
+          var usage = document.querySelector('.ontum-usage');
+          if (usage) {
+            usage.outerHTML = m.usageHtml;
+          } else {
+            var foot = document.querySelector('.ontum-compose-foot');
+            if (foot && foot.parentNode) {
+              foot.insertAdjacentHTML('afterend', m.usageHtml);
+            }
+          }
+        }
         if (m.subtype === 'interrupted') {
           // Row 17 — an honest user stop, not an engine failure: report it as a
           // calm "stopped" rather than a red "Turn failed".
@@ -1684,6 +1814,7 @@ module.exports = {
   renderPlanBlock,
   renderPermissionControl,
   renderResumeControl,
+  renderUsageBar,
   renderSlashMenu,
   renderMentionMenu,
   renderAttachTray,
