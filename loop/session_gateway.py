@@ -129,7 +129,9 @@ def derive_type(payload):
 
 # ----------------------------------------------------------- capability sets
 # Capability TOKENS — the closed vocabulary of what a session may do, by kind:
-#   read   — observe / fold (universal; the safe default for an unmapped tool)
+#   read   — observe / fold (universal across types, but NEVER an unmapped
+#            tool's silent default — a tool earns `read` only by being
+#            classified read-only in CAPABILITY_BY_TOOL below)
 #   build  — produce a code diff in a bench, open a PR (never land it)
 #   land   — land work to main (the merge-node's seat — in no default type, by
 #            design: no one lands their own line, D-2)
@@ -149,18 +151,43 @@ TYPE_CAPABILITIES = {
     STEERER_ADMIN: (READ, STEER),
 }
 
-# Tool -> the capability it requires. A small CLOSED classifier whose
-# load-bearing entries are the MUTATING tools; everything unlisted defaults to
-# `read` (the bulk of the pens are read-only folds, and reading is universal —
-# hand-listing them all would rot, the census's no-hand-list rule). The default
-# is a *documented pragmatic policy*, not a claim of omniscience: an unlisted
-# tool is treated as read, so a new MUTATING tool MUST earn its mapping here or
-# it would ride into every type's manifest as a read portal. That gap is not
-# silent — `unmapped_tools()` surfaces every defaulted tool through `status`, the
-# loop/tags.py move (the honest gap is shown and teachable, never hidden). The
-# enforced, governed tool->capability admission is a named later increment
-# (proposal §14.3); until then this map is reviewed when a mutating pen lands.
+# Tool -> the capability it requires. A CLOSED classifier; an unlisted tool gets
+# NO capability and therefore NO portal in ANY type's manifest (review #1,
+# deny-and-surface — fail CLOSED). The earlier design defaulted the unlisted to
+# `read`, and because `read` is core for every type, every unmapped tool —
+# including real MUTATING pens (pen.py, web.py, watcher.py, tags.py, rename.py,
+# heartbeat.py, reconcile_noise.py, act_fence.py, the issue/continue-probe
+# skills) — became an authorized portal in EVERY manifest. The portal model is
+# "presence = authorized"; that default over-authorized. So there is no silent
+# default now: a read-only fold earns `read` by being LISTED below, and an
+# unmapped tool is surfaced by `unmapped_tools()` as a gap to classify ("absence
+# is information") — never granted a portal. The cost is the honest one absence
+# buys, and the safe direction: a new read-only fold is invisible (a surfaced
+# gap) until classified here, where before a new MUTATING pen rode in silently.
+# Classifying every fold is the named later increment (the enforced, governed
+# tool->capability admission, proposal §14.3); this map is the floor that fails
+# closed in the meantime, and is reviewed when any pen lands.
 CAPABILITY_BY_TOOL = {
+    # read — pure read-only folds (loop/CLAUDE.md describes each as read-only).
+    # Listed EXPLICITLY (not defaulted): only a confirmed read-only fold is a
+    # read portal. Anything not here (a mutating/ambiguous pen) gets no portal.
+    "census": READ,
+    "gaps": READ,
+    "digest": READ,
+    "retro": READ,
+    "heal": READ,
+    "parity": READ,
+    "activity": READ,
+    "gradient": READ,
+    "forest": READ,
+    "consequence_graph": READ,
+    "observe": READ,
+    "relation_ledger": READ,
+    "over_containment": READ,
+    "summon": READ,
+    "gate_eval": READ,
+    "phrasing": READ,
+    "pull": READ,
     # build — produce a diff / author work in a bench
     "branch-ritual": BUILD,
     "author-workflow": BUILD,
@@ -187,38 +214,77 @@ CAPABILITY_BY_TOOL = {
 
 
 def tool_capability(name):
-    """The capability a tool requires — the closed map, `read` for the unlisted
-    (the documented pragmatic default; reads are universal). A tool not in the
-    map is `read` AND surfaced by `unmapped_tools` so the gap is honest, never
-    hidden (the loop/tags.py shape)."""
-    return CAPABILITY_BY_TOOL.get(name, READ)
+    """The capability a tool requires, or None if UNMAPPED (review #1). There is
+    NO silent default: a tool not in CAPABILITY_BY_TOOL gets NO capability and so
+    NO portal in any type's manifest (deny-and-surface, fail CLOSED), and is
+    surfaced by `unmapped_tools` as a gap to classify. A read-only fold earns
+    `read` only by being listed (the loop/tags.py shape — an unclassified thing
+    is a visible gap, never a silent grant)."""
+    return CAPABILITY_BY_TOOL.get(name)
 
 
 def unmapped_tools(tools):
-    """The branded tools with no explicit CAPABILITY_BY_TOOL entry — defaulted
-    to `read`. Surfaced (not hidden) so a newly-landed MUTATING pen is visible
-    and gets its mapping before it could ride into a manifest as a read portal
-    (the honest-gap discipline; tags.py surfaces unclassified verbs the same way)."""
+    """The branded tools with no CAPABILITY_BY_TOOL entry — DENIED a portal and
+    surfaced as gaps to classify (review #1: deny-and-surface). A newly-landed
+    MUTATING pen lands here, visible, until it earns a mapping — it can no longer
+    ride into every manifest as a read portal (the honest-gap discipline; tags.py
+    surfaces unclassified verbs the same way)."""
     return [t for t in tools if t.get("tool") not in CAPABILITY_BY_TOOL]
 
 
+def _cap_order(adm):
+    """The ts-then-id sort key for a session_capability record (deterministic,
+    None-safe)."""
+    return (adm.get("ts") or "", adm.get("id") or "")
+
+
 def admitted_capabilities(fold):
-    """Extra capabilities admitted per type (beyond core): latest
-    `session_capability` per (type, capability) wins, a withdrawn one drops.
-    The governed-vocabulary extension path, on the log (the tags.py pattern)."""
+    """Extra capabilities admitted per type (beyond core): the LATEST
+    `session_capability` per (type, capability) decides — withdrawn drops it,
+    admitted grants it. The governed-vocabulary extension path on the log (the
+    tags.py pattern).
+
+    UNION-MERGE-SAFE (review #3): two branches' admit/withdraw records merge into
+    the log in arbitrary FILE order, so the latest-wins is resolved by `ts`
+    (then id), never by file layout — the old fold's `out.get(st, set()).discard`
+    was a silent no-op unless the admit happened to precede the withdraw in the
+    file, the exact order-dependence union-merge breaks. Withdrawals also carry an
+    explicit `supersedes` (see admit_capability), so the revoked admit drops from
+    the non-superseded set regardless of order."""
     superseded = {a["supersedes"] for a in fold.admissions if a.get("supersedes")}
-    out = {}
+    latest = {}
     for adm in fold.admissions:
         if adm.get("type") != "session_capability" or adm.get("id") in superseded:
             continue
         st, cap = adm.get("session_type"), adm.get("capability")
         if not st or not cap:
             continue
-        if adm.get("withdrawn"):
-            out.get(st, set()).discard(cap)
-        else:
+        key = (st, cap)
+        prev = latest.get(key)
+        if prev is None or _cap_order(adm) >= _cap_order(prev):
+            latest[key] = adm
+    out = {}
+    for (st, cap), adm in latest.items():
+        if not adm.get("withdrawn"):
             out.setdefault(st, set()).add(cap)
     return out
+
+
+def _latest_capability_admit(fold, session_type, capability):
+    """The live (non-superseded, non-withdrawn) admit for (type, capability),
+    latest by ts — what a withdrawal supersedes. None if there is none."""
+    superseded = {a["supersedes"] for a in fold.admissions if a.get("supersedes")}
+    best = None
+    for adm in fold.admissions:
+        if (adm.get("type") != "session_capability"
+                or adm.get("id") in superseded
+                or adm.get("withdrawn")
+                or adm.get("session_type") != session_type
+                or adm.get("capability") != capability):
+            continue
+        if best is None or _cap_order(adm) >= _cap_order(best):
+            best = adm
+    return best
 
 
 def type_capabilities(fold, session_type):
@@ -349,7 +415,17 @@ def bind(root, session_id, session_type, cwd, by, capabilities=None):
 
 def admit_capability(root, session_type, capability, by, withdrawn=False):
     """Extend (or --withdraw) a type's capability set — the governed-vocabulary
-    promotion path (tags.py shape), signed `--by`. Superseding, never erasing."""
+    promotion path (tags.py shape), signed `--by`. Superseding, never erasing.
+
+    A withdrawal carries an explicit `supersedes` pointing at the admit it revokes
+    (review #3): the provenance edge makes the fold union-merge-safe — it does not
+    rely on file order to know which admit a withdraw cancels. (Owner-gating of
+    this verb lives in cmd_admit_capability, the supersede-done shape.)"""
+    supersedes = None
+    if withdrawn:
+        prior = _latest_capability_admit(Fold(root), session_type, capability)
+        if prior is not None:
+            supersedes = prior.get("id")
     adm = {
         "id": "adm." + short_hash("session_capability", session_type, capability,
                                   str(withdrawn), str(by), now_ts()),
@@ -358,7 +434,7 @@ def admit_capability(root, session_type, capability, by, withdrawn=False):
         "capability": capability,
         "withdrawn": bool(withdrawn),
         "by": by,
-        "supersedes": None,
+        "supersedes": supersedes,
         "ts": now_ts(),
     }
     append_line(root / "log" / "admissions.jsonl", adm)
@@ -470,24 +546,45 @@ def cmd_status(ns):
     data = manifest_dataset(preview, tools)
     unmapped = unmapped_tools(tools)
     if ns.json:
-        data["unmapped_read_default"] = [t["tool"] for t in unmapped]
+        data["unmapped_denied"] = [t["tool"] for t in unmapped]
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
         print(render_manifest(data), end="")
         if unmapped:
-            print(f"\n# {len(unmapped)} tool(s) defaulted to read (no explicit "
-                  "capability mapping) — review CAPABILITY_BY_TOOL if any is a "
-                  "MUTATING pen: " + ", ".join(t["tool"] for t in unmapped[:8])
+            print(f"\n# {len(unmapped)} tool(s) UNMAPPED — denied a portal (no "
+                  "capability classification). Absence is information: classify "
+                  "each in CAPABILITY_BY_TOOL (read-only fold -> read; a mutating "
+                  "pen -> its real capability): "
+                  + ", ".join(t["tool"] for t in unmapped[:8])
                   + ("…" if len(unmapped) > 8 else ""))
     print(f"result: report — type {session_type} (typing {TYPING_VERSION}) would "
           f"open {len(data['portals'])} of {len(tools)} branded tools as portals "
-          f"({len(unmapped)} defaulted to read); no binding written (read-only). "
-          "Bind with `bind --session <id> --by <who>`.")
+          f"({len(unmapped)} unmapped, denied — classify them); no binding written "
+          "(read-only). Bind with `bind --session <id> --by <who>`.")
     return 0
 
 
 def cmd_bind(ns):
-    session_type = ns.type or derive_type(_payload_from_ns(ns))
+    derived = derive_type(_payload_from_ns(ns))
+    session_type = ns.type or derived
+    # the escalation guard (review #4, D-2/D-4): --type is an ASSERTION, and a
+    # session could force a higher-privileged type than its birth signals derive
+    # (e.g. --type steerer-admin from a plain bench) to bypass derive_type's
+    # least-privilege floor. If the forced type confers a capability the derived
+    # floor would NOT grant, raising privilege is an owner act — it requires
+    # --by bdo (the supersede-done shape). Asserting the derived type, or a strict
+    # de-escalation, needs no stamp.
+    if ns.type and ns.type != derived:
+        gained = set(TYPE_CAPABILITIES.get(ns.type, ())) - set(
+            TYPE_CAPABILITIES.get(derived, ()))
+        if gained and (ns.by or "").strip().lower() != "bdo":
+            print(f"result: needs-you — forcing --type {ns.type} asserts "
+                  f"{', '.join(sorted(gained))} that the derived floor "
+                  f"({derived}) would not grant; raising a session's privilege "
+                  "above its least-privilege floor is bdo's alone (D-4). Re-run "
+                  "with --by bdo, or drop --type to bind at the derived floor. "
+                  "Nothing written.")
+            return 2
     binding, created = bind(ns.root, ns.session, session_type, ns.cwd, ns.by)
     if binding is None:
         return 2
@@ -525,6 +622,16 @@ def cmd_manifest(ns):
 
 
 def cmd_admit_capability(ns):
+    # owner-only (review #4, D-4): admitting a capability WIDENS what a session
+    # TYPE may do — a governance change no session may self-admit (--by anything
+    # would let a session grant itself powers). It is bdo's alone, the same
+    # bdo-only refusal loop/pen.py's supersede-done makes. Gate FIRST: a non-bdo
+    # signer is refused before any record is shaped, nothing written.
+    if (ns.by or "").strip().lower() != "bdo":
+        print("result: needs-you — admitting a capability is bdo's alone (D-4): "
+              "it widens what a session type may do, a governance change no "
+              "session may self-admit. Re-run with --by bdo. Nothing written.")
+        return 2
     if ns.session_type not in SESSION_TYPES:
         print(f"result: needs-you — unknown type {ns.session_type!r}; the closed "
               f"set is {', '.join(SESSION_TYPES)}")
