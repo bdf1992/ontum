@@ -14,6 +14,7 @@
 const vscode = require('vscode');
 const { renderShell } = require('./shell');
 const { listSessions, storeDirFor } = require('./sessions');
+const { readTranscript, fileForSession } = require('./transcript');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -45,6 +46,30 @@ function readSessions() {
   }
 }
 
+// readSelectedTranscript() -> the folded entries of the selected session, or
+// undefined when nothing is selected (so the shell shows its "pick a session"
+// note). Failures degrade to an empty transcript, never throw (row 3).
+function readSelectedTranscript() {
+  if (!selectedSessionId) return undefined;
+  try {
+    const file = fileForSession(storeDirFor(currentCwd()), selectedSessionId);
+    return readTranscript({ file }).entries;
+  } catch (_) {
+    return [];
+  }
+}
+
+// renderPanel() -> (re)paint the panel from the current store + selection. The
+// engine's files are the only source; this folds them, it stores nothing.
+function renderPanel() {
+  if (!panel) return;
+  panel.webview.html = renderShell({
+    cspSource: panel.webview.cspSource,
+    sessions: readSessions(),
+    transcript: readSelectedTranscript(),
+  });
+}
+
 function openSurface(context) {
   if (panel) {
     panel.reveal(panel.viewColumn || vscode.ViewColumn.One);
@@ -62,17 +87,16 @@ function openSurface(context) {
     }
   );
 
-  panel.webview.html = renderShell({
-    cspSource: panel.webview.cspSource,
-    sessions: readSessions(),
-  });
+  renderPanel();
 
-  // Row 2 — the webview tells us which session the user picked. We record it
-  // (row 3 will read + render that transcript). Other messages are ignored.
+  // Row 2/3 — the webview tells us which session the user picked. We record it
+  // and re-render so row 3 reads + paints that session's transcript. Other
+  // messages are ignored.
   if (panel.webview && typeof panel.webview.onDidReceiveMessage === 'function') {
     panel.webview.onDidReceiveMessage((msg) => {
       if (msg && msg.type === 'ontum:select-session' && msg.id) {
         selectedSessionId = msg.id;
+        renderPanel();
       }
     });
   }

@@ -79,6 +79,70 @@ function renderSessionList(sessions) {
   );
 }
 
+// renderTranscript(entries) -> the inner HTML of the Transcript section (row 3).
+//
+// Each entry comes from transcript.foldTranscript (a pure fold of the engine's
+// own records). This function only paints them — escaped, in order — so it
+// stays a pure fold asserted by a host-free test. Kinds map to labelled blocks:
+//   user-text / assistant-text -> a role-tagged prose bubble;
+//   assistant-thinking         -> a dimmed "thinking" block;
+//   tool-use                   -> the tool name + its JSON input (a <pre>);
+//   tool-result                -> the result text (a <pre>), error-flagged.
+// An empty/absent list paints an honest empty note, never a fake turn.
+function renderTranscript(entries) {
+  const list = Array.isArray(entries) ? entries : [];
+  if (list.length === 0) {
+    return (
+      '<p class="ontum-empty">No transcript yet. Pick a session on the left ' +
+      'to read it here.</p>'
+    );
+  }
+  const rows = list
+    .map((e) => {
+      const kind = e && e.kind ? e.kind : '';
+      if (kind === 'tool-use') {
+        const name = escapeHtml(e.name || 'tool');
+        const raw =
+          typeof e.input === 'string'
+            ? e.input
+            : JSON.stringify(e.input === undefined ? null : e.input, null, 2);
+        const input = escapeHtml(raw);
+        return (
+          '<div class="ontum-msg" data-kind="tool-use">' +
+          `<span class="ontum-role">tool &#9656; ${name}</span>` +
+          `<pre class="ontum-tool-input">${input}</pre>` +
+          '</div>'
+        );
+      }
+      if (kind === 'tool-result') {
+        const err = e.isError ? ' data-error="true"' : '';
+        const label = e.isError ? 'result (error)' : 'result';
+        const text = escapeHtml(e.text || '');
+        return (
+          `<div class="ontum-msg" data-kind="tool-result"${err}>` +
+          `<span class="ontum-role">${label}</span>` +
+          `<pre class="ontum-tool-result">${text}</pre>` +
+          '</div>'
+        );
+      }
+      const roleLabel =
+        kind === 'assistant-thinking' ? 'thinking' : e && e.role ? e.role : '';
+      const text = escapeHtml(e && e.text ? e.text : '');
+      return (
+        `<div class="ontum-msg" data-kind="${escapeHtml(kind)}">` +
+        `<span class="ontum-role">${escapeHtml(roleLabel)}</span>` +
+        `<div class="ontum-text">${text}</div>` +
+        '</div>'
+      );
+    })
+    .join('\n      ');
+  return (
+    `<div class="ontum-transcript-list" data-count="${list.length}">\n      ` +
+    rows +
+    `\n    </div>`
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
@@ -88,6 +152,9 @@ function renderSessionList(sessions) {
 //   opts.sessions   — [session] from sessions.listSessions(); fills the
 //                     Sessions aside (row 2). Absent/empty -> an honest empty
 //                     note (the row-1 build passed none, so it still works).
+//   opts.transcript — [entry] from transcript.readTranscript().entries; fills
+//                     the Transcript section (row 3). Absent -> an honest
+//                     "pick a session" note (no session selected yet).
 //
 // The returned document is *standalone*: it references no resource from, and
 // names no dependency on, the official Claude Code panel. It declares itself
@@ -98,6 +165,12 @@ function renderShell(opts) {
   const nonce = o.nonce || makeNonce();
   const brand = escapeHtml(o.brand || 'ontum');
   const sessionsHtml = renderSessionList(o.sessions);
+  // When a session is selected the host passes its folded entries; otherwise we
+  // show an honest "pick a session" note (no transcript loaded yet).
+  const transcriptHtml =
+    o.transcript === undefined
+      ? '<p class="ontum-empty">Pick a session on the left to read it here.</p>'
+      : renderTranscript(o.transcript);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -172,6 +245,36 @@ function renderShell(opts) {
       font-size: 0.85rem;
     }
     .ontum-empty { color: var(--ontum-dim); font-size: 0.85rem; margin: 0; }
+    .ontum-transcript-list { display: grid; gap: 0.6rem; }
+    .ontum-msg {
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.5rem 0.65rem;
+      background: var(--ontum-panel);
+    }
+    .ontum-msg .ontum-role {
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--ontum-dim);
+      margin-bottom: 0.3rem;
+    }
+    .ontum-msg[data-kind="user-text"] { border-left: 2px solid var(--ontum-accent); }
+    .ontum-msg[data-kind="assistant-text"] { border-left: 2px solid #5a82c2; }
+    .ontum-msg[data-kind="assistant-thinking"] { opacity: 0.72; font-style: italic; }
+    .ontum-msg[data-kind="tool-use"] { border-left: 2px solid #6fae8f; }
+    .ontum-msg[data-kind="tool-result"] { border-left: 2px solid #6f7a8f; }
+    .ontum-msg[data-error="true"] { border-left-color: #c2685a; }
+    .ontum-text { white-space: pre-wrap; word-break: break-word; font-size: 0.86rem; line-height: 1.45; }
+    .ontum-msg pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      font-size: 0.8rem;
+      color: var(--ontum-ink);
+    }
     .ontum-session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
     button.ontum-session {
       display: grid;
@@ -219,10 +322,7 @@ function renderShell(opts) {
     </aside>
     <section class="ontum-transcript" data-region="transcript">
       <p class="ontum-region-title">Transcript</p>
-      <div class="ontum-placeholder">
-        Transcript render + live-tail land in rows&nbsp;3–4. This window is the
-        branded front door; it folds the engine's truth, it stores none of its own.
-      </div>
+      ${transcriptHtml}
     </section>
   </main>
   <footer class="ontum-composer" data-region="composer">
@@ -254,4 +354,10 @@ function renderShell(opts) {
 </html>`;
 }
 
-module.exports = { renderShell, renderSessionList, makeNonce, escapeHtml };
+module.exports = {
+  renderShell,
+  renderSessionList,
+  renderTranscript,
+  makeNonce,
+  escapeHtml,
+};
