@@ -33,6 +33,12 @@ let selectedSessionId = null;
 // (so we can stop watching when the selection changes or the panel closes).
 let tailOffset = 0;
 let tailWatched = null;
+// Row 8 — the last diff accept/reject decision the webview posted (an edit
+// tool-call rendered as a diff offers Accept/Reject). We record the decision so
+// the round-trip is checkable host-free; actually applying or reverting the
+// edit on disk is the host permission flow's job (row 9) / a human's — the
+// surface records the decision, it does not fake the effect.
+let lastDiffDecision = null;
 // Row 5 — the engine spawn used to drive a turn. Null in production (driveTurn
 // falls back to the real child_process.spawn); a host-free test injects a fake
 // process via __setSpawnForTest so the send→reply round-trip is proven without a
@@ -188,6 +194,22 @@ async function sendPrompt(text) {
   return reply;
 }
 
+// recordDiffDecision(msg) -> record a diff accept/reject the webview posted
+// (row 8) and return it. Returns null for a malformed message. The decision is
+// `{ toolId, decision:'accept'|'reject' }`; we keep only the latest so a
+// host-free test can assert the round-trip. (Applying/reverting the edit on
+// disk is the host permission flow's job — row 9 — not faked here.)
+function recordDiffDecision(msg) {
+  if (!msg || (msg.decision !== 'accept' && msg.decision !== 'reject')) {
+    return null;
+  }
+  lastDiffDecision = {
+    toolId: msg.toolId || '',
+    decision: msg.decision,
+  };
+  return lastDiffDecision;
+}
+
 // startTail() -> begin watching the selected session's file for appends. The
 // full transcript was just painted by renderPanel, so we anchor the offset at
 // the current end and only future appends stream in. fs.watchFile polls (works
@@ -262,6 +284,9 @@ function openSurface(context) {
         // Row 5 — drive a new turn through the inherited engine and post the
         // reply back to the composer.
         sendPrompt(msg.text);
+      } else if (msg && msg.type === 'ontum:diff-decision') {
+        // Row 8 — record an Accept/Reject the human made on a rendered diff.
+        recordDiffDecision(msg);
       }
     });
   }
@@ -298,6 +323,13 @@ function getSelectedSessionId() {
   return selectedSessionId;
 }
 
+// getLastDiffDecision() -> the last Accept/Reject the webview posted on a
+// rendered diff (or null). Exposed so a host-free test can assert the row-8
+// decision round-trip.
+function getLastDiffDecision() {
+  return lastDiffDecision;
+}
+
 // __setSpawnForTest(fn) -> inject the engine spawn (row 5). A host-free test
 // passes a fake process so the send→reply round-trip is proven without a real
 // billed model call; pass null to restore the production default.
@@ -319,6 +351,10 @@ module.exports = {
   // Row 6 — exposed so a host-free test can assert one event folds to one
   // posted `ontum:turn-delta` (and non-partials post nothing).
   postTurnDelta,
+  // Row 8 — exposed so a host-free test can drive + assert the diff
+  // accept/reject decision round-trip.
+  recordDiffDecision,
+  getLastDiffDecision,
   __setSpawnForTest,
   VIEW_TYPE,
   OPEN_COMMAND,

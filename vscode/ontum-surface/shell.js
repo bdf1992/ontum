@@ -15,6 +15,8 @@
 
 'use strict';
 
+const { diffFromToolUse } = require('./diff');
+
 // A small, dependency-free nonce for the webview Content-Security-Policy.
 // (Webview scripts must carry a nonce the CSP whitelists; without one the
 // host refuses to run them.)
@@ -94,9 +96,73 @@ function renderSessionList(sessions) {
 // the full render below AND by the live-tail append path (row 4), which renders
 // only the newly-arrived entries and inserts them into the existing list — so
 // both paths paint a turn identically and stay one source of truth.
+// renderDiffLines(lines) -> the joined HTML of a diff's line list (row 8). Each
+// line is a `data-diff="add|del|context|hunk"` row with a +/-/space gutter and
+// its escaped text; a 'hunk' row is a blank separator between a MultiEdit's
+// edits. Escaped here, so the fragment is no less trusted than the document.
+function renderDiffLines(lines) {
+  const list = Array.isArray(lines) ? lines : [];
+  return list
+    .map((l) => {
+      const tag = l && l.tag ? l.tag : 'context';
+      if (tag === 'hunk') {
+        return '<div class="ontum-diff-line" data-diff="hunk"></div>';
+      }
+      const gutter = tag === 'add' ? '+' : tag === 'del' ? '\u2212' : ' ';
+      const text = escapeHtml(l && l.text ? l.text : '');
+      return (
+        `<div class="ontum-diff-line" data-diff="${escapeHtml(tag)}">` +
+        `<span class="ontum-diff-gutter">${gutter}</span>` +
+        `<span class="ontum-diff-text">${text}</span>` +
+        '</div>'
+      );
+    })
+    .join('');
+}
+
+// renderDiffBlock(d) -> the HTML of an edit tool-call rendered as a DIFF with
+// accept/reject controls (row 8). `d` comes from diff.diffFromToolUse (a pure
+// fold of the engine's own tool_use record). The block is still a tool-use
+// (data-kind="tool-use") so row 7's structure/CSS holds, but is flagged
+// data-diff-tool="true" and carries: a header (file path + +adds/-dels stat),
+// the diff lines, and two decision buttons (data-decision accept|reject)
+// carrying the tool id. The buttons post `ontum:diff-decision` to the host (the
+// delegated handler in the shell script). HONEST SCOPE: this renders the diff
+// and the accept/reject AFFORDANCE and proves the decision round-trip; actually
+// applying or reverting the edit on disk is a real side effect left to the host
+// permission flow (row 9) / a human — the surface does not fake it.
+function renderDiffBlock(d) {
+  const name = escapeHtml(d.name || 'Edit');
+  const path = escapeHtml(d.filePath || '');
+  const toolId = escapeHtml(d.toolId || '');
+  const adds = typeof d.adds === 'number' ? d.adds : 0;
+  const dels = typeof d.dels === 'number' ? d.dels : 0;
+  return (
+    '<div class="ontum-msg" data-kind="tool-use" data-diff-tool="true" ' +
+    `data-tool-name="${name}" data-tool-id="${toolId}">` +
+    `<span class="ontum-role">edit &#9656; ${name}</span>` +
+    `<div class="ontum-diff" data-file="${path}" data-adds="${adds}" data-dels="${dels}">` +
+    '<div class="ontum-diff-head">' +
+    `<span class="ontum-diff-path">${path || '(no path)'}</span>` +
+    `<span class="ontum-diff-stat">+${adds} &#8722;${dels}</span>` +
+    '</div>' +
+    `<div class="ontum-diff-lines">${renderDiffLines(d.lines)}</div>` +
+    '<div class="ontum-diff-actions" data-decision-state="pending">' +
+    `<button class="ontum-diff-decision" type="button" data-decision="accept" data-tool-id="${toolId}">Accept</button>` +
+    `<button class="ontum-diff-decision" type="button" data-decision="reject" data-tool-id="${toolId}">Reject</button>` +
+    '</div>' +
+    '</div>' +
+    '</div>'
+  );
+}
+
 function renderTranscriptRow(e) {
   const kind = e && e.kind ? e.kind : '';
   if (kind === 'tool-use') {
+    // Row 8 — an edit tool (Edit/Write/MultiEdit/NotebookEdit) renders as a
+    // diff with accept/reject instead of a raw JSON input dump.
+    const diff = diffFromToolUse(e);
+    if (diff) return renderDiffBlock(diff);
     const name = escapeHtml(e.name || 'tool');
     const raw =
       typeof e.input === 'string'
@@ -296,6 +362,58 @@ function renderShell(opts) {
       font-size: 0.8rem;
       color: var(--ontum-ink);
     }
+    /* Row 8 — edit-tool diffs with accept/reject. */
+    .ontum-msg[data-diff-tool="true"] { border-left: 2px solid #6fae8f; }
+    .ontum-diff {
+      margin-top: 0.35rem;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      overflow: hidden;
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      font-size: 0.78rem;
+    }
+    .ontum-diff-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.3rem 0.5rem;
+      background: var(--ontum-bg);
+      border-bottom: 1px solid var(--ontum-edge);
+    }
+    .ontum-diff-path { color: var(--ontum-ink); word-break: break-all; }
+    .ontum-diff-stat { color: var(--ontum-dim); white-space: nowrap; }
+    .ontum-diff-lines { display: block; }
+    .ontum-diff-line { display: flex; gap: 0.4rem; padding: 0 0.5rem; white-space: pre-wrap; word-break: break-word; }
+    .ontum-diff-gutter { width: 1ch; flex: none; text-align: center; color: var(--ontum-dim); user-select: none; }
+    .ontum-diff-text { flex: 1; }
+    .ontum-diff-line[data-diff="add"] { background: rgba(111, 174, 143, 0.16); }
+    .ontum-diff-line[data-diff="add"] .ontum-diff-gutter { color: #6fae8f; }
+    .ontum-diff-line[data-diff="del"] { background: rgba(194, 104, 90, 0.16); }
+    .ontum-diff-line[data-diff="del"] .ontum-diff-gutter { color: #c2685a; }
+    .ontum-diff-line[data-diff="hunk"] { height: 0.4rem; background: var(--ontum-bg); border-top: 1px dashed var(--ontum-edge); }
+    .ontum-diff-actions {
+      display: flex;
+      gap: 0.4rem;
+      padding: 0.4rem 0.5rem;
+      background: var(--ontum-bg);
+      border-top: 1px solid var(--ontum-edge);
+    }
+    button.ontum-diff-decision {
+      cursor: pointer;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 5px;
+      padding: 0.25rem 0.7rem;
+      background: var(--ontum-panel);
+      color: var(--ontum-ink);
+      font: inherit;
+      font-size: 0.76rem;
+    }
+    button.ontum-diff-decision[data-decision="accept"]:hover { border-color: #6fae8f; color: #6fae8f; }
+    button.ontum-diff-decision[data-decision="reject"]:hover { border-color: #c2685a; color: #c2685a; }
+    button.ontum-diff-decision:disabled { opacity: 0.5; cursor: default; }
+    .ontum-diff-actions[data-decision-state="accept"] { color: #6fae8f; }
+    .ontum-diff-actions[data-decision-state="reject"] { color: #c2685a; }
+    .ontum-diff-decision-note { padding: 0 0.2rem; align-self: center; font-size: 0.74rem; }
     .ontum-session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
     button.ontum-session {
       display: grid;
@@ -407,6 +525,41 @@ function renderShell(opts) {
           });
         }
       });
+    });
+
+    // Row 8 — diff accept/reject. An edit tool-call (Edit/Write/MultiEdit/…)
+    // renders as a diff with Accept + Reject buttons. Delegation on document is
+    // used (not per-button listeners) so diffs spliced in LATER by the live-tail
+    // (row 4) and turn-reply (rows 5–7) paths are wired too. A click posts
+    // { type:'ontum:diff-decision', decision, toolId } to the host, then locks
+    // the controls and records the decision on the block so the human sees what
+    // they chose. (Applying/reverting on disk is the host permission flow's job,
+    // row 9 — the surface renders the decision, it does not fake the effect.)
+    document.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest
+        ? ev.target.closest('button.ontum-diff-decision')
+        : null;
+      if (!btn) return;
+      var decision = btn.getAttribute('data-decision');
+      var toolId = btn.getAttribute('data-tool-id');
+      var actions = btn.closest('.ontum-diff-actions');
+      if (actions) {
+        if (actions.getAttribute('data-decision-state') !== 'pending') return;
+        actions.setAttribute('data-decision-state', decision);
+        actions.querySelectorAll('button.ontum-diff-decision')
+          .forEach(function (b) { b.disabled = true; });
+        var note = document.createElement('span');
+        note.className = 'ontum-diff-decision-note';
+        note.textContent = decision === 'accept' ? 'Accepted' : 'Rejected';
+        actions.appendChild(note);
+      }
+      if (vscode) {
+        vscode.postMessage({
+          type: 'ontum:diff-decision',
+          decision: decision,
+          toolId: toolId,
+        });
+      }
     });
 
     // Row 4 — live-tail. The host watches the selected session's file and, as
@@ -576,6 +729,8 @@ module.exports = {
   renderTranscript,
   renderTranscriptRows,
   renderTranscriptRow,
+  renderDiffBlock,
+  renderDiffLines,
   makeNonce,
   escapeHtml,
 };
