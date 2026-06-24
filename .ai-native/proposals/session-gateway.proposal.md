@@ -781,3 +781,106 @@ sensor-before-the-load like `heal`'s own flapping/override), and the disposer
 fence (the bounded actuator, when the bottleneck is witnessed). The sensor ships
 read-only and propose-only; it never clears a park or moves a bar — the heal stays
 a session's or bdo's (D-4).
+
+## 14. The portal model — bind-at-birth, realized (bdo, 2026-06-23)
+
+**Provenance:** bdo confirmed (2026-06-23) he wants the **first chapter** of the
+session gateway — *bind-at-birth* (issue #534, increment #3 of §11) — built for
+real, and sharpened the design with one load-bearing refinement, the **portal
+model**. This section captures that refinement and records the chapter's first
+real spine. PROPOSED still as a whole arc — the spine below is built and atom-
+backed; the activations it leaves open are bdo's to stamp.
+
+**14.1 The refinement (bdo, in his words' intent).**
+> the presence of the manifest file is like a portal of the thing through the
+> gateway — if it's there, the gateway produced it and you're authorized to use
+> it; it's part of the environment you're capable of using based on your
+> consequences and your start.
+
+The workstation manifest is **not documentation — it is a portal / capability
+token**. Its *presence* in the workstation **is** the fact: if a tool's portal is
+present, the gateway produced it and this session is authorized to use that tool.
+The **set of portals present is the environment** the session is capable of using
+— derived from its **start** (its derived type, §6's "the derived type is the
+routing decision") and its **consequences** (the capability set that type carries,
+extensible by admission). This makes the three A's (§5) **physical and checkable**:
+*authorized* stops being a claim a reader must trust and becomes a file that is
+either there or not. It is the §13.3 "the message is the one traveler" given a
+*standing artifact* at the workstation seam — the gateway's `permit` rendered as a
+durable token rather than a momentary verdict, the same move
+`inference.authorize`'s permit makes, condensed into the tree.
+
+The portal model also tightens the §2 no-inference law one more notch: a session no
+longer *reads* what it may use (from a shared HEAD, from ambient guesswork) — it
+*looks at the portals the gateway placed*. Presence-is-authorization is
+attribution made tangible (§5's "you cannot attribute what you inferred").
+
+**14.2 The spine built (the smallest real piece).** `loop/session_gateway.py`
+(done-line 0195, `atom.session-gateway-bind-at-birth.v0`) — the sibling of
+`loop/inference.py` at the session-birth seam, mirroring the RBAC template, not
+rebuilding it (§9):
+
+- **`derive_type(payload)`** — the PURE, named, **versioned** typing function the
+  §10.1 fork demands (a `TYPING_VERSION` constant the binding carries; a typing-
+  rule change is new lineage, never a silent reinterpretation — I-2 / doctrine
+  §14). Three closed roles: **builder** (a worktree bench), **node-fill** (a
+  branded `ontum-node:<id>` spawn, §13.5's re-entry/foreign crossing), and
+  **steerer-admin** (the *confirmed* viewport). Honest least-privilege floor: a
+  tree we cannot positively confirm is the viewport never gets steerer powers —
+  the monotonic-minimum rule of §13.3 applied to an unknown birth.
+- **Capability sets as governed vocabulary** — a closed core per type in code plus
+  admitted `session_capability` extensions (the `loop/tags.py` shape, the §13.4
+  "governed vocabulary, closed core + admitted extensions" applied to what a type
+  may do). `land` (the merge-node's seat) is in **no** default type — no default
+  session lands its own line (D-2), the §10-teeth "isolation/role kept honest".
+- **`bind()`** — writes ONE `session_binding` admission carrying the three A's
+  (authenticated who/what · authorized capability set · attributed workspace +
+  `--by` + `ts` + `typing_version`). **IDEMPOTENT**: an existing binding is
+  REUSED, never blind-recreated — the §4/§14 rescue-branch-sprawl bug made
+  impossible at the binding seam (a mortal session re-blinked does not sprawl a
+  new binding/branch each pulse).
+- **`emit_manifest()`** — folds the branded tools (`.claude/skills/*/SKILL.md` +
+  `loop/*.py`) and renders the portals **filtered by the type's capability set**,
+  one portal per line, do-not-hand-edit and regenerable. Presence = authorized.
+
+The §10 tooth (`tests/test_session_gateway.py`, non-vacuous): a tool absent from a
+type's capability set is **absent** from that type's emitted manifest, a constant
+"all-tools-authorized" classifier (the gauge-not-a-gate failure §12 names) is
+**caught**, and a binding is never blind-recreated.
+
+**14.3 Still open — bdo's to stamp (named, not built).**
+- **New-tree provisioning** (§11 increment #4) — the pen that actually *sprouts* a
+  fresh worktree bench on a code claim, with the route home (the gardener
+  reclaim). This chapter binds and emits portals for the *current* tree only.
+- **The SessionStart hook wiring** — the ambient activation that folds the binding
+  on every pulse and routes the deficit (§5's level-triggered sensor). The pen is
+  runnable by hand; standing it up as a hook is a config-as-code change that is
+  the owner's to admit.
+- **The git-pen enforcement seam** (§11 increment #2) — "no commit without a
+  binding for this HEAD". With bindings now real, this is the next obvious cut.
+- **Per-tool portal files vs. the one manifest** — v0 renders the portal set as
+  one manifest file (each line a portal); a directory of per-tool pointer-files
+  (`presence of a tool's *file*` = authorized, literally) is the natural next
+  grain if the seam wants it.
+- **Binding correction / supersede + frozen-vs-live caps (a named v0 boundary).**
+  The binding **freezes** its capability set at birth — that is correct
+  attribution (the three A's: the authorized set is *given and signed*, §5), and
+  `emit_manifest` renders that frozen contract while `status` previews the *live*
+  type defaults; the two can diverge after a later `admit-capability`. v0 keeps
+  the freeze and the idempotent refuse (a re-blink never sprawls, §4/§14), so a
+  newly-granted capability reaches a session only by **re-issuing** its binding —
+  but no supersede verb for a `session_binding` exists yet (both pens write
+  `supersedes: None`). A mistyped binding (e.g. a viewport bound `builder`
+  because no `--primary` was supplied) is therefore permanent until a supersede
+  path lands. The mitigation today: pass `--primary` at bind so the viewport
+  types correctly; the cure is a **bounded supersede verb** (bdo's, the
+  supersede-done shape — owner-gated, additive, history intact), a later
+  increment. Named here, not built.
+- **A governed tool→capability admission.** Today `CAPABILITY_BY_TOOL` is a
+  closed code map with a `read` default; an unlisted tool is read AND surfaced by
+  `unmapped_tools` (the honest gap). The enforced, admitted tool→capability
+  vocabulary (so a mutating pen cannot ride in as a read portal even before a
+  human reviews the map) is the same governed-vocabulary lift the type→capability
+  set already has — a later increment.
+- **The anthology name** (§5b / §13.8's standing open) under which this chapter and
+  the physics land as chapters.

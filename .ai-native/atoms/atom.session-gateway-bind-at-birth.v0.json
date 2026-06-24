@@ -1,0 +1,56 @@
+{
+  "atom": {
+    "id": "atom.session-gateway-bind-at-birth.v0",
+    "story": {
+      "text": "As bdo, I confirmed (2026-06-23) that I want the FIRST CHAPTER of the session gateway built for real — bind-at-birth (issue #534) — and I sharpened it with one load-bearing refinement: the workstation manifest is not documentation, it is a PORTAL. Its presence in the workstation is the fact: if a tool's portal is present, the gateway produced it and this session is AUTHORIZED to use that tool. The set of portals present IS the environment this session is capable of using, derived from its consequences and its START (its derived type). This turns the three A's (authenticated, authorized, attributed) into something physical and checkable. Today a session has no birth contract: it infers its state from a shared HEAD (the branch-collision root cause, proposal §2) and the merge-node's unadmitted landings show self-asserted identity. This builds the smallest real spine: derive the session's type, write ONE idempotent session_binding carrying the three A's, and emit the capability-filtered workstation portals for the current tree — presence equals authorized.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "a session is bound to a type at birth and handed only the tool-portals that type is authorized to use — presence = authorized",
+      "value": "loop/session_gateway.py is the sibling of loop/inference.py at the session-birth seam (mirrors the RBAC template, does not rebuild it). derive_type(payload) is a PURE, named, VERSIONED typing function (a TYPING_VERSION constant the binding carries, so a typing-rule change is new lineage, never a silent reinterpretation — proposal §10.1 / doctrine §14) mapping birth signals to one closed role: builder (a worktree bench), node-fill (a branded ontum-node:<id> spawn), or steerer-admin (the confirmed viewport), with an honest least-privilege floor (an unconfirmed tree never gets steerer powers). Capability sets are governed vocabulary (the loop/tags.py shape): a closed core per type in code (land is in none by design — no default type lands its own line, D-2) PLUS admitted session_capability extensions. bind() writes ONE session_binding admission carrying the three A's (authenticated who/what, authorized capability set, attributed workspace + --by + ts + typing_version) and is IDEMPOTENT — an existing binding is REUSED, never blind-recreated (the rescue-branch-sprawl bug §4/§14 names). emit_manifest() writes the workstation portal(s): the branded tools (folded from .claude/skills/*/SKILL.md + loop/*.py) FILTERED by the type's capability set — the PRESENCE of a tool's portal IS the authorization (bdo's portal model, 2026-06-23). Read-only render + --json + a clear done|report|needs-you line.",
+      "why_now": "bdo confirmed today (2026-06-23) he wants this first chapter built for real, with the portal model as the load-bearing refinement. The branch-collision the proposal opens on is a structural failure that recurs until the birth seam exists; the merge-node's unadmitted landings are the same self-asserted-identity disease. Binding at birth, with portals as the physical authorization token, is the smallest real cure.",
+      "if_accepted": "A session can be bound at birth to a derived, versioned type and handed exactly the tools that type is authorized to use, as a signed record on the log, with the binding idempotent so a re-blinked session never sprawls. The portal set in the workstation is the checkable environment. This is the foundation the next increments (new-tree provisioning, the SessionStart hook, the git-pen no-commit-without-a-binding enforcement) build on.",
+      "if_rejected": "Sessions keep inferring their state from a shared HEAD and self-asserting identity; the branch-collision and unadmitted-landing failures recur, and there is no physical, checkable answer to 'what is this session authorized to use'.",
+      "cost_of_wrong_call": "Low and bounded. The change ADDS one new pure stdlib module (loop/session_gateway.py) and its test; it wires no hook, creates no worktree, and changes no pipeline stage or verdict path. It writes only config admissions (session_binding, session_capability) and a generated, gitignored workstation manifest (a deletable cache, never truth). Nothing existing depends on it yet — it is runnable by hand and inert until bdo stamps the activations. Reverting is deleting the module and its test. The §10 teeth are non-vacuous (a constant all-authorized classifier is caught; a re-bind is refused) and the whole suite stays green.",
+      "mechanism": "loop/session_gateway.py: derive_type(payload) reads only the payload (no git/network/clock) — brand ontum-node:* -> node-fill; a cwd under /.claude/worktrees/ -> builder; a cwd equal to the supplied primary -> steerer-admin; else the least-privilege builder floor. TYPE_CAPABILITIES is the closed core per type (read/build, read/judge, read/steer); type_capabilities() unions admitted session_capability records (admit_capability pen). CAPABILITY_BY_TOOL maps the mutating tools to a capability, read for the unlisted; branded_tools() folds .claude/skills/*/SKILL.md + loop/*.py off disk; authorized_tools(tools, caps) is the pure filter the portal model rests on. existing_binding() is the idempotence read; bind() refuses (no session/unknown type/no --by), reuses a prior binding, else appends ONE session_binding admission via loop.reconcile.append_line. emit_manifest() renders the do-not-hand-edit manifest (one portal per authorized tool) and --write writes it to <tree>/.workstation/MANIFEST.md. CLI: status (read-only preview), bind (idempotent), manifest, admit-capability. tests/test_session_gateway.py joins the suite with the §10 teeth: a tool absent from a type's capability set is absent from the emitted manifest, a constant all-authorized classifier is caught (it differs from the real filter), and a binding is never blind-recreated (binding twice writes one record). Done-line 0195. Out of scope, named: new-tree provisioning, the SessionStart hook wiring, the git-pen enforcement seam — bdo's to stamp.",
+      "reading": [
+        "loop/session_gateway.py",
+        "tests/test_session_gateway.py",
+        ".ai-native/done/0195-session-gateway-bind-at-birth.md",
+        ".ai-native/proposals/session-gateway.proposal.md",
+        "loop/inference.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "v-next.session-gateway"
+      ],
+      "touches": [
+        "loop/session_gateway.py",
+        "tests/test_session_gateway.py",
+        "loop/CLAUDE.md",
+        ".gitignore",
+        ".ai-native/done/0195-session-gateway-bind-at-birth.md",
+        ".ai-native/proposals/session-gateway.proposal.md"
+      ],
+      "must_not_collide_with": [
+        "loop/inference.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "loop/inference.py",
+        "loop/tags.py",
+        ".ai-native/proposals/session-gateway.proposal.md"
+      ],
+      "receipts": []
+    }
+  }
+}

@@ -11,6 +11,12 @@ causality/welcome-preview.png
 # sensor trace, not truth: the command watcher's log (done-line 0011) — deletable
 .ai-native/log/tool-use.jsonl
 
+# generated cache, never truth (done-line 0195): the session gateway's per-tree
+# workstation portal manifest — regenerated from the binding by
+# loop/session_gateway.py; its presence is a capability fact for the tree, the
+# binding on the log is the truth. Deletable, rebuilt at any time.
+.workstation/
+
 # sensor trace, not truth: the file-touch sensor's log — which files each session
 # read/edited, folded by loop/coverage.py into the discovered/undiscovered mask;
 # a telemetry cache rebuilt by replaying sessions, deletable
