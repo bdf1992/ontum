@@ -97,8 +97,16 @@ function normalizePermissionMode(m) {
 //                          --allowedTools when non-empty.
 //   opts.disallowedTools  — array of tool specs to forbid (row 9's deny-list);
 //                          emitted as --disallowedTools when non-empty.
-//   opts.resume          — a session id to continue (row 16 territory; passed
-//                          through here so a resumed turn uses the same channel).
+//   opts.resume          — a session id to RESUME (row 16): emitted as
+//                          `--resume <id>` so the turn continues that exact
+//                          conversation (verified live: `-r/--resume [sessionId]`).
+//   opts.continueSession  — continue the MOST RECENT conversation (row 16):
+//                          emitted as `--continue` (verified live: `-c/--continue`).
+//   opts.forkSession      — when resuming/continuing, branch a NEW session id off
+//                          it instead of reusing the original (row 16): emitted as
+//                          `--fork-session`, valid with either resume or continue
+//                          (verified live). Conservative — emitted ONLY alongside a
+//                          resume/continue, never on its own.
 //   opts.model           — optional model override (passed as --model).
 // The flags mirror exactly what `claude --help` advertises (verified live).
 function engineArgs(opts) {
@@ -131,9 +139,17 @@ function engineArgs(opts) {
     args.push('--mcp-config', ...o.mcpConfig.map(String));
     if (o.strictMcpConfig) args.push('--strict-mcp-config');
   }
-  if (o.resume) {
-    args.push('--resume', String(o.resume));
-    if (o.forkSession) args.push('--fork-session');
+  // Row 16 — resume / continue an existing session. The CLI exposes (verified
+  // live on this machine): `-c/--continue` (the most recent conversation) and
+  // `-r/--resume [sessionId]` (a specific one); `--fork-session` branches a NEW
+  // session id off the resumed/continued one (valid with EITHER). Emitted only
+  // when asked, so the default drive starts a fresh session unchanged; and
+  // `--fork-session` is conservative — it rides ONLY alongside a resume/continue,
+  // never on its own (a lone fork has nothing to fork from).
+  if (o.continueSession) args.push('--continue');
+  if (o.resume) args.push('--resume', String(o.resume));
+  if ((o.resume || o.continueSession) && o.forkSession) {
+    args.push('--fork-session');
   }
   // Pin a real model id. The CLI's bare default resolves the alias "opus",
   // which the API rejects with 404 in headless stream-json mode (caught by a
@@ -146,6 +162,49 @@ function engineArgs(opts) {
 
 // A concrete, valid model id (the bare "opus"/"sonnet" aliases 404 headless).
 const DEFAULT_MODEL = 'claude-opus-4-8';
+
+// --- row 16: resume / continue an existing session --------------------------
+// Normal Claude Code can RESUME a specific past conversation (`-r/--resume
+// <sessionId>`) or CONTINUE the most recent one (`-c/--continue`);
+// `--fork-session` branches a NEW session id off either. The spike resolved this
+// row to `inherit` — the SAME `claude` binary exposes exactly these levers
+// (verified live this tick). The surface expresses the human's choice as a small
+// "resume target": { mode, sessionId, fork }.
+//   mode 'new'      — start a fresh session (the default; no resume flags).
+//   mode 'continue' — continue the most recent conversation (--continue).
+//   mode 'resume'   — resume a specific sessionId (--resume <id>).
+const RESUME_MODES = ['new', 'continue', 'resume'];
+
+// normalizeResumeTarget(t) -> a fully-formed { mode, sessionId, fork }, kept
+// conservative by construction: an unknown mode, or a 'resume' with no
+// sessionId, falls back to 'new' (a turn never silently resumes the wrong
+// session). Accepts a target object or a bare mode string.
+function normalizeResumeTarget(t) {
+  const o = t && typeof t === 'object' ? t : { mode: t };
+  let mode = RESUME_MODES.indexOf(o.mode) >= 0 ? o.mode : 'new';
+  const sessionId =
+    typeof o.sessionId === 'string' && o.sessionId ? o.sessionId : null;
+  // A 'resume' with no session id has nothing to resume — fall back to 'new'.
+  if (mode === 'resume' && !sessionId) mode = 'new';
+  return {
+    mode,
+    sessionId: mode === 'resume' ? sessionId : null,
+    fork: o.fork === true,
+  };
+}
+
+// resumeArgsFromTarget(t) -> the engineArgs opts fragment for a resume target:
+// { resume?, continueSession?, forkSession? }. A 'new' target yields {} (no
+// resume flags — the default fresh-session drive is unchanged). Pure, so a test
+// proves the target -> argv mapping host-free.
+function resumeArgsFromTarget(t) {
+  const n = normalizeResumeTarget(t);
+  const out = {};
+  if (n.mode === 'continue') out.continueSession = true;
+  if (n.mode === 'resume') out.resume = n.sessionId;
+  if (n.mode !== 'new' && n.fork) out.forkSession = true;
+  return out;
+}
 
 // foldReply(events) -> the ONE turn's reply, folded from the output events.
 //   { sessionId, tools, entries, text, isError, subtype, cost, usage,
@@ -355,7 +414,8 @@ function assembleStream(events) {
 //   opts.spawn           — injectable spawn (default child_process.spawn) so a
 //                          test can feed a fake process — no real model call.
 //   opts.onEvent(ev)     — optional per-event hook (row 6 will stream on it).
-//   opts.permissionMode/resume/forkSession/model — forwarded to engineArgs.
+//   opts.permissionMode/resume/continueSession/forkSession/model — forwarded to
+//                          engineArgs (row 16: resume/continue an existing session).
 // Rejects only on a spawn/process error; a turn that ends in an engine error
 // resolves with isError:true so the surface can render the failure honestly.
 // Default watchdog: a turn that never closes (a wedged tool/MCP holding the
@@ -523,4 +583,9 @@ module.exports = {
   // Row 9 — the permission surface (mode normalization + the mode list).
   PERMISSION_MODES,
   normalizePermissionMode,
+  // Row 16 — resume / continue (the conservative target normalizer + its argv
+  // mapping; one source of truth for the surface and the test).
+  RESUME_MODES,
+  normalizeResumeTarget,
+  resumeArgsFromTarget,
 };

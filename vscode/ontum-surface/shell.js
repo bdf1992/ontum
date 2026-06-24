@@ -16,7 +16,11 @@
 'use strict';
 
 const { diffFromToolUse } = require('./diff');
-const { PERMISSION_MODES, normalizePermissionMode } = require('./engine');
+const {
+  PERMISSION_MODES,
+  normalizePermissionMode,
+  normalizeResumeTarget,
+} = require('./engine');
 const { planFromToolUse, isPlanMode } = require('./plan');
 
 // A small, dependency-free nonce for the webview Content-Security-Policy.
@@ -291,6 +295,56 @@ function renderPermissionControl(mode) {
     `data-mode="${escapeHtml(current)}" aria-label="Permission mode">` +
     options +
     '</select>' +
+    '</div>'
+  );
+}
+
+// renderResumeControl(target, selectedId) -> the inner HTML of the composer's
+// session-continuity surface (row 16). Normal Claude Code can start a fresh
+// session, CONTINUE the most recent conversation, or RESUME a specific one;
+// --fork-session branches a new id off either. The control offers those three
+// modes as buttons (the in-force one flagged aria-pressed), reflects the
+// in-force mode on a `data-resume-mode` mirror a cold reader / test can read,
+// and posts `{ type:'ontum:set-resume', mode, id }` to the host on click. The
+// "Resume selected" button carries the currently-selected session's id
+// (data-session-id from row 2) and is disabled when nothing is selected (there
+// is nothing to resume). Conservative by construction: the engine's
+// normalizeResumeTarget defaults an unknown mode / an id-less resume to 'new'.
+const RESUME_MODE_LABELS = {
+  new: 'New session',
+  continue: 'Continue recent',
+  resume: 'Resume selected',
+};
+function renderResumeControl(target, selectedId) {
+  const t = normalizeResumeTarget(
+    target && typeof target === 'object' ? target : { mode: target }
+  );
+  const selId = typeof selectedId === 'string' && selectedId ? selectedId : '';
+  // The in-force resume target: its session id is the one being resumed (resume
+  // mode) so a cold reader sees exactly which conversation the next turn joins.
+  const mirrorId = t.mode === 'resume' && t.sessionId ? t.sessionId : selId;
+  const btn = (mode) => {
+    const pressed = mode === t.mode ? ' aria-pressed="true"' : '';
+    // "Resume selected" needs a selected session to point at; without one it is
+    // disabled (nothing to resume) and carries no id.
+    const disabled = mode === 'resume' && !selId ? ' disabled' : '';
+    const idAttr =
+      mode === 'resume' && selId ? ` data-session-id="${escapeHtml(selId)}"` : '';
+    const label = escapeHtml(RESUME_MODE_LABELS[mode] || mode);
+    return (
+      `<button class="ontum-resume-btn" type="button" ` +
+      `data-resume="${escapeHtml(mode)}"${idAttr}${pressed}${disabled}>` +
+      `${label}</button>`
+    );
+  };
+  return (
+    '<div class="ontum-resume" data-region="resume" ' +
+    `data-resume-mode="${escapeHtml(t.mode)}" ` +
+    `data-resume-session="${escapeHtml(mirrorId || '')}">` +
+    '<span class="ontum-resume-label">Session</span>' +
+    btn('new') +
+    btn('continue') +
+    btn('resume') +
     '</div>'
   );
 }
@@ -590,6 +644,11 @@ function renderShell(opts) {
   // Row 9 — the permission-mode surface in the composer. Defaults to 'default'
   // (conservative) when the host passes none.
   const permissionHtml = renderPermissionControl(o.permissionMode);
+  // Row 16 — the session-continuity surface in the composer. The host passes the
+  // in-force resume target (new / continue / resume) + the currently-selected
+  // session id (row 2) so the "Resume selected" button points at it. Absent ->
+  // a 'new' target (a fresh session — the conservative default).
+  const resumeHtml = renderResumeControl(o.resumeTarget, o.selectedSessionId);
   // Row 11 — a read-only plan-mode banner shows when the in-force permission
   // mode is 'plan', so the human sees the engine is researching + proposing a
   // plan (no edits) before the ExitPlanMode card offers approve/keep.
@@ -922,6 +981,30 @@ function renderShell(opts) {
     }
     select.ontum-permission-mode:focus { outline: none; border-color: var(--ontum-accent); }
     select.ontum-permission-mode[data-mode="bypassPermissions"] { border-color: #c2685a; color: #c2685a; }
+    /* Row 16 — the session-continuity surface (new / continue / resume). */
+    .ontum-resume { display: flex; align-items: center; gap: 0.3rem; }
+    .ontum-resume-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--ontum-dim);
+    }
+    button.ontum-resume-btn {
+      cursor: pointer;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.25rem 0.45rem;
+      background: var(--ontum-bg);
+      color: var(--ontum-dim);
+      font: inherit;
+      font-size: 0.74rem;
+    }
+    button.ontum-resume-btn:hover:not([disabled]) { border-color: var(--ontum-accent); }
+    button.ontum-resume-btn[aria-pressed="true"] {
+      border-color: var(--ontum-accent);
+      color: var(--ontum-accent);
+    }
+    button.ontum-resume-btn[disabled] { opacity: 0.45; cursor: default; }
     /* Row 10 — the slash-command palette. */
     .ontum-slash {
       margin-bottom: 0.5rem;
@@ -1125,6 +1208,7 @@ function renderShell(opts) {
     </div>
     <div class="ontum-compose-foot">
       ${permissionHtml}
+      ${resumeHtml}
       ${planBadge}
       <p class="ontum-compose-status" data-status="idle" hidden></p>
     </div>
@@ -1164,6 +1248,36 @@ function renderShell(opts) {
         sel.setAttribute('data-mode', mode);
         if (vscode) {
           vscode.postMessage({ type: 'ontum:set-permission-mode', mode: mode });
+        }
+      });
+    })();
+
+    // Row 16 — the session-continuity surface. Clicking New / Continue recent /
+    // Resume selected tells the host which session the NEXT turn joins; the host
+    // threads it into engineArgs (--continue / --resume <id>), so the turn
+    // actually resumes/continues the chosen conversation. Delegation on the
+    // resume region (not per-button) keeps it wired across re-renders. The
+    // "Resume selected" button carries the selected session's id (row 2). We
+    // reflect the choice on the region (data-resume-mode + aria-pressed) so a
+    // cold reader / test can see what is in force. A disabled (no-selection)
+    // resume button posts nothing.
+    (function wireResume() {
+      var region = document.querySelector('.ontum-resume');
+      if (!region) return;
+      region.addEventListener('click', function (ev) {
+        var btn = ev.target && ev.target.closest
+          ? ev.target.closest('button.ontum-resume-btn')
+          : null;
+        if (!btn || btn.disabled) return;
+        var mode = btn.getAttribute('data-resume') || 'new';
+        var id = btn.getAttribute('data-session-id') || '';
+        region.setAttribute('data-resume-mode', mode);
+        region.querySelectorAll('button.ontum-resume-btn').forEach(function (b) {
+          if (b === btn) b.setAttribute('aria-pressed', 'true');
+          else b.removeAttribute('aria-pressed');
+        });
+        if (vscode) {
+          vscode.postMessage({ type: 'ontum:set-resume', mode: mode, id: id });
         }
       });
     })();
@@ -1524,6 +1638,7 @@ module.exports = {
   renderDiffLines,
   renderPlanBlock,
   renderPermissionControl,
+  renderResumeControl,
   renderSlashMenu,
   renderMentionMenu,
   renderAttachTray,

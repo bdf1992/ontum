@@ -18,7 +18,13 @@ const { renderShell, renderTranscriptRows } = require('./shell');
 const { listSessions, storeDirFor } = require('./sessions');
 const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
-const { driveTurn, partialDelta, normalizePermissionMode } = require('./engine');
+const {
+  driveTurn,
+  partialDelta,
+  normalizePermissionMode,
+  normalizeResumeTarget,
+  resumeArgsFromTarget,
+} = require('./engine');
 const { listSlashCommands } = require('./slash');
 const { listMentionTargets, withSelectionContext } = require('./mentions');
 const {
@@ -87,6 +93,14 @@ let lastEngineTools = null;
 // remove chips drive it. Empty by default (a plain turn carries no attachments,
 // preserving every earlier row's verbatim-stdin behaviour).
 let pendingAttachments = [];
+// Row 16 — the session-continuity target the NEXT turn runs under (resume /
+// continue / new). The composer's resume control posts ontum:set-resume to
+// change it; sendPrompt threads it into the engine argv (--continue / --resume
+// <id>), so a turn actually resumes/continues the chosen conversation.
+// Conservative default — 'new' starts a fresh session, and an unknown mode / an
+// id-less resume normalizes back to 'new' (a turn never silently resumes the
+// wrong session). `fork` (--fork-session) branches a new id off a resumed one.
+let resumeTarget = { mode: 'new', sessionId: null, fork: false };
 // Row 15 — the file picker the attach button opens. In production this is the
 // VS Code host dialog (vscode.window.showOpenDialog); a host-free test injects a
 // fake picker via __setAttachPickerForTest returning the chosen path(s), so the
@@ -388,9 +402,14 @@ async function sendPrompt(text) {
   // exactly one turn (the composer re-renders without the chips).
   const attachments = attachmentBlocks(pendingAttachments);
   const hadAttachments = pendingAttachments.length > 0;
+  // Row 16 — thread the session-continuity target into the engine argv: a
+  // 'continue' target emits --continue, a 'resume' target emits --resume <id>
+  // (+ --fork-session when forking). A 'new' target yields nothing, so the
+  // default drive starts a fresh session unchanged (the conservative default).
+  const resumeArgs = resumeArgsFromTarget(resumeTarget);
   let reply;
   try {
-    reply = await driveTurn({
+    reply = await driveTurn(Object.assign({
       prompt,
       attachments,
       cwd: currentCwd(),
@@ -400,7 +419,7 @@ async function sendPrompt(text) {
       spawn: spawnImpl || undefined,
       // Row 6 — stream the live partials to the composer as they arrive.
       onEvent: postTurnDelta,
-    });
+    }, resumeArgs));
   } catch (err) {
     reply = {
       isError: true,
@@ -493,6 +512,35 @@ function getPermissionMode() {
   return permissionMode;
 }
 
+// setResumeTarget(msg) -> record the session-continuity target the webview's
+// resume control chose (row 16), normalized so an unknown mode / an id-less
+// resume can never silently resume the wrong session (falls back to 'new').
+// Accepts the `{ type:'ontum:set-resume', mode, id, fork }` message (or a bare
+// target). A 'resume' with no explicit id defaults to the currently-selected
+// session (row 2) — the "Resume selected" button. Re-renders so the control
+// reflects the in-force target. Returns the target now in force; the NEXT
+// turn's sendPrompt threads it into the engine argv (--continue / --resume).
+function setResumeTarget(msg) {
+  const m = msg && typeof msg === 'object' ? msg : { mode: msg };
+  const mode = m.mode;
+  // The resume control posts the chosen session id as `id`; when absent on a
+  // 'resume' click, fall back to the currently-selected session (row 2).
+  const sessionId =
+    (typeof m.id === 'string' && m.id) ||
+    (typeof m.sessionId === 'string' && m.sessionId) ||
+    (mode === 'resume' ? selectedSessionId : null) ||
+    null;
+  resumeTarget = normalizeResumeTarget({ mode, sessionId, fork: m.fork === true });
+  renderPanel(); // repaint so the control shows the now-in-force target
+  return resumeTarget;
+}
+
+// getResumeTarget() -> the session-continuity target the next turn will run
+// under (row 16). Exposed so a host-free test can assert the resume round-trip.
+function getResumeTarget() {
+  return resumeTarget;
+}
+
 // startTail() -> begin watching the selected session's file for appends. The
 // full transcript was just painted by renderPanel, so we anchor the offset at
 // the current end and only future appends stream in. fs.watchFile polls (works
@@ -533,6 +581,11 @@ function renderPanel() {
     // Row 9 — paint the composer's permission surface in its current mode so a
     // re-render preserves the human's choice.
     permissionMode,
+    // Row 16 — paint the composer's session-continuity surface in its in-force
+    // target (new / continue / resume), and pass the selected session id so the
+    // "Resume selected" button points at it (and is disabled when none is).
+    resumeTarget,
+    selectedSessionId,
     // Row 10 — the discovered slash-command palette (project + user customs +
     // built-ins). The composer filters it as the human types a '/' prefix.
     slashCommands: readSlashCommands(),
@@ -595,6 +648,10 @@ function openSurface(context) {
       } else if (msg && msg.type === 'ontum:set-permission-mode') {
         // Row 9 — the human chose a permission mode; the next turn runs under it.
         setPermissionMode(msg);
+      } else if (msg && msg.type === 'ontum:set-resume') {
+        // Row 16 — the human chose new / continue / resume; the next turn joins
+        // that session (--continue / --resume <id>).
+        setResumeTarget(msg);
       } else if (msg && msg.type === 'ontum:attach-file') {
         // Row 15 — open the host file picker; stage + re-render the chosen files.
         pickAttachment();
@@ -716,6 +773,11 @@ module.exports = {
   // round-trip (the webview's permission surface → the next turn's argv).
   setPermissionMode,
   getPermissionMode,
+  // Row 16 — exposed so a host-free test can drive + assert the session-
+  // continuity round-trip (the webview's resume control → the next turn's argv:
+  // --continue / --resume <id>).
+  setResumeTarget,
+  getResumeTarget,
   __setSpawnForTest,
   // Row 12 — exposed so a host-free test can inject a fake editor selection and
   // assert the driven turn carried it as context (the selection-context surface).
