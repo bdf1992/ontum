@@ -419,6 +419,97 @@ function renderMcpPanel(servers) {
   );
 }
 
+// renderEnvPanel(env) -> the inner HTML of the Sessions aside's Environment
+// region (row 14). `env` comes from environment.listEnvironment (a fold of the
+// same on-disk config the CLI reads): the settings LAYERS, the configured
+// HOOKS, and the available SKILLS the engine inherits. Three labelled groups,
+// all escaped (a fold, never a second source):
+//   · settings — each layer as `data-env-settings="<scope>"` with a
+//     `data-present` flag + its top-level keys (the search path the CLI merges);
+//   · hooks    — each as `data-env-hook="<event>"` carrying its matcher + scope
+//     (what the engine runs on PreToolUse / Stop / …);
+//   · skills   — each as `data-env-skill="<name>"` with its description + scope
+//     (what the engine can call).
+// An absent/empty environment paints an honest note per group (no fake row).
+// The engine remains authoritative on what a hook DOES and whether a skill
+// loads; this is the inherited-environment surface, not a re-implementation.
+function renderEnvPanel(env) {
+  const e = env && typeof env === 'object' ? env : {};
+  const settings = Array.isArray(e.settings) ? e.settings : [];
+  const hooks = Array.isArray(e.hooks) ? e.hooks : [];
+  const skills = Array.isArray(e.skills) ? e.skills : [];
+
+  const settingsHtml = settings.length
+    ? settings
+        .map((s) => {
+          const scope = escapeHtml(s && s.scope ? s.scope : 'project');
+          const present = s && s.present ? 'true' : 'false';
+          const keys = Array.isArray(s && s.keys) ? s.keys : [];
+          const meta = present === 'true'
+            ? (keys.length ? keys.map(escapeHtml).join(', ') : '(no keys)')
+            : 'not present';
+          return (
+            `<li class="ontum-env-settings" data-env-settings="${scope}" ` +
+            `data-present="${present}">` +
+            `<span class="ontum-env-scope">${scope}</span>` +
+            `<span class="ontum-env-meta">${escapeHtml(meta)}</span>` +
+            `</li>`
+          );
+        })
+        .join('')
+    : '<li class="ontum-empty">No settings layers.</li>';
+
+  const hooksHtml = hooks.length
+    ? hooks
+        .map((h) => {
+          const event = escapeHtml(h && h.event ? h.event : '');
+          const matcher = escapeHtml(h && h.matcher ? h.matcher : '*');
+          const scope = escapeHtml(h && h.scope ? h.scope : 'project');
+          return (
+            `<li class="ontum-env-hook" data-env-hook="${event}" ` +
+            `data-scope="${scope}">` +
+            `<span class="ontum-env-hook-event">${event}</span>` +
+            `<span class="ontum-env-hook-matcher">${matcher}</span>` +
+            `<span class="ontum-env-scope">${scope}</span>` +
+            `</li>`
+          );
+        })
+        .join('')
+    : '<li class="ontum-empty">No hooks configured.</li>';
+
+  const skillsHtml = skills.length
+    ? skills
+        .map((s) => {
+          const name = escapeHtml(s && s.name ? s.name : '');
+          const scope = escapeHtml(s && s.scope ? s.scope : 'project');
+          const desc = escapeHtml(s && s.description ? s.description : '');
+          return (
+            `<li class="ontum-env-skill" data-env-skill="${name}" ` +
+            `data-scope="${scope}">` +
+            `<span class="ontum-env-skill-name">${name}</span>` +
+            `<span class="ontum-env-skill-desc">${desc}</span>` +
+            `</li>`
+          );
+        })
+        .join('')
+    : '<li class="ontum-empty">No skills available.</li>';
+
+  return (
+    `<div class="ontum-env-group" data-env-group="settings">` +
+    `<p class="ontum-env-subtitle">Settings (${settings.filter((s) => s && s.present).length} present)</p>` +
+    `<ul class="ontum-env-list" data-count="${settings.length}">${settingsHtml}</ul>` +
+    `</div>` +
+    `<div class="ontum-env-group" data-env-group="hooks">` +
+    `<p class="ontum-env-subtitle">Hooks (${hooks.length})</p>` +
+    `<ul class="ontum-env-list" data-count="${hooks.length}">${hooksHtml}</ul>` +
+    `</div>` +
+    `<div class="ontum-env-group" data-env-group="skills">` +
+    `<p class="ontum-env-subtitle">Skills (${skills.length})</p>` +
+    `<ul class="ontum-env-list" data-count="${skills.length}">${skillsHtml}</ul>` +
+    `</div>`
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
@@ -431,6 +522,10 @@ function renderMcpPanel(servers) {
 //   opts.transcript — [entry] from transcript.readTranscript().entries; fills
 //                     the Transcript section (row 3). Absent -> an honest
 //                     "pick a session" note (no session selected yet).
+//   opts.environment — { settings, hooks, skills } from
+//                     environment.listEnvironment(); fills the Environment
+//                     region in the Sessions aside (row 14). Absent -> honest
+//                     empty notes per group (the region + wiring still ship).
 //
 // The returned document is *standalone*: it references no resource from, and
 // names no dependency on, the official Claude Code panel. It declares itself
@@ -471,6 +566,11 @@ function renderShell(opts) {
   // live engine tools); absent -> an honest "no MCP servers" note (the region +
   // wiring still ship, so a later render with servers lights up).
   const mcpHtml = renderMcpPanel(o.mcpServers);
+  // Row 14 — the inherited Environment region (settings layers / hooks /
+  // skills). The host passes the discovered environment (environment.list-
+  // Environment — the same on-disk config the CLI folds); absent -> honest
+  // empty notes (the region + wiring still ship, so a later render lights up).
+  const envHtml = renderEnvPanel(o.environment);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -881,6 +981,53 @@ function renderShell(opts) {
     .ontum-mcp-tool::before { content: "\\25b8 "; color: var(--ontum-dim); }
     .ontum-mcp-none { color: var(--ontum-dim); font-style: italic; }
     .ontum-mcp-none::before { content: ""; }
+    /* Row 14 — the inherited Environment region (settings / hooks / skills). */
+    .ontum-env-region-title { margin-top: 1rem; }
+    .ontum-env-group { margin-bottom: 0.6rem; }
+    .ontum-env-subtitle {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ontum-dim);
+      margin: 0 0 0.3rem;
+    }
+    .ontum-env-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+    .ontum-env-settings,
+    .ontum-env-hook,
+    .ontum-env-skill {
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.35rem 0.5rem;
+      background: var(--ontum-bg);
+      display: grid;
+      gap: 0.1rem;
+    }
+    .ontum-env-settings[data-present="true"] { border-left: 2px solid #6fae8f; }
+    .ontum-env-settings[data-present="false"] { border-left: 2px solid var(--ontum-edge); opacity: 0.7; }
+    .ontum-env-hook { border-left: 2px solid #5a82c2; }
+    .ontum-env-skill { border-left: 2px solid var(--ontum-accent); }
+    .ontum-env-scope {
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ontum-dim);
+    }
+    .ontum-env-meta { color: var(--ontum-dim); font-size: 0.72rem; word-break: break-word; }
+    .ontum-env-hook-event { color: var(--ontum-accent); font-size: 0.8rem; }
+    .ontum-env-hook-matcher {
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      font-size: 0.72rem;
+      color: var(--ontum-ink);
+    }
+    .ontum-env-skill-name { color: var(--ontum-accent); font-size: 0.8rem; }
+    .ontum-env-skill-desc {
+      color: var(--ontum-dim);
+      font-size: 0.72rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ontum-env-list .ontum-empty { padding: 0.2rem 0.1rem; }
   </style>
 </head>
 <body>
@@ -895,6 +1042,10 @@ function renderShell(opts) {
       <p class="ontum-region-title ontum-mcp-region-title">MCP servers</p>
       <div class="ontum-mcp" data-region="mcp">
         ${mcpHtml}
+      </div>
+      <p class="ontum-region-title ontum-env-region-title">Environment</p>
+      <div class="ontum-env" data-region="environment">
+        ${envHtml}
       </div>
     </aside>
     <section class="ontum-transcript" data-region="transcript">
@@ -1292,6 +1443,7 @@ module.exports = {
   renderSlashMenu,
   renderMentionMenu,
   renderMcpPanel,
+  renderEnvPanel,
   makeNonce,
   escapeHtml,
 };

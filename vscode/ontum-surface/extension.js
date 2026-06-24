@@ -23,6 +23,7 @@ const { listSlashCommands } = require('./slash');
 const { listMentionTargets, withSelectionContext } = require('./mentions');
 const { nextModeOnPlanDecision, isPlanDecision } = require('./plan');
 const { listMcpServers, userConfigPathFor } = require('./mcp');
+const { listEnvironment } = require('./environment');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -147,6 +148,22 @@ function readMcpServers() {
     });
   } catch (_) {
     return [];
+  }
+}
+
+// readEnvironment() -> the discovered inherited-environment surface for this
+// workspace (row 14): the settings LAYERS the CLI reads (project + local +
+// user, each with its top-level keys), the configured HOOKS folded across them
+// (event + matcher + scope), and the available SKILLS (project `.claude/skills`
+// over user `~/.claude/skills`). All three are folds of the SAME on-disk config
+// the `claude` binary reads — the engine runs the hooks + loads the skills
+// (inherit); this is the displayed surface, not a re-implementation. Failures
+// degrade to empty groups, never throw.
+function readEnvironment() {
+  try {
+    return listEnvironment({ projectDir: currentCwd(), userDir: os.homedir() });
+  } catch (_) {
+    return { settings: [], hooks: [], skills: [] };
   }
 }
 
@@ -433,6 +450,9 @@ function renderPanel() {
     // Row 13 — the discovered MCP servers (configured on disk) annotated with
     // the tools the live engine env exposed for them (`mcp__server__tool`).
     mcpServers: readMcpServers(),
+    // Row 14 — the inherited environment (settings layers / hooks / skills),
+    // folded from the same on-disk config the CLI reads.
+    environment: readEnvironment(),
   });
 }
 
@@ -559,6 +579,10 @@ module.exports = {
   // discovery (configured servers annotated with the live tools the inherited
   // env exposed) the surface offers.
   readMcpServers,
+  // Row 14 — exposed so a host-free test can assert the inherited-environment
+  // surface discovery (settings layers + hooks + skills folded from the same
+  // on-disk config the CLI reads) the surface offers.
+  readEnvironment,
   // Row 4 — exposed so a host-free test can drive a tail pump directly (the
   // watcher's poll is timing-bound; the pump is the deterministic seam).
   pumpTail,
