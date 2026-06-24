@@ -18,9 +18,9 @@ python -m unittest tests.test_fence -v
   do instead), and inline `match`/`not_match` examples.
 - [render_codex.py](render_codex.py) — the deterministic renderer:
   emits `.codex/rules/ontum.rules` (native `prefix_rule` entries,
-  Starlark) and `.codex/hooks.json` (the ambient summons + the hook
-  probe). The outputs are committed but **never hand-edited** — edit
-  the registry and re-render.
+  Starlark) and `.codex/hooks.json` (the ambient heartbeat tick,
+  summons, and hook probe). The outputs are committed but **never
+  hand-edited** — edit the registry and re-render.
 - [probe_codex.py](probe_codex.py) — the hook-seam probe (done-line
   0029): wired through the rendered `hooks.json`, it records each
   `PreToolUse`/`PostToolUse`/`PermissionRequest` firing (argv, raw
