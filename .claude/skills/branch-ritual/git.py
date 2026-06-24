@@ -56,6 +56,7 @@ session what the act is missing; nothing here escalates to bdo.
 from __future__ import annotations
 
 import argparse
+import collections
 import datetime
 import pathlib
 import re
@@ -338,13 +339,13 @@ def dirty_viewport_refusal(modified, untracked):
     )
 
 
-def rescue_branch_name(today, existing):
+def rescue_branch_name(today, existing, label="viewport"):
     """The rescue branch a whiteout commits a dirty viewport's pile onto:
     `claude/rescue-viewport-<date>`, with a `-N` suffix when that name is
     already taken so a second whiteout the same day never clobbers the first
     (done-line 0170, #415). Pure: the date and the existing-ref set are passed
     in, so the name is a deterministic fold, not a clock read."""
-    base = f"claude/rescue-viewport-{today}"
+    base = f"claude/rescue-{label}-{today}"
     if base not in existing:
         return base
     n = 2
@@ -701,6 +702,89 @@ def _oneline(proc):
     return detail[-1] if detail else "no detail"
 
 
+Preserved = collections.namedtuple(
+    "Preserved", "ok rescue staged push_note started error")
+
+
+def _current_ref(git, worktree):
+    """The ref a worktree sits on: its branch name, or the HEAD sha when
+    detached — so a rescue can branch from it and a rollback can return to it."""
+    branch = git(["branch", "--show-current"], worktree).stdout.strip()
+    return branch or git(["rev-parse", "HEAD"], worktree).stdout.strip()
+
+
+def _existing_refs(git, worktree):
+    """The local + remote ref names a rescue name must avoid — remote-tracking
+    branches counted under their BARE name too, so a rescue pushed earlier but
+    since deleted locally still lives on origin and is never re-minted and
+    clobbered on push."""
+    raw = git(["for-each-ref", "--format=%(refname:short)",
+               "refs/heads", "refs/remotes"], worktree).stdout.split()
+    return set(raw) | {r.split("/", 1)[1] for r in raw if r.startswith("origin/")}
+
+
+def preserve_pile(worktree, git, label, fetch_timeout=20):
+    """Preserve a worktree's ENTIRE uncommitted pile onto a fresh dated rescue
+    branch — proof-carrying (the whiteout shape, done-lines 0064/0170): stage
+    the whole pile (`add -A`), commit it, and push it BEFORE anything is
+    cleaned, so nothing is ever discarded. This is the ONE rescue definition
+    `whiteout` (the viewport) and `rescue` (any bench) both call (I-4,
+    done-line 0193).
+
+    A CLEAN tree is a safe no-op (`.rescue is None`, `.staged == []`). On a git
+    failure the worktree is restored to exactly where it started and `.ok` is
+    False (no half-made rescue branch is left behind). On success the worktree
+    is left CHECKED OUT on the rescue branch (its pile committed there, so the
+    tree is clean); the caller decides whether to walk it back to a trunk."""
+    started = _current_ref(git, worktree)
+    if not git(["status", "--porcelain"], worktree).stdout.strip():
+        return Preserved(True, None, [], "", started, None)
+
+    head = git(["rev-parse", "--short", "HEAD"], worktree).stdout.strip()
+    rescue = rescue_branch_name(
+        datetime.date.today().isoformat(), _existing_refs(git, worktree), label)
+
+    made = git(["checkout", "-b", rescue], worktree)
+    if made.returncode != 0:
+        return Preserved(False, rescue, [], "", started,
+                         f"could not open the rescue branch '{rescue}' — "
+                         f"{_oneline(made)}; the worktree is untouched")
+    added = git(["add", "-A"], worktree)
+    if added.returncode != 0:
+        git(["checkout", started], worktree)
+        git(["branch", "-D", rescue], worktree)
+        return Preserved(False, rescue, [], "", started,
+                         f"could not stage the pile — {_oneline(added)}; the "
+                         "work is still in the worktree, untouched")
+    staged = [p for p in git(["diff", "--cached", "--name-only"],
+                             worktree).stdout.splitlines() if p]
+    if not staged:
+        # the tree read dirty but nothing staged (an ignored-only change) —
+        # never leave an empty rescue branch behind
+        git(["checkout", started], worktree)
+        git(["branch", "-D", rescue], worktree)
+        return Preserved(True, None, [], "", started, None)
+
+    message = (
+        f"rescue: preserve the {label} pile ({len(staged)} path(s)) off {head}\n\n"
+        "Proof-carrying recovery (#415, done-lines 0064/0170/0193): the worktree "
+        "was dirty and the pile is preserved on this branch BEFORE anything is "
+        "cleaned — nothing is discarded. Reconcile what is still wanted into a "
+        "real PR, or drop this branch once the pile is accounted for.")
+    committed = git(["commit", "-m", message], worktree)
+    if committed.returncode != 0:
+        git(["checkout", started], worktree)
+        git(["branch", "-D", rescue], worktree)
+        return Preserved(False, rescue, [], "", started,
+                         f"could not commit the rescue pile — "
+                         f"{_oneline(committed)}; the worktree is untouched")
+    pushed = git(["push", "-u", "origin", rescue], worktree, timeout=fetch_timeout)
+    push_note = ("pushed to origin" if pushed.returncode == 0
+                 else f"NOT pushed (offline?: {_oneline(pushed)}) — it is "
+                      "committed locally and safe; push it with the PR pen")
+    return Preserved(True, rescue, staged, push_note, started, None)
+
+
 def recover_dirty_viewport(viewport, git, emit, bail, ns):
     """The whiteout utensil's actuator (done-line 0170, #415): sort a DIRTY
     viewport without losing a byte.
@@ -716,70 +800,26 @@ def recover_dirty_viewport(viewport, git, emit, bail, ns):
     to origin/main. Nothing is discarded; the rescue branch is surfaced for
     reconciliation. Caller guarantees: the viewport is on the trunk, dirty, and
     carries no local commits origin lacks (a clean fast-forward but for the
-    tree)."""
-    head = git(["rev-parse", "--short", "HEAD"], viewport).stdout.strip()
-    trunk = git(["branch", "--show-current"], viewport).stdout.strip() or "main"
-    raw = git(["for-each-ref", "--format=%(refname:short)",
-               "refs/heads", "refs/remotes"], viewport).stdout.split()
-    # the existing-ref set the naming fold avoids — include remote-tracking
-    # branches under their BARE name (strip the `origin/` prefix), so a rescue
-    # branch pushed earlier but since deleted locally is still not re-minted
-    # and clobbered on push (it lives only on origin until reconciled).
-    existing = set(raw) | {r.split("/", 1)[1] for r in raw
-                           if r.startswith("origin/")}
-    rescue = rescue_branch_name(datetime.date.today().isoformat(), existing)
+    tree).
 
-    made = git(["checkout", "-b", rescue], viewport)
-    if made.returncode != 0:
-        bail(f"whiteout could not open the rescue branch '{rescue}' — "
-             f"{_oneline(made)}; the viewport is untouched")
-    added = git(["add", "-A"], viewport)
-    if added.returncode != 0:
-        # staging failed — the pile is still in the working tree, unsaved.
-        # back out to the trunk (the dirty tree carries cleanly, rescue shares
-        # its commit) and leave the viewport exactly as found.
-        git(["checkout", trunk], viewport)
-        git(["branch", "-D", rescue], viewport)
-        bail(f"whiteout could not stage the viewport pile — {_oneline(added)}; "
-             "the work is still in the viewport, untouched")
-    staged = [p for p in git(["diff", "--cached", "--name-only"],
-                             viewport).stdout.splitlines() if p]
+    The preserve-the-pile core is shared with the `rescue` verb
+    (`preserve_pile`, done-line 0193 — one rescue definition, I-4); this
+    function adds only the viewport-specific tail: return the clean tree to the
+    trunk and fast-forward it to origin/main."""
+    result = preserve_pile(viewport, git, "viewport", fetch_timeout=ns.fetch_timeout)
+    if not result.ok:
+        bail(f"whiteout {result.error}")
+    rescue, staged, push_note = result.rescue, result.staged, result.push_note
+    trunk = result.started or "main"
 
-    push_note = ""
-    if staged:
-        message = (
-            f"whiteout: rescue the dirty viewport pile ({len(staged)} path(s)) "
-            f"off {head}\n\n"
-            "Proof-carrying recovery (#415, done-line 0170): the viewport was "
-            "dirty and a session cannot sort it (the workstation fence forbids "
-            "every working-state git verb in the primary tree). The pen "
-            "preserves the entire pile on this branch BEFORE cleaning the "
-            "viewport — nothing is discarded. Reconcile what is still wanted "
-            "into a real PR, or drop this branch once the pile is accounted "
-            "for.")
-        committed = git(["commit", "-m", message], viewport)
-        if committed.returncode != 0:
-            git(["checkout", trunk], viewport)
-            git(["branch", "-D", rescue], viewport)
-            bail(f"whiteout could not commit the rescue pile — "
-                 f"{_oneline(committed)}; the viewport is untouched")
-        pushed = git(["push", "-u", "origin", rescue], viewport,
-                     timeout=ns.fetch_timeout)
-        push_note = ("pushed to origin" if pushed.returncode == 0
-                     else f"NOT pushed (offline?: {_oneline(pushed)}) — it is "
-                          "committed locally and safe; push it with the PR pen")
-
-    # return the viewport to a clean trunk and fast-forward to origin/main
-    back = git(["checkout", trunk], viewport)
-    if back.returncode != 0:
-        where = (f"preserved the pile on '{rescue}' ({push_note}) but "
-                 if staged else "")
-        bail(f"whiteout {where}could not return the viewport to {trunk} — "
-             f"{_oneline(back)}; the work is safe, restore {trunk} by hand")
-    if not staged:
-        # nothing to preserve (a clean tree, or a race that cleaned it) —
-        # never leave an empty rescue branch behind
-        git(["branch", "-D", rescue], viewport)
+    # return the viewport to a clean trunk and fast-forward to origin/main.
+    # preserve_pile leaves us on the rescue branch only when it made one.
+    if rescue:
+        back = git(["checkout", trunk], viewport)
+        if back.returncode != 0:
+            bail(f"whiteout preserved the pile on '{rescue}' ({push_note}) but "
+                 f"could not return the viewport to {trunk} — {_oneline(back)}; "
+                 f"the work is safe, restore {trunk} by hand")
     behind = int(git(["rev-list", "--count", f"{trunk}..origin/main"],
                      viewport).stdout.strip() or 0)
     if behind:
@@ -1055,6 +1095,72 @@ def cmd_whiteout(ns):
     cmd_sync(ns)
 
 
+def _rescue_label(worktree):
+    """A short, ref-safe label for a worktree's rescue branch — its directory
+    name reduced to [a-z0-9-], so the branch reads
+    `claude/rescue-<name>-<date>`. The viewport keeps its own 'viewport' label
+    (recover_dirty_viewport passes it explicitly)."""
+    name = re.sub(r"[^a-z0-9-]+", "-", pathlib.Path(worktree).name.lower())
+    return name.strip("-") or "worktree"
+
+
+def cmd_rescue(ns):
+    """Preserve ANY worktree's uncommitted pile onto a dated rescue branch — the
+    bench-rescue verb (done-line 0193). `whiteout` aims the same proof-carrying
+    rescue core (`preserve_pile`) at the VIEWPORT and then walks the clean tree
+    back to the trunk; `rescue` aims it at any worktree (a stranded bench, a
+    forest leaf) and leaves it ON the rescue branch, its pile committed and
+    pushed. A CLEAN worktree is a safe no-op. So the forest never strands: any
+    bench's uncommitted pile is one verb away from preserved-and-pushed."""
+    def emit(state, message):
+        print(f"result: {state} — rescue: {message}")
+
+    def bail(message):
+        emit("report", message)
+        sys.exit(0 if getattr(ns, "hook", False) else 1)
+
+    def git(args, cwd, timeout=None):
+        return subprocess.run(
+            ["git"] + args, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", cwd=cwd, timeout=timeout)
+
+    target = getattr(ns, "worktree_flag", None) or ns.worktree
+    if not target:
+        bail(f"name the worktree to rescue: {PEN} rescue <path> "
+             "(or --worktree <path>)")
+    try:
+        path = pathlib.Path(target).expanduser()
+        if not path.exists():
+            bail(f"no such worktree: {target}")
+        inside = git(["rev-parse", "--is-inside-work-tree"], str(path))
+        if inside.returncode != 0 or inside.stdout.strip() != "true":
+            bail(f"{target} is not a git worktree — {_oneline(inside)}")
+        worktree = str(path.resolve())
+
+        if not git(["status", "--porcelain"], worktree).stdout.strip():
+            emit("done", f"nothing to rescue — {target} is already clean")
+            return
+
+        result = preserve_pile(worktree, git, _rescue_label(worktree),
+                               fetch_timeout=ns.fetch_timeout)
+        if not result.ok:
+            bail(result.error)
+        if not result.staged:
+            emit("done", f"nothing to rescue — {target} is already clean")
+            return
+        emit("done",
+             f"rescued {target}: {len(result.staged)} path(s) preserved on "
+             f"'{result.rescue}' ({result.push_note}); the worktree is on the "
+             "rescue branch with a clean tree — nothing was lost. Open a "
+             "reconciliation PR for the rescue branch with the PR pen, or drop "
+             "it once the pile is accounted for.")
+    except subprocess.TimeoutExpired:
+        bail(f"push exceeded {ns.fetch_timeout}s (offline?) — the pile is "
+             "committed locally and safe; push the rescue branch with the PR pen")
+    except Exception as error:  # fail open like sync — the pen's bug never strands
+        bail(f"unexpected: {error}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="git.py", description=__doc__,
@@ -1126,6 +1232,21 @@ def main(argv=None):
                         default=20, metavar="SECONDS",
                         help="seconds to wait on gh before skipping the prune")
     garden.set_defaults(func=cmd_garden)
+
+    rescue = verbs.add_parser(
+        "rescue", help="preserve ANY worktree's uncommitted pile onto a dated "
+                       "rescue branch (committed + pushed, proof-carrying) so "
+                       "the forest never strands; a clean worktree is a safe "
+                       "no-op (done-line 0193)")
+    rescue.add_argument("worktree", metavar="WORKTREE", nargs="?",
+                        help="path to the worktree to rescue (positional)")
+    rescue.add_argument("--worktree", dest="worktree_flag", metavar="PATH",
+                        help="path to the worktree to rescue (same as the "
+                             "positional argument)")
+    rescue.add_argument("--fetch-timeout", dest="fetch_timeout", type=int,
+                        default=20, metavar="SECONDS",
+                        help="seconds to wait on the push before reporting")
+    rescue.set_defaults(func=cmd_rescue, hook=False)
 
     ns, extra = parser.parse_known_args(argv)
     ns.forward = extra
