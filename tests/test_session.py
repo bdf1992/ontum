@@ -116,6 +116,36 @@ class SessionWitnessTest(unittest.TestCase):
         self.assertFalse(created)
         self.assertEqual(self._write_on_count(), 0)
 
+    # ---- the success path honours --root (the clobber regression) ----
+
+    def test_main_write_on_success_honours_temp_root(self):
+        """Driving main()'s SUCCESS path with --root <tmp> must land the record
+        in <tmp>'s log and leave the repo's real log byte-untouched. The other
+        main() tests only exercise refusal paths, which return before --root is
+        used — so a subparser --root silently clobbering the top-level one to
+        DEFAULT_ROOT (the live repo) hid here until now."""
+        from loop.reconcile import DEFAULT_ROOT
+
+        real_events = DEFAULT_ROOT / "log" / "events.jsonl"
+        before = real_events.read_bytes() if real_events.exists() else None
+
+        with mock.patch.dict("os.environ",
+                             {session.SESSION_ENV: "sess-root"}, clear=True):
+            rc = session.main(["--root", str(self.root), "write-on",
+                               "--narration", "writing into the temp root, "
+                               "not the live repo log"])
+        self.assertEqual(rc, 0)
+
+        # the record landed in the TEMP root, exactly once
+        self.assertEqual(self._write_on_count(), 1)
+        s = self._posture_of("sess-root", {"sess-root": {"cwd": "/x", "ts": 1}})
+        self.assertIsNotNone(s)
+        self.assertEqual(s["write_posture"], "writer")
+
+        # and the repo's real log was NOT written (the footgun)
+        after = real_events.read_bytes() if real_events.exists() else None
+        self.assertEqual(before, after)
+
     # ---- the emergency flag is carried onto the record ----
 
     def test_emergency_flag_is_recorded(self):

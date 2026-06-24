@@ -111,7 +111,9 @@ def write_on(root, session_id, narration, by=None, emergency=False,
 
     rec = {
         # deterministic per session: a re-run mints the same id, so even a
-        # racing double-append dedups to one (write-once belt and suspenders).
+        # racing double-append canonicalizes to one. `append_line` does not
+        # dedup — both lines land; the FOLD (write_on_records) keeps the first
+        # per session and the duplicate is inert (write-once belt and braces).
         "id": "swon." + short_hash(WRITE_ON, session_id),
         "type": WRITE_ON,
         "session_id": session_id,
@@ -204,7 +206,10 @@ def main(argv=None):
 
     w = sub.add_parser("write-on",
                        help="declare this session's read → write crossing")
-    w.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    # No --root here: the top-level --root (above) is authoritative for every
+    # subcommand. A duplicate --root on the subparser would re-default and
+    # silently clobber the top-level value, sending the write to the live repo
+    # log regardless of what was passed (the footgun a reviewer tripped).
     w.add_argument("--narration", required=True,
                    help="the warm first-person monologue (justification · the "
                         "way you'll write · authorship context)")
