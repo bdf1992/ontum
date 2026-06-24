@@ -30,6 +30,10 @@
       {
         "atom": "atom.health-board.v0",
         "glue": "the watchdog: a session-start health board that checks whether every expected standing process (the loop tick) is up or DOWN, shows the schedule, and shows what is live for both bdo and the session — the eyes that catch a down mind the fleet must restart."
+      },
+      {
+        "atom": "atom.headless-spawn-helper.v0",
+        "glue": "the structural stdin guard the fleet's spawns depend on (issue #411): the fleet only staffs its own gates and resumes its own idle sessions if those headless spawns return instead of hanging on inherited stdin. The stdin=DEVNULL fix lived at gate.py's one call site (done-line 0168) and a second spawner (continue-probe/probe.py) silently re-introduced the hang. This moves the guard into one shared helper (.claude/skills/_spawn/headless.py) every spawner calls — it ALWAYS closes stdin with no override — so a third spawner copies the fix, not the bug. Value: every fleet-provisioned headless mind is born unable to hang on stdin, by construction."
       }
     ]
   }

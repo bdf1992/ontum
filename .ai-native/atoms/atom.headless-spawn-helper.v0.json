@@ -1,0 +1,53 @@
+{
+  "atom": {
+    "id": "atom.headless-spawn-helper.v0",
+    "story": {
+      "text": "As the loop staffing its own gates and resuming its own idle sessions, I need the stdin=DEVNULL guard that keeps a headless model child from hanging on inherited stdin to be STRUCTURAL — one shared helper every spawner calls — so a second spawner cannot silently re-introduce the 600s-hang the gate fixed once (done-line 0168). The probe pen's detached `claude --resume` re-introduced exactly that bug (issue #411), because the guard lived at one call site as a lone correct call plus a prose comment.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "One headless-spawn helper so the stdin=DEVNULL guard cannot be forgotten",
+      "value": "A headless `claude -p` / `claude --resume … -p …` that inherits the parent's live stdin HANGS (the 600s timeouts #390/#391/#393/#396, fixed once in gate.py with stdin=DEVNULL, done-line 0168). That guard lived at ONE call site, so continue-probe/probe.py's detached `_spawn` re-introduced the exact bug — it closed stdout/stderr but left stdin inherited. This moves the guard into one shared helper (.claude/skills/_spawn/headless.py) that ALWAYS sets stdin=subprocess.DEVNULL with no override; both spawners now call it, which de-duplicates AND fixes the probe hang.",
+      "why_now": "The fleet only staffs its own gates and resumes its own idle sessions if those headless spawns return instead of hanging. A second spawner already regressed the fix silently; without a structural guard a third will too.",
+      "if_accepted": "There is one place a headless child is born and it cannot be born with an open stdin; gate.py keeps its captured-output behavior and probe.py keeps its detached fire-and-forget, both through the helper; a §10 test asserts stdin==DEVNULL across both capture modes and both detached modes.",
+      "if_rejected": "The guard stays a lone call plus a comment; the probe pen keeps hanging on inherited stdin, and the next spawner copies the bug, not the fix.",
+      "cost_of_wrong_call": "Low and reversible: a small stdlib helper plus two call-site rewires that preserve each call's existing behavior; reverting is deleting one module and restoring two calls. No truth moved, no new write path, no model actually spawned by the change or its test.",
+      "mechanism": "headless_spawn(argv, *, cwd, timeout=None, detached=False, capture=True, runner=subprocess.run) always sets stdin=subprocess.DEVNULL; capture=True -> stdout/stderr=PIPE (text-decoded), capture=False -> DEVNULL; detached=False -> subprocess.run(..., timeout=timeout) returns a CompletedProcess, detached=True -> subprocess.Popen(...) returned unwaited; runner is injectable so the test drives every path without a live spawn. The helper owns only the three std streams + timeout, never the command shape.",
+      "reading": [
+        ".claude/skills/_spawn/headless.py",
+        ".claude/skills/gate/gate.py",
+        ".claude/skills/continue-probe/probe.py",
+        "tests/test_headless_spawn.py",
+        ".ai-native/done/0168-gate-rail-headless-stdin.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.virtual-fleet"
+      ],
+      "touches": [
+        ".claude/skills/_spawn/headless.py",
+        ".claude/skills/gate/gate.py",
+        ".claude/skills/continue-probe/probe.py",
+        "tests/test_headless_spawn.py"
+      ],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "issue #411: a second spawner (continue-probe/probe.py:_spawn) left stdin inherited, re-introducing the hang done-line 0168 fixed at gate.py's one call site.",
+        ".ai-native/done/0168-gate-rail-headless-stdin.md"
+      ]
+    }
+  }
+}
