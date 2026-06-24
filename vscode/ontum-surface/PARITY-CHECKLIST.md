@@ -16,7 +16,7 @@ behaviour). A constant "all green" with no evidence is a failed grade (§10).
 
 | # | Capability (what normal Claude Code does) | Source | Status | Evidence |
 |---|-------------------------------------------|--------|--------|----------|
-| 1 | Open a branded ontum window (webview), standalone of the official panel | build | todo | — |
+| 1 | Open a branded ontum window (webview), standalone of the official panel | build | green | `extension.js` (`openSurface`/`activate`) + `shell.js` (`renderShell`); `node vscode/ontum-surface/test/open-window.test.js` → 7 checks, exit 0 (registers `ontum.surface.open`, opens one webview, branded `data-surface="ontum"` + `data-standalone="true"`, no `claude-code`/anthropic dependency, nonce-gated CSP). Proves the open-path + markup; pixel render needs a host. |
 | 2 | List local sessions from the transcript store; select one | build | todo | — |
 | 3 | Read + render a transcript (user / assistant / tool-use / tool-result) | build | todo | — |
 | 4 | Live-tail the active session as it appends | build | todo | — |
