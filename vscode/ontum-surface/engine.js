@@ -175,12 +175,15 @@ function foldReply(events) {
 // the turn closes), so a streamed block and a folded one never disagree.
 
 // blockKind(t) -> the render kind for a streamed content-block type, or null
-// for kinds this row does not stream (tool_use is row 7's territory). The kinds
-// are the SAME ones transcript.foldTranscript emits, so a streamed block wears
-// the same data-kind as its eventual folded twin.
+// for kinds we do not stream. The kinds are the SAME ones
+// transcript.foldTranscript emits, so a streamed block wears the same data-kind
+// as its eventual folded twin. `tool_use` is streamed as of row 7 (the live
+// "calling tool X…" preview); its accumulating input arrives as
+// `input_json_delta` partials (see partialDelta below).
 function blockKind(t) {
   if (t === 'text') return 'assistant-text';
   if (t === 'thinking') return 'assistant-thinking';
+  if (t === 'tool_use') return 'tool-use';
   return null;
 }
 
@@ -188,13 +191,18 @@ function blockKind(t) {
 // event is not a renderable partial. The instruction is intentionally tiny so
 // the surface can apply it directly to a per-index block:
 //   { phase:'start', index, kind }        — a new assistant block opened
-//   { phase:'delta', index, kind, text }  — text/thinking appended to it
+//   { phase:'start', index, kind:'tool-use', name } — a tool call opened
+//   { phase:'delta', index, kind, text }  — text/thinking/input appended to it
 //   { phase:'stop',  index }              — the block closed
-// kind is 'assistant-text' or 'assistant-thinking'. Tolerant of both the
-// wrapped (`{type:'stream_event', event:{...}}`) and the bare
-// (`{type:'content_block_*', ...}`) forms. The kind on a delta is derived from
-// the delta itself (text_delta / thinking_delta), so a delta still renders
-// correctly even if its content_block_start was torn or dropped.
+// kind is 'assistant-text', 'assistant-thinking', or 'tool-use' (row 7). The
+// instruction is tolerant of both the wrapped (`{type:'stream_event',
+// event:{...}}`) and the bare (`{type:'content_block_*', ...}`) forms. The kind
+// on a delta is derived from the delta itself (text_delta / thinking_delta /
+// input_json_delta), so a delta still renders correctly even if its
+// content_block_start was torn or dropped. A tool_use start carries the tool
+// `name` (so the surface can paint "calling tool X…" immediately); its
+// accumulating input arrives as `input_json_delta` partials (the raw streaming
+// JSON, replaced by the folded, pretty-printed input when the turn closes).
 function partialDelta(event) {
   if (!event || typeof event !== 'object') return null;
   const inner =
@@ -202,9 +210,14 @@ function partialDelta(event) {
   if (!inner || typeof inner !== 'object') return null;
   const index = typeof inner.index === 'number' ? inner.index : 0;
   if (inner.type === 'content_block_start') {
-    const kind = blockKind(inner.content_block && inner.content_block.type);
-    if (!kind) return null; // tool_use etc. — not streamed here (row 7)
-    return { phase: 'start', index, kind };
+    const cb = inner.content_block || {};
+    const kind = blockKind(cb.type);
+    if (!kind) return null;
+    const out = { phase: 'start', index, kind };
+    // A tool call announces its name at the start — carry it so the live
+    // preview can label the block before any input has streamed.
+    if (kind === 'tool-use' && typeof cb.name === 'string') out.name = cb.name;
+    return out;
   }
   if (inner.type === 'content_block_delta') {
     const d = inner.delta || {};
@@ -219,6 +232,10 @@ function partialDelta(event) {
         text: d.thinking,
       };
     }
+    // A tool call's input streams as raw JSON fragments (row 7).
+    if (d.type === 'input_json_delta' && typeof d.partial_json === 'string') {
+      return { phase: 'delta', index, kind: 'tool-use', text: d.partial_json };
+    }
     return null;
   }
   if (inner.type === 'content_block_stop') {
@@ -229,8 +246,11 @@ function partialDelta(event) {
 
 // assembleStream(events) -> fold a list of events into the ordered live blocks
 // the partials describe: [{ index, kind, text }] in first-seen order, each
-// block's text the concatenation of its deltas. Pure (no process), so a test
-// can prove the partials reconstruct the same prose the final fold yields.
+// block's text the concatenation of its deltas. A tool-use block also carries
+// `name` (row 7); text/thinking blocks keep the bare { index, kind, text }
+// shape (no `name` key) so the row-6 preview==fold equality holds. Pure (no
+// process), so a test can prove the partials reconstruct the same prose/input
+// the final fold yields.
 function assembleStream(events) {
   const list = Array.isArray(events) ? events : [];
   const byIndex = new Map();
@@ -245,6 +265,7 @@ function assembleStream(events) {
       order.push(block);
     }
     if (d.kind) block.kind = d.kind;
+    if (typeof d.name === 'string') block.name = d.name;
     if (d.phase === 'delta') block.text += d.text;
   }
   return order;

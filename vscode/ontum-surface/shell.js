@@ -522,8 +522,15 @@ function renderShell(opts) {
         }
         var kind = m.kind || block.getAttribute('data-kind') || 'assistant-text';
         block.setAttribute('data-kind', kind);
+        // Row 7 — a tool-use preview carries the tool name on its start; keep it
+        // on the block so deltas (raw input JSON) keep the "tool ▸ name" label.
+        if (kind === 'tool-use' && m.name) block.setAttribute('data-tool-name', m.name);
         var roleEl = block.querySelector('.ontum-role');
-        if (roleEl) roleEl.textContent = (kind === 'assistant-thinking') ? 'thinking' : 'assistant';
+        if (roleEl) {
+          if (kind === 'assistant-thinking') roleEl.textContent = 'thinking';
+          else if (kind === 'tool-use') roleEl.textContent = 'tool \u25b8 ' + (block.getAttribute('data-tool-name') || 'tool');
+          else roleEl.textContent = 'assistant';
+        }
         if (m.phase === 'delta' && m.text) {
           var bodyEl = block.querySelector('.ontum-text');
           if (bodyEl) bodyEl.textContent += m.text;

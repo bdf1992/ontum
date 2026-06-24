@@ -179,12 +179,17 @@ check('partialDelta accepts the bare (unwrapped) content_block form', () => {
     phase: 'delta', index: 2, kind: 'assistant-text', text: 'x',
   });
 });
-check('partialDelta does not stream a tool_use block start (row 7 territory)', () => {
+check('partialDelta streams a tool_use block start carrying its name (row 7)', () => {
+  // Row 7 landed: a tool_use block start now folds to a tool-use preview
+  // instruction carrying the tool name (see tools.test.js for the full row-7
+  // proof). Row 6 stays the source of truth for text/thinking streaming.
   const tool = {
     type: 'stream_event',
     event: { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', name: 'Bash' } },
   };
-  assert.strictEqual(engine.partialDelta(tool), null);
+  assert.deepStrictEqual(engine.partialDelta(tool), {
+    phase: 'start', index: 0, kind: 'tool-use', name: 'Bash',
+  });
 });
 
 // 2. assembleStream — fold the partials into ordered live blocks, and prove the
