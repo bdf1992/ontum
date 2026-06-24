@@ -13,6 +13,7 @@
 
 const vscode = require('vscode');
 const { renderShell } = require('./shell');
+const { listSessions, storeDirFor } = require('./sessions');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -20,6 +21,29 @@ const OPEN_COMMAND = 'ontum.surface.open';
 // One panel per window — re-running the command reveals the existing one
 // rather than stacking duplicates.
 let panel = null;
+// The session the user last selected (row 2). Row 3 reads its transcript.
+let selectedSessionId = null;
+
+// currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
+// The transcript store is keyed by this path (sessions.storeDirFor).
+function currentCwd() {
+  const folders =
+    vscode.workspace && vscode.workspace.workspaceFolders;
+  if (folders && folders.length && folders[0].uri && folders[0].uri.fsPath) {
+    return folders[0].uri.fsPath;
+  }
+  return process.cwd();
+}
+
+// readSessions() -> the local session list for this workspace, newest-first.
+// Failures (no store yet, unreadable dir) degrade to an empty list, never throw.
+function readSessions() {
+  try {
+    return listSessions({ dir: storeDirFor(currentCwd()), limit: 50 });
+  } catch (_) {
+    return [];
+  }
+}
 
 function openSurface(context) {
   if (panel) {
@@ -40,7 +64,18 @@ function openSurface(context) {
 
   panel.webview.html = renderShell({
     cspSource: panel.webview.cspSource,
+    sessions: readSessions(),
   });
+
+  // Row 2 — the webview tells us which session the user picked. We record it
+  // (row 3 will read + render that transcript). Other messages are ignored.
+  if (panel.webview && typeof panel.webview.onDidReceiveMessage === 'function') {
+    panel.webview.onDidReceiveMessage((msg) => {
+      if (msg && msg.type === 'ontum:select-session' && msg.id) {
+        selectedSessionId = msg.id;
+      }
+    });
+  }
 
   panel.onDidDispose(() => {
     panel = null;
@@ -66,4 +101,16 @@ function deactivate() {
   }
 }
 
-module.exports = { activate, deactivate, VIEW_TYPE, OPEN_COMMAND };
+// getSelectedSessionId() -> the last session the webview selected (or null).
+// Exposed so a host-free test can assert the row-2 selection round-trip.
+function getSelectedSessionId() {
+  return selectedSessionId;
+}
+
+module.exports = {
+  activate,
+  deactivate,
+  getSelectedSessionId,
+  VIEW_TYPE,
+  OPEN_COMMAND,
+};

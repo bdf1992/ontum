@@ -38,12 +38,56 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
+// renderSessionList(sessions) -> the inner HTML of the Sessions aside (row 2).
+//
+// Each session is rendered as a selectable button carrying `data-session-id`;
+// clicking it posts `{ type: 'ontum:select-session', id }` to the host (the
+// script at the foot of the shell). The data comes from sessions.js
+// (listSessions) — this function only paints it, so it stays a pure fold and is
+// asserted by a host-free test. An empty store paints an honest empty note, not
+// a fake row.
+function renderSessionList(sessions) {
+  const list = Array.isArray(sessions) ? sessions : [];
+  if (list.length === 0) {
+    return (
+      '<p class="ontum-empty">No local sessions for this folder yet. ' +
+      'Start a turn and it appears here.</p>'
+    );
+  }
+  const items = list
+    .map((s) => {
+      const id = escapeHtml(s && s.id ? s.id : '');
+      const title = escapeHtml(s && s.title ? s.title : '(untitled)');
+      const count =
+        s && typeof s.messageCount === 'number' ? s.messageCount : 0;
+      const branch = s && s.gitBranch ? escapeHtml(s.gitBranch) : '';
+      const meta =
+        `${count} msg` + (branch ? ` · ${branch}` : '');
+      return (
+        `<button class="ontum-session" type="button" ` +
+        `data-session-id="${id}" title="${id}">` +
+        `<span class="ontum-session-title">${title}</span>` +
+        `<span class="ontum-session-meta">${meta}</span>` +
+        `</button>`
+      );
+    })
+    .join('\n      ');
+  return (
+    `<ul class="ontum-session-list" data-count="${list.length}">\n      ` +
+    items +
+    `\n    </ul>`
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
 //   opts.cspSource  — webview.cspSource for the host (img/style origin);
 //                     defaults to a self-only policy when absent.
 //   opts.brand      — wordmark text (default "ontum").
+//   opts.sessions   — [session] from sessions.listSessions(); fills the
+//                     Sessions aside (row 2). Absent/empty -> an honest empty
+//                     note (the row-1 build passed none, so it still works).
 //
 // The returned document is *standalone*: it references no resource from, and
 // names no dependency on, the official Claude Code panel. It declares itself
@@ -53,6 +97,7 @@ function renderShell(opts) {
   const o = opts || {};
   const nonce = o.nonce || makeNonce();
   const brand = escapeHtml(o.brand || 'ontum');
+  const sessionsHtml = renderSessionList(o.sessions);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -126,6 +171,33 @@ function renderShell(opts) {
       color: var(--ontum-dim);
       font-size: 0.85rem;
     }
+    .ontum-empty { color: var(--ontum-dim); font-size: 0.85rem; margin: 0; }
+    .ontum-session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+    button.ontum-session {
+      display: grid;
+      gap: 0.15rem;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.45rem 0.55rem;
+      background: var(--ontum-bg);
+      color: var(--ontum-ink);
+      font: inherit;
+    }
+    button.ontum-session:hover { border-color: var(--ontum-accent); }
+    button.ontum-session[aria-selected="true"] {
+      border-color: var(--ontum-accent);
+      background: var(--ontum-panel);
+    }
+    .ontum-session-title {
+      font-size: 0.82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ontum-session-meta { color: var(--ontum-dim); font-size: 0.7rem; }
     footer.ontum-composer {
       border-top: 1px solid var(--ontum-edge);
       padding: 0.6rem 0.9rem;
@@ -143,9 +215,7 @@ function renderShell(opts) {
   <main class="ontum-body">
     <aside class="ontum-sessions" data-region="sessions">
       <p class="ontum-region-title">Sessions</p>
-      <div class="ontum-placeholder">
-        Session list lands in row&nbsp;2 — reads the local transcript store.
-      </div>
+      ${sessionsHtml}
     </aside>
     <section class="ontum-transcript" data-region="transcript">
       <p class="ontum-region-title">Transcript</p>
@@ -163,9 +233,25 @@ function renderShell(opts) {
     // document renders in a plain browser during tests.
     const vscode = (typeof acquireVsCodeApi === 'function') ? acquireVsCodeApi() : null;
     if (vscode) { vscode.postMessage({ type: 'ontum:surface-ready' }); }
+
+    // Row 2 — select a session. Clicking a session button marks it selected and
+    // tells the host which transcript to open (row 3 reads + renders it).
+    document.querySelectorAll('button.ontum-session').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('button.ontum-session[aria-selected="true"]')
+          .forEach(function (b) { b.removeAttribute('aria-selected'); });
+        btn.setAttribute('aria-selected', 'true');
+        if (vscode) {
+          vscode.postMessage({
+            type: 'ontum:select-session',
+            id: btn.getAttribute('data-session-id'),
+          });
+        }
+      });
+    });
   </script>
 </body>
 </html>`;
 }
 
-module.exports = { renderShell, makeNonce, escapeHtml };
+module.exports = { renderShell, renderSessionList, makeNonce, escapeHtml };

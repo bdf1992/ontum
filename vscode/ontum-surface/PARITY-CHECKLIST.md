@@ -17,7 +17,7 @@ behaviour). A constant "all green" with no evidence is a failed grade (§10).
 | # | Capability (what normal Claude Code does) | Source | Status | Evidence |
 |---|-------------------------------------------|--------|--------|----------|
 | 1 | Open a branded ontum window (webview), standalone of the official panel | build | green | `extension.js` (`openSurface`/`activate`) + `shell.js` (`renderShell`); `node vscode/ontum-surface/test/open-window.test.js` → 7 checks, exit 0 (registers `ontum.surface.open`, opens one webview, branded `data-surface="ontum"` + `data-standalone="true"`, no `claude-code`/anthropic dependency, nonce-gated CSP). Proves the open-path + markup; pixel render needs a host. |
-| 2 | List local sessions from the transcript store; select one | build | todo | — |
+| 2 | List local sessions from the transcript store; select one | build | green | `sessions.js` (`listSessions`/`summarize`/`parseTranscript`/`storeDirFor`) reads `~/.claude/projects/<encoded-cwd>/*.jsonl`, derives id/title/messageCount/branch newest-first, torn-tail tolerant; `shell.js` `renderSessionList` paints selectable `data-session-id` buttons; `extension.js` reads the store on open + records the `ontum:select-session` round-trip. Evidence: `node vscode/ontum-surface/test/sessions.test.js` → 8 checks, exit 0 (fake store incl. a torn line); read-only smoke on the live store returned 3 real sessions with titles ("Warmup"×2, "(no prompt yet)"). |
 | 3 | Read + render a transcript (user / assistant / tool-use / tool-result) | build | todo | — |
 | 4 | Live-tail the active session as it appends | build | todo | — |
 | 5 | Drive a new turn through the engine (send a prompt, get a reply) | spike | todo | — |
