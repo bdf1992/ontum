@@ -63,6 +63,15 @@ def make_repo(tmp):
           'GREETING = "ghost.unheard"\n'
           'def greet(): return GREETING\n')
 
+    # a nested worktree checkout (the .claude/worktrees/ stall): a full repo
+    # copy whose live.py *does* import ghost. CORPUS_EXCLUDE must skip this
+    # whole tree — otherwise every part reads as wired by its own clones and
+    # the census both lies (ghost flips off dormant) and crawls (it reads
+    # ~57k files once per part). This file is the teeth for that exclude.
+    write(root / ".claude" / "worktrees" / "clone" / "loop" / "live.py",
+          'from loop import plumbed, viewer, ghost\n'
+          'def go(): plumbed.run(); viewer.render([]); ghost.greet()\n')
+
     # the working system: imports plumbed and viewer (wires them), and a
     # placeholder reconcile so the imports above are not dangling
     write(root / "loop" / "reconcile.py",
@@ -115,6 +124,17 @@ class CensusVerdicts(unittest.TestCase):
         # become a recorded trace. This is the live false positive, caught.
         self.assertFalse(self.by_name["ghost"]["exercised"])
         self.assertFalse(self.by_name["plumbed"]["exercised"])
+
+    def test_nested_worktree_does_not_wire_a_part(self):
+        # the .claude/worktrees/ exclude has teeth: a clone's live.py imports
+        # ghost, but that clone is off the corpus, so ghost stays dormant and
+        # its only "importer" remains none. Without the exclude this asserts
+        # the opposite (and the census reads the whole nested forest).
+        self.assertEqual(self.verdict("ghost"), "dormant")
+        self.assertEqual(self.by_name["ghost"]["importers"], [])
+        self.assertFalse(any(".claude/worktrees/" in i
+                             for r in self.by_name.values()
+                             for i in r["importers"]))
 
     def test_the_lens_discriminates(self):
         # the §10 guard: not everything alive, not everything dead
