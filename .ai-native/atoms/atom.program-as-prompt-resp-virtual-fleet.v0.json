@@ -1,0 +1,32 @@
+{
+  "atom": {
+    "id": "atom.program-as-prompt-resp-virtual-fleet.v0",
+    "story": {
+      "text": "Foreign proposal: a coordinator plus scout/builder/reviewer/repairer fleet acting on shared repo/queue/tests/logs/acceptance-gate under fleet rules (bounded authority, shared state, visible receipts, no second truth).",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "review",
+    "incidence": {
+      "serves": [
+        "epic.program-as-prompt-response"
+      ],
+      "touches": [],
+      "must_not_collide_with": [],
+      "hands_off_to": []
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "exports/program-as-prompt/",
+        "seal:793fc274baca"
+      ],
+      "receipts": []
+    }
+  },
+  "_note": "A foreign review's finding, returned to package 'program-as-prompt' and landed as proposed work through the inbound envoy seam (done-line 0059). The value gate judges the story; bdo's confirm-arc on 'epic.program-as-prompt-response' queues the whole review at once. Never mutated \u2014 the fold over .ai-native/log/ is the live state (D-5)."
+}

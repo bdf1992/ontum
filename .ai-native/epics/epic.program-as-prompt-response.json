@@ -1,0 +1,33 @@
+{
+  "epic": {
+    "id": "epic.program-as-prompt-response",
+    "owner": "bdo",
+    "status": "proposed",
+    "arc": "The foreign review of exports/program-as-prompt/ comes home as work. Each finding is a proposed atom under this one arc; bdo's confirm-arc queues them all, his decline retires them \u2014 either way the review stops stranding as context.",
+    "context": "Returned through the inbound envoy seam (done-line 0059) against seal 793fc274baca\u2026 on exports/log.jsonl. The reviewer saw a sealed snapshot, so every finding is PROPOSED and unverified: the value gate judges each story and a session verifies its claim against the live repo before any is acted on.",
+    "value": "A foreign review becomes value-gated, queued work instead of read-only context \u2014 the return leg the one-way envoy lacked.",
+    "horizon": "Every finding judged by the value gate and either carried under bdo's confirmed arc or refused; none hand-carried into a doc.",
+    "pieces": [
+      {
+        "atom": "atom.program-as-prompt-resp-execution-membrane.v0",
+        "glue": "Foreign proposal: formalize the 1.0/3.0 seam as a named-holes spec \u2014 a deterministic spine (rules, control-flow, caps/budgets, schemas, traceable outputs) exposing typed INFER ports (priority/risk/meaning) that alone accept inference, plus an Agent-Rights model OBEY/INFER/AUDIT/REFUSE."
+      },
+      {
+        "atom": "atom.program-as-prompt-resp-diagram-as-topology.v0",
+        "glue": "Foreign proposal: treat the topology diagram as the executable artifact \u2014 nodes are loops, edges are routing, holes are named inference ports, trace is proof the topology ran, receipt is reusable residue."
+      },
+      {
+        "atom": "atom.program-as-prompt-resp-boot-pack.v0",
+        "glue": "Foreign proposal: reframe program-as-prompt as a Bootable Agent Environment \u2014 an 8-step boot pack (world-snapshot, topology and authority, typed-loops, claim, execute-and-trace, self-audit, reject/repair/accept, residual-value) that loops; install a working reality, not just a prompt."
+      },
+      {
+        "atom": "atom.program-as-prompt-resp-virtual-fleet.v0",
+        "glue": "Foreign proposal: a coordinator plus scout/builder/reviewer/repairer fleet acting on shared repo/queue/tests/logs/acceptance-gate under fleet rules (bounded authority, shared state, visible receipts, no second truth)."
+      },
+      {
+        "atom": "atom.program-as-prompt-resp-boot-diagram-runner.v0",
+        "glue": "Foreign proposal: a runnable .boot package (runner, topology, fixture, equal-info prose control, blind-judge) implementing the A/B \u2014 Arm A runs the topology, Arm B is equal prose, strip labels, blind-judge whether Arm A actually ran the topology."
+      }
+    ]
+  }
+}

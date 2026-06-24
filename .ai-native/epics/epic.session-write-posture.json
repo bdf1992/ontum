@@ -1,0 +1,21 @@
+{
+  "epic": {
+    "id": "epic.session-write-posture",
+    "owner": "bdo",
+    "status": "proposed",
+    "arc": "Make a session's read/write posture a recorded, governed fact. bdo, 2026-06-23: 'We should start every session in READ-only mode, and turning write on is a named event alongside the first actual write — when you write, you also write the ledger as the first write; when you read, you're good.' A session is a reader until it writes; its first deliberate write is a 'write-on' — a warm, journalistic narration (the justification for picking up the pen, the way it will write, the authorship context) that a cold reader can pick up. Read is silent (the local Claude session already records existence); only the crossing touches the log.",
+    "context": "Born in conversation 2026-06-23..24: read-by-default -> write-on as a narrated crossing -> watch the CONSEQUENCE, not the write-paths (#354) -> a policy-driven, configurable, smart fence that stops ONLY policy-named situations. bdo delegated the fence's design to Claude ('you design the fence, you're the one who can jump it') under the honesty safeguard: adversarial self-design (every jump becomes a closed hole or a NAMED gap) + independent review + bdo's policy stamp — Claude authors the lock, bdo holds the key. Composes existing parts (watcher.load_registry, reconcile.Fold/append_line, observe.gate, act_fence's tiers, trespass_shame, the fence/ registry) — no second truth. Full shape captured in .ai-native/proposals/session-read-write-mode.proposal.md.",
+    "value": "A mortal session's most basic posture — reader or writer, and when it crossed — becomes a foldable fact at the cheapest grain (one warm line, only on crossing), seeding the runtime witness (activity organ 2) and the session-gateway's typed sessions. And the owner's repo gains a path-agnostic, policy-governed fence that makes any write impossible to HIDE, without fencing an unbounded set of write-paths.",
+    "horizon": "Every session's posture (reader|writer) reads off the log; a writer's crossing carries a warm, cold-readable narration; no undeclared write to a governed surface escapes the consequence-fence; and the policy that decides what is stopped is bdo's configurable, smart, default-permissive dial.",
+    "pieces": [
+      {
+        "atom": "atom.session-write-posture-witness.v0",
+        "glue": "The witness (done-line 0196, BUILT, PR #719): loop/session.py — the `write-on` pen records one session_write_on to events.jsonl (session_id from CLAUDE_CODE_SESSION_ID, required warm narration, emergency flag, write-once idempotent) and the read-only fold reports per-session reader|writer by crossing the local session registry against those records. Independently reviewed (LGTM, the 'stops nothing' safety claim verified concretely); the reviewer's --root footgun fixed with a non-vacuous regression test; full suite green (1583). Witness before actuator — it stops nothing."
+      },
+      {
+        "atom": "atom.session-write-posture-fence.v0",
+        "glue": "The fence (designed, increment 2): L1 the append_line chokepoint (prevents an undeclared LOG write — the truth-critical surface) + L2 the consequence-fence (ONE observer over the working-tree + log diff per turn — path-agnostic, ground-truth, composing observe.gate() so the write-on narration IS the DECLARE), stopping ONLY the situations bdo's policy names (default-permissive; the first recommended situation is an undeclared write to a governed surface — log/atoms/done-lines). Ships the full bypass red-team suite (one adversarial test per bypass class: shell, pen, direct append, subagent/proxy, MCP) and the proxy-write rule. The decision vocabulary reuses act_fence's tiers; the policy is an admitted, configurable, inference-backed dial."
+      }
+    ]
+  }
+}
