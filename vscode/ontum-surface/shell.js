@@ -280,6 +280,13 @@ function renderShell(opts) {
     .ontum-msg[data-kind="tool-use"] { border-left: 2px solid #6fae8f; }
     .ontum-msg[data-kind="tool-result"] { border-left: 2px solid #6f7a8f; }
     .ontum-msg[data-error="true"] { border-left-color: #c2685a; }
+    .ontum-msg[data-streaming="true"] { border-style: dashed; }
+    .ontum-msg[data-streaming="true"] .ontum-text::after {
+      content: "▍";
+      color: var(--ontum-accent);
+      animation: ontum-blink 1s step-start infinite;
+    }
+    @keyframes ontum-blink { 50% { opacity: 0; } }
     .ontum-text { white-space: pre-wrap; word-break: break-word; font-size: 0.86rem; line-height: 1.45; }
     .ontum-msg pre {
       margin: 0;
@@ -465,21 +472,78 @@ function renderShell(opts) {
         }
       });
 
+      // ensureList() -> the transcript list element, creating it (and clearing
+      // the empty-state note) if the panel was on the "pick a session" note.
+      // Shared by the streaming-delta and turn-reply paths below.
+      function ensureList() {
+        var section = document.querySelector('section.ontum-transcript');
+        var list = document.querySelector('.ontum-transcript-list');
+        if (!list && section) {
+          var note = section.querySelector('.ontum-empty');
+          if (note) note.remove();
+          list = document.createElement('div');
+          list.className = 'ontum-transcript-list';
+          list.setAttribute('data-count', '0');
+          section.appendChild(list);
+        }
+        return list;
+      }
+
+      // Row 6 — stream the live turn. As the engine emits partials the host
+      // posts { type:'ontum:turn-delta', phase, index, kind, text }. We paint a
+      // per-index "streaming" block (data-streaming="true") and append text as
+      // it arrives — using textContent, so the live preview is no less escaped
+      // than the folded render — so the assistant's text + thinking show AS THEY
+      // ARRIVE. The terminal ontum:turn-reply removes these preview blocks and
+      // splices the authoritative folded reply (the partials are a preview, the
+      // fold is the source of truth).
+      window.addEventListener('message', function (ev) {
+        var m = ev && ev.data;
+        if (!m || m.type !== 'ontum:turn-delta') return;
+        var section = document.querySelector('section.ontum-transcript');
+        var list = ensureList();
+        if (!list) return;
+        var idx = (typeof m.index === 'number') ? m.index : 0;
+        var sel = '.ontum-msg[data-streaming="true"][data-stream-index="' + idx + '"]';
+        var block = list.querySelector(sel);
+        if (!block) {
+          block = document.createElement('div');
+          block.className = 'ontum-msg';
+          block.setAttribute('data-kind', m.kind || 'assistant-text');
+          block.setAttribute('data-streaming', 'true');
+          block.setAttribute('data-stream-index', String(idx));
+          var role = document.createElement('span');
+          role.className = 'ontum-role';
+          var body = document.createElement('div');
+          body.className = 'ontum-text';
+          block.appendChild(role);
+          block.appendChild(body);
+          list.appendChild(block);
+        }
+        var kind = m.kind || block.getAttribute('data-kind') || 'assistant-text';
+        block.setAttribute('data-kind', kind);
+        var roleEl = block.querySelector('.ontum-role');
+        if (roleEl) roleEl.textContent = (kind === 'assistant-thinking') ? 'thinking' : 'assistant';
+        if (m.phase === 'delta' && m.text) {
+          var bodyEl = block.querySelector('.ontum-text');
+          if (bodyEl) bodyEl.textContent += m.text;
+          setStatus('sending', 'Streaming…');
+        }
+        list.setAttribute('data-live', 'true');
+        if (section) section.scrollTop = section.scrollHeight;
+      });
+
       window.addEventListener('message', function (ev) {
         var m = ev && ev.data;
         if (!m || m.type !== 'ontum:turn-reply') return;
         send.disabled = false;
+        // Row 6 — drop the live streaming preview before splicing the folded
+        // reply, so the authoritative fold replaces it (no double render).
+        document.querySelectorAll('.ontum-msg[data-streaming="true"]')
+          .forEach(function (b) { b.remove(); });
         if (m.html) {
           var section = document.querySelector('section.ontum-transcript');
-          var list = document.querySelector('.ontum-transcript-list');
-          if (!list && section) {
-            var note = section.querySelector('.ontum-empty');
-            if (note) note.remove();
-            list = document.createElement('div');
-            list.className = 'ontum-transcript-list';
-            list.setAttribute('data-count', '0');
-            section.appendChild(list);
-          }
+          var list = ensureList();
           if (list) {
             list.insertAdjacentHTML('beforeend', m.html);
             list.setAttribute('data-count', String(list.querySelectorAll('.ontum-msg').length));

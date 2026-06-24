@@ -26,9 +26,11 @@
 // to a human at the surface, not spent in an unattended test.
 //
 // Scope note (honest under-claim): this module folds a turn to its REPLY (row
-// 5). Incremental streaming of partials as they arrive (row 6) is a later
-// increment; `driveTurn` exposes an `onEvent` hook for it but row 6 stays todo
-// until its own rendering + evidence land.
+// 5) AND interprets the live partials into incremental render instructions (row
+// 6 — `partialDelta`/`assembleStream` below). `driveTurn`'s `onEvent` hook feeds
+// the partials to the surface as they arrive. A real billed turn is still left
+// to a human at the surface; the partial-stream handling is proven host-free
+// against the captured event shapes the spike observed.
 
 'use strict';
 
@@ -163,6 +165,91 @@ function foldReply(events) {
   };
 }
 
+// --- row 6: incremental streaming of the live turn --------------------------
+// With --include-partial-messages the engine emits `stream_event` partials that
+// wrap the Anthropic streaming events (content_block_start / _delta / _stop).
+// They let the surface paint the assistant's text + thinking AS IT ARRIVES,
+// before the turn's terminal `result` lands. The partials are a LIVE PREVIEW,
+// not a second source of truth: the authoritative final render is still
+// foldReply's folded entries (the surface replaces the preview with them when
+// the turn closes), so a streamed block and a folded one never disagree.
+
+// blockKind(t) -> the render kind for a streamed content-block type, or null
+// for kinds this row does not stream (tool_use is row 7's territory). The kinds
+// are the SAME ones transcript.foldTranscript emits, so a streamed block wears
+// the same data-kind as its eventual folded twin.
+function blockKind(t) {
+  if (t === 'text') return 'assistant-text';
+  if (t === 'thinking') return 'assistant-thinking';
+  return null;
+}
+
+// partialDelta(event) -> ONE incremental render instruction, or null when the
+// event is not a renderable partial. The instruction is intentionally tiny so
+// the surface can apply it directly to a per-index block:
+//   { phase:'start', index, kind }        — a new assistant block opened
+//   { phase:'delta', index, kind, text }  — text/thinking appended to it
+//   { phase:'stop',  index }              — the block closed
+// kind is 'assistant-text' or 'assistant-thinking'. Tolerant of both the
+// wrapped (`{type:'stream_event', event:{...}}`) and the bare
+// (`{type:'content_block_*', ...}`) forms. The kind on a delta is derived from
+// the delta itself (text_delta / thinking_delta), so a delta still renders
+// correctly even if its content_block_start was torn or dropped.
+function partialDelta(event) {
+  if (!event || typeof event !== 'object') return null;
+  const inner =
+    event.type === 'stream_event' && event.event ? event.event : event;
+  if (!inner || typeof inner !== 'object') return null;
+  const index = typeof inner.index === 'number' ? inner.index : 0;
+  if (inner.type === 'content_block_start') {
+    const kind = blockKind(inner.content_block && inner.content_block.type);
+    if (!kind) return null; // tool_use etc. — not streamed here (row 7)
+    return { phase: 'start', index, kind };
+  }
+  if (inner.type === 'content_block_delta') {
+    const d = inner.delta || {};
+    if (d.type === 'text_delta' && typeof d.text === 'string') {
+      return { phase: 'delta', index, kind: 'assistant-text', text: d.text };
+    }
+    if (d.type === 'thinking_delta' && typeof d.thinking === 'string') {
+      return {
+        phase: 'delta',
+        index,
+        kind: 'assistant-thinking',
+        text: d.thinking,
+      };
+    }
+    return null;
+  }
+  if (inner.type === 'content_block_stop') {
+    return { phase: 'stop', index };
+  }
+  return null;
+}
+
+// assembleStream(events) -> fold a list of events into the ordered live blocks
+// the partials describe: [{ index, kind, text }] in first-seen order, each
+// block's text the concatenation of its deltas. Pure (no process), so a test
+// can prove the partials reconstruct the same prose the final fold yields.
+function assembleStream(events) {
+  const list = Array.isArray(events) ? events : [];
+  const byIndex = new Map();
+  const order = [];
+  for (const ev of list) {
+    const d = partialDelta(ev);
+    if (!d) continue;
+    let block = byIndex.get(d.index);
+    if (!block) {
+      block = { index: d.index, kind: d.kind || 'assistant-text', text: '' };
+      byIndex.set(d.index, block);
+      order.push(block);
+    }
+    if (d.kind) block.kind = d.kind;
+    if (d.phase === 'delta') block.text += d.text;
+  }
+  return order;
+}
+
 // driveTurn(opts) -> Promise<reply>. Spawns the engine on the stream-json
 // channel, writes the encoded prompt to stdin, collects the newline-delimited
 // output events (torn-tail tolerant, the same fold law as the store), and
@@ -272,5 +359,7 @@ module.exports = {
   encodeUserMessage,
   engineArgs,
   foldReply,
+  partialDelta,
+  assembleStream,
   driveTurn,
 };

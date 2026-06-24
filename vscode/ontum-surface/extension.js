@@ -17,7 +17,7 @@ const { renderShell, renderTranscriptRows } = require('./shell');
 const { listSessions, storeDirFor } = require('./sessions');
 const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
-const { driveTurn } = require('./engine');
+const { driveTurn, partialDelta } = require('./engine');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -128,6 +128,23 @@ function pumpTail() {
   return res.entries;
 }
 
+// postTurnDelta(ev) -> translate ONE engine event into an incremental
+// `ontum:turn-delta` message and post it to the webview (row 6). Events that are
+// not renderable partials fold to null and post nothing. This streams the
+// assistant's text + thinking to the composer AS IT ARRIVES; the terminal
+// `ontum:turn-reply` then replaces the live preview with the authoritative
+// folded blocks (one source of truth). Exposed via sendPrompt's onEvent hook.
+function postTurnDelta(ev) {
+  if (!panel || !panel.webview || typeof panel.webview.postMessage !== 'function') {
+    return null;
+  }
+  const d = partialDelta(ev);
+  if (!d) return null;
+  const msg = Object.assign({ type: 'ontum:turn-delta' }, d);
+  panel.webview.postMessage(msg);
+  return msg;
+}
+
 // sendPrompt(text) -> drive ONE new turn through the inherited engine and post
 // the folded reply back to the webview (row 5). Returns the reply so a host-free
 // test can await it directly. The engine writes the turn to its own transcript
@@ -146,6 +163,8 @@ async function sendPrompt(text) {
       cwd: currentCwd(),
       permissionMode: 'default',
       spawn: spawnImpl || undefined,
+      // Row 6 — stream the live partials to the composer as they arrive.
+      onEvent: postTurnDelta,
     });
   } catch (err) {
     reply = {
@@ -297,6 +316,9 @@ module.exports = {
   // Row 5 — exposed so a host-free test can drive a turn directly (with an
   // injected fake engine) and assert the posted reply.
   sendPrompt,
+  // Row 6 — exposed so a host-free test can assert one event folds to one
+  // posted `ontum:turn-delta` (and non-partials post nothing).
+  postTurnDelta,
   __setSpawnForTest,
   VIEW_TYPE,
   OPEN_COMMAND,
