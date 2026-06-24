@@ -1,0 +1,51 @@
+{
+  "epic": {
+    "id": "epic.ledger-verb-family",
+    "owner": "bdo",
+    "status": "proposed",
+    "arc": "The things people do to a ledger become first-class, governed operations on ontum's books. Two grains: record-grain verbs on a single line (Append/Amend/Mend) and book-grain verbs on the whole book as an object (Cool/Fork/Bookmark/Highlight/Rotate/Carry-forward). Both are governed by one triangle lifted from the existing record-grain discipline — every op produces a receipt, every book carries a handle, an audit fold re-derives the chain — so the ledger becomes an atom and a book cannot be cooked. Born from bdo's chat (2026-06-24); the full shape is .ai-native/proposals/ledger-verb-family.proposal.md (PR #733, the record of where the arc was born).",
+    "context": "Confirmed by bdo in chat ('it's official', 2026-06-24) against the proposal bundle. The confirmation greenlights the SAFE FOUNDATION pieces below (revision record + handle/receipt/audit triangle + cheap lenses) — all pure read/append folds that touch no invariant. It explicitly does NOT authorize the two gating decisions, which remain bdo's alone and must carry his explicit further stamp before they build:  (G1) whether Mend gets a bounded ACTUATOR that clears a park on its own (the one change to 'the loop never clears its own park', D-4) vs staying propose-only; and (G2) the Rotate EPOCH INVARIANT (close book N / open N+1 with a new template = schema migration; closing-fold-as-opening-record) — a doctrine-level change. A session surfaces these to bdo; it does not build them on the arc-confirmation alone.",
+    "value": "The append-only books gain the operations a real ledger needs — grow, revise, repair, copy, bookmark, highlight, close-and-reopen, carry-forward — without ever becoming cookable, because each op carries its own re-derivable proof. Foundation that compounds: the audit triangle governs every verb at once instead of each being governed by hand.",
+    "horizon": "Append/Amend/Mend unified as one typed revision record; a book carries a content-addressed handle; book-ops leave hash-bearing receipts; loop/audit.py re-derives the chain with teeth (a cooked book fails because hashes don't chain); inference reads a revision's propagation before it lands. Rotate and the Mend actuator land only after bdo's explicit stamp on G1/G2 — until then they stand as named, gated decisions, not silent capability.",
+    "pieces": [
+      {
+        "atom": "atom.ledger-verb-audit-fold.v0",
+        "glue": "T3 / CTA-6 — the safe first piece. loop/audit.py, a read-only fold in the census/digest/heal/parity grain that re-derives the book chain: does each book's closing-fold hash to what its op-receipt claims, does every amend resolve its back-pointer. Declared-at-zero today (one book, no chain yet — the cool-valve grain), so it is pure new sensing that changes no invariant. The §10 teeth: a cooked book fails because the hashes don't chain; a constant auditor is caught by a fabricated rotation (the term-economy ghost refusal, on book-ops). Composes the existing audit-fold grain and the 'audit' vocabulary pr.py audit already holds."
+      },
+      {
+        "atom": "atom.ledger-verb-book-handle.v0",
+        "glue": "T2 / CTA-4 — give a book a content-addressed handle the way sha256 is an atom's, and chain handles (book N's handle named in N+1) so carry-forward is tamper-evident by construction. Pure append/read; the join-by-id precedent is the digest's atoms_on_main (D-13). No invariant change — a baseline single-book handle is well-defined before any rotation exists."
+      },
+      {
+        "atom": "atom.ledger-verb-op-receipts.v0",
+        "glue": "T1 / CTA-5 — a receipt kind ABOUT the book (ledger_forked/ledger_bookmarked/ledger_highlighted/ledger_cooled, and — once G2 is stamped — ledger_rotated/ledger_mended) carrying the closing-fold + archive + back-pointer hashes. The receipt IS the anti-cooking proof, re-derivable by the audit fold. Composes reconcile.append_line; adds no write path of its own."
+      },
+      {
+        "atom": "atom.ledger-verb-revision-record.v0",
+        "glue": "V2+V3 / CTA-1 — one typed revision record {verb: append/amend/mend, targets[], because, by} that pens emit instead of hand-rolling superseding, unifying the existing uneven Amend (confirm-arc --off, done_superseded, surface superseding, atom versioning). The verb set could be a governed tags.py dimension (core closed in code, values admitted). NOTE: this defines the RECORD for mend; it does NOT grant Mend an actuator — that is gating decision G1, held for bdo. freeze_guard / the carbon-copy write_guard keep amend a forward append, never an in-place erasure."
+      },
+      {
+        "atom": "atom.ledger-verb-propagation-read.v0",
+        "glue": "Concept-6 / CTA-7 — make inference read a revision's blast radius BEFORE it lands: point consequence_graph (bounded, typed, decaying, radius-2) at the revision's targets and surface what it touches. Read-only; this is the 'policy and inference consider the implication and propagation' half bdo named. Composes consequence_graph.py; builds no new propagation engine (§10)."
+      },
+      {
+        "atom": "atom.ledger-verb-lenses.v0",
+        "glue": "V4-V7 / CTA-8 — the cheap, additive, non-invariant-touching lenses and anchors: Fork (a recorded copy), Bookmark (a named anchor at a log position — offsets are cache, this is a record), Highlight (a non-mutating decoration lens over records, the forest-mask #693 grain at record scale), Cool (a book in a quieted state, distinct from orchestrate's rate-cool). Each is one ledger-op receipt + a read-side render. Lowest risk; ships once the receipt/handle pieces exist."
+      }
+    ],
+    "gating_decisions": [
+      {
+        "id": "G1",
+        "decision": "Does Mend get a bounded ACTUATOR (a fenced, witnessed repair that clears a park on its own, riding the disposer fence) — or stay propose-only forever? The one real change to 'the loop never clears its own park' (D-4). heal.py is the sensor; disposer.py is the fence template.",
+        "whose": "bdo's stamp",
+        "gates_build_of": "the Mend actuator (NOT atom.ledger-verb-revision-record, which only defines the record)"
+      },
+      {
+        "id": "G2",
+        "decision": "Adopt the Rotate epoch invariant: close book N as immutable archive, open book N+1 (new template = schema migration), closing-fold-as-opening-record. The only verb that touches 'fold over all of history'; a doctrine-level change.",
+        "whose": "bdo's stamp (doctrine)",
+        "gates_build_of": "Rotate (V8) and Carry-forward (V9), and the ledger_rotated receipt"
+      }
+    ]
+  }
+}

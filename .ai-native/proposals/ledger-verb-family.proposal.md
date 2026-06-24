@@ -1,8 +1,15 @@
 # The ledger verb family — record-grain and book-grain operations (PROPOSED)
 
-> Status: **PROPOSED** — a blueprint for bdo to address, authored 2026-06-24 from
-> his chat ("Append / Mend / Amend … what else do people do to ledgers? … produce
-> receipt about their ledger, and handle and audit over it"). This is the *bundle*,
+> Status: **CONFIRMED → `epic.ledger-verb-family`** — bdo named it official in chat
+> (2026-06-24). The arc is `.ai-native/epics/epic.ledger-verb-family.json`; this
+> proposal stays as the record of where the arc was born. His confirmation greenlit
+> the safe-foundation pieces; the two invariant-touching CTAs (CTA-2 Mend actuator,
+> CTA-3 Rotate epoch) are held as the epic's gating decisions, awaiting his explicit
+> further stamp.
+>
+> Authored 2026-06-24 from his chat ("Append / Mend / Amend … what else do people do
+> to ledgers? … produce receipt about their ledger, and handle and audit over it").
+> This is the *bundle*,
 > not an increment: full shape → categorized → labelled → a generative concept-list
 > → calls-to-action against a purpose. Nothing here is built. It composes existing
 > parts (§10) — it names them, it does not rebuild them.
