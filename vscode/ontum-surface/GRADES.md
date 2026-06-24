@@ -237,6 +237,26 @@ making rows 5–10 *real* before this surface is used.
 > directory's own rules couldn't be cited — worth landing #693's `vscode/CLAUDE.md`
 > first or carrying it here.
 
+## needs-you (open items at the 18/18 close)
+
+- **A pre-existing red Python test, unrelated to this branch.**
+  `tests.test_summon.test_hook_shows_the_slowloop_proposal` asserts the summon hook
+  surfaces the "slow-loop dial" proposal, but the live `.ai-native/log` state has
+  moved on (the top gap is now `file_touch` idle-part), so it fails — **red on
+  `main` too**, not caused by the vscode/ JS here. It blocks the normal green-suite
+  push gate for everyone; every push in this close-out used `--red-ok` declaring it.
+  It is a state-coupled test that should be made deterministic or re-pinned (bdo's /
+  a future session's call).
+- **First real-host load is unproven** — `code --extensionDevelopmentPath` + one
+  live turn per row is the next gate, and it is yours to run.
+- **In-repo hook-suppression is open** — driving a turn from inside a hooked project
+  returns empty (clean in `/tmp`); the surface must drive without re-triggering the
+  project's `UserPromptSubmit` hooks.
+- **The cloud `/code-review ultra`** you chose is yours to trigger on this PR (a
+  session can't launch it); the in-process `max`/close-out reviews stand in the record.
+- **`vscode/CLAUDE.md`** (the surface's conventions, from the unlanded forest-mask
+  PR #693) is not on this branch's base — worth landing or carrying.
+
 ## bdo's grade (yours to fill)
 
 <!-- your read, your score, your thoughts — and your confirm-arc on
