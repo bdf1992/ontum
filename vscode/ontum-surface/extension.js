@@ -11,10 +11,12 @@
 
 'use strict';
 
+const fs = require('fs');
 const vscode = require('vscode');
-const { renderShell } = require('./shell');
+const { renderShell, renderTranscriptRows } = require('./shell');
 const { listSessions, storeDirFor } = require('./sessions');
 const { readTranscript, fileForSession } = require('./transcript');
+const { tailTranscript } = require('./livetail');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -24,6 +26,12 @@ const OPEN_COMMAND = 'ontum.surface.open';
 let panel = null;
 // The session the user last selected (row 2). Row 3 reads its transcript.
 let selectedSessionId = null;
+// Row 4 — live-tail state. `tailOffset` is the byte offset of the selected
+// session's file we have already painted; the watcher tails from there as the
+// engine appends. `tailWatched` is the file path currently under fs.watchFile
+// (so we can stop watching when the selection changes or the panel closes).
+let tailOffset = 0;
+let tailWatched = null;
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -46,16 +54,100 @@ function readSessions() {
   }
 }
 
+// selectedFile() -> the transcript file path of the selected session, or null.
+function selectedFile() {
+  if (!selectedSessionId) return null;
+  try {
+    return fileForSession(storeDirFor(currentCwd()), selectedSessionId);
+  } catch (_) {
+    return null;
+  }
+}
+
+// fileSize(file) -> the file's byte length, or 0 when it cannot be stat'd.
+function fileSize(file) {
+  try {
+    return fs.statSync(file).size;
+  } catch (_) {
+    return 0;
+  }
+}
+
 // readSelectedTranscript() -> the folded entries of the selected session, or
 // undefined when nothing is selected (so the shell shows its "pick a session"
 // note). Failures degrade to an empty transcript, never throw (row 3).
 function readSelectedTranscript() {
   if (!selectedSessionId) return undefined;
   try {
-    const file = fileForSession(storeDirFor(currentCwd()), selectedSessionId);
+    const file = selectedFile();
     return readTranscript({ file }).entries;
   } catch (_) {
     return [];
+  }
+}
+
+// pumpTail() -> read the entries the engine appended to the selected session
+// since `tailOffset`, post ONLY those to the webview to splice onto the live
+// list, and advance the offset (row 4). Returns the new entries so a host-free
+// test can drive it without waiting on the watcher's poll. A truncated/rotated
+// file (res.reset) repaints the whole panel instead of appending into a stale
+// list. Holds the offset when nothing complete has arrived (torn tail).
+function pumpTail() {
+  const file = selectedFile();
+  if (!file || !panel) return [];
+  let res;
+  try {
+    res = tailTranscript({ file, fromOffset: tailOffset });
+  } catch (_) {
+    return [];
+  }
+  tailOffset = res.nextOffset;
+  if (res.reset) {
+    // The file shrank under us — repaint from scratch rather than append, then
+    // re-anchor the tail at the new end.
+    renderPanel();
+    tailOffset = fileSize(file);
+    return [];
+  }
+  if (
+    res.entries.length &&
+    panel.webview &&
+    typeof panel.webview.postMessage === 'function'
+  ) {
+    panel.webview.postMessage({
+      type: 'ontum:append-entries',
+      html: renderTranscriptRows(res.entries),
+    });
+  }
+  return res.entries;
+}
+
+// startTail() -> begin watching the selected session's file for appends. The
+// full transcript was just painted by renderPanel, so we anchor the offset at
+// the current end and only future appends stream in. fs.watchFile polls (works
+// where inotify/ReadDirectoryChangesW are flaky, e.g. some network mounts).
+function startTail() {
+  stopTail();
+  const file = selectedFile();
+  if (!file) return;
+  tailOffset = fileSize(file);
+  try {
+    fs.watchFile(file, { interval: 500 }, () => pumpTail());
+    tailWatched = file;
+  } catch (_) {
+    tailWatched = null;
+  }
+}
+
+// stopTail() -> stop watching the current file (selection change / panel close).
+function stopTail() {
+  if (tailWatched) {
+    try {
+      fs.unwatchFile(tailWatched);
+    } catch (_) {
+      /* best-effort */
+    }
+    tailWatched = null;
   }
 }
 
@@ -97,11 +189,15 @@ function openSurface(context) {
       if (msg && msg.type === 'ontum:select-session' && msg.id) {
         selectedSessionId = msg.id;
         renderPanel();
+        // Row 4 — begin live-tailing the newly-selected session from its
+        // current end, so future appends stream into the panel.
+        startTail();
       }
     });
   }
 
   panel.onDidDispose(() => {
+    stopTail();
     panel = null;
   });
 
@@ -119,6 +215,7 @@ function activate(context) {
 }
 
 function deactivate() {
+  stopTail();
   if (panel) {
     panel.dispose();
     panel = null;
@@ -135,6 +232,10 @@ module.exports = {
   activate,
   deactivate,
   getSelectedSessionId,
+  // Row 4 — exposed so a host-free test can drive a tail pump directly (the
+  // watcher's poll is timing-bound; the pump is the deterministic seam).
+  pumpTail,
+  stopTail,
   VIEW_TYPE,
   OPEN_COMMAND,
 };

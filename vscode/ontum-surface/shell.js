@@ -89,6 +89,59 @@ function renderSessionList(sessions) {
 //   tool-use                   -> the tool name + its JSON input (a <pre>);
 //   tool-result                -> the result text (a <pre>), error-flagged.
 // An empty/absent list paints an honest empty note, never a fake turn.
+//
+// renderTranscriptRow(e) -> the HTML of ONE entry block (no wrapper). Shared by
+// the full render below AND by the live-tail append path (row 4), which renders
+// only the newly-arrived entries and inserts them into the existing list — so
+// both paths paint a turn identically and stay one source of truth.
+function renderTranscriptRow(e) {
+  const kind = e && e.kind ? e.kind : '';
+  if (kind === 'tool-use') {
+    const name = escapeHtml(e.name || 'tool');
+    const raw =
+      typeof e.input === 'string'
+        ? e.input
+        : JSON.stringify(e.input === undefined ? null : e.input, null, 2);
+    const input = escapeHtml(raw);
+    return (
+      '<div class="ontum-msg" data-kind="tool-use">' +
+      `<span class="ontum-role">tool &#9656; ${name}</span>` +
+      `<pre class="ontum-tool-input">${input}</pre>` +
+      '</div>'
+    );
+  }
+  if (kind === 'tool-result') {
+    const err = e.isError ? ' data-error="true"' : '';
+    const label = e.isError ? 'result (error)' : 'result';
+    const text = escapeHtml(e.text || '');
+    return (
+      `<div class="ontum-msg" data-kind="tool-result"${err}>` +
+      `<span class="ontum-role">${label}</span>` +
+      `<pre class="ontum-tool-result">${text}</pre>` +
+      '</div>'
+    );
+  }
+  const roleLabel =
+    kind === 'assistant-thinking' ? 'thinking' : e && e.role ? e.role : '';
+  const text = escapeHtml(e && e.text ? e.text : '');
+  return (
+    `<div class="ontum-msg" data-kind="${escapeHtml(kind)}">` +
+    `<span class="ontum-role">${escapeHtml(roleLabel)}</span>` +
+    `<div class="ontum-text">${text}</div>` +
+    '</div>'
+  );
+}
+
+// renderTranscriptRows(entries) -> the joined block HTML for a list of entries,
+// WITHOUT the `.ontum-transcript-list` wrapper. The live-tail append message
+// (row 4) carries exactly this fragment so the webview can `insertAdjacentHTML`
+// it onto the end of the already-rendered list. Each block is escaped here, so
+// the fragment is no less trusted than the initial document.
+function renderTranscriptRows(entries) {
+  const list = Array.isArray(entries) ? entries : [];
+  return list.map(renderTranscriptRow).join('\n      ');
+}
+
 function renderTranscript(entries) {
   const list = Array.isArray(entries) ? entries : [];
   if (list.length === 0) {
@@ -97,48 +150,9 @@ function renderTranscript(entries) {
       'to read it here.</p>'
     );
   }
-  const rows = list
-    .map((e) => {
-      const kind = e && e.kind ? e.kind : '';
-      if (kind === 'tool-use') {
-        const name = escapeHtml(e.name || 'tool');
-        const raw =
-          typeof e.input === 'string'
-            ? e.input
-            : JSON.stringify(e.input === undefined ? null : e.input, null, 2);
-        const input = escapeHtml(raw);
-        return (
-          '<div class="ontum-msg" data-kind="tool-use">' +
-          `<span class="ontum-role">tool &#9656; ${name}</span>` +
-          `<pre class="ontum-tool-input">${input}</pre>` +
-          '</div>'
-        );
-      }
-      if (kind === 'tool-result') {
-        const err = e.isError ? ' data-error="true"' : '';
-        const label = e.isError ? 'result (error)' : 'result';
-        const text = escapeHtml(e.text || '');
-        return (
-          `<div class="ontum-msg" data-kind="tool-result"${err}>` +
-          `<span class="ontum-role">${label}</span>` +
-          `<pre class="ontum-tool-result">${text}</pre>` +
-          '</div>'
-        );
-      }
-      const roleLabel =
-        kind === 'assistant-thinking' ? 'thinking' : e && e.role ? e.role : '';
-      const text = escapeHtml(e && e.text ? e.text : '');
-      return (
-        `<div class="ontum-msg" data-kind="${escapeHtml(kind)}">` +
-        `<span class="ontum-role">${escapeHtml(roleLabel)}</span>` +
-        `<div class="ontum-text">${text}</div>` +
-        '</div>'
-      );
-    })
-    .join('\n      ');
   return (
     `<div class="ontum-transcript-list" data-count="${list.length}">\n      ` +
-    rows +
+    renderTranscriptRows(list) +
     `\n    </div>`
   );
 }
@@ -349,6 +363,32 @@ function renderShell(opts) {
         }
       });
     });
+
+    // Row 4 — live-tail. The host watches the selected session's file and, as
+    // the engine appends, posts { type:'ontum:append-entries', html } carrying
+    // the already-escaped block HTML for ONLY the new entries. We splice it onto
+    // the end of the rendered list (creating the list if the panel was on the
+    // empty-state note), keep data-count honest, mark the list live, and follow
+    // the tail by scrolling the transcript region to the bottom.
+    window.addEventListener('message', function (ev) {
+      var m = ev && ev.data;
+      if (!m || m.type !== 'ontum:append-entries' || !m.html) return;
+      var section = document.querySelector('section.ontum-transcript');
+      var list = document.querySelector('.ontum-transcript-list');
+      if (!list && section) {
+        var note = section.querySelector('.ontum-empty');
+        if (note) note.remove();
+        list = document.createElement('div');
+        list.className = 'ontum-transcript-list';
+        list.setAttribute('data-count', '0');
+        section.appendChild(list);
+      }
+      if (!list) return;
+      list.insertAdjacentHTML('beforeend', m.html);
+      list.setAttribute('data-count', String(list.querySelectorAll('.ontum-msg').length));
+      list.setAttribute('data-live', 'true');
+      if (section) section.scrollTop = section.scrollHeight;
+    });
   </script>
 </body>
 </html>`;
@@ -358,6 +398,8 @@ module.exports = {
   renderShell,
   renderSessionList,
   renderTranscript,
+  renderTranscriptRows,
+  renderTranscriptRow,
   makeNonce,
   escapeHtml,
 };
