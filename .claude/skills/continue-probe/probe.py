@@ -43,7 +43,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
+# the shared headless-spawn helper (issue #411): `.claude/skills` is this file's
+# parent's parent — on the path so the one stdin=DEVNULL guard reaches here too.
+_SKILLS_DIR = Path(__file__).resolve().parents[1]
+if str(_SKILLS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SKILLS_DIR))
+
 from loop import watcher, retry  # noqa: E402
+from _spawn.headless import headless_spawn  # noqa: E402
 
 # the per-session fire ledger and the gitignored trace live beside the registry
 # under ~/.claude (per-machine state, like the transcripts), never in the repo.
@@ -183,10 +190,16 @@ def _trace(record):
 def _spawn(target):
     """Resume one idle session out of band. Detached (Popen, no wait) so the
     tick never blocks on a long resumed turn; the resumed `-p` lands the soft
-    reminder via the idle hook. Returns True if the spawn launched."""
+    reminder via the idle hook. Returns True if the spawn launched.
+
+    Through the shared helper (issue #411): it ALWAYS sets stdin=subprocess.DEVNULL,
+    closing the inherited-stdin hang this detached `claude --resume … -p …` used
+    to leave open (it set stdout/stderr to DEVNULL but left stdin inherited — the
+    same #390/#391 hang gate.py already fixed at its one call site). capture=False
+    keeps the fire-and-forget output redirect; detached returns the Popen unwaited."""
     try:
-        subprocess.Popen(target["fire"], cwd=target["fire_cwd"],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        headless_spawn(target["fire"], cwd=target["fire_cwd"],
+                       detached=True, capture=False)
         return True
     except (OSError, subprocess.SubprocessError):
         return False

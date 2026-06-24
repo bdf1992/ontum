@@ -51,6 +51,15 @@ ATOMS = ROOT / ".ai-native" / "atoms"
 NODES = ROOT / ".ai-native" / "nodes"
 EPICS = ROOT / ".ai-native" / "epics"
 
+# The one headless-spawn helper (issue #411): the stdin=DEVNULL guard lives there
+# structurally, not as a lone call here. `.claude/skills` is this file's parent's
+# parent — put it on the path so the shared `_spawn` package resolves whether the
+# pen runs as a script or is loaded by file path (the test).
+_SKILLS_DIR = Path(__file__).resolve().parents[1]
+if str(_SKILLS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SKILLS_DIR))
+from _spawn.headless import headless_spawn  # noqa: E402
+
 # The model the headless mind judges with. It MUST be an explicit, valid model
 # id (done-line 0138): a child `claude -p` with no `--model` defaults to the
 # alias `opus`, which 404s headless. The gate now draws one at RANDOM per run
@@ -418,9 +427,9 @@ def launch_claude(prompt, atom_id=None, node_id=None, model=None, runner=subproc
     # an interactive-ish parent (the 600s timeouts, issues #390/#391/#393/#396 —
     # all PowerShell-tool-spawned; a DEVNULL stdin completes the same prompt in
     # ~46s through that exact path). A non-interactive judge must never inherit a
-    # live stdin.
-    proc = runner(cmd, capture_output=True, text=True, cwd=cwd, timeout=600,
-                  stdin=subprocess.DEVNULL)
+    # live stdin. The guard is now STRUCTURAL — headless_spawn always closes stdin
+    # (issue #411), so this captured launch cannot regress it.
+    proc = headless_spawn(cmd, cwd=cwd, timeout=600, capture=True, runner=runner)
     raw = proc.stdout or ""
     text = raw
     envelope = None
