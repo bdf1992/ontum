@@ -1,0 +1,20 @@
+{
+  "atom": {
+    "id": "atom.active-surface-plane.v0",
+    "story": {
+      "text": "loop/surface.py is the active-surface control plane (CTA-1 of .ai-native/proposals/active-surface-control-plane.proposal.md): a read-only fold that, on every call, folds the log FRESH and condenses the in-flight field a session is handed at blink-in. bdo, 2026-06-21: 'you're handed a rendered surface, not a control plane — I don't want prerendering' and 'a safe default so you don't have to fiddle every time.' The SessionStart dump is a PRERENDER — a view computed ahead, frozen to text, pushed at the session; dead to any question it did not anticipate. surface.py is the opposite: the live measure-and-steer layer over the log (the data/control-plane split ontum already has for orchestrate's one setpoint dial, generalized to the whole active surface). It COMPOSES the existing folds — digest() for the per-arc cells and field behaviour, gaps() for the parked pieces and the top gap, the setpoint read for the dial in play — re-deriving no truth (no second truth, §10). A SAFE DEFAULT LENS (default-safe-WHEN-UNSET, the setpoints law) makes a bare `python -m loop.surface` answer with no config: group by arc, surface a cell only at a stamp or a refusal, fold quiet arcs and the noisy ambient channels to a tail, name the vitals. Teeth (tests/test_surface.py, 5/5, non-vacuous): the NON-PRERENDER invariant — the plane's answer MUST change when the log changes (fails if it ever caches) — plus the cell counts equalling digest's arc counts (no second truth) and the surfacing transition on a refusal. Dogfooded live: 17 arcs / 62 inflight condensed to the 3 confirmed arcs harbouring refusals. Value: a mortal session orients on a live, opinionated, steerable measure of what is active instead of re-reading the raw flood every wake; bdo reads the same plane.",
+      "value_confidence": "proposed",
+      "owner_stamp": "pending"
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": ["epic.owner-harness"],
+      "touches": ["loop/surface.py", "tests/test_surface.py", ".ai-native/proposals/active-surface-control-plane.proposal.md"],
+      "must_not_collide_with": [],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {"value_gate": "pending"},
+    "lineage": {"prompt_versions": [], "source_artifacts": ["loop/digest.py", "loop/gaps.py", "loop/orchestrate.py"], "receipts": []}
+  }
+}
