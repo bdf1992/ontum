@@ -87,7 +87,7 @@ WRITER_MARKS = ("append_line", ".jsonl")
 CORPUS_GLOBS = ("*.py", "*.json", "*.md",
                 "loop/*", "glyphs/*", "language/*", ".claude/**/*")
 CORPUS_EXCLUDE = ("/.git/", "__pycache__", "/tests/", "/docs/",
-                  "/.ai-native/", "/exports/")
+                  "/.ai-native/", "/exports/", "/.claude/worktrees/")
 
 SETTINGS = Path(".claude/settings.json")
 

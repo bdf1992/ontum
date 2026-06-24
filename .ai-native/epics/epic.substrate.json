@@ -10,7 +10,8 @@
       {"atom": "atom.loop-skeleton.v0", "glue": "the cell: one atom reconciled over a durable log, surviving SIGKILL with nothing lost or doubled"},
       {"atom": "atom.fast-ambient-loop.v0", "glue": "the field: many atoms under an admitted setpoint, with the cool path proven — the loop throttles its own inflow to protect the human stage"},
       {"atom": "atom.real-value-gate.v0", "glue": "the first real eye: L0 judgements come from a summoned session that can say no, and the owner stamp became genuinely the owner's"},
-      {"atom": "atom.placement-fold.v0", "glue": "the session-seam door beside the workstation fence's tool-seam wall (atom.workstation-fence.v0 / atom.workstation-write-fence.v0): a pure stdlib fold that computes a worker's own worktree from its branch and detects a claimed worker trespassing in bdo's viewport, so the prohibition never has to fire — bdo's platform-level continuation 'gateway start, platform level' (2026-06-20)"}
+      {"atom": "atom.placement-fold.v0", "glue": "the session-seam door beside the workstation fence's tool-seam wall (atom.workstation-fence.v0 / atom.workstation-write-fence.v0): a pure stdlib fold that computes a worker's own worktree from its branch and detects a claimed worker trespassing in bdo's viewport, so the prohibition never has to fire — bdo's platform-level continuation 'gateway start, platform level' (2026-06-20)"},
+      {"atom": "atom.census-worktree-exclude.v0", "glue": "the substrate stops taxing its own waking: the part census excludes the ~82 nested worktree checkouts (~57k files) from its wiring corpus, so loop.gaps and the SessionStart/UserPromptSubmit hooks that fold through it stop stalling — and a part is no longer mis-read as wired by a clone of itself"}
     ]
   }
 }

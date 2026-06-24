@@ -1,0 +1,51 @@
+{
+  "atom": {
+    "id": "atom.census-worktree-exclude.v0",
+    "story": {
+      "text": "As a session blinking in, I was handed a stall: `python -m loop.gaps` and the SessionStart/UserPromptSubmit hooks (which fold through the census via gaps) hung for over 90 seconds, sometimes past every timeout. The cause was the part census's `wiring_corpus`: its CORPUS_GLOBS includes `.claude/**/*`, a recursive glob, and CORPUS_EXCLUDE skipped `/.git/`, `/tests/`, `/docs/`, `/.ai-native/`, `/exports/` but NOT `.claude/worktrees/`. The repo now carries ~82 full worktree checkouts (~57k files) nested under `.claude/worktrees/`, so the census read every one of them and regex-scanned them once per part. Worse, it lied: a part imported only by its own clone in a worktree read as `wired`, hiding dormant code. A worktree is a transient checkout of the same tree, never the working system the census is meant to sense. The fix is to exclude that tree at the corpus door.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "the census stops reading the worktree forest - gaps and the startup hooks stop stalling",
+      "value": "`loop/census.py` adds `/.claude/worktrees/` to CORPUS_EXCLUDE, so `wiring_corpus` skips the ~57k files in the ~82 nested worktree checkouts. `python -m loop.census` drops from a >90s stall (>300s in the live tree) to ~15s, and `loop.gaps` and the SessionStart/UserPromptSubmit hooks that fold through it stop hanging. The exclude also restores correctness: a part imported only by a worktree clone of itself no longer reads as wired.",
+      "why_now": "Every session that blinks in runs the summon hook, and `loop.gaps` walks the census; the stall taxes every turn and timed some sessions out entirely. The cost grows with each worktree the fleet leaves behind, so the bug worsens silently as the substrate is used.",
+      "if_accepted": "The census, gaps, and the ambient startup hooks run in seconds again regardless of how many worktrees the fleet has open, and the corpus reflects the working system rather than its transient copies.",
+      "if_rejected": "The stall stands and deepens with every new worktree; sessions keep paying a multi-second-to-timeout tax at startup, and the census keeps mis-reading clone imports as wiring.",
+      "cost_of_wrong_call": "Very low and bounded: one entry added to an exclude tuple plus its proving test. The exclude only removes a transient-checkout tree from the wiring corpus - it cannot make a real working-system file invisible (those live at the repo root and under loop/, glyphs/, language/, .claude/ outside worktrees/). Reverting is deleting the one tuple entry.",
+      "mechanism": "CORPUS_EXCLUDE gains `/.claude/worktrees/`; `wiring_corpus`'s existing per-path `any(x.strip('/') in f'/{rel}/' ...)` test then drops every path under that tree before it is read or scanned. `tests/test_census.py` gains the teeth: a clone's `live.py` nested under `.claude/worktrees/clone/loop/` imports the dormant `ghost` part, and the suite asserts `ghost` stays `dormant` with no importers and that no part is wired by a `.claude/worktrees/` path - a control run with the old exclude proves `ghost` flips to `alive`, so the assertion is load-bearing. The os.walk directory-prune variant was considered and declined: the residual ~10s is `ledger_vocab` over the log, not the corpus walk, and mixing os.walk into the heterogeneous CORPUS_GLOBS risked silently changing which files count.",
+      "reading": [
+        "loop/census.py",
+        "tests/test_census.py"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        "loop/census.py",
+        "tests/test_census.py"
+      ],
+      "must_not_collide_with": [
+        "loop/gaps.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "epic.substrate",
+        "loop/census.py"
+      ],
+      "receipts": []
+    }
+  }
+}
