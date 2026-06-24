@@ -12,12 +12,14 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const vscode = require('vscode');
 const { renderShell, renderTranscriptRows } = require('./shell');
 const { listSessions, storeDirFor } = require('./sessions');
 const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
 const { driveTurn, partialDelta, normalizePermissionMode } = require('./engine');
+const { listSlashCommands } = require('./slash');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -69,6 +71,24 @@ function readSessions() {
     return listSessions({ dir: storeDirFor(currentCwd()), limit: 50 });
   } catch (_) {
     return [];
+  }
+}
+
+// readSlashCommands() -> the discovered slash-command palette for this
+// workspace (row 10): the project's `<cwd>/.claude/commands/*.md` + the user's
+// `~/.claude/commands/*.md` custom commands merged with the common built-ins
+// (slash.listSlashCommands). A slash command is pass-through to the engine —
+// this is the offered surface, not a gate; an unlisted command still sends.
+// Failures degrade to the built-ins, never throw.
+function readSlashCommands() {
+  try {
+    return listSlashCommands({ projectDir: currentCwd(), userDir: os.homedir() });
+  } catch (_) {
+    try {
+      return listSlashCommands({});
+    } catch (_) {
+      return [];
+    }
   }
 }
 
@@ -276,6 +296,9 @@ function renderPanel() {
     // Row 9 — paint the composer's permission surface in its current mode so a
     // re-render preserves the human's choice.
     permissionMode,
+    // Row 10 — the discovered slash-command palette (project + user customs +
+    // built-ins). The composer filters it as the human types a '/' prefix.
+    slashCommands: readSlashCommands(),
   });
 }
 
@@ -373,6 +396,9 @@ module.exports = {
   activate,
   deactivate,
   getSelectedSessionId,
+  // Row 10 — exposed so a host-free test can assert the slash-command palette
+  // discovery (project + user customs + built-ins) the surface offers.
+  readSlashCommands,
   // Row 4 — exposed so a host-free test can drive a tail pump directly (the
   // watcher's poll is timing-bound; the pump is the deterministic seam).
   pumpTail,

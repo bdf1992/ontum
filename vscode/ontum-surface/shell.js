@@ -259,6 +259,42 @@ function renderPermissionControl(mode) {
   );
 }
 
+// renderSlashMenu(commands) -> the inner HTML of the composer's slash-command
+// palette (row 10). Each command from slash.listSlashCommands (a pure fold of
+// the on-disk command store + the built-ins) is a selectable button carrying
+// `data-command="<name>"`; clicking it fills the composer with `/<name> ` so
+// the human can finish + send it down the SAME engine channel row 5 drives
+// (a slash command is pass-through to the engine — the spike's `inherit`). The
+// menu is hidden until the composer's text starts with '/', and the shell
+// script filters it by the partial command being typed. An empty store still
+// renders the built-ins; a truly empty list paints an honest note.
+function renderSlashMenu(commands) {
+  const list = Array.isArray(commands) ? commands : [];
+  if (list.length === 0) {
+    return '<p class="ontum-empty">No slash commands found.</p>';
+  }
+  const items = list
+    .map((c) => {
+      const name = escapeHtml(c && c.name ? c.name : '');
+      const scope = escapeHtml(c && c.scope ? c.scope : 'builtin');
+      const desc = escapeHtml(c && c.description ? c.description : '');
+      return (
+        `<li><button class="ontum-slash-item" type="button" ` +
+        `data-command="${name}" data-scope="${scope}">` +
+        `<span class="ontum-slash-name">/${name}</span>` +
+        `<span class="ontum-slash-scope">${scope}</span>` +
+        `<span class="ontum-slash-desc">${desc}</span>` +
+        `</button></li>`
+      );
+    })
+    .join('\n        ');
+  return (
+    `<ul class="ontum-slash-list" data-count="${list.length}">\n        ` +
+    items +
+    `\n      </ul>`
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
@@ -290,6 +326,10 @@ function renderShell(opts) {
   // Row 9 — the permission-mode surface in the composer. Defaults to 'default'
   // (conservative) when the host passes none.
   const permissionHtml = renderPermissionControl(o.permissionMode);
+  // Row 10 — the slash-command palette. The host passes the discovered command
+  // list (slash.listSlashCommands); absent -> an empty palette (the container +
+  // wiring still ship, so a later render with commands lights up).
+  const slashHtml = renderSlashMenu(o.slashCommands);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -542,6 +582,51 @@ function renderShell(opts) {
     }
     select.ontum-permission-mode:focus { outline: none; border-color: var(--ontum-accent); }
     select.ontum-permission-mode[data-mode="bypassPermissions"] { border-color: #c2685a; color: #c2685a; }
+    /* Row 10 — the slash-command palette. */
+    .ontum-slash {
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      background: var(--ontum-bg);
+      max-height: 14rem;
+      overflow: auto;
+    }
+    .ontum-slash[hidden] { display: none; }
+    .ontum-slash-list { list-style: none; margin: 0; padding: 0.25rem; display: grid; gap: 0.15rem; }
+    button.ontum-slash-item {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      align-items: baseline;
+      gap: 0.5rem;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      padding: 0.3rem 0.5rem;
+      background: transparent;
+      color: var(--ontum-ink);
+      font: inherit;
+    }
+    button.ontum-slash-item:hover,
+    button.ontum-slash-item[data-active="true"] {
+      border-color: var(--ontum-accent);
+      background: var(--ontum-panel);
+    }
+    .ontum-slash-name { color: var(--ontum-accent); font-size: 0.82rem; }
+    .ontum-slash-scope {
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ontum-dim);
+    }
+    .ontum-slash-desc {
+      color: var(--ontum-dim);
+      font-size: 0.76rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   </style>
 </head>
 <body>
@@ -560,6 +645,9 @@ function renderShell(opts) {
     </section>
   </main>
   <footer class="ontum-composer" data-region="composer">
+    <div class="ontum-slash" data-region="slash" hidden>
+      ${slashHtml}
+    </div>
     <div class="ontum-compose-row">
       <textarea
         class="ontum-compose-input"
@@ -703,12 +791,51 @@ function renderShell(opts) {
 
       send.addEventListener('click', submit);
       input.addEventListener('keydown', function (e) {
+        // Row 10 — Escape closes the slash palette without sending.
+        if (e.key === 'Escape') { hideSlash(); return; }
         // Enter sends; Shift+Enter inserts a newline (the chat convention).
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
           submit();
         }
       });
+
+      // Row 10 — the slash-command palette. As the human types, if the prompt
+      // starts with '/' and the command token is still being typed (no space
+      // yet), show the palette filtered by the partial token; picking an item
+      // fills the composer with '/<name> ' so they can finish + send it down
+      // the SAME engine channel (a slash command is pass-through to the engine).
+      // The palette never blocks: an unlisted '/foo' just sends as typed.
+      var slashMenu = document.querySelector('.ontum-slash');
+      function hideSlash() { if (slashMenu) slashMenu.hidden = true; }
+      function refreshSlash() {
+        if (!slashMenu) return;
+        var val = input.value || '';
+        if (val.charAt(0) !== '/' || /\s/.test(val)) { hideSlash(); return; }
+        var token = val.slice(1).toLowerCase();
+        var any = false;
+        slashMenu.querySelectorAll('.ontum-slash-item').forEach(function (btn) {
+          var name = (btn.getAttribute('data-command') || '').toLowerCase();
+          var match = name.indexOf(token) === 0;
+          var li = btn.parentElement;
+          if (li) li.hidden = !match;
+          if (match) any = true;
+        });
+        slashMenu.hidden = !any;
+      }
+      input.addEventListener('input', refreshSlash);
+      if (slashMenu) {
+        slashMenu.addEventListener('click', function (ev) {
+          var btn = ev.target && ev.target.closest
+            ? ev.target.closest('.ontum-slash-item')
+            : null;
+          if (!btn) return;
+          var name = btn.getAttribute('data-command') || '';
+          input.value = '/' + name + ' ';
+          hideSlash();
+          input.focus();
+        });
+      }
 
       // ensureList() -> the transcript list element, creating it (and clearing
       // the empty-state note) if the panel was on the "pick a session" note.
@@ -817,6 +944,7 @@ module.exports = {
   renderDiffBlock,
   renderDiffLines,
   renderPermissionControl,
+  renderSlashMenu,
   makeNonce,
   escapeHtml,
 };
