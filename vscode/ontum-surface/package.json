@@ -1,0 +1,40 @@
+{
+  "name": "ontum-surface",
+  "displayName": "ontum surface",
+  "description": "A branded ontum window over the Claude engine — its own front door, standalone of the official Claude Code panel (Phase 1: parity).",
+  "version": "0.1.0",
+  "publisher": "ontum",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:ontum.surface.open"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ontum.surface.open",
+        "title": "ontum: Open Surface",
+        "category": "ontum"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ontum-surface",
+          "title": "ontum",
+          "icon": "media/ontum.svg"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node test/open-window.test.js"
+  }
+}
