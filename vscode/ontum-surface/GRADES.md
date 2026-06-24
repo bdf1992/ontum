@@ -1,13 +1,13 @@
 # GRADES — Branded Claude surface, Phase 1 (overnight, 2026-06-24)
 
 Built by the overnight administer loop against `epic.digital-experience` /
-done-line 0197. Marker = parity checklist 18/18 green. **Reached: 9/18.** The
+done-line 0197. Marker = parity checklist 18/18 green. **Reached: 10/18.** The
 window (≈02:46–08:00) closed with the read-only viewer complete and the
 engine-drive half of the parity bar plumbed and tested host-free.
 
 ## Self-grade (the author's line — never the deciding one, D-2)
 
-**Overall: 9 / 18 green.** Honest, adversarial read below. Per-row status is in
+**Overall: 10 / 18 green.** Honest, adversarial read below. Per-row status is in
 `PARITY-CHECKLIST.md` with file+test evidence; this is the judgment over it.
 
 ### What is genuinely solid
@@ -27,14 +27,14 @@ engine-drive half of the parity bar plumbed and tested host-free.
   `--include-partial-messages`, `--permission-mode`, `--resume`, …), not assumed.
 
 ### What is thin — and the single riskiest over-claim
-- **🔴 THE BIG ONE: rows 5–9 are `green` against a FAKE engine and NO real billed
+- **🔴 THE BIG ONE: rows 5–10 are `green` against a FAKE engine and NO real billed
   turn has ever run.** "Drive a turn" (5), "stream the turn" (6), "tool calls"
   (7), "diffs" (8), "permission modes" (9) are proven at the level of *the code
   path, the event-fold, and the host message protocol* — using injected fake
   engines and captured event shapes. **Not one real `claude` turn has been driven
   through this surface, and not one pixel has been rendered in a real VS Code
   host.** `green` here means "the plumbing is tested," not "it works in the
-  window." Read 9/18 as *half the checklist plumbed and unit-tested host-free*,
+  window." Read 10/18 as *half the checklist plumbed and unit-tested host-free*,
   **not** *half a working product you can use*.
 - **Nothing has run in an actual VS Code host.** All rendering is asserted on
   HTML-string markup, never a live webview. The first real `code --extensionDevelopmentPath`
@@ -44,11 +44,11 @@ engine-drive half of the parity bar plumbed and tested host-free.
   callback is an SDK/persistent-session feature this CLI version doesn't advertise
   — so live in-turn permission prompts are not covered.
 
-### What's left for parity (rows 10–18, all `todo`)
-slash commands (10) · plan mode (11) · @-mentions / IDE selection (12) · MCP
+### What's left for parity (rows 11–18, all `todo`)
+plan mode (11) · @-mentions / IDE selection (12) · MCP
 available+invocable (13) · hooks/skills/settings inherited (14) · image/file
 attach (15) · resume/continue (16) · stop/interrupt a turn (17) · cost/usage
-display (18). Several are `inherit` (10, 11, 13, 14, 16, 17) — likely faster, but
+display (18). Several are `inherit` (11, 13, 14, 16, 17) — likely faster, but
 each still needs a green row with evidence, and **rows 13–14 (the actual
 environment inheritance) are the load-bearing parity claim and are not yet
 proven.**
@@ -71,7 +71,7 @@ risk concentrates. Grade it as half the *plumbing*, not half the *product*.
 
 **Verdict: the review is non-vacuous — it found real bugs, concentrated exactly
 where the self-grade flagged the risk (the engine/drive path that has never run
-live).** This independently corroborates the headline caveat: 9/18 is plumbing,
+live).** This independently corroborates the headline caveat: 10/18 is plumbing,
 not a proven product. Ranked findings (most severe first):
 
 | # | Sev | File | Bug |
@@ -94,7 +94,7 @@ is **clean** (every interpolation escaped; streaming path uses `textContent`, no
 3 real host-crash/corruption/hang bugs that only a real billed turn would expose**
 — which is exactly why "tested against a fake engine" was flagged as the headline
 risk. None of these are blockers for a foundation PR; they are the punch-list for
-making rows 5–9 *real* before this surface is used.
+making rows 5–10 *real* before this surface is used.
 
 > Also noted: `vscode/CLAUDE.md` (the surface's governing conventions, from the
 > unlanded forest-mask PR #693) is **not on this branch's base** (main), so the

@@ -299,7 +299,11 @@ function assembleStream(events) {
     if (!d) continue;
     let block = byIndex.get(d.index);
     if (!block) {
-      block = { index: d.index, kind: d.kind || 'assistant-text', text: '' };
+      // A 'stop' (or any kindless instruction) for an index that never opened —
+      // a torn/dropped block-start — has nothing to close; don't materialize a
+      // spurious empty 'assistant-text' block (it would break preview==fold).
+      if (d.phase === 'stop' || !d.kind) continue;
+      block = { index: d.index, kind: d.kind, text: '' };
       byIndex.set(d.index, block);
       order.push(block);
     }
@@ -323,11 +327,18 @@ function assembleStream(events) {
 //   opts.permissionMode/resume/forkSession/model — forwarded to engineArgs.
 // Rejects only on a spawn/process error; a turn that ends in an engine error
 // resolves with isError:true so the surface can render the failure honestly.
+// Default watchdog: a turn that never closes (a wedged tool/MCP holding the
+// stdio pipes open) must not hang the surface forever. opts.timeoutMs overrides;
+// <= 0 disables it.
+const DEFAULT_TURN_TIMEOUT_MS = 120000;
+
 function driveTurn(opts) {
   const o = opts || {};
   const spawnFn = o.spawn || require('child_process').spawn;
   const bin = o.bin || 'claude';
   const args = engineArgs(o);
+  const timeoutMs = typeof o.timeoutMs === 'number'
+    ? o.timeoutMs : DEFAULT_TURN_TIMEOUT_MS;
 
   return new Promise((resolve, reject) => {
     let child;
@@ -345,6 +356,19 @@ function driveTurn(opts) {
     let stdoutBuf = '';
     let stderr = '';
     let settled = false;
+    let timer = null;
+
+    // Decode stdout across chunk boundaries: the OS splits the pipe at arbitrary
+    // byte offsets, so a multibyte UTF-8 sequence can straddle two chunks.
+    // StringDecoder holds the incomplete trailing bytes until they complete, so
+    // a split 'é'/emoji/CJK char is never mangled to U+FFFD (the store fold and
+    // livetail get this right on raw bytes; this is the request-side twin). A
+    // string chunk (a test's fake stdout) passes through unchanged.
+    const decoder = new (require('string_decoder').StringDecoder)('utf8');
+
+    function done() {
+      if (timer) { clearTimeout(timer); timer = null; }
+    }
 
     function consumeLine(line) {
       const s = line.trim();
@@ -365,39 +389,61 @@ function driveTurn(opts) {
       }
     }
 
+    function drainLines() {
+      let nl;
+      while ((nl = stdoutBuf.indexOf('\n')) >= 0) {
+        const line = stdoutBuf.slice(0, nl);
+        stdoutBuf = stdoutBuf.slice(nl + 1);
+        consumeLine(line);
+      }
+    }
+
     if (child.stdout && typeof child.stdout.on === 'function') {
       child.stdout.on('data', (chunk) => {
-        stdoutBuf += chunk.toString('utf8');
-        let nl;
-        while ((nl = stdoutBuf.indexOf('\n')) >= 0) {
-          const line = stdoutBuf.slice(0, nl);
-          stdoutBuf = stdoutBuf.slice(nl + 1);
-          consumeLine(line);
-        }
+        stdoutBuf += Buffer.isBuffer(chunk)
+          ? decoder.write(chunk) : String(chunk);
+        drainLines();
       });
     }
     if (child.stderr && typeof child.stderr.on === 'function') {
       child.stderr.on('data', (chunk) => {
-        stderr += chunk.toString('utf8');
+        stderr += Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk);
       });
     }
 
     child.on('error', (err) => {
       if (settled) return;
       settled = true;
+      done();
       reject(err);
     });
 
     child.on('close', (code) => {
       if (settled) return;
       settled = true;
-      // Flush a trailing complete line with no closing newline (best-effort).
+      done();
+      // Flush any bytes the decoder still holds, then the trailing line (best-effort).
+      stdoutBuf += decoder.end();
+      drainLines();
       consumeLine(stdoutBuf);
       const reply = foldReply(events);
       reply.exitCode = typeof code === 'number' ? code : null;
       reply.stderr = stderr;
       resolve(reply);
     });
+
+    // Writing the prompt to a child that already exited delivers EPIPE/ECONNRESET
+    // ASYNCHRONOUSLY as an 'error' event on stdin — the try/catch around write()
+    // never sees it, and with no listener Node escalates it to an uncaught
+    // exception that takes down the extension host. Listen for it.
+    if (child.stdin && typeof child.stdin.on === 'function') {
+      child.stdin.on('error', (err) => {
+        if (settled) return; // a post-turn pipe close is harmless
+        settled = true;
+        done();
+        reject(err);
+      });
+    }
 
     // Send the prompt down the channel and close stdin so the engine runs the
     // single turn and exits (the --print one-shot contract).
@@ -409,8 +455,29 @@ function driveTurn(opts) {
     } catch (err) {
       if (!settled) {
         settled = true;
+        done();
         reject(err);
       }
+    }
+
+    // The watchdog: if neither close nor error fires within the budget, kill the
+    // child and settle with whatever events arrived (timedOut + isError) so the
+    // surface renders an honest failure instead of spinning forever.
+    if (timeoutMs > 0) {
+      timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        timer = null;
+        try { child.kill(); } catch (_) { /* best-effort */ }
+        const reply = foldReply(events);
+        reply.timedOut = true;
+        reply.isError = true;
+        reply.error = reply.error
+          || ('engine turn timed out after ' + timeoutMs + 'ms');
+        reply.stderr = stderr;
+        resolve(reply);
+      }, timeoutMs);
+      if (typeof timer.unref === 'function') timer.unref();
     }
   });
 }
