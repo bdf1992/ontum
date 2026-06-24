@@ -8,9 +8,10 @@ of the one before it — only on what is committed here.
 ## Marker status
 
 - **MARKER:** parity checklist (`PARITY-CHECKLIST.md`) 18/18 `green`.
-- **STATE:** `not-started`  ← one of: not-started · spiking · building · marker-met · STOPPED-infeasible
+- **STATE:** `building`  ← one of: not-started · spiking · building · marker-met · STOPPED-infeasible
 - **Green rows:** 0 / 18
 - **Honest-stop tripped?** no  ← set to `yes` + reason if the bridge proves infeasible (SDK and CLI both)
+- **Bridge spike:** GO (see `SPIKE-FINDINGS.md`) — feasible via the CLI/SDK stream-json channel; all `spike` rows resolve to `inherit`.
 
 ## Current increment
 
@@ -20,4 +21,4 @@ of the one before it — only on what is committed here.
 
 ## Tick log (append one line per tick, newest last)
 
-- (no ticks yet — the bootstrap tick is the first)
+- 2026-06-24 setup (supervised): scaffold authored; **bridge spike = GO** (CLI/SDK stream-json proven, env inherited); STATE→building. Next: increment 1 = the read+live-tail branded viewer (checklist rows 1–4).
