@@ -114,9 +114,17 @@ function engineArgs(opts) {
     args.push('--resume', String(o.resume));
     if (o.forkSession) args.push('--fork-session');
   }
-  if (o.model) args.push('--model', String(o.model));
+  // Pin a real model id. The CLI's bare default resolves the alias "opus",
+  // which the API rejects with 404 in headless stream-json mode (caught by a
+  // real turn — a fake engine can't see it). Caller's o.model wins; otherwise a
+  // valid default so a real drive works out of the box. Overridable, not a
+  // policy constant — the surface lets the user pick (the model select).
+  args.push('--model', o.model ? String(o.model) : DEFAULT_MODEL);
   return args;
 }
+
+// A concrete, valid model id (the bare "opus"/"sonnet" aliases 404 headless).
+const DEFAULT_MODEL = 'claude-opus-4-8';
 
 // foldReply(events) -> the ONE turn's reply, folded from the output events.
 //   { sessionId, tools, entries, text, isError, subtype, cost, usage,

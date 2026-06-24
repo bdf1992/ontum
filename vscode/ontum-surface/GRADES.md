@@ -5,6 +5,26 @@ done-line 0197. Marker = parity checklist 18/18 green. **Reached: 10/18.** The
 window (≈02:46–08:00) closed with the read-only viewer complete and the
 engine-drive half of the parity bar plumbed and tested host-free.
 
+## Close-out update (post-merge, 2026-06-24 AM) — branch `claude/branded-surface-close`
+
+After PR #743 merged, the work continued toward close. Landed since:
+- **The count is corrected** (was stale at 9; the final overnight tick had landed row 10 → **10/18**).
+- **All 3 peer-review engine bugs are fixed + tested** (UTF-8 stream corruption →
+  `StringDecoder`; stdin EPIPE host-crash → `'error'` listener; no turn-timeout →
+  a watchdog) plus the `assembleStream` orphan-stop guard. See `test/engine-fixes.test.js`.
+- **A 4th bug fixed:** `engineArgs` pinned no model → the bare `opus` alias 404'd
+  headless (the same bug that hit the scheduler). Now defaults to a valid id.
+- **🟢 THE HEADLINE CAVEAT IS CLOSED FOR THE DRIVE PATH:** a **real billed turn**
+  ran through `engine.js` (`text="OK"`, cost $0.40) — see `REAL-TURN-PROOF.md`.
+  Rows 5–10 are no longer fake-only at the drive layer.
+- **New honest finding:** the repo's own `UserPromptSubmit` hooks suppress a
+  nested headless turn (empty completion in-repo, clean in `/tmp`) — `engine.js`
+  is correct; the surface must drive without re-triggering project hooks.
+- **Still open:** pixel rendering in a real VS Code host; rows 11–18; the
+  hook-suppression handling.
+
+The original night's self-grade and peer grade stand below as the record.
+
 ## Self-grade (the author's line — never the deciding one, D-2)
 
 **Overall: 10 / 18 green.** Honest, adversarial read below. Per-row status is in
