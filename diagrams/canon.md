@@ -121,6 +121,24 @@ be trusted to *imply* membership, and membership must not be drawn where it
 isn't true. Backward-compatible: a diagram that declares no `regions` is
 untouched (the rule bites only a declaration).
 
+**Layers are first-class declared bands** (done-line 0192): the editable canvas
+(`diagrams/canvas.js`) stacks parts on named layers, and — like a region — a
+part *belongs* to a layer by declaration (`part.layer == layer.id`), never by
+where it is drawn. A layer is a `z`-ordered, show/hide/lockable band on the
+spec's `layers` array; compose.py draws ascending `z` and omits a
+`visible:false` band. Membership stays declared so the picture cannot lie about
+which band a part is on (the same reason regions are declared, not geometric).
+→ *Gate (`check_layer_membership`):* a part (node · edge · region · subgraph)
+declaring a `layer` not in the diagram's `layers` → **deny** (a band that does
+not exist — the structural analog of an orphan node, exactly the
+region-membership shape). A layer has no geometry, so there is no
+"outside-its-bounds" twin; the one lie a layer declaration can tell is naming a
+band that was never declared. *Non-example:* a part tagged onto an "annotations"
+layer the author never added to `layers` — it would silently vanish from a
+z-ordered render (or render at an undefined depth), so the gate refuses it until
+the band is declared. Backward-compatible: a diagram that declares no `layers`
+is untouched (the rule bites only a declaration).
+
 ## The discipline
 
 A rule appears here only with its **refusal** and a **non-example** — a

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>diagram canvas — edit · layer · save (ontum)</title>
+<!--
+  The editable diagram canvas (done-line 0192). Vanilla HTML/JS, offline, no
+  deps, no CDN. It EDITS a compose.py spec — the spec is the truth; this is an
+  editor over it. The shippable picture is produced only by compose.py behind
+  the qa.py gate: "Export spec" writes the spec (refusing a layer-orphan the gate
+  would refuse), then you run `python diagrams/qa.py <spec> && python
+  diagrams/compose.py <spec>`. This canvas never emits an SVG, so it cannot ship
+  a picture the gate refuses. Open over a static server:
+      python -m http.server 8080   →   http://localhost:8080/diagrams/canvas.html
+-->
+<style>
+  :root { --surface:#0B0B0C; --panel:#141416; --text:#E6E6E6; --muted:#8C8C8F; --stroke:#3A3A3D; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--surface); color:var(--text); font-family: ui-monospace, "Cascadia Code", monospace; height:100vh; display:flex; flex-direction:column; }
+  header { display:flex; gap:8px; align-items:center; padding:8px 12px; border-bottom:1px solid var(--stroke); flex-wrap:wrap; }
+  header h1 { font-size:14px; margin:0 12px 0 0; font-weight:600; }
+  header button, header label.file { background:var(--panel); color:var(--text); border:1px solid var(--stroke); border-radius:4px; padding:4px 10px; cursor:pointer; font-size:12px; font-family:inherit; }
+  header input[type=file] { display:none; }
+  main { flex:1; display:flex; min-height:0; }
+  #stage { flex:1; overflow:auto; padding:16px; display:flex; align-items:flex-start; justify-content:center; }
+  #stage svg { max-width:100%; height:auto; border:1px solid var(--stroke); }
+  aside { width:320px; border-left:1px solid var(--stroke); display:flex; flex-direction:column; overflow:auto; }
+  aside section { border-bottom:1px solid var(--stroke); padding:6px 0; }
+  aside h2 { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin:4px 8px; }
+  #status { padding:6px 12px; border-top:1px solid var(--stroke); color:var(--muted); font-size:11px; min-height:24px; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>diagram canvas</h1>
+  <button id="newBtn" title="start a fresh diagram">new</button>
+  <button id="exampleBtn" title="load the committed layered example">load example</button>
+  <label class="file">import spec<input type="file" id="importFile" accept=".json,application/json" /></label>
+  <button id="exportBtn" title="export the spec (gate then render with compose.py)">export spec</button>
+  <button id="addPartBtn" title="add a rect part">+ part</button>
+  <span style="flex:1"></span>
+  <span style="color:var(--muted);font-size:11px">spec is truth · qa.py gates · compose.py renders</span>
+</header>
+<main>
+  <div id="stage"></div>
+  <aside>
+    <section><h2>inspector</h2><div id="inspector"></div></section>
+    <section><h2>layers</h2><div id="layers"></div></section>
+  </aside>
+</main>
+<div id="status">drag a part to move it (writes x/y) · click to inspect · edit attributes in the inspector · a layer is declared membership</div>
+
+<script src="canvas.js"></script>
+<script>
+  const dc = window.DiagramCanvas.canvas({
+    stage: document.getElementById('stage'),
+    inspector: document.getElementById('inspector'),
+    layers: document.getElementById('layers'),
+    status: document.getElementById('status'),
+  });
+  document.getElementById('newBtn').onclick = () => dc.loadSpec(window.DiagramCanvas.STARTER);
+  document.getElementById('addPartBtn').onclick = () => { dc.model.addNode(60, 60, { label: 'new part', layer: (dc.model.spec.layers[0] || {}).id }); };
+  document.getElementById('exportBtn').onclick = () => dc.exportSpec();
+  document.getElementById('importFile').onchange = e => { if (e.target.files[0]) dc.importFile(e.target.files[0]); e.target.value = ''; };
+  document.getElementById('exampleBtn').onclick = () => {
+    fetch('examples/pipeline-layered.json').then(r => r.json()).then(spec => dc.loadSpec(spec))
+      .catch(() => dc.status && dc.status('could not fetch the example (serve over http)'));
+  };
+</script>
+</body>
+</html>
