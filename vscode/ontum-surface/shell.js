@@ -331,6 +331,40 @@ function renderSlashMenu(commands) {
   );
 }
 
+// renderMentionMenu(targets) -> the inner HTML of the composer's @-mention
+// palette (row 12). Each target from mentions.listMentionTargets (a bounded
+// pure fold of the workspace file tree) is a selectable button carrying
+// `data-mention="<path>"`; clicking it replaces the @-token being typed with
+// `@<path> ` so the human can finish + send it down the SAME engine channel
+// row 5 drives (an @-mention is context the engine reads — pass-through). The
+// menu is hidden until the composer's caret is inside an '@' token, and the
+// shell script filters it by the partial path being typed. An empty/absent
+// workspace fold paints an honest note (no fake row).
+function renderMentionMenu(targets) {
+  const list = Array.isArray(targets) ? targets : [];
+  if (list.length === 0) {
+    return '<p class="ontum-empty">No workspace files to mention yet.</p>';
+  }
+  const items = list
+    .map((t) => {
+      const p = escapeHtml(t && t.path ? t.path : '');
+      const name = escapeHtml(t && t.name ? t.name : '');
+      return (
+        `<li><button class="ontum-mention-item" type="button" ` +
+        `data-mention="${p}">` +
+        `<span class="ontum-mention-path">@${p}</span>` +
+        `<span class="ontum-mention-name">${name}</span>` +
+        `</button></li>`
+      );
+    })
+    .join('\n        ');
+  return (
+    `<ul class="ontum-mention-list" data-count="${list.length}">\n        ` +
+    items +
+    `\n      </ul>`
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
@@ -374,6 +408,10 @@ function renderShell(opts) {
   // list (slash.listSlashCommands); absent -> an empty palette (the container +
   // wiring still ship, so a later render with commands lights up).
   const slashHtml = renderSlashMenu(o.slashCommands);
+  // Row 12 — the @-mention palette. The host passes the discovered workspace
+  // file list (mentions.listMentionTargets); absent -> an empty palette (the
+  // container + wiring still ship, so a later render with files lights up).
+  const mentionHtml = renderMentionMenu(o.mentionTargets);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -719,6 +757,46 @@ function renderShell(opts) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    /* Row 12 — the @-mention palette (workspace file completion). */
+    .ontum-mention {
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      background: var(--ontum-bg);
+      max-height: 14rem;
+      overflow: auto;
+    }
+    .ontum-mention[hidden] { display: none; }
+    .ontum-mention-list { list-style: none; margin: 0; padding: 0.25rem; display: grid; gap: 0.15rem; }
+    button.ontum-mention-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      gap: 0.5rem;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      padding: 0.3rem 0.5rem;
+      background: transparent;
+      color: var(--ontum-ink);
+      font: inherit;
+    }
+    button.ontum-mention-item:hover,
+    button.ontum-mention-item[data-active="true"] {
+      border-color: var(--ontum-accent);
+      background: var(--ontum-panel);
+    }
+    .ontum-mention-path {
+      color: var(--ontum-accent);
+      font-size: 0.8rem;
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ontum-mention-name { color: var(--ontum-dim); font-size: 0.72rem; }
   </style>
 </head>
 <body>
@@ -739,6 +817,9 @@ function renderShell(opts) {
   <footer class="ontum-composer" data-region="composer">
     <div class="ontum-slash" data-region="slash" hidden>
       ${slashHtml}
+    </div>
+    <div class="ontum-mention" data-region="mention" hidden>
+      ${mentionHtml}
     </div>
     <div class="ontum-compose-row">
       <textarea
@@ -920,8 +1001,8 @@ function renderShell(opts) {
 
       send.addEventListener('click', submit);
       input.addEventListener('keydown', function (e) {
-        // Row 10 — Escape closes the slash palette without sending.
-        if (e.key === 'Escape') { hideSlash(); return; }
+        // Rows 10/12 — Escape closes the slash + mention palettes without sending.
+        if (e.key === 'Escape') { hideSlash(); hideMention(); return; }
         // Enter sends; Shift+Enter inserts a newline (the chat convention).
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
@@ -962,6 +1043,52 @@ function renderShell(opts) {
           var name = btn.getAttribute('data-command') || '';
           input.value = '/' + name + ' ';
           hideSlash();
+          input.focus();
+        });
+      }
+
+      // Row 12 — the @-mention palette. As the human types, if the caret is
+      // inside an '@' token (an '@' at start/after-space, no whitespace since),
+      // show the palette filtered by the partial path; picking an item REPLACES
+      // that token with '@<path> ' so the prompt carries the mention down the
+      // SAME engine channel (an @-mention is context the engine reads —
+      // pass-through). The palette never blocks: an unlisted '@path' just sends
+      // as typed. The regex mirrors mentions.mentionQuery / mentions.MENTION_RE
+      // (the host-side source of truth) so the surface and the fold agree.
+      var mentionMenu = document.querySelector('.ontum-mention');
+      var MENTION_TAIL = /(^|\s)@([A-Za-z0-9_./\\-]*)$/;
+      function hideMention() { if (mentionMenu) mentionMenu.hidden = true; }
+      function refreshMention() {
+        if (!mentionMenu) return;
+        var val = input.value || '';
+        var m = MENTION_TAIL.exec(val);
+        if (!m) { hideMention(); return; }
+        var token = (m[2] || '').toLowerCase();
+        var any = false;
+        mentionMenu.querySelectorAll('.ontum-mention-item').forEach(function (btn) {
+          var p = (btn.getAttribute('data-mention') || '').toLowerCase();
+          // Match on any path segment containing the partial (so '@app' finds
+          // 'src/app.js'); an empty token (bare '@') shows everything.
+          var match = token === '' || p.indexOf(token) >= 0;
+          var li = btn.parentElement;
+          if (li) li.hidden = !match;
+          if (match) any = true;
+        });
+        mentionMenu.hidden = !any;
+      }
+      input.addEventListener('input', refreshMention);
+      if (mentionMenu) {
+        mentionMenu.addEventListener('click', function (ev) {
+          var btn = ev.target && ev.target.closest
+            ? ev.target.closest('.ontum-mention-item')
+            : null;
+          if (!btn) return;
+          var pathv = btn.getAttribute('data-mention') || '';
+          // Replace the @-token being typed (the tail) with the chosen path.
+          input.value = input.value.replace(MENTION_TAIL, function (_m, pre) {
+            return pre + '@' + pathv + ' ';
+          });
+          hideMention();
           input.focus();
         });
       }
@@ -1075,6 +1202,7 @@ module.exports = {
   renderPlanBlock,
   renderPermissionControl,
   renderSlashMenu,
+  renderMentionMenu,
   makeNonce,
   escapeHtml,
 };

@@ -20,6 +20,7 @@ const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
 const { driveTurn, partialDelta, normalizePermissionMode } = require('./engine');
 const { listSlashCommands } = require('./slash');
+const { listMentionTargets, withSelectionContext } = require('./mentions');
 const { nextModeOnPlanDecision, isPlanDecision } = require('./plan');
 
 const VIEW_TYPE = 'ontum.surface';
@@ -59,6 +60,13 @@ let spawnImpl = null;
 // actually runs under the human's chosen policy. Conservative default — an
 // unknown value normalizes to 'default', never escalating to bypass.
 let permissionMode = 'default';
+// Row 12 — the IDE selection reader (the @-mentions / selection-context
+// surface). In production this reads vscode.window.activeTextEditor's selection;
+// a host-free test injects a fake selection via __setSelectionForTest so the
+// "the turn carried the editor selection as context" round-trip is proven
+// without a VS Code host. Null/no-editor -> no selection attached (the prompt is
+// sent exactly as typed, preserving the row-5/10 pass-through).
+let selectionImpl = null;
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -96,6 +104,55 @@ function readSlashCommands() {
     } catch (_) {
       return [];
     }
+  }
+}
+
+// readMentionTargets() -> the discovered @-mention completion palette for this
+// workspace (row 12): a bounded fold of the workspace file tree
+// (mentions.listMentionTargets), skipping the noise dirs (.git/node_modules/…)
+// and capped so a huge repo never hangs the palette. An @-mention is context
+// the engine reads — this is the offered surface, not a gate; an unlisted path
+// still sends. Failures degrade to [], never throw.
+function readMentionTargets() {
+  try {
+    return listMentionTargets({ projectDir: currentCwd(), limit: 500 });
+  } catch (_) {
+    return [];
+  }
+}
+
+// currentSelection() -> the active editor's selection as a plain record
+// { file, startLine, endLine, text } for the row-12 selection context, or null
+// when there is no editor / no selection. A test injects a fake selection via
+// __setSelectionForTest (selectionImpl). In production this reads
+// vscode.window.activeTextEditor: an empty selection (a bare cursor, nothing
+// highlighted) attaches nothing — only a real highlighted range becomes context.
+// Lines are reported 1-based (VS Code positions are 0-based) so the header
+// matches what the human sees in the gutter. Never throws.
+function currentSelection() {
+  if (typeof selectionImpl === 'function') {
+    try {
+      return selectionImpl() || null;
+    } catch (_) {
+      return null;
+    }
+  }
+  try {
+    const editor = vscode.window && vscode.window.activeTextEditor;
+    if (!editor || !editor.selection || editor.selection.isEmpty) return null;
+    const sel = editor.selection;
+    const doc = editor.document;
+    return {
+      file:
+        doc && doc.uri && doc.uri.fsPath
+          ? doc.uri.fsPath
+          : (doc && doc.fileName) || '',
+      startLine: sel.start.line + 1,
+      endLine: sel.end.line + 1,
+      text: doc ? doc.getText(sel) : '',
+    };
+  } catch (_) {
+    return null;
   }
 }
 
@@ -193,8 +250,14 @@ function postTurnDelta(ev) {
 // before/without a session selection. Failures resolve to an error reply that is
 // surfaced, never swallowed.
 async function sendPrompt(text) {
-  const prompt = String(text == null ? '' : text).trim();
-  if (!prompt || !panel) return null;
+  const base = String(text == null ? '' : text).trim();
+  if (!base || !panel) return null;
+  // Row 12 — attach the IDE selection as a marked context preamble when the
+  // human has a range highlighted, else send exactly what was typed (the
+  // row-5/10 pass-through is preserved). @-mentions in the typed text ride
+  // through verbatim — the engine reads them as context (the surface offered
+  // the completion palette; it does not re-implement file reading).
+  const prompt = withSelectionContext(base, currentSelection());
   let reply;
   try {
     reply = await driveTurn({
@@ -327,6 +390,9 @@ function renderPanel() {
     // Row 10 — the discovered slash-command palette (project + user customs +
     // built-ins). The composer filters it as the human types a '/' prefix.
     slashCommands: readSlashCommands(),
+    // Row 12 — the discovered @-mention palette (a bounded workspace file fold).
+    // The composer filters it as the human types an '@' token.
+    mentionTargets: readMentionTargets(),
   });
 }
 
@@ -430,6 +496,15 @@ function __setSpawnForTest(fn) {
   spawnImpl = fn || null;
 }
 
+// __setSelectionForTest(fn) -> inject the IDE selection reader (row 12). A
+// host-free test passes a function returning a fake selection record (or null)
+// so the "the driven turn carried the editor selection as context" round-trip
+// is proven without a VS Code host; pass null to restore the production reader
+// (vscode.window.activeTextEditor).
+function __setSelectionForTest(fn) {
+  selectionImpl = fn || null;
+}
+
 module.exports = {
   activate,
   deactivate,
@@ -437,6 +512,9 @@ module.exports = {
   // Row 10 — exposed so a host-free test can assert the slash-command palette
   // discovery (project + user customs + built-ins) the surface offers.
   readSlashCommands,
+  // Row 12 — exposed so a host-free test can assert the @-mention palette
+  // discovery (the bounded workspace file fold) the surface offers.
+  readMentionTargets,
   // Row 4 — exposed so a host-free test can drive a tail pump directly (the
   // watcher's poll is timing-bound; the pump is the deterministic seam).
   pumpTail,
@@ -460,6 +538,9 @@ module.exports = {
   setPermissionMode,
   getPermissionMode,
   __setSpawnForTest,
+  // Row 12 — exposed so a host-free test can inject a fake editor selection and
+  // assert the driven turn carried it as context (the selection-context surface).
+  __setSelectionForTest,
   VIEW_TYPE,
   OPEN_COMMAND,
 };
