@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 420" width="1240" height="420">
+<rect width="1240" height="420" fill="#0B0B0C"/>
+<defs>
+  <pattern id="halftone" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+    <rect width="5" height="5" fill="#0F1011"/>
+    <circle cx="1" cy="1" r="0.6" fill="#1F2123"/>
+  </pattern>
+  <filter id="glow-cool" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#5EB7A1" flood-opacity="0.6"/>
+  </filter>
+  <filter id="glow-warm" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#C97A55" flood-opacity="0.6"/>
+  </filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5C5C60"/>
+  </marker>
+</defs>
+<text x="32" y="38" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="18" font-weight="600" fill="#E6E6E6">Ontum pipeline · stages on declared layers</text>
+<rect x="40" y="70" width="520" height="300" rx="6" ry="6" fill="url(#halftone)" stroke="none"/>
+<rect x="600" y="70" width="600" height="300" rx="6" ry="6" fill="url(#halftone)" stroke="none"/>
+<polygon points="180.0,190 280,230.0 180.0,270 80,230.0" fill="url(#halftone)" stroke="#C97A55" stroke-width="1.5" filter="url(#glow-warm)"/>
+<text x="180.0" y="230.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="180.0" dy="-0.00em">value gate</tspan></text>
+<polygon points="342.4,190 497.6,190 520,230.0 497.6,270 342.4,270 320,230.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="420.0" y="230.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="420.0" dy="-0.00em">owner stamp</tspan></text>
+<polygon points="662.4,190 777.6,190 800,230.0 777.6,270 662.4,270 640,230.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="720.0" y="230.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="720.0" dy="-0.00em">placement</tspan></text>
+<polygon points="862.4,190 977.6,190 1000,230.0 977.6,270 862.4,270 840,230.0" fill="url(#halftone)" stroke="#5EB7A1" stroke-width="1.5" filter="url(#glow-cool)"/>
+<text x="920.0" y="230.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="920.0" dy="-0.00em">handoff</tspan></text>
+<rect x="1020" y="190" width="160" height="80" rx="40.0" ry="40.0" fill="url(#halftone)" stroke="#3A3A3D" stroke-width="1"/>
+<text x="1100.0" y="230.0" text-anchor="middle" dominant-baseline="central" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="16" fill="#E6E6E6"><tspan x="1100.0" dy="-0.00em">confirm</tspan></text>
+<line x1="280.0" y1="230.0" x2="320.0" y2="230.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="520.0" y1="230.0" x2="640.0" y2="230.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="800.0" y1="230.0" x2="840.0" y2="230.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="1000.0" y1="230.0" x2="1020.0" y2="230.0" stroke="#5C5C60" stroke-width="1" marker-end="url(#arrow)"/>
+<rect x="40" y="70" width="520" height="300" rx="6" ry="6" fill="none" stroke="#3A3A3D" stroke-width="1"/>
+<text x="54" y="92" text-anchor="start" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F" letter-spacing="1.2">INGRESS</text>
+<rect x="600" y="70" width="600" height="300" rx="6" ry="6" fill="none" stroke="#3A3A3D" stroke-width="1"/>
+<text x="614" y="92" text-anchor="start" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F" letter-spacing="1.2">BODY</text>
+<text x="32" y="402" font-family='"JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace' font-size="12" fill="#8C8C8F">Deliberately not shown: per-layer z-order rendering and the show/hide/lock controls — the canvas surface. The &#x27;annotations&#x27; band is declared but unused here (an empty layer is legal).</text>
+</svg>

@@ -1,0 +1,61 @@
+{
+  "atom": {
+    "id": "atom.diagram-canvas-first-cut.v0",
+    "story": {
+      "text": "As bdo, I need our diagramming tool upgraded so each generated part is a first-class component on an editable, layered, save-stated canvas — select it, move it, inspect and edit its attributes, lay it on a named band — while the deterministic renderer (compose.py) and the refusing gate (qa.py) stay the rigor, because I said 'let's upgrade our diagramming tool' and stamped CTA-A = A1: the editable canvas lives in diagrams/, reusing causality/canvas.js's schema/persistence DISCIPLINE by pattern, never the artifact, and exports through the qa.py gate. This is the smallest first cut: the component tier proving the gesture on a real shape, with the carried-forward rigor intact.",
+      "value_confidence": "high",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "An editable, layered diagram canvas that edits the compose.py spec and exports through the gate",
+      "value": "The diagrammer had two halves that did not touch: the deterministic renderer + refusing gate (the quality half) and an editable, schema-driven, persisted graph engine (causality/canvas.js, the edit half). This first cut is the bridge's smallest real piece: a diagram SCHEMA whose part-types mirror compose.py, an editable canvas (select / move-writes-x-y / schema-driven inspector / toJSON-fromJSON to localStorage + file), declared layers (show/hide/lock/reorder, membership declared not geometric), and an export path that runs the qa.py preflight so the canvas cannot ship a picture the gate refuses.",
+      "why_now": "bdo stamped CTA-A = A1 on .ai-native/proposals/diagram-canvas.proposal.md (2026-06-23). The blueprint is agreed; the smallest first cut is named in the proposal's 'smallest first cut' section. Building it now proves the component/layer/edit-and-save gesture on a real shape before the later cells (named save-states, generation wiring, grouping, the Miro-bar skin).",
+      "if_accepted": "diagrams/ gains canvas.html + canvas.js — an editable canvas over the compose.py spec; compose.py honors declared layers (ascending z, hidden omitted, backward-compatible); qa.py gains check_layer_membership (a part on an undeclared band is refused, cited under C4 containment). The §10 pair holds: an honest layered spec passes and renders, a layer-orphan is refused; the canvas round-trips through toJSON/fromJSON with teeth.",
+      "if_rejected": "The diagrammer stays a one-shot renderer; parts stay render-only with no component wrapper, no inspector, no layers, no edit-and-save — the bridge bdo asked for is not built.",
+      "cost_of_wrong_call": "Low and reversible. compose.py's layer change is gated behind `if spec.get('layers')` so every committed example renders byte-identically; the canvas is vanilla offline JS that EDITS the spec (never a second source of truth) and the qa.py gate stays the authority. Reverting is deleting two new files and one guarded branch in compose.py.",
+      "mechanism": "diagrams/canvas.js (the diagram SCHEMA + a pure headless MODEL: select/move/setField/layers/toJSON/fromJSON, and a layer-membership preflight mirroring qa.py) + diagrams/canvas.html (the offline editor surface) reuse causality/canvas.js's discipline by PATTERN, not the artifact. diagrams/compose.py honors `layers` (z-order + visibility, backward-compatible). diagrams/qa.py's check_layer_membership refuses an undeclared band (cited under C4 containment), with its non-example in canon.md. tests/test_diagram.py carries the §10 layer pair; diagrams/canvas.persist.test.js the round-trip with teeth. Done-line 0192.",
+      "reading": [
+        "diagrams/canvas.html",
+        "diagrams/canvas.js",
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "diagrams/canon.md",
+        "tests/test_diagram.py",
+        "diagrams/canvas.persist.test.js",
+        ".ai-native/done/0192-diagram-canvas-first-cut.md",
+        ".ai-native/proposals/diagram-canvas.proposal.md"
+      ]
+    },
+    "concern_surface": "experience",
+    "incidence": {
+      "serves": ["v-next.diagram-canvas"],
+      "touches": [
+        "diagrams/canvas.html",
+        "diagrams/canvas.js",
+        "diagrams/compose.py",
+        "diagrams/qa.py",
+        "diagrams/canon.md",
+        "tests/test_diagram.py",
+        "diagrams/canvas.persist.test.js"
+      ],
+      "must_not_collide_with": ["causality/canvas.js", "causality/term_economy.py"],
+      "hands_off_to": ["seam.value-to-owner-stamp"]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "diagrams/canvas.js",
+        "diagrams/canvas.html",
+        "diagrams/compose.py",
+        "diagrams/qa.py"
+      ]
+    }
+  },
+  "_note": "Birth record for the editable diagram canvas first cut (done-line 0192), the proposal's smallest first cut under bdo's CTA-A = A1 stamp on diagram-canvas.proposal.md. The canvas EDITS the compose.py spec (the spec is truth; the canvas is an editor over it) and reuses causality/canvas.js's schema/persistence DISCIPLINE by pattern, never the artifact (the no-double-build rule). Claims no confirmed arc; serves v-next.diagram-canvas. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}

@@ -469,7 +469,48 @@ def render(spec: dict) -> str:
     # enforces is membership, not geometry. Drawn at the same z-layer as
     # subgraphs so frames stay continuous and edges pass over fills.
     regions = spec.get("regions", [])
-    nodes_by_id = {n["id"]: n for n in nodes}
+
+    # Layers are first-class declared bands (done-line 0192), the structural
+    # sibling of regions: a part *belongs* to one by declaration
+    # (`part.layer == layer.id`), never by geometry. compose.py honors two
+    # facets of a declared layer — z-order (draw ascending `z`) and visibility
+    # (a `visible:false` layer's parts are omitted). `locked` is a canvas-only
+    # concern (it blocks editing) and is ignored here. BACKWARD-COMPATIBLE: a
+    # spec with no `layers` takes the original path untouched, so every
+    # committed example renders byte-identically (the §10 byte-identity pin).
+    layers = spec.get("layers", [])
+    if layers:
+        layers_by_id = {l.get("id"): l for l in layers if l.get("id")}
+
+        def _z(el):
+            lid = el.get("layer")
+            lyr = layers_by_id.get(lid) if lid is not None else None
+            return lyr.get("z", 0) if lyr else 0
+
+        def _vis(el):
+            lid = el.get("layer")
+            if lid is None:
+                return True
+            lyr = layers_by_id.get(lid)
+            # An undeclared layer is the gate's to refuse (check_layer_membership);
+            # the renderer fails open and draws it rather than silently hiding it.
+            return lyr.get("visible", True) if lyr else True
+
+        regions = [r for r in regions if _vis(r)]
+        subgraphs = [sg for sg in subgraphs if _vis(sg)]
+        # sorted() is stable: parts on the same layer keep their spec order, so a
+        # no-op layer set preserves the original draw order exactly.
+        nodes = sorted([n for n in nodes if _vis(n)], key=_z)
+        nodes_by_id = {n["id"]: n for n in nodes}
+        # An edge whose endpoint was hidden with its layer is dropped with it —
+        # never a dangling reference into a node that is not drawn.
+        edges = sorted(
+            [e for e in edges
+             if _vis(e) and e.get("from") in nodes_by_id and e.get("to") in nodes_by_id],
+            key=_z,
+        )
+    else:
+        nodes_by_id = {n["id"]: n for n in nodes}
 
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" '

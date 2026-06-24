@@ -32,6 +32,8 @@ HONEST = EXAMPLES / "pipeline-state-machine.json"
 DISHONEST = EXAMPLES / "pipeline-dishonest.json"
 REGIONED = EXAMPLES / "pipeline-regioned.json"
 REGION_BROKEN = EXAMPLES / "pipeline-region-broken.json"
+LAYERED = EXAMPLES / "pipeline-layered.json"
+LAYER_ORPHAN = EXAMPLES / "pipeline-layer-orphan.json"
 
 sys.path.insert(0, str(DIAGRAMS))
 sys.path.insert(0, str(REPO))
@@ -402,6 +404,86 @@ class TestGatewayTopologyCommittedArtifacts(unittest.TestCase):
         # the gate would refuse one row — split across two regions keeps it legal.
         self.assertEqual(qa.evaluate(self.spec), [],
                          "the gateway spec trips a canon tooth")
+
+
+class TestLayersAreStructure(unittest.TestCase):
+    """Done-line 0192 (the editable diagram canvas, first cut): layers are
+    first-class declared bands — the structural sibling of regions. A part
+    belongs to a band by declaration (`part.layer == layer.id`), not by where
+    it is drawn. The §10 pair, non-vacuous: an honest layered diagram passes
+    the gate and renders; a variant differing by exactly one field (one node's
+    `layer`) where that node claims a band the `layers` array never declared is
+    REFUSED with the C4 containment principle named. A constant 'pass' fails the
+    negative case; a constant 'deny' fails the positive."""
+
+    def _principles(self, spec):
+        return {p for sev, p, _m, _c in qa.evaluate(spec) if sev == "error"}
+
+    def test_honest_layered_passes(self):
+        r = _run_qa(LAYERED)
+        self.assertEqual(r.returncode, 0, f"honest layered spec was refused:\n{r.stderr}")
+
+    def test_honest_layered_renders_and_committed_svg_matches(self):
+        spec = json.loads(LAYERED.read_text(encoding="utf-8"))
+        committed = (EXAMPLES / "pipeline-layered.svg").read_bytes()
+        fresh = compose.render(spec).encode("utf-8")
+        self.assertEqual(committed, fresh,
+                         "the committed layered SVG drifted — re-render it")
+
+    def test_layer_orphan_refused_with_cited_principle(self):
+        r = _run_qa(LAYER_ORPHAN)
+        self.assertEqual(r.returncode, 2, "the layer-orphan spec passed the gate")
+        self.assertIn("c4 containment", r.stderr.lower())
+        self.assertIn("does not exist", r.stderr.lower())
+        self.assertIn("overlay", r.stderr.lower())
+
+    def test_the_layer_pair_differs_by_one_field(self):
+        honest = json.loads(LAYERED.read_text(encoding="utf-8"))
+        orphan = json.loads(LAYER_ORPHAN.read_text(encoding="utf-8"))
+        diffs = [(h["id"], h.get("layer"), o.get("layer"))
+                 for h, o in zip(honest["nodes"], orphan["nodes"])
+                 if h.get("layer") != o.get("layer")]
+        self.assertEqual(len(diffs), 1,
+                         "the orphan variant must be locally-fine + one bad layer declaration")
+        self.assertEqual(honest["layers"], orphan["layers"],
+                         "the declared layers are otherwise identical")
+
+    def test_edge_or_region_on_undeclared_layer_is_refused(self):
+        # not just nodes: an edge (and a region/subgraph) declaring a missing
+        # band is refused too — the rule covers every kind of part.
+        spec = {"size": [400, 200],
+                "layers": [{"id": "base", "label": "base", "z": 0}],
+                "nodes": [
+                    {"id": "a", "type": "rect", "layer": "base", "x": 20, "y": 20, "w": 100, "h": 50, "label": "a"},
+                    {"id": "b", "type": "rect", "layer": "base", "x": 200, "y": 20, "w": 100, "h": 50, "label": "b"}],
+                "edges": [{"from": "a", "to": "b", "layer": "ghost-band"}]}
+        self.assertIn("C4 containment / cognitive integration", self._principles(spec))
+
+    def test_no_layers_is_backward_compatible(self):
+        # the floor's honest spec declares no `layers`/`layer` → the tooth never bites
+        spec = json.loads(HONEST.read_text(encoding="utf-8"))
+        self.assertNotIn("C4 containment / cognitive integration", self._principles(spec))
+        self.assertEqual(qa.check_layer_membership.__name__, "check_layer_membership")
+
+    def test_layer_visibility_and_zorder_in_render(self):
+        # compose.py honors a declared band: a hidden layer's node is omitted,
+        # and a higher-z node draws after (on top of) a lower-z one. A no-op
+        # layer set must not perturb a spec's draw order (backward-compat).
+        spec = {"size": [400, 200],
+                "layers": [
+                    {"id": "base", "label": "base", "z": 0, "visible": True},
+                    {"id": "top", "label": "top", "z": 5, "visible": True},
+                    {"id": "hidden", "label": "hidden", "z": 1, "visible": False}],
+                "nodes": [
+                    {"id": "ontop", "type": "rect", "layer": "top", "x": 20, "y": 20, "w": 100, "h": 50, "label": "ontop"},
+                    {"id": "base1", "type": "rect", "layer": "base", "x": 200, "y": 20, "w": 100, "h": 50, "label": "base1"},
+                    {"id": "gone", "type": "rect", "layer": "hidden", "x": 20, "y": 120, "w": 100, "h": 50, "label": "gone"}],
+                "edges": [{"from": "ontop", "to": "base1"}]}
+        svg = compose.render(spec)
+        self.assertNotIn(">gone<", svg, "a node on a hidden layer must be omitted")
+        # ascending-z draw order: base1 (z=0) is emitted before ontop (z=5)
+        self.assertLess(svg.index(">base1<"), svg.index(">ontop<"),
+                        "parts must be drawn in ascending layer z")
 
 
 if __name__ == "__main__":

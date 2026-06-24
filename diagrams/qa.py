@@ -484,6 +484,47 @@ def check_region_membership(spec, issues):
                  f"node id='{n.get('id')}'")
 
 
+def check_layer_membership(spec, issues):
+    """Structural containment (canon: C4 containment / cognitive integration,
+    done-line 0192): layers are first-class declared bands, the structural
+    sibling of regions, and a part *belongs* to one by declaration
+    (`part.layer == layer.id`), not by where it is drawn. A layer carries no
+    geometry, so there is one way the declaration can lie:
+
+      - a part declares a layer that is not in the diagram's `layers` → deny
+        (a band that does not exist — the structural analog of an orphan node,
+        exactly the region-membership shape).
+
+    Every kind of part can declare a `layer` (node, edge, region, subgraph), so
+    each is checked. A spec with no `layers` and no part `layer` is untouched —
+    the rule bites only a declaration, so it is backward-compatible (the same
+    grain as check_region_membership)."""
+    declared = {l.get("id") for l in spec.get("layers", []) if l.get("id")}
+
+    def _ctx(kind, p):
+        if "id" in p:
+            return f"{kind} id='{p['id']}'"
+        if "from" in p or "to" in p:
+            return f"{kind} {p.get('from', '?')}->{p.get('to', '?')}"
+        return f"{kind} label='{p.get('label', '')}'"
+
+    parts = (
+        [("node", n) for n in spec.get("nodes", [])]
+        + [("edge", e) for e in spec.get("edges", [])]
+        + [("region", r) for r in spec.get("regions", [])]
+        + [("subgraph", sg) for sg in spec.get("subgraphs", [])]
+    )
+    for kind, p in parts:
+        lid = p.get("layer")
+        if lid is None:
+            continue
+        if lid not in declared:
+            deny(issues, "C4 containment / cognitive integration",
+                 f"{kind} declares layer '{lid}' that is not in the diagram's "
+                 "`layers` — a band that does not exist",
+                 _ctx(kind, p))
+
+
 CHECKS = [
     # renderer-fidelity
     check_title,
@@ -503,6 +544,7 @@ CHECKS = [
     check_sibling_count,
     check_invented_shapes_genres,
     check_region_membership,
+    check_layer_membership,
 ]
 
 
