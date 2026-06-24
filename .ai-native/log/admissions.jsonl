@@ -241,3 +241,4 @@
 {"branch":"worktree-agent-a3b045b13021861db","by":"claude-builder","claim":"atom.whole-tree-viewport-live-workspace.v0","id":"adm.8645a531e944","supersedes":null,"ts":"2026-06-22T22:03:11Z","type":"workspace_claimed"}
 {"branch":"worktree-agent-abb94eb5548d5dfa6","by":"claude-builder","claim":"atom.whole-tree-viewport-coverage-sensor.v0","id":"adm.cfddf6fcab24","supersedes":null,"ts":"2026-06-23T00:17:00Z","type":"workspace_claimed"}
 {"branch":"worktree-agent-aa9aca36d57abb1be","by":"claude","claim":"atom.raw-receipts-door.v0","id":"adm.c763d659e5d3","supersedes":null,"ts":"2026-06-22T22:06:47Z","type":"workspace_claimed"}
+{"by":"bdo","enabled":true,"epic":"epic.ledger-verb-family","id":"adm.42eac434d9e8","supersedes":null,"ts":"2026-06-24T07:05:56Z","type":"arc_confirmed"}
