@@ -110,6 +110,17 @@ function engineArgs(opts) {
   if (Array.isArray(o.disallowedTools) && o.disallowedTools.length) {
     args.push('--disallowedTools', ...o.disallowedTools.map(String));
   }
+  // Row 13 — MCP. Point the engine at extra MCP server config(s) (the
+  // live-verified `--mcp-config` flag accepts JSON files or inline strings);
+  // `--strict-mcp-config` then uses ONLY those, ignoring other MCP config. The
+  // surface stays a fold of the inherited engine — an MCP tool is invoked by the
+  // engine mid-turn (pass-through), authorizable by name via the allow-list
+  // above (`mcp__server__tool`). Emitted only when a config is supplied, so the
+  // default drive (which inherits the cwd's MCP config) is unchanged.
+  if (Array.isArray(o.mcpConfig) && o.mcpConfig.length) {
+    args.push('--mcp-config', ...o.mcpConfig.map(String));
+    if (o.strictMcpConfig) args.push('--strict-mcp-config');
+  }
   if (o.resume) {
     args.push('--resume', String(o.resume));
     if (o.forkSession) args.push('--fork-session');

@@ -22,6 +22,7 @@ const { driveTurn, partialDelta, normalizePermissionMode } = require('./engine')
 const { listSlashCommands } = require('./slash');
 const { listMentionTargets, withSelectionContext } = require('./mentions');
 const { nextModeOnPlanDecision, isPlanDecision } = require('./plan');
+const { listMcpServers, userConfigPathFor } = require('./mcp');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -67,6 +68,12 @@ let permissionMode = 'default';
 // without a VS Code host. Null/no-editor -> no selection attached (the prompt is
 // sent exactly as typed, preserving the row-5/10 pass-through).
 let selectionImpl = null;
+// Row 13 — the LIVE tools list the last driven turn's init event reported
+// (engine reply.tools). It names the MCP tools the inherited environment
+// actually loaded (`mcp__server__tool`), so readMcpServers can annotate the
+// configured servers with what is genuinely available + invocable. Null until a
+// turn has run (the configured-but-not-yet-loaded view is the honest default).
+let lastEngineTools = null;
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -116,6 +123,28 @@ function readSlashCommands() {
 function readMentionTargets() {
   try {
     return listMentionTargets({ projectDir: currentCwd(), limit: 500 });
+  } catch (_) {
+    return [];
+  }
+}
+
+// readMcpServers() -> the discovered MCP-server surface for this workspace
+// (row 13): the CONFIGURED servers the CLI would load — the project's
+// `<cwd>/.mcp.json` + the user's `~/.claude.json` mcpServers — each annotated
+// with the tools the LIVE engine env actually exposed for it (the last turn's
+// init-event `tools`, captured in lastEngineTools as `mcp__server__tool`). A
+// server present on disk but absent from the live tools is honestly
+// available:false (configured, not yet loaded). The engine remains the
+// authority on what an MCP tool does and on whether a server connects; this is
+// the offered/annotated surface (mcp.listMcpServers), not a re-implemented MCP
+// client. Failures degrade to [], never throw.
+function readMcpServers() {
+  try {
+    return listMcpServers({
+      projectDir: currentCwd(),
+      userConfig: userConfigPathFor(os.homedir()),
+      tools: lastEngineTools,
+    });
   } catch (_) {
     return [];
   }
@@ -279,6 +308,14 @@ async function sendPrompt(text) {
       cost: null,
     };
   }
+  // Row 13 — record the LIVE tools the turn's init event reported (it names the
+  // MCP tools the inherited env actually loaded, `mcp__server__tool`), so a
+  // re-render annotates the configured servers with what is genuinely available
+  // + invocable. A turn that reported no tools leaves the prior view untouched.
+  if (Array.isArray(reply.tools)) {
+    lastEngineTools = reply.tools;
+    renderPanel(); // repaint so the MCP panel reflects the now-loaded servers
+  }
   if (panel && panel.webview && typeof panel.webview.postMessage === 'function') {
     panel.webview.postMessage({
       type: 'ontum:turn-reply',
@@ -393,6 +430,9 @@ function renderPanel() {
     // Row 12 — the discovered @-mention palette (a bounded workspace file fold).
     // The composer filters it as the human types an '@' token.
     mentionTargets: readMentionTargets(),
+    // Row 13 — the discovered MCP servers (configured on disk) annotated with
+    // the tools the live engine env exposed for them (`mcp__server__tool`).
+    mcpServers: readMcpServers(),
   });
 }
 
@@ -515,6 +555,10 @@ module.exports = {
   // Row 12 — exposed so a host-free test can assert the @-mention palette
   // discovery (the bounded workspace file fold) the surface offers.
   readMentionTargets,
+  // Row 13 — exposed so a host-free test can assert the MCP-server surface
+  // discovery (configured servers annotated with the live tools the inherited
+  // env exposed) the surface offers.
+  readMcpServers,
   // Row 4 — exposed so a host-free test can drive a tail pump directly (the
   // watcher's poll is timing-bound; the pump is the deterministic seam).
   pumpTail,

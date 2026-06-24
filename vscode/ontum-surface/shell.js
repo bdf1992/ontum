@@ -365,6 +365,60 @@ function renderMentionMenu(targets) {
   );
 }
 
+// renderMcpPanel(servers) -> the inner HTML of the Sessions aside's MCP region
+// (row 13). Each server from mcp.listMcpServers (a fold of the on-disk MCP
+// config the CLI reads, annotated with the LIVE engine tools list) is a
+// labelled block carrying `data-mcp-server="<name>"`, its scope + transport, an
+// `data-available` flag (true once the live env exposes its tools so the engine
+// can invoke them), and its tools as `data-mcp-tool="mcp__server__tool"` items
+// (the exact identifier the engine names + the row-9 allow-list authorizes).
+// All escaped — a fold, never a second source. An empty/absent config paints an
+// honest note (no fake server). The engine remains authoritative on what each
+// MCP tool does; this is the available-tools surface, not an MCP client.
+function renderMcpPanel(servers) {
+  const list = Array.isArray(servers) ? servers : [];
+  if (list.length === 0) {
+    return '<p class="ontum-empty">No MCP servers configured for this folder.</p>';
+  }
+  const items = list
+    .map((s) => {
+      const name = escapeHtml(s && s.name ? s.name : '');
+      const scope = escapeHtml(s && s.scope ? s.scope : 'project');
+      const transport = escapeHtml(s && s.transport ? s.transport : 'unknown');
+      const tools = Array.isArray(s && s.tools) ? s.tools : [];
+      const available = s && s.available ? 'true' : 'false';
+      const count = tools.length;
+      const meta = available === 'true'
+        ? `${transport} · ${count} tool${count === 1 ? '' : 's'}`
+        : `${transport} · not loaded`;
+      const toolsHtml = count
+        ? tools
+            .map((t) => {
+              const tn = escapeHtml(t);
+              const id = escapeHtml('mcp__' + (s && s.name ? s.name : '') + '__' + t);
+              return (
+                `<li class="ontum-mcp-tool" data-mcp-tool="${id}">${tn}</li>`
+              );
+            })
+            .join('')
+        : '<li class="ontum-mcp-tool ontum-mcp-none">tools load when the engine connects</li>';
+      return (
+        `<li class="ontum-mcp-server" data-mcp-server="${name}" ` +
+        `data-scope="${scope}" data-available="${available}">` +
+        `<span class="ontum-mcp-name">${name}</span>` +
+        `<span class="ontum-mcp-meta">${escapeHtml(meta)}</span>` +
+        `<ul class="ontum-mcp-tools">${toolsHtml}</ul>` +
+        `</li>`
+      );
+    })
+    .join('\n      ');
+  return (
+    `<ul class="ontum-mcp-list" data-count="${list.length}">\n      ` +
+    items +
+    `\n    </ul>`
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
@@ -412,6 +466,11 @@ function renderShell(opts) {
   // file list (mentions.listMentionTargets); absent -> an empty palette (the
   // container + wiring still ship, so a later render with files lights up).
   const mentionHtml = renderMentionMenu(o.mentionTargets);
+  // Row 13 — the MCP servers + tools panel. The host passes the discovered MCP
+  // servers (mcp.listMcpServers — the on-disk config folded + annotated with the
+  // live engine tools); absent -> an honest "no MCP servers" note (the region +
+  // wiring still ship, so a later render with servers lights up).
+  const mcpHtml = renderMcpPanel(o.mcpServers);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -797,6 +856,31 @@ function renderShell(opts) {
       text-overflow: ellipsis;
     }
     .ontum-mention-name { color: var(--ontum-dim); font-size: 0.72rem; }
+    /* Row 13 — the MCP servers + tools panel (in the Sessions aside). */
+    .ontum-mcp-region-title { margin-top: 1rem; }
+    .ontum-mcp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+    .ontum-mcp-server {
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.4rem 0.5rem;
+      background: var(--ontum-bg);
+      display: grid;
+      gap: 0.1rem;
+    }
+    .ontum-mcp-server[data-available="true"] { border-left: 2px solid #6fae8f; }
+    .ontum-mcp-server[data-available="false"] { border-left: 2px solid var(--ontum-edge); }
+    .ontum-mcp-name { color: var(--ontum-accent); font-size: 0.82rem; }
+    .ontum-mcp-meta { color: var(--ontum-dim); font-size: 0.7rem; }
+    .ontum-mcp-tools { list-style: none; margin: 0.25rem 0 0; padding: 0; display: grid; gap: 0.1rem; }
+    .ontum-mcp-tool {
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      font-size: 0.72rem;
+      color: var(--ontum-ink);
+      padding-left: 0.5rem;
+    }
+    .ontum-mcp-tool::before { content: "\\25b8 "; color: var(--ontum-dim); }
+    .ontum-mcp-none { color: var(--ontum-dim); font-style: italic; }
+    .ontum-mcp-none::before { content: ""; }
   </style>
 </head>
 <body>
@@ -808,6 +892,10 @@ function renderShell(opts) {
     <aside class="ontum-sessions" data-region="sessions">
       <p class="ontum-region-title">Sessions</p>
       ${sessionsHtml}
+      <p class="ontum-region-title ontum-mcp-region-title">MCP servers</p>
+      <div class="ontum-mcp" data-region="mcp">
+        ${mcpHtml}
+      </div>
     </aside>
     <section class="ontum-transcript" data-region="transcript">
       <p class="ontum-region-title">Transcript</p>
@@ -1203,6 +1291,7 @@ module.exports = {
   renderPermissionControl,
   renderSlashMenu,
   renderMentionMenu,
+  renderMcpPanel,
   makeNonce,
   escapeHtml,
 };
