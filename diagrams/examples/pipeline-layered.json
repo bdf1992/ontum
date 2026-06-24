@@ -1,0 +1,26 @@
+{
+  "size": [1240, 420],
+  "title": "Ontum pipeline · stages on declared layers",
+  "layers": [
+    {"id": "base", "label": "base", "z": 0, "visible": true, "locked": false},
+    {"id": "annotations", "label": "annotations", "z": 1, "visible": true, "locked": false}
+  ],
+  "regions": [
+    {"id": "ingress", "label": "ingress", "x": 40, "y": 70, "w": 520, "h": 300},
+    {"id": "body", "label": "body", "x": 600, "y": 70, "w": 600, "h": 300}
+  ],
+  "nodes": [
+    {"id": "value-gate", "type": "rhombus", "region": "ingress", "layer": "base", "x": 80, "y": 190, "w": 200, "h": 80, "label": "value gate"},
+    {"id": "owner-stamp", "type": "hex", "region": "ingress", "layer": "base", "x": 320, "y": 190, "w": 200, "h": 80, "label": "owner stamp"},
+    {"id": "placement", "type": "hex", "region": "body", "layer": "base", "x": 640, "y": 190, "w": 160, "h": 80, "label": "placement"},
+    {"id": "handoff", "type": "hex", "region": "body", "layer": "base", "x": 840, "y": 190, "w": 160, "h": 80, "label": "handoff"},
+    {"id": "confirm", "type": "pill", "region": "body", "layer": "base", "x": 1020, "y": 190, "w": 160, "h": 80, "label": "confirm"}
+  ],
+  "edges": [
+    {"from": "value-gate", "to": "owner-stamp", "layer": "base"},
+    {"from": "owner-stamp", "to": "placement", "layer": "base"},
+    {"from": "placement", "to": "handoff", "layer": "base"},
+    {"from": "handoff", "to": "confirm", "layer": "base"}
+  ],
+  "caption": "Deliberately not shown: per-layer z-order rendering and the show/hide/lock controls — the canvas surface. The 'annotations' band is declared but unused here (an empty layer is legal)."
+}

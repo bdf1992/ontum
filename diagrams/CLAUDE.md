@@ -65,6 +65,8 @@ Read [`canon.md`](canon.md) for the SME the gate enforces.
 python diagrams/compose.py <spec.json> [--out OUT.svg]   # the deterministic floor: spec → SVG
 python diagrams/qa.py <spec.json>                        # the refusing gate: deny + cited principle on stderr
 python -m unittest tests.test_diagram -v                 # the §10 test: honest passes, dishonest refused
+node diagrams/canvas.persist.test.js                     # the §10 canvas round-trip (with teeth)
+python -m http.server 8080   # then open http://localhost:8080/diagrams/canvas.html — the editable canvas
 ```
 
 ## Layout (as pieces land)
@@ -76,6 +78,27 @@ python -m unittest tests.test_diagram -v                 # the §10 test: honest
   fail-open on its own error).
 - [`canon.md`](canon.md) — the named architecture-diagramming SME; every
   gate rule cites a principle here.
+- `canvas.html` + `canvas.js` — the **editable diagram canvas** (done-line
+  0192): load a `compose.py` spec, select/move (drag writes explicit `x/y`),
+  inspect/edit a part via a schema-driven inspector, layer it, and round-trip
+  through `toJSON`/`fromJSON` to localStorage + file. It **edits the spec**; it
+  is never a second source of truth. Vanilla JS, offline, no deps. It REUSES
+  `causality/canvas.js`'s schema/inspector/persistence **discipline by pattern**
+  — it does **not** import or extend that artifact (the no-double-build rule).
+  The MODEL (`createModel`) is pure (no DOM), exercised headless by
+  `canvas.persist.test.js`.
 - `examples/` — committed spec + rendered SVG, byte-deterministic.
 - the pieces and their waves live in
   [`epic.diagram`](../.ai-native/epics/epic.diagram.json).
+
+## Layers (done-line 0192)
+
+A `layers` array on the spec (`{id,label,z,visible,locked}`) and a declared
+`layer` field on a part. Membership is **declared, never geometric** — the same
+discipline as regions (done-line 0151). `compose.py` draws ascending `z` and
+omits a `visible:false` band; `locked` is canvas-only (it blocks editing) and
+the renderer ignores it. **Backward-compatible:** a spec with no `layers`
+renders byte-identically to before. The gate's `check_layer_membership` refuses
+a part on a band that `layers` never declared (cited under C4 containment) —
+the structural analog of an orphan. The canvas's export runs this same
+preflight, so it cannot ship a spec the gate would refuse.

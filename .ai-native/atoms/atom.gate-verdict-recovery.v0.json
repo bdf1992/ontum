@@ -1,0 +1,59 @@
+{
+  "atom": {
+    "id": "atom.gate-verdict-recovery.v0",
+    "story": {
+      "text": "As bdo, I need the value-gate's verdict handling hardened so a real verdict a mind emitted is never lost, AND a recovery path so a parse bug never forces a paid re-run, because a real opus panel stream ACCEPTED atom.diagram-canvas-first-cut.v0 but its verdict was dropped: a corrupted-.claude.json warning prefixed the headless child's stdout, json.loads(raw) failed, the claude -p envelope never unwrapped, and the verdict sat double-escaped inside the envelope's result string where _verdict_objects could not decode it, so compile_panel counted a failed stream and escalated a clean 2-accept-1-amend, wasting $0.82. bdo: 'it's a bug and it should be fixed, but we should ALSO be able to recover and continue from the bug itself by fixing it now and moving on those it broke on without reruns.'",
+      "value_confidence": "high",
+      "owner_stamp": "served by bdo's confirmed arc epic.inference-gateway (arc_confirmed, by bdo) — this piece is on gate.py's launch/parse seam, the same seam as atom.gate-rail-fix / atom.gate-panel / atom.gate-model-economy"
+    },
+    "briefing": {
+      "headline": "Harden the gate verdict parser against an un-unwrapped envelope + add a saved-trace recovery tool (no paid re-runs)",
+      "value": "The value-gate is load-bearing: every landing flows through it. A stray non-JSON preamble on the headless child's stdout (a corrupted-.claude.json warning) defeated the envelope unwrap, leaving the verdict double-escaped where the parser failed — a clean accept read as a FAILED stream and a 2-accept-1-amend panel escalated by bug, costing $0.82. Two fixes: (1) _verdict_objects recurses into an un-unwrapped envelope's result string, recovering the SAME structured verdict the mind really emitted while still yielding nothing when no verdict object exists (the unconfirmable/refuse path preserved, never inferred from prose); (2) a gate.py `recover` subcommand re-derives a panel result from already-saved traces — zero new inference, DRY-RUN by default, writes nothing.",
+      "why_now": "The bug already fired on a real run and burned real money; until the parser is hardened any corruption preamble (or any future un-unwrapped envelope) silently loses verdicts and escalates by bug, and every such loss costs a paid re-run. The recovery tool turns the three already-paid-for diagram-canvas traces back into the verdicts they always carried.",
+      "if_accepted": "_verdict_objects recovers a verdict from an un-unwrapped envelope; _select_verdict is the one shared selection (launch + recovery, I-4); gate.py gains `recover --atom <id>` (dry-run, writes nothing). The §10 pair holds on REAL bytes: the opus parsed_text fixture yields accept, a no-verdict text yields nothing, and the three saved diagram-canvas traces recover {opus: accept, haiku: accept, sonnet: amend}.",
+      "if_rejected": "The gate keeps silently dropping any verdict whose envelope did not unwrap, escalating clean panels by bug and forcing a paid re-run for each — on the one seam every landing depends on.",
+      "cost_of_wrong_call": "Low and bounded. The parser change only ADDS a recursion into a string `result` key (an envelope), recovering JSON the model already emitted as a structured object; it never fabricates and the no-verdict case still returns nothing (tested). The recovery tool is read-only and dry-run — it writes nothing to the log. The gate can still refuse and report an unconfirmable stream.",
+      "mechanism": ".claude/skills/gate/gate.py: _verdict_objects(text, _depth=0) recurses into a parsed object carrying a string `result` but no `verdict` (the un-unwrapped envelope), bounded depth; a new _select_verdict(text) is the one shared sentinel-preferred/last-object selection used by both launch_claude and recover (I-4); recover(atom_id, runs_dir) re-reads the saved gate-run traces for an atom, re-parses each stream's parsed_text, and re-runs compile_panel; cmd_recover prints the per-stream verdicts and the recomputed decision DRY-RUN and writes nothing. tests/test_gate_recover.py carries the §10 pair against the three REAL saved traces (tests/fixtures/gate-runs/). Done-line 0194.",
+      "reading": [
+        ".claude/skills/gate/gate.py",
+        "tests/test_gate_recover.py",
+        "tests/fixtures/gate-runs/20260624T040147Z-atom.diagram-canvas-first-cut.v0-value-gate.claude.v1.json",
+        ".ai-native/done/0194-gate-verdict-recovery.md"
+      ]
+    },
+    "concern_surface": "loop",
+    "incidence": {
+      "serves": [
+        "epic.inference-gateway"
+      ],
+      "touches": [
+        ".claude/skills/gate/gate.py",
+        "tests/test_gate_recover.py",
+        "tests/fixtures/gate-runs/20260624T040131Z-atom.diagram-canvas-first-cut.v0-value-gate.claude.v1.json",
+        "tests/fixtures/gate-runs/20260624T040140Z-atom.diagram-canvas-first-cut.v0-value-gate.claude.v1.json",
+        "tests/fixtures/gate-runs/20260624T040147Z-atom.diagram-canvas-first-cut.v0-value-gate.claude.v1.json"
+      ],
+      "must_not_collide_with": [
+        "loop/inference_queue.py",
+        "loop/runs.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending",
+      "placement_gate": "pending",
+      "eval_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        ".claude/skills/gate/gate.py",
+        "tests/test_gate_recover.py"
+      ]
+    }
+  },
+  "_note": "Birth record for the gate verdict-recovery hardening (done-line 0194), on gate.py's launch/parse seam under the confirmed arc epic.inference-gateway. HIGH-BLAST-RADIUS: the value-gate gates every landing. Two fixes: a parser that recovers a real verdict from an un-unwrapped claude -p envelope (never inferring from prose), and a dry-run recover subcommand that re-derives a panel from already-saved traces with zero new inference. Never mutated; verdicts are the fold over .ai-native/log/ (D-5)."
+}
