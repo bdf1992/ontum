@@ -16,9 +16,10 @@ bounded increment toward parity-green for the branded Claude surface
    doing nothing else, if ANY hold:
    - `STATE: marker-met` or `STATE: STOPPED-infeasible` in PROGRESS.md — the run
      is already done; exit.
-   - The local clock is **at or after 08:00** — the overnight window is closed;
+   - The local clock is **at or after 14:30** — the close-out window is closed;
      go to **§Marker reached** only if the marker is met, else just exit (a
-     later run resumes).
+     later run resumes). (Extended from the 02:46–08:00 overnight window to the
+     daytime close-out run toward 18/18, bdo: "keep working until close".)
    - Honest-stop: the bridge has been proven infeasible (SDK *and* headless CLI)
      — set `STATE: STOPPED-infeasible`, record the finding in PROGRESS.md and the
      checklist, then go to **§Land**.

@@ -1,13 +1,149 @@
 # GRADES — Branded Claude surface, Phase 1 (overnight, 2026-06-24)
 
 Built by the overnight administer loop against `epic.digital-experience` /
-done-line 0197. Marker = parity checklist 18/18 green. **Reached: 9/18.** The
-window (≈02:46–08:00) closed with the read-only viewer complete and the
-engine-drive half of the parity bar plumbed and tested host-free.
+done-line 0197. Marker = parity checklist 18/18 green. **Reached: 18/18 — MARKER
+MET.** The overnight window (≈02:46–08:00) closed at 10/18; the extended daytime
+close-out run (window to 14:30, bdo: "keep working until close") drove the
+remaining eight rows (11–18) to green at ≈1/tick, each with a passing host-free
+`node` test, landing the full parity bar.
+
+---
+
+## Marker reached — 18/18 (2026-06-24 close-out)
+
+All 18 parity-checklist rows are `green`, each citing a checkable file + a passing
+`node` test (full suite: **19 test files PASS**). The arc this close-out added on
+top of the 10/18 overnight foundation:
+
+- **row 11** plan mode (`plan.js` — ExitPlanMode plan card, approve/keep, exit-plan-mode transition) — `plan.test.js` 17 ✓
+- **row 12** @-mentions / IDE selection (`mentions.js` — @-file discovery + selection preamble, pass-through) — `mentions.test.js` 15 ✓
+- **row 13** MCP available + invocable (`mcp.js` — `mcp__server__tool` parse, server discovery, live-tools annotation) — `mcp.test.js` 17 ✓
+- **row 14** environment inherited (`environment.js` — settings layers, hooks fold, skills discovery) — `environment.test.js` 22 ✓
+- **row 15** image / file attach (`attach.js` — classify/read/encode to Messages-API content blocks) — `attach.test.js` 26 ✓
+- **row 16** resume / continue (`engine.js` — `--continue`/`--resume`/`--fork-session` target→argv mapping) — `resume.test.js` 25 ✓
+- **row 17** stop / interrupt (`engine.js markInterrupted` + control handle; terminate-the-process, label honest partial) — `stop.test.js` 19 ✓
+- **row 18** cost / usage display (`usage.js` — fold + format the engine's reported cost/usage, running session total) — `usage.test.js` 25 ✓
+
+### Self-grade — the full bar (adversarial, the author's line, never the deciding one D-2)
+
+**Overall: 18 / 18 green** — but read the grade, not the number. The strongest
+single fact since 10/18: **a real billed turn ran end-to-end through `engine.js`**
+(`text="OK"`, cost $0.40 — `REAL-TURN-PROOF.md`) and the 4 peer-found engine bugs
+were fixed + tested (`engine-fixes.test.js`: UTF-8 `StringDecoder`, stdin-EPIPE
+listener, turn watchdog, `assembleStream` orphan-stop, model-alias 404). So the
+drive path is no longer fake-only.
+
+**What is genuinely solid:**
+- The read viewer (1–4) is smoke-tested against the live store; the drive path
+  (5–7) has one real billed turn behind it; every `inherit` row (9, 11, 13, 14,
+  16, 17) cites a flag verified live against `claude --help 2.0.19`.
+- The pure-fold modules (`mcp.js`, `environment.js`, `attach.js`, `usage.js`) are
+  each proven host-free with a dedicated suite, no `vscode` dependency, honest
+  null/em-dash for absent data, and consistent `escapeHtml` on every interpolation
+  (the XSS surface stayed clean through eight more rows).
+- Row 18 specifically is the safest increment of the night: pure display, no
+  process/host code, every value a fold of the engine's own `result` (never an
+  estimate), 25 checks incl. "a no-usage errored turn does not inflate the tab."
+
+**What is thin — the riskiest unproven claims (in order):**
+- **🔴 No pixel has rendered in a real VS Code host.** Every render row (1–18) is
+  asserted on HTML-string markup + the webview message protocol, never a live
+  webview. The first `code --extensionDevelopmentPath` load is unproven and is
+  where integration gaps will surface.
+- **🔴 Rows 11–18 have NOT had a real billed turn each.** The $0.40 proof exercised
+  the rows-5–10 drive path; the later rows (plan card, MCP invocation, a hook
+  firing, an image turn, a resume replay, a real stop mid-turn, a real cost line)
+  are proven at the fold + protocol level against captured/fake shapes, not a live
+  turn. `green` = "the surface plumbing is tested," not "exercised live."
+- **🟠 The hook-suppression finding is open:** the repo's own `UserPromptSubmit`
+  hooks suppress a nested headless turn (clean in `/tmp`). `engine.js` is correct,
+  but a surface driving in-repo must avoid re-triggering project hooks — unhandled.
+- **🟠 Row 13 "invocable" and row 14 "loaded"** rest on the inherit claim (the init
+  event names the tools / the engine runs the hooks); the surface *displays* them
+  host-free but has not watched a real MCP tool fire or a real skill load through
+  this window.
+
+**Honest verdict:** the parity *checklist* is genuinely 18/18 with zero faked green
+— but it grades the **surface plumbing**, not a **shipped product**. The bar was
+"every capability normal Claude Code does is recognised, folded, routed, and
+displayed by the branded surface, proven host-free (+ one real drive turn)." That
+bar is met. The bar it does *not* claim: a human has opened the window and used it.
+That first real-host session is the next gate, and it is bdo's to run.
+
+### Peer grade (/code-review ultra)
+
+> **Note on the requested grader (unchanged from the overnight record):** bdo chose
+> cloud `/code-review ultra` as the independent evaluator. The cloud `ultra` variant
+> is **user-triggered and billed — a session cannot launch it** (harness rule; there
+> is no `/code-review` command on this machine, project or global). So the deepest
+> peer read a session can land is the in-process review below; the cloud `ultra`
+> pass on this PR's diff is **bdo's one command** if he wants the deeper cloud read.
+> The overnight `/code-review max` pass (4 finder angles) stands in the historical
+> record below and found 8 real bugs — **all 4 HIGH/MED engine bugs are now fixed +
+> tested** (`engine-fixes.test.js`), which is the strongest evidence the peer grade
+> was non-vacuous.
+
+**Independent in-process review of the close-out diff (rows 11–18).** Reviewed the
+eight new modules + their shell/extension wiring for the same four angles the
+overnight pass used (correctness, host-crash/resource, injection, honesty):
+
+- **Injection surface stayed clean.** Spot-checked every new `render*` (`renderPlanBlock`,
+  `renderMcpPanel`, `renderEnvPanel`, `renderAttachTray`, `renderResumeControl`,
+  `renderUsageBar`): every interpolated value passes through `escapeHtml`, and the
+  streaming/swap paths use `textContent` / pre-escaped host-rendered HTML — no new
+  `innerHTML`-of-raw-data sink. A hostile field test exists per module (e.g.
+  `renderUsageBar escapes a hostile field`).
+- **No new host-crash path.** Rows 11–18 add pure folds (`plan/mcp/environment/attach/usage.js`)
+  and argv mapping (`resume`), plus `markInterrupted` (row 17) which only re-tags a
+  reply object. The one process-signal path (row 17 `interrupt()`) is idempotent
+  (returns false after settle) and tested against a stalling fake engine. `usage.js`
+  touches no `fs`/process at all.
+- **Honesty grain held.** `usage.num` gates every field to finite-or-null so a
+  missing/NaN/Infinity value renders an em-dash, never a fabricated 0;
+  `accumulateUsage` counts only turns that reported real usage (a Stop/spawn-error
+  can't inflate the tab); `attach.readAttachment` caps at 5 MB binding both the stat
+  AND the buffer length; `environment`/`mcp` flag a present-but-torn file honestly.
+- **Carried-over risks (not regressions, the same as the overnight record):** still
+  no real VS Code host render; rows 11–18 have no per-row real billed turn; the
+  hook-suppression finding is open. These are the punch-list, not blockers for a
+  foundation PR.
+
+**Verdict:** the close-out diff is low-risk relative to the overnight engine path —
+it is mostly pure, well-tested folds with a clean injection surface; the genuine
+risk remains concentrated where the self-grade puts it (first real-host load + a
+live turn per row), not in the new code. The cloud `ultra` pass remains bdo's to
+run for the deeper independent read.
+
+---
+
+## Historical record — the overnight night (10/18) and its post-merge close-out
+
+*(Preserved verbatim below; the original night's self-grade and peer grade stand as
+the record of how the foundation was built.)*
+
+## Close-out update (post-merge, 2026-06-24 AM) — branch `claude/branded-surface-close`
+
+After PR #743 merged, the work continued toward close. Landed since:
+- **The count is corrected** (was stale at 9; the final overnight tick had landed row 10 → **10/18**).
+- **All 3 peer-review engine bugs are fixed + tested** (UTF-8 stream corruption →
+  `StringDecoder`; stdin EPIPE host-crash → `'error'` listener; no turn-timeout →
+  a watchdog) plus the `assembleStream` orphan-stop guard. See `test/engine-fixes.test.js`.
+- **A 4th bug fixed:** `engineArgs` pinned no model → the bare `opus` alias 404'd
+  headless (the same bug that hit the scheduler). Now defaults to a valid id.
+- **🟢 THE HEADLINE CAVEAT IS CLOSED FOR THE DRIVE PATH:** a **real billed turn**
+  ran through `engine.js` (`text="OK"`, cost $0.40) — see `REAL-TURN-PROOF.md`.
+  Rows 5–10 are no longer fake-only at the drive layer.
+- **New honest finding:** the repo's own `UserPromptSubmit` hooks suppress a
+  nested headless turn (empty completion in-repo, clean in `/tmp`) — `engine.js`
+  is correct; the surface must drive without re-triggering project hooks.
+- **Still open:** pixel rendering in a real VS Code host; rows 11–18; the
+  hook-suppression handling.
+
+The original night's self-grade and peer grade stand below as the record.
 
 ## Self-grade (the author's line — never the deciding one, D-2)
 
-**Overall: 9 / 18 green.** Honest, adversarial read below. Per-row status is in
+**Overall: 10 / 18 green.** Honest, adversarial read below. Per-row status is in
 `PARITY-CHECKLIST.md` with file+test evidence; this is the judgment over it.
 
 ### What is genuinely solid
@@ -27,14 +163,14 @@ engine-drive half of the parity bar plumbed and tested host-free.
   `--include-partial-messages`, `--permission-mode`, `--resume`, …), not assumed.
 
 ### What is thin — and the single riskiest over-claim
-- **🔴 THE BIG ONE: rows 5–9 are `green` against a FAKE engine and NO real billed
+- **🔴 THE BIG ONE: rows 5–10 are `green` against a FAKE engine and NO real billed
   turn has ever run.** "Drive a turn" (5), "stream the turn" (6), "tool calls"
   (7), "diffs" (8), "permission modes" (9) are proven at the level of *the code
   path, the event-fold, and the host message protocol* — using injected fake
   engines and captured event shapes. **Not one real `claude` turn has been driven
   through this surface, and not one pixel has been rendered in a real VS Code
   host.** `green` here means "the plumbing is tested," not "it works in the
-  window." Read 9/18 as *half the checklist plumbed and unit-tested host-free*,
+  window." Read 10/18 as *half the checklist plumbed and unit-tested host-free*,
   **not** *half a working product you can use*.
 - **Nothing has run in an actual VS Code host.** All rendering is asserted on
   HTML-string markup, never a live webview. The first real `code --extensionDevelopmentPath`
@@ -44,11 +180,11 @@ engine-drive half of the parity bar plumbed and tested host-free.
   callback is an SDK/persistent-session feature this CLI version doesn't advertise
   — so live in-turn permission prompts are not covered.
 
-### What's left for parity (rows 10–18, all `todo`)
-slash commands (10) · plan mode (11) · @-mentions / IDE selection (12) · MCP
+### What's left for parity (rows 11–18, all `todo`)
+plan mode (11) · @-mentions / IDE selection (12) · MCP
 available+invocable (13) · hooks/skills/settings inherited (14) · image/file
 attach (15) · resume/continue (16) · stop/interrupt a turn (17) · cost/usage
-display (18). Several are `inherit` (10, 11, 13, 14, 16, 17) — likely faster, but
+display (18). Several are `inherit` (11, 13, 14, 16, 17) — likely faster, but
 each still needs a green row with evidence, and **rows 13–14 (the actual
 environment inheritance) are the load-bearing parity claim and are not yet
 proven.**
@@ -71,7 +207,7 @@ risk concentrates. Grade it as half the *plumbing*, not half the *product*.
 
 **Verdict: the review is non-vacuous — it found real bugs, concentrated exactly
 where the self-grade flagged the risk (the engine/drive path that has never run
-live).** This independently corroborates the headline caveat: 9/18 is plumbing,
+live).** This independently corroborates the headline caveat: 10/18 is plumbing,
 not a proven product. Ranked findings (most severe first):
 
 | # | Sev | File | Bug |
@@ -94,12 +230,32 @@ is **clean** (every interpolation escaped; streaming path uses `textContent`, no
 3 real host-crash/corruption/hang bugs that only a real billed turn would expose**
 — which is exactly why "tested against a fake engine" was flagged as the headline
 risk. None of these are blockers for a foundation PR; they are the punch-list for
-making rows 5–9 *real* before this surface is used.
+making rows 5–10 *real* before this surface is used.
 
 > Also noted: `vscode/CLAUDE.md` (the surface's governing conventions, from the
 > unlanded forest-mask PR #693) is **not on this branch's base** (main), so the
 > directory's own rules couldn't be cited — worth landing #693's `vscode/CLAUDE.md`
 > first or carrying it here.
+
+## needs-you (open items at the 18/18 close)
+
+- **A pre-existing red Python test, unrelated to this branch.**
+  `tests.test_summon.test_hook_shows_the_slowloop_proposal` asserts the summon hook
+  surfaces the "slow-loop dial" proposal, but the live `.ai-native/log` state has
+  moved on (the top gap is now `file_touch` idle-part), so it fails — **red on
+  `main` too**, not caused by the vscode/ JS here. It blocks the normal green-suite
+  push gate for everyone; every push in this close-out used `--red-ok` declaring it.
+  It is a state-coupled test that should be made deterministic or re-pinned (bdo's /
+  a future session's call).
+- **First real-host load is unproven** — `code --extensionDevelopmentPath` + one
+  live turn per row is the next gate, and it is yours to run.
+- **In-repo hook-suppression is open** — driving a turn from inside a hooked project
+  returns empty (clean in `/tmp`); the surface must drive without re-triggering the
+  project's `UserPromptSubmit` hooks.
+- **The cloud `/code-review ultra`** you chose is yours to trigger on this PR (a
+  session can't launch it); the in-process `max`/close-out reviews stand in the record.
+- **`vscode/CLAUDE.md`** (the surface's conventions, from the unlanded forest-mask
+  PR #693) is not on this branch's base — worth landing or carrying.
 
 ## bdo's grade (yours to fill)
 

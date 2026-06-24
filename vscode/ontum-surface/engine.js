@@ -36,18 +36,28 @@
 
 const { foldTranscript } = require('./transcript');
 
-// encodeUserMessage(text) -> the single stream-json input line the CLI reads on
-// stdin: a user-message envelope, newline-terminated (the channel is the same
-// newline-delimited JSON the rest of the loop folds). Content is sent as an
-// array of text blocks — the canonical Messages-API shape the engine accepts.
-function encodeUserMessage(text) {
-  const msg = {
-    type: 'user',
-    message: {
-      role: 'user',
-      content: [{ type: 'text', text: String(text == null ? '' : text) }],
-    },
-  };
+// encodeUserMessage(text, attachments) -> the single stream-json input line the
+// CLI reads on stdin: a user-message envelope, newline-terminated (the channel
+// is the same newline-delimited JSON the rest of the loop folds). Content is an
+// array of content blocks — the canonical Messages-API shape the engine accepts.
+//
+// `attachments` (row 15) is an optional array of already-built content blocks
+// (attach.attachmentBlocks: image/document/text), folded in AHEAD of the typed
+// text — the convention the API expects (the image/file leads, the question
+// follows). With NO attachments the content is EXACTLY `[{type:'text',text}]`,
+// so every earlier row's verbatim-stdin proof (the prompt is content[0].text)
+// still holds — row 15 is purely additive. Only well-formed blocks
+// ({type:string}) are admitted, so a malformed attachment can never corrupt the
+// envelope.
+function encodeUserMessage(text, attachments) {
+  const content = [];
+  if (Array.isArray(attachments)) {
+    for (const b of attachments) {
+      if (b && typeof b === 'object' && typeof b.type === 'string') content.push(b);
+    }
+  }
+  content.push({ type: 'text', text: String(text == null ? '' : text) });
+  const msg = { type: 'user', message: { role: 'user', content } };
   return JSON.stringify(msg) + '\n';
 }
 
@@ -87,8 +97,16 @@ function normalizePermissionMode(m) {
 //                          --allowedTools when non-empty.
 //   opts.disallowedTools  — array of tool specs to forbid (row 9's deny-list);
 //                          emitted as --disallowedTools when non-empty.
-//   opts.resume          — a session id to continue (row 16 territory; passed
-//                          through here so a resumed turn uses the same channel).
+//   opts.resume          — a session id to RESUME (row 16): emitted as
+//                          `--resume <id>` so the turn continues that exact
+//                          conversation (verified live: `-r/--resume [sessionId]`).
+//   opts.continueSession  — continue the MOST RECENT conversation (row 16):
+//                          emitted as `--continue` (verified live: `-c/--continue`).
+//   opts.forkSession      — when resuming/continuing, branch a NEW session id off
+//                          it instead of reusing the original (row 16): emitted as
+//                          `--fork-session`, valid with either resume or continue
+//                          (verified live). Conservative — emitted ONLY alongside a
+//                          resume/continue, never on its own.
 //   opts.model           — optional model override (passed as --model).
 // The flags mirror exactly what `claude --help` advertises (verified live).
 function engineArgs(opts) {
@@ -110,12 +128,112 @@ function engineArgs(opts) {
   if (Array.isArray(o.disallowedTools) && o.disallowedTools.length) {
     args.push('--disallowedTools', ...o.disallowedTools.map(String));
   }
-  if (o.resume) {
-    args.push('--resume', String(o.resume));
-    if (o.forkSession) args.push('--fork-session');
+  // Row 13 — MCP. Point the engine at extra MCP server config(s) (the
+  // live-verified `--mcp-config` flag accepts JSON files or inline strings);
+  // `--strict-mcp-config` then uses ONLY those, ignoring other MCP config. The
+  // surface stays a fold of the inherited engine — an MCP tool is invoked by the
+  // engine mid-turn (pass-through), authorizable by name via the allow-list
+  // above (`mcp__server__tool`). Emitted only when a config is supplied, so the
+  // default drive (which inherits the cwd's MCP config) is unchanged.
+  if (Array.isArray(o.mcpConfig) && o.mcpConfig.length) {
+    args.push('--mcp-config', ...o.mcpConfig.map(String));
+    if (o.strictMcpConfig) args.push('--strict-mcp-config');
   }
-  if (o.model) args.push('--model', String(o.model));
+  // Row 16 — resume / continue an existing session. The CLI exposes (verified
+  // live on this machine): `-c/--continue` (the most recent conversation) and
+  // `-r/--resume [sessionId]` (a specific one); `--fork-session` branches a NEW
+  // session id off the resumed/continued one (valid with EITHER). Emitted only
+  // when asked, so the default drive starts a fresh session unchanged; and
+  // `--fork-session` is conservative — it rides ONLY alongside a resume/continue,
+  // never on its own (a lone fork has nothing to fork from).
+  if (o.continueSession) args.push('--continue');
+  if (o.resume) args.push('--resume', String(o.resume));
+  if ((o.resume || o.continueSession) && o.forkSession) {
+    args.push('--fork-session');
+  }
+  // Pin a real model id. The CLI's bare default resolves the alias "opus",
+  // which the API rejects with 404 in headless stream-json mode (caught by a
+  // real turn — a fake engine can't see it). Caller's o.model wins; otherwise a
+  // valid default so a real drive works out of the box. Overridable, not a
+  // policy constant — the surface lets the user pick (the model select).
+  args.push('--model', o.model ? String(o.model) : DEFAULT_MODEL);
   return args;
+}
+
+// A concrete, valid model id (the bare "opus"/"sonnet" aliases 404 headless).
+const DEFAULT_MODEL = 'claude-opus-4-8';
+
+// --- row 16: resume / continue an existing session --------------------------
+// Normal Claude Code can RESUME a specific past conversation (`-r/--resume
+// <sessionId>`) or CONTINUE the most recent one (`-c/--continue`);
+// `--fork-session` branches a NEW session id off either. The spike resolved this
+// row to `inherit` — the SAME `claude` binary exposes exactly these levers
+// (verified live this tick). The surface expresses the human's choice as a small
+// "resume target": { mode, sessionId, fork }.
+//   mode 'new'      — start a fresh session (the default; no resume flags).
+//   mode 'continue' — continue the most recent conversation (--continue).
+//   mode 'resume'   — resume a specific sessionId (--resume <id>).
+const RESUME_MODES = ['new', 'continue', 'resume'];
+
+// normalizeResumeTarget(t) -> a fully-formed { mode, sessionId, fork }, kept
+// conservative by construction: an unknown mode, or a 'resume' with no
+// sessionId, falls back to 'new' (a turn never silently resumes the wrong
+// session). Accepts a target object or a bare mode string.
+function normalizeResumeTarget(t) {
+  const o = t && typeof t === 'object' ? t : { mode: t };
+  let mode = RESUME_MODES.indexOf(o.mode) >= 0 ? o.mode : 'new';
+  const sessionId =
+    typeof o.sessionId === 'string' && o.sessionId ? o.sessionId : null;
+  // A 'resume' with no session id has nothing to resume — fall back to 'new'.
+  if (mode === 'resume' && !sessionId) mode = 'new';
+  return {
+    mode,
+    sessionId: mode === 'resume' ? sessionId : null,
+    fork: o.fork === true,
+  };
+}
+
+// resumeArgsFromTarget(t) -> the engineArgs opts fragment for a resume target:
+// { resume?, continueSession?, forkSession? }. A 'new' target yields {} (no
+// resume flags — the default fresh-session drive is unchanged). Pure, so a test
+// proves the target -> argv mapping host-free.
+function resumeArgsFromTarget(t) {
+  const n = normalizeResumeTarget(t);
+  const out = {};
+  if (n.mode === 'continue') out.continueSession = true;
+  if (n.mode === 'resume') out.resume = n.sessionId;
+  if (n.mode !== 'new' && n.fork) out.forkSession = true;
+  return out;
+}
+
+// --- row 17: stop / interrupt a running turn --------------------------------
+// Normal Claude Code lets the human STOP an in-flight turn (Esc / the Stop
+// button). The spike marked this `inherit` ("stream-json control / process
+// signal"); grounded live this tick: `claude --help` advertises NO interrupt /
+// abort / control flag for the `--print` headless channel (no
+// `--interrupt`/`--abort`/control-request option exists in 2.0.19). So the only
+// honest way to stop an in-flight HEADLESS turn is to TERMINATE the spawned
+// engine process — the same `child.kill()` the watchdog uses, here
+// user-initiated. The turn then settles via its `close` with whatever events
+// arrived, folded by foldReply and LABELLED interrupted (markInterrupted) so the
+// surface reports an honest, partial stop — never a fabricated completion.
+const INTERRUPT_SUBTYPE = 'interrupted';
+
+// markInterrupted(reply) -> the reply re-labelled as a user interrupt, pure (a
+// shallow merge that PRESERVES every folded field — sessionId, the entries +
+// text that streamed before the stop, exitCode/stderr — so a stopped turn shows
+// its honest partial result, not an empty one). isError is true and subtype is
+// 'interrupted' (distinct from a 'no-result' engine failure or a 'timeout'), so
+// the surface can render "Turn stopped." rather than "Turn failed." A test
+// proves the labelling host-free.
+function markInterrupted(reply) {
+  const r = reply && typeof reply === 'object' ? reply : {};
+  return Object.assign({}, r, {
+    interrupted: true,
+    isError: true,
+    subtype: INTERRUPT_SUBTYPE,
+    error: r.error || 'turn interrupted by the user',
+  });
 }
 
 // foldReply(events) -> the ONE turn's reply, folded from the output events.
@@ -299,7 +417,11 @@ function assembleStream(events) {
     if (!d) continue;
     let block = byIndex.get(d.index);
     if (!block) {
-      block = { index: d.index, kind: d.kind || 'assistant-text', text: '' };
+      // A 'stop' (or any kindless instruction) for an index that never opened —
+      // a torn/dropped block-start — has nothing to close; don't materialize a
+      // spurious empty 'assistant-text' block (it would break preview==fold).
+      if (d.phase === 'stop' || !d.kind) continue;
+      block = { index: d.index, kind: d.kind, text: '' };
       byIndex.set(d.index, block);
       order.push(block);
     }
@@ -315,19 +437,37 @@ function assembleStream(events) {
 // output events (torn-tail tolerant, the same fold law as the store), and
 // resolves with foldReply(events) once the process closes.
 //   opts.prompt          — the user text to send (required).
+//   opts.attachments     — optional content blocks (row 15: image/file attach)
+//                          folded ahead of the prompt by encodeUserMessage.
 //   opts.cwd             — working dir for the engine (defaults to process.cwd).
 //   opts.bin             — the engine binary (default 'claude').
 //   opts.spawn           — injectable spawn (default child_process.spawn) so a
 //                          test can feed a fake process — no real model call.
 //   opts.onEvent(ev)     — optional per-event hook (row 6 will stream on it).
-//   opts.permissionMode/resume/forkSession/model — forwarded to engineArgs.
+//   opts.onStart(handle) — optional hook called SYNCHRONOUSLY once the engine
+//                          process has spawned, handed a control handle
+//                          `{ interrupt(), child }` (row 17). `interrupt()`
+//                          terminates the running turn (kills the engine
+//                          process); the turn then settles with an honest
+//                          interrupted reply. Returns true when it stopped a
+//                          live turn, false when the turn had already settled
+//                          (idempotent — a late Stop is a harmless no-op).
+//   opts.permissionMode/resume/continueSession/forkSession/model — forwarded to
+//                          engineArgs (row 16: resume/continue an existing session).
 // Rejects only on a spawn/process error; a turn that ends in an engine error
 // resolves with isError:true so the surface can render the failure honestly.
+// Default watchdog: a turn that never closes (a wedged tool/MCP holding the
+// stdio pipes open) must not hang the surface forever. opts.timeoutMs overrides;
+// <= 0 disables it.
+const DEFAULT_TURN_TIMEOUT_MS = 120000;
+
 function driveTurn(opts) {
   const o = opts || {};
   const spawnFn = o.spawn || require('child_process').spawn;
   const bin = o.bin || 'claude';
   const args = engineArgs(o);
+  const timeoutMs = typeof o.timeoutMs === 'number'
+    ? o.timeoutMs : DEFAULT_TURN_TIMEOUT_MS;
 
   return new Promise((resolve, reject) => {
     let child;
@@ -345,6 +485,45 @@ function driveTurn(opts) {
     let stdoutBuf = '';
     let stderr = '';
     let settled = false;
+    let timer = null;
+    let interrupted = false;
+
+    // Row 17 — the interrupt controller. There is no headless control flag
+    // (verified live: `claude --print --help` has no interrupt/abort option), so
+    // a Stop terminates the engine process; the 'close' handler then folds the
+    // partial events and labels the reply interrupted (markInterrupted). The
+    // handle is handed to opts.onStart synchronously so the surface can wire a
+    // Stop button to this exact running turn. Idempotent: a Stop after the turn
+    // has already settled returns false and does nothing.
+    function interrupt() {
+      if (settled) return false;
+      interrupted = true;
+      try {
+        if (child && typeof child.kill === 'function') child.kill();
+      } catch (_) {
+        /* best-effort — the process may have already exited */
+      }
+      return true;
+    }
+    if (typeof o.onStart === 'function') {
+      try {
+        o.onStart({ interrupt, child });
+      } catch (_) {
+        /* a bad onStart hook must not break the drive */
+      }
+    }
+
+    // Decode stdout across chunk boundaries: the OS splits the pipe at arbitrary
+    // byte offsets, so a multibyte UTF-8 sequence can straddle two chunks.
+    // StringDecoder holds the incomplete trailing bytes until they complete, so
+    // a split 'é'/emoji/CJK char is never mangled to U+FFFD (the store fold and
+    // livetail get this right on raw bytes; this is the request-side twin). A
+    // string chunk (a test's fake stdout) passes through unchanged.
+    const decoder = new (require('string_decoder').StringDecoder)('utf8');
+
+    function done() {
+      if (timer) { clearTimeout(timer); timer = null; }
+    }
 
     function consumeLine(line) {
       const s = line.trim();
@@ -365,52 +544,97 @@ function driveTurn(opts) {
       }
     }
 
+    function drainLines() {
+      let nl;
+      while ((nl = stdoutBuf.indexOf('\n')) >= 0) {
+        const line = stdoutBuf.slice(0, nl);
+        stdoutBuf = stdoutBuf.slice(nl + 1);
+        consumeLine(line);
+      }
+    }
+
     if (child.stdout && typeof child.stdout.on === 'function') {
       child.stdout.on('data', (chunk) => {
-        stdoutBuf += chunk.toString('utf8');
-        let nl;
-        while ((nl = stdoutBuf.indexOf('\n')) >= 0) {
-          const line = stdoutBuf.slice(0, nl);
-          stdoutBuf = stdoutBuf.slice(nl + 1);
-          consumeLine(line);
-        }
+        stdoutBuf += Buffer.isBuffer(chunk)
+          ? decoder.write(chunk) : String(chunk);
+        drainLines();
       });
     }
     if (child.stderr && typeof child.stderr.on === 'function') {
       child.stderr.on('data', (chunk) => {
-        stderr += chunk.toString('utf8');
+        stderr += Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk);
       });
     }
 
     child.on('error', (err) => {
       if (settled) return;
       settled = true;
+      done();
       reject(err);
     });
 
     child.on('close', (code) => {
       if (settled) return;
       settled = true;
-      // Flush a trailing complete line with no closing newline (best-effort).
+      done();
+      // Flush any bytes the decoder still holds, then the trailing line (best-effort).
+      stdoutBuf += decoder.end();
+      drainLines();
       consumeLine(stdoutBuf);
       const reply = foldReply(events);
       reply.exitCode = typeof code === 'number' ? code : null;
       reply.stderr = stderr;
-      resolve(reply);
+      // Row 17 — a user Stop killed the process: fold whatever events arrived and
+      // label the reply interrupted (honest partial result, not a fake success).
+      resolve(interrupted ? markInterrupted(reply) : reply);
     });
+
+    // Writing the prompt to a child that already exited delivers EPIPE/ECONNRESET
+    // ASYNCHRONOUSLY as an 'error' event on stdin — the try/catch around write()
+    // never sees it, and with no listener Node escalates it to an uncaught
+    // exception that takes down the extension host. Listen for it.
+    if (child.stdin && typeof child.stdin.on === 'function') {
+      child.stdin.on('error', (err) => {
+        if (settled) return; // a post-turn pipe close is harmless
+        settled = true;
+        done();
+        reject(err);
+      });
+    }
 
     // Send the prompt down the channel and close stdin so the engine runs the
     // single turn and exits (the --print one-shot contract).
     try {
       if (child.stdin && typeof child.stdin.write === 'function') {
-        child.stdin.write(encodeUserMessage(o.prompt));
+        child.stdin.write(encodeUserMessage(o.prompt, o.attachments));
         if (typeof child.stdin.end === 'function') child.stdin.end();
       }
     } catch (err) {
       if (!settled) {
         settled = true;
+        done();
         reject(err);
       }
+    }
+
+    // The watchdog: if neither close nor error fires within the budget, kill the
+    // child and settle with whatever events arrived (timedOut + isError) so the
+    // surface renders an honest failure instead of spinning forever.
+    if (timeoutMs > 0) {
+      timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        timer = null;
+        try { child.kill(); } catch (_) { /* best-effort */ }
+        const reply = foldReply(events);
+        reply.timedOut = true;
+        reply.isError = true;
+        reply.error = reply.error
+          || ('engine turn timed out after ' + timeoutMs + 'ms');
+        reply.stderr = stderr;
+        resolve(reply);
+      }, timeoutMs);
+      if (typeof timer.unref === 'function') timer.unref();
     }
   });
 }
@@ -425,4 +649,13 @@ module.exports = {
   // Row 9 — the permission surface (mode normalization + the mode list).
   PERMISSION_MODES,
   normalizePermissionMode,
+  // Row 16 — resume / continue (the conservative target normalizer + its argv
+  // mapping; one source of truth for the surface and the test).
+  RESUME_MODES,
+  normalizeResumeTarget,
+  resumeArgsFromTarget,
+  // Row 17 — stop / interrupt a running turn (the interrupt subtype + the pure
+  // reply labeller; the live interrupt itself is driveTurn's onStart controller).
+  INTERRUPT_SUBTYPE,
+  markInterrupted,
 };

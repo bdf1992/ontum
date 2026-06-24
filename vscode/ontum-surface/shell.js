@@ -16,7 +16,19 @@
 'use strict';
 
 const { diffFromToolUse } = require('./diff');
-const { PERMISSION_MODES, normalizePermissionMode } = require('./engine');
+const {
+  PERMISSION_MODES,
+  normalizePermissionMode,
+  normalizeResumeTarget,
+} = require('./engine');
+const { planFromToolUse, isPlanMode } = require('./plan');
+const {
+  foldUsage,
+  usageSummary,
+  formatUsd,
+  formatTokens,
+  formatDuration,
+} = require('./usage');
 
 // A small, dependency-free nonce for the webview Content-Security-Policy.
 // (Webview scripts must carry a nonce the CSP whitelists; without one the
@@ -157,9 +169,44 @@ function renderDiffBlock(d) {
   );
 }
 
+// renderPlanBlock(p) -> the HTML of an ExitPlanMode tool-call rendered as a
+// PLAN CARD with approve/keep-planning controls (row 11). `p` comes from
+// plan.planFromToolUse (a pure fold of the engine's own ExitPlanMode tool_use
+// record). The block is still a tool-use (data-kind="tool-use", so row 7's
+// structure/CSS holds) but is flagged data-plan-tool="true" and carries: a
+// header, the proposed plan text (escaped), and two decision buttons
+// (data-plan-decision approve|keep) carrying the tool id. The buttons post
+// `ontum:plan-decision` to the host (the delegated handler in the shell
+// script), which records the decision and — on approve — EXITS plan mode so the
+// work can proceed. HONEST SCOPE: this renders the plan and the approve/keep
+// AFFORDANCE and proves the decision round-trip + the mode transition; actually
+// running the approved work is the engine's job under the exited mode.
+function renderPlanBlock(p) {
+  const name = escapeHtml(p.name || 'ExitPlanMode');
+  const toolId = escapeHtml(p.toolId || '');
+  const plan = escapeHtml(p.plan || '');
+  return (
+    '<div class="ontum-msg" data-kind="tool-use" data-plan-tool="true" ' +
+    `data-tool-name="${name}" data-tool-id="${toolId}">` +
+    '<span class="ontum-role">plan &#9656; proposed</span>' +
+    '<div class="ontum-plan">' +
+    `<pre class="ontum-plan-text">${plan || '(no plan text)'}</pre>` +
+    '<div class="ontum-plan-actions" data-plan-state="pending">' +
+    `<button class="ontum-plan-decision" type="button" data-plan-decision="approve" data-tool-id="${toolId}">Approve &amp; proceed</button>` +
+    `<button class="ontum-plan-decision" type="button" data-plan-decision="keep" data-tool-id="${toolId}">Keep planning</button>` +
+    '</div>' +
+    '</div>' +
+    '</div>'
+  );
+}
+
 function renderTranscriptRow(e) {
   const kind = e && e.kind ? e.kind : '';
   if (kind === 'tool-use') {
+    // Row 11 — the ExitPlanMode tool renders as a plan card with approve/keep,
+    // not a raw JSON dump (checked before the diff/JSON paths below).
+    const plan = planFromToolUse(e);
+    if (plan) return renderPlanBlock(plan);
     // Row 8 — an edit tool (Edit/Write/MultiEdit/NotebookEdit) renders as a
     // diff with accept/reject instead of a raw JSON input dump.
     const diff = diffFromToolUse(e);
@@ -259,6 +306,128 @@ function renderPermissionControl(mode) {
   );
 }
 
+// renderResumeControl(target, selectedId) -> the inner HTML of the composer's
+// session-continuity surface (row 16). Normal Claude Code can start a fresh
+// session, CONTINUE the most recent conversation, or RESUME a specific one;
+// --fork-session branches a new id off either. The control offers those three
+// modes as buttons (the in-force one flagged aria-pressed), reflects the
+// in-force mode on a `data-resume-mode` mirror a cold reader / test can read,
+// and posts `{ type:'ontum:set-resume', mode, id }` to the host on click. The
+// "Resume selected" button carries the currently-selected session's id
+// (data-session-id from row 2) and is disabled when nothing is selected (there
+// is nothing to resume). Conservative by construction: the engine's
+// normalizeResumeTarget defaults an unknown mode / an id-less resume to 'new'.
+const RESUME_MODE_LABELS = {
+  new: 'New session',
+  continue: 'Continue recent',
+  resume: 'Resume selected',
+};
+function renderResumeControl(target, selectedId) {
+  const t = normalizeResumeTarget(
+    target && typeof target === 'object' ? target : { mode: target }
+  );
+  const selId = typeof selectedId === 'string' && selectedId ? selectedId : '';
+  // The in-force resume target: its session id is the one being resumed (resume
+  // mode) so a cold reader sees exactly which conversation the next turn joins.
+  const mirrorId = t.mode === 'resume' && t.sessionId ? t.sessionId : selId;
+  const btn = (mode) => {
+    const pressed = mode === t.mode ? ' aria-pressed="true"' : '';
+    // "Resume selected" needs a selected session to point at; without one it is
+    // disabled (nothing to resume) and carries no id.
+    const disabled = mode === 'resume' && !selId ? ' disabled' : '';
+    const idAttr =
+      mode === 'resume' && selId ? ` data-session-id="${escapeHtml(selId)}"` : '';
+    const label = escapeHtml(RESUME_MODE_LABELS[mode] || mode);
+    return (
+      `<button class="ontum-resume-btn" type="button" ` +
+      `data-resume="${escapeHtml(mode)}"${idAttr}${pressed}${disabled}>` +
+      `${label}</button>`
+    );
+  };
+  return (
+    '<div class="ontum-resume" data-region="resume" ' +
+    `data-resume-mode="${escapeHtml(t.mode)}" ` +
+    `data-resume-session="${escapeHtml(mirrorId || '')}">` +
+    '<span class="ontum-resume-label">Session</span>' +
+    btn('new') +
+    btn('continue') +
+    btn('resume') +
+    '</div>'
+  );
+}
+
+// renderUsageBar(reply, sessionTotal) -> the inner HTML of the composer's
+// cost/usage meter (row 18). Normal Claude Code shows what a turn cost — the
+// dollars, the tokens in/out (incl. prompt-cache), the wall time, the model
+// turns — and a session-cumulative total. This paints the LAST turn's usage
+// (usage.foldUsage of the engine reply) and, when supplied, the running session
+// total (usage.accumulateUsage). Every value is the engine's own reported usage
+// or an honest em-dash (usage.js never estimates); a turn that reported no usage
+// (errored before its result / a Stop) paints a calm "No usage reported yet."
+// rather than a fake row of zeros. The `data-*` mirrors let a cold reader / test
+// read the exact reported numbers without scraping the human labels.
+function renderUsageBar(reply, sessionTotal) {
+  const u = foldUsage(reply);
+  if (!u.hasData) {
+    return (
+      '<div class="ontum-usage" data-region="usage" data-has-usage="false">' +
+      '<span class="ontum-usage-label">Usage</span>' +
+      '<span class="ontum-usage-empty">No usage reported yet.</span>' +
+      '</div>'
+    );
+  }
+  const t = u.tokens;
+  const stat = (label, value, key) =>
+    `<span class="ontum-usage-stat" data-usage="${escapeHtml(key)}" ` +
+    `title="${escapeHtml(label)}">${escapeHtml(value)}</span>`;
+  const parts = [stat('Cost (USD)', formatUsd(u.cost), 'cost')];
+  if (t.total !== null) {
+    parts.push(stat('Total tokens', formatTokens(t.total) + ' tok', 'tokens'));
+    if (t.input !== null) parts.push(stat('Input tokens', formatTokens(t.input) + ' in', 'input'));
+    if (t.output !== null) parts.push(stat('Output tokens', formatTokens(t.output) + ' out', 'output'));
+    if (t.cacheRead !== null) {
+      parts.push(stat('Cache-read tokens', formatTokens(t.cacheRead) + ' cache-read', 'cache-read'));
+    }
+    if (t.cacheCreation !== null) {
+      parts.push(stat('Cache-write tokens', formatTokens(t.cacheCreation) + ' cache-write', 'cache-write'));
+    }
+  }
+  if (u.durationMs !== null) parts.push(stat('Duration', formatDuration(u.durationMs), 'duration'));
+  if (u.numTurns !== null) {
+    parts.push(stat('Model turns', u.numTurns + (u.numTurns === 1 ? ' turn' : ' turns'), 'turns'));
+  }
+  // The session-cumulative total (usage.accumulateUsage), shown when supplied
+  // and it has spent anything — so a cold reader sees the running tab, not just
+  // the last turn.
+  let totalHtml = '';
+  const st = sessionTotal && typeof sessionTotal === 'object' ? sessionTotal : null;
+  if (st && (typeof st.cost === 'number' || (st.tokens && typeof st.tokens.total === 'number'))) {
+    const stTokens = st.tokens && typeof st.tokens === 'object' ? st.tokens : {};
+    totalHtml =
+      '<span class="ontum-usage-total" data-region="usage-total" ' +
+      `data-usage-total-cost="${escapeHtml(formatUsd(st.cost))}" ` +
+      `data-usage-total-turns="${escapeHtml(String(st.turns == null ? '' : st.turns))}">` +
+      'Session: ' +
+      escapeHtml(formatUsd(st.cost)) +
+      ' \u00b7 ' +
+      escapeHtml(formatTokens(stTokens.total) + ' tok') +
+      (st.turns != null
+        ? ' \u00b7 ' + escapeHtml(st.turns + (st.turns === 1 ? ' turn' : ' turns'))
+        : '') +
+      '</span>';
+  }
+  return (
+    '<div class="ontum-usage" data-region="usage" data-has-usage="true" ' +
+    `data-usage-cost="${escapeHtml(formatUsd(u.cost))}" ` +
+    `data-usage-tokens="${escapeHtml(t.total === null ? '' : String(t.total))}" ` +
+    `data-usage-summary="${escapeHtml(usageSummary(reply))}">` +
+    '<span class="ontum-usage-label">Usage</span>' +
+    parts.join('') +
+    totalHtml +
+    '</div>'
+  );
+}
+
 // renderSlashMenu(commands) -> the inner HTML of the composer's slash-command
 // palette (row 10). Each command from slash.listSlashCommands (a pure fold of
 // the on-disk command store + the built-ins) is a selectable button carrying
@@ -295,6 +464,230 @@ function renderSlashMenu(commands) {
   );
 }
 
+// renderMentionMenu(targets) -> the inner HTML of the composer's @-mention
+// palette (row 12). Each target from mentions.listMentionTargets (a bounded
+// pure fold of the workspace file tree) is a selectable button carrying
+// `data-mention="<path>"`; clicking it replaces the @-token being typed with
+// `@<path> ` so the human can finish + send it down the SAME engine channel
+// row 5 drives (an @-mention is context the engine reads — pass-through). The
+// menu is hidden until the composer's caret is inside an '@' token, and the
+// shell script filters it by the partial path being typed. An empty/absent
+// workspace fold paints an honest note (no fake row).
+function renderMentionMenu(targets) {
+  const list = Array.isArray(targets) ? targets : [];
+  if (list.length === 0) {
+    return '<p class="ontum-empty">No workspace files to mention yet.</p>';
+  }
+  const items = list
+    .map((t) => {
+      const p = escapeHtml(t && t.path ? t.path : '');
+      const name = escapeHtml(t && t.name ? t.name : '');
+      return (
+        `<li><button class="ontum-mention-item" type="button" ` +
+        `data-mention="${p}">` +
+        `<span class="ontum-mention-path">@${p}</span>` +
+        `<span class="ontum-mention-name">${name}</span>` +
+        `</button></li>`
+      );
+    })
+    .join('\n        ');
+  return (
+    `<ul class="ontum-mention-list" data-count="${list.length}">\n        ` +
+    items +
+    `\n      </ul>`
+  );
+}
+
+// renderAttachTray(attachments) -> the inner HTML of the composer's attachment
+// tray (row 15). Each attachment from attach.displayAttachment (a data-free
+// view — name/kind/bytes/error, never the base64 payload) is a chip carrying
+// `data-attachment="<name>"` + `data-kind` + a Remove button (`data-attach-name`
+// for the delegated remove handler). An errored attachment (missing/too large)
+// shows its honest error, not a fake success. The tray is hidden until at least
+// one attachment is staged; the attachments ride the NEXT turn as content blocks
+// ahead of the typed text (engine.encodeUserMessage folds them in). An empty
+// list paints nothing (the container + wiring still ship). All escaped.
+function renderAttachTray(attachments) {
+  const list = Array.isArray(attachments) ? attachments : [];
+  if (list.length === 0) return '';
+  const items = list
+    .map((a) => {
+      const name = escapeHtml(a && a.name ? a.name : 'attachment');
+      const kind = escapeHtml(a && a.kind ? a.kind : 'text');
+      const bytes = a && typeof a.bytes === 'number' ? a.bytes : 0;
+      const err = a && a.error ? escapeHtml(a.error) : '';
+      const meta = err ? 'error: ' + err : kind + ' · ' + formatBytes(bytes);
+      return (
+        `<li class="ontum-attach-chip" data-attachment="${name}" ` +
+        `data-kind="${kind}"${err ? ' data-error="true"' : ''}>` +
+        `<span class="ontum-attach-name">${name}</span>` +
+        `<span class="ontum-attach-meta">${escapeHtml(meta)}</span>` +
+        `<button class="ontum-attach-remove" type="button" ` +
+        `data-attach-name="${name}" aria-label="Remove ${name}">&times;</button>` +
+        `</li>`
+      );
+    })
+    .join('\n        ');
+  return (
+    `<ul class="ontum-attach-list" data-count="${list.length}">\n        ` +
+    items +
+    `\n      </ul>`
+  );
+}
+
+// formatBytes(n) -> a short human size for an attachment chip (B / KB / MB).
+function formatBytes(n) {
+  const b = typeof n === 'number' && n >= 0 ? n : 0;
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  return (b / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// renderMcpPanel(servers) -> the inner HTML of the Sessions aside's MCP region
+// (row 13). Each server from mcp.listMcpServers (a fold of the on-disk MCP
+// config the CLI reads, annotated with the LIVE engine tools list) is a
+// labelled block carrying `data-mcp-server="<name>"`, its scope + transport, an
+// `data-available` flag (true once the live env exposes its tools so the engine
+// can invoke them), and its tools as `data-mcp-tool="mcp__server__tool"` items
+// (the exact identifier the engine names + the row-9 allow-list authorizes).
+// All escaped — a fold, never a second source. An empty/absent config paints an
+// honest note (no fake server). The engine remains authoritative on what each
+// MCP tool does; this is the available-tools surface, not an MCP client.
+function renderMcpPanel(servers) {
+  const list = Array.isArray(servers) ? servers : [];
+  if (list.length === 0) {
+    return '<p class="ontum-empty">No MCP servers configured for this folder.</p>';
+  }
+  const items = list
+    .map((s) => {
+      const name = escapeHtml(s && s.name ? s.name : '');
+      const scope = escapeHtml(s && s.scope ? s.scope : 'project');
+      const transport = escapeHtml(s && s.transport ? s.transport : 'unknown');
+      const tools = Array.isArray(s && s.tools) ? s.tools : [];
+      const available = s && s.available ? 'true' : 'false';
+      const count = tools.length;
+      const meta = available === 'true'
+        ? `${transport} · ${count} tool${count === 1 ? '' : 's'}`
+        : `${transport} · not loaded`;
+      const toolsHtml = count
+        ? tools
+            .map((t) => {
+              const tn = escapeHtml(t);
+              const id = escapeHtml('mcp__' + (s && s.name ? s.name : '') + '__' + t);
+              return (
+                `<li class="ontum-mcp-tool" data-mcp-tool="${id}">${tn}</li>`
+              );
+            })
+            .join('')
+        : '<li class="ontum-mcp-tool ontum-mcp-none">tools load when the engine connects</li>';
+      return (
+        `<li class="ontum-mcp-server" data-mcp-server="${name}" ` +
+        `data-scope="${scope}" data-available="${available}">` +
+        `<span class="ontum-mcp-name">${name}</span>` +
+        `<span class="ontum-mcp-meta">${escapeHtml(meta)}</span>` +
+        `<ul class="ontum-mcp-tools">${toolsHtml}</ul>` +
+        `</li>`
+      );
+    })
+    .join('\n      ');
+  return (
+    `<ul class="ontum-mcp-list" data-count="${list.length}">\n      ` +
+    items +
+    `\n    </ul>`
+  );
+}
+
+// renderEnvPanel(env) -> the inner HTML of the Sessions aside's Environment
+// region (row 14). `env` comes from environment.listEnvironment (a fold of the
+// same on-disk config the CLI reads): the settings LAYERS, the configured
+// HOOKS, and the available SKILLS the engine inherits. Three labelled groups,
+// all escaped (a fold, never a second source):
+//   · settings — each layer as `data-env-settings="<scope>"` with a
+//     `data-present` flag + its top-level keys (the search path the CLI merges);
+//   · hooks    — each as `data-env-hook="<event>"` carrying its matcher + scope
+//     (what the engine runs on PreToolUse / Stop / …);
+//   · skills   — each as `data-env-skill="<name>"` with its description + scope
+//     (what the engine can call).
+// An absent/empty environment paints an honest note per group (no fake row).
+// The engine remains authoritative on what a hook DOES and whether a skill
+// loads; this is the inherited-environment surface, not a re-implementation.
+function renderEnvPanel(env) {
+  const e = env && typeof env === 'object' ? env : {};
+  const settings = Array.isArray(e.settings) ? e.settings : [];
+  const hooks = Array.isArray(e.hooks) ? e.hooks : [];
+  const skills = Array.isArray(e.skills) ? e.skills : [];
+
+  const settingsHtml = settings.length
+    ? settings
+        .map((s) => {
+          const scope = escapeHtml(s && s.scope ? s.scope : 'project');
+          const present = s && s.present ? 'true' : 'false';
+          const keys = Array.isArray(s && s.keys) ? s.keys : [];
+          const meta = present === 'true'
+            ? (keys.length ? keys.map(escapeHtml).join(', ') : '(no keys)')
+            : 'not present';
+          return (
+            `<li class="ontum-env-settings" data-env-settings="${scope}" ` +
+            `data-present="${present}">` +
+            `<span class="ontum-env-scope">${scope}</span>` +
+            `<span class="ontum-env-meta">${escapeHtml(meta)}</span>` +
+            `</li>`
+          );
+        })
+        .join('')
+    : '<li class="ontum-empty">No settings layers.</li>';
+
+  const hooksHtml = hooks.length
+    ? hooks
+        .map((h) => {
+          const event = escapeHtml(h && h.event ? h.event : '');
+          const matcher = escapeHtml(h && h.matcher ? h.matcher : '*');
+          const scope = escapeHtml(h && h.scope ? h.scope : 'project');
+          return (
+            `<li class="ontum-env-hook" data-env-hook="${event}" ` +
+            `data-scope="${scope}">` +
+            `<span class="ontum-env-hook-event">${event}</span>` +
+            `<span class="ontum-env-hook-matcher">${matcher}</span>` +
+            `<span class="ontum-env-scope">${scope}</span>` +
+            `</li>`
+          );
+        })
+        .join('')
+    : '<li class="ontum-empty">No hooks configured.</li>';
+
+  const skillsHtml = skills.length
+    ? skills
+        .map((s) => {
+          const name = escapeHtml(s && s.name ? s.name : '');
+          const scope = escapeHtml(s && s.scope ? s.scope : 'project');
+          const desc = escapeHtml(s && s.description ? s.description : '');
+          return (
+            `<li class="ontum-env-skill" data-env-skill="${name}" ` +
+            `data-scope="${scope}">` +
+            `<span class="ontum-env-skill-name">${name}</span>` +
+            `<span class="ontum-env-skill-desc">${desc}</span>` +
+            `</li>`
+          );
+        })
+        .join('')
+    : '<li class="ontum-empty">No skills available.</li>';
+
+  return (
+    `<div class="ontum-env-group" data-env-group="settings">` +
+    `<p class="ontum-env-subtitle">Settings (${settings.filter((s) => s && s.present).length} present)</p>` +
+    `<ul class="ontum-env-list" data-count="${settings.length}">${settingsHtml}</ul>` +
+    `</div>` +
+    `<div class="ontum-env-group" data-env-group="hooks">` +
+    `<p class="ontum-env-subtitle">Hooks (${hooks.length})</p>` +
+    `<ul class="ontum-env-list" data-count="${hooks.length}">${hooksHtml}</ul>` +
+    `</div>` +
+    `<div class="ontum-env-group" data-env-group="skills">` +
+    `<p class="ontum-env-subtitle">Skills (${skills.length})</p>` +
+    `<ul class="ontum-env-list" data-count="${skills.length}">${skillsHtml}</ul>` +
+    `</div>`
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
@@ -307,6 +700,10 @@ function renderSlashMenu(commands) {
 //   opts.transcript — [entry] from transcript.readTranscript().entries; fills
 //                     the Transcript section (row 3). Absent -> an honest
 //                     "pick a session" note (no session selected yet).
+//   opts.environment — { settings, hooks, skills } from
+//                     environment.listEnvironment(); fills the Environment
+//                     region in the Sessions aside (row 14). Absent -> honest
+//                     empty notes per group (the region + wiring still ship).
 //
 // The returned document is *standalone*: it references no resource from, and
 // names no dependency on, the official Claude Code panel. It declares itself
@@ -326,10 +723,50 @@ function renderShell(opts) {
   // Row 9 — the permission-mode surface in the composer. Defaults to 'default'
   // (conservative) when the host passes none.
   const permissionHtml = renderPermissionControl(o.permissionMode);
+  // Row 16 — the session-continuity surface in the composer. The host passes the
+  // in-force resume target (new / continue / resume) + the currently-selected
+  // session id (row 2) so the "Resume selected" button points at it. Absent ->
+  // a 'new' target (a fresh session — the conservative default).
+  const resumeHtml = renderResumeControl(o.resumeTarget, o.selectedSessionId);
+  // Row 11 — a read-only plan-mode banner shows when the in-force permission
+  // mode is 'plan', so the human sees the engine is researching + proposing a
+  // plan (no edits) before the ExitPlanMode card offers approve/keep.
+  const planBadge = isPlanMode(o.permissionMode)
+    ? '<span class="ontum-plan-badge" data-region="plan-mode">' +
+      '&#9656; plan mode · read-only — the engine proposes a plan to approve' +
+      '</span>'
+    : '';
   // Row 10 — the slash-command palette. The host passes the discovered command
   // list (slash.listSlashCommands); absent -> an empty palette (the container +
   // wiring still ship, so a later render with commands lights up).
   const slashHtml = renderSlashMenu(o.slashCommands);
+  // Row 12 — the @-mention palette. The host passes the discovered workspace
+  // file list (mentions.listMentionTargets); absent -> an empty palette (the
+  // container + wiring still ship, so a later render with files lights up).
+  const mentionHtml = renderMentionMenu(o.mentionTargets);
+  // Row 15 — the attachment tray. The host passes the staged attachments
+  // (data-free views from attach.displayAttachment); absent/empty -> no chips
+  // (the tray container + the attach button + the wiring still ship, so a later
+  // render with attachments lights up). The attachments ride the next turn as
+  // content blocks ahead of the typed text (engine.encodeUserMessage folds them).
+  const attachHtml = renderAttachTray(o.attachments);
+  // Row 13 — the MCP servers + tools panel. The host passes the discovered MCP
+  // servers (mcp.listMcpServers — the on-disk config folded + annotated with the
+  // live engine tools); absent -> an honest "no MCP servers" note (the region +
+  // wiring still ship, so a later render with servers lights up).
+  const mcpHtml = renderMcpPanel(o.mcpServers);
+  // Row 14 — the inherited Environment region (settings layers / hooks /
+  // skills). The host passes the discovered environment (environment.list-
+  // Environment — the same on-disk config the CLI folds); absent -> honest
+  // empty notes (the region + wiring still ship, so a later render lights up).
+  const envHtml = renderEnvPanel(o.environment);
+  // Row 18 — the cost/usage meter in the composer foot. The host passes the
+  // last turn's reply (engine.foldReply — cost/usage/durationMs/numTurns) and
+  // the running session total (usage.accumulateUsage); absent -> an honest "No
+  // usage reported yet." (the region + the turn-reply update wiring still ship,
+  // so the first turn lights it up). Every value is the engine's own reported
+  // usage, never an estimate.
+  const usageHtml = renderUsageBar(o.lastReply, o.sessionUsage);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -493,6 +930,54 @@ function renderShell(opts) {
     .ontum-diff-actions[data-decision-state="accept"] { color: #6fae8f; }
     .ontum-diff-actions[data-decision-state="reject"] { color: #c2685a; }
     .ontum-diff-decision-note { padding: 0 0.2rem; align-self: center; font-size: 0.74rem; }
+    /* Row 11 — plan mode: the ExitPlanMode plan card + the read-only banner. */
+    .ontum-msg[data-plan-tool="true"] { border-left: 2px solid var(--ontum-accent); }
+    .ontum-plan {
+      margin-top: 0.35rem;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .ontum-plan-text {
+      margin: 0;
+      padding: 0.5rem 0.6rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--ontum-ink);
+      background: var(--ontum-bg);
+    }
+    .ontum-plan-actions {
+      display: flex;
+      gap: 0.4rem;
+      padding: 0.4rem 0.5rem;
+      background: var(--ontum-bg);
+      border-top: 1px solid var(--ontum-edge);
+    }
+    button.ontum-plan-decision {
+      cursor: pointer;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 5px;
+      padding: 0.25rem 0.7rem;
+      background: var(--ontum-panel);
+      color: var(--ontum-ink);
+      font: inherit;
+      font-size: 0.76rem;
+    }
+    button.ontum-plan-decision[data-plan-decision="approve"]:hover { border-color: var(--ontum-accent); color: var(--ontum-accent); }
+    button.ontum-plan-decision[data-plan-decision="keep"]:hover { border-color: #5a82c2; color: #5a82c2; }
+    button.ontum-plan-decision:disabled { opacity: 0.5; cursor: default; }
+    .ontum-plan-actions[data-plan-state="approve"] { color: var(--ontum-accent); }
+    .ontum-plan-actions[data-plan-state="keep"] { color: #5a82c2; }
+    .ontum-plan-decision-note { padding: 0 0.2rem; align-self: center; font-size: 0.74rem; }
+    .ontum-plan-badge {
+      font-size: 0.72rem;
+      color: var(--ontum-accent);
+      border: 1px solid var(--ontum-accent);
+      border-radius: 5px;
+      padding: 0.15rem 0.45rem;
+    }
     .ontum-session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
     button.ontum-session {
       display: grid;
@@ -552,10 +1037,48 @@ function renderShell(opts) {
       font-weight: 600;
     }
     button.ontum-compose-send:disabled { opacity: 0.55; cursor: progress; }
+    /* Row 17 — the Stop button: a quiet danger affordance shown only while a
+       turn is in flight (the Send button is disabled then). */
+    button.ontum-compose-stop {
+      cursor: pointer;
+      border: 1px solid #c2685a;
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      background: transparent;
+      color: #c2685a;
+      font: inherit;
+      font-weight: 600;
+    }
+    button.ontum-compose-stop[hidden] { display: none; }
     .ontum-compose-status { margin: 0; font-size: 0.76rem; }
     .ontum-compose-status[data-status="error"] { color: #c2685a; }
     .ontum-compose-status[data-status="done"] { color: var(--ontum-dim); }
     .ontum-compose-status[data-status="sending"] { color: var(--ontum-accent); }
+    /* Row 18 — the cost/usage meter. */
+    .ontum-usage {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+      font-size: 0.74rem;
+      color: var(--ontum-dim);
+    }
+    .ontum-usage-label {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+    .ontum-usage-stat {
+      padding: 0.05rem 0.4rem;
+      border: 1px solid var(--ontum-line, rgba(255,255,255,0.12));
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    .ontum-usage-stat[data-usage="cost"] { color: var(--ontum-accent); font-weight: 600; }
+    .ontum-usage-total { margin-left: auto; font-style: italic; opacity: 0.9; }
+    .ontum-usage-empty { font-style: italic; opacity: 0.8; }
     /* Row 9 — the permission-mode surface. */
     .ontum-compose-foot {
       display: flex;
@@ -582,6 +1105,30 @@ function renderShell(opts) {
     }
     select.ontum-permission-mode:focus { outline: none; border-color: var(--ontum-accent); }
     select.ontum-permission-mode[data-mode="bypassPermissions"] { border-color: #c2685a; color: #c2685a; }
+    /* Row 16 — the session-continuity surface (new / continue / resume). */
+    .ontum-resume { display: flex; align-items: center; gap: 0.3rem; }
+    .ontum-resume-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--ontum-dim);
+    }
+    button.ontum-resume-btn {
+      cursor: pointer;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.25rem 0.45rem;
+      background: var(--ontum-bg);
+      color: var(--ontum-dim);
+      font: inherit;
+      font-size: 0.74rem;
+    }
+    button.ontum-resume-btn:hover:not([disabled]) { border-color: var(--ontum-accent); }
+    button.ontum-resume-btn[aria-pressed="true"] {
+      border-color: var(--ontum-accent);
+      color: var(--ontum-accent);
+    }
+    button.ontum-resume-btn[disabled] { opacity: 0.45; cursor: default; }
     /* Row 10 — the slash-command palette. */
     .ontum-slash {
       margin-bottom: 0.5rem;
@@ -627,6 +1174,118 @@ function renderShell(opts) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    /* Row 12 — the @-mention palette (workspace file completion). */
+    .ontum-mention {
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      background: var(--ontum-bg);
+      max-height: 14rem;
+      overflow: auto;
+    }
+    .ontum-mention[hidden] { display: none; }
+    .ontum-mention-list { list-style: none; margin: 0; padding: 0.25rem; display: grid; gap: 0.15rem; }
+    button.ontum-mention-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      gap: 0.5rem;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      padding: 0.3rem 0.5rem;
+      background: transparent;
+      color: var(--ontum-ink);
+      font: inherit;
+    }
+    button.ontum-mention-item:hover,
+    button.ontum-mention-item[data-active="true"] {
+      border-color: var(--ontum-accent);
+      background: var(--ontum-panel);
+    }
+    .ontum-mention-path {
+      color: var(--ontum-accent);
+      font-size: 0.8rem;
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ontum-mention-name { color: var(--ontum-dim); font-size: 0.72rem; }
+    /* Row 13 — the MCP servers + tools panel (in the Sessions aside). */
+    .ontum-mcp-region-title { margin-top: 1rem; }
+    .ontum-mcp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+    .ontum-mcp-server {
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.4rem 0.5rem;
+      background: var(--ontum-bg);
+      display: grid;
+      gap: 0.1rem;
+    }
+    .ontum-mcp-server[data-available="true"] { border-left: 2px solid #6fae8f; }
+    .ontum-mcp-server[data-available="false"] { border-left: 2px solid var(--ontum-edge); }
+    .ontum-mcp-name { color: var(--ontum-accent); font-size: 0.82rem; }
+    .ontum-mcp-meta { color: var(--ontum-dim); font-size: 0.7rem; }
+    .ontum-mcp-tools { list-style: none; margin: 0.25rem 0 0; padding: 0; display: grid; gap: 0.1rem; }
+    .ontum-mcp-tool {
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      font-size: 0.72rem;
+      color: var(--ontum-ink);
+      padding-left: 0.5rem;
+    }
+    .ontum-mcp-tool::before { content: "\\25b8 "; color: var(--ontum-dim); }
+    .ontum-mcp-none { color: var(--ontum-dim); font-style: italic; }
+    .ontum-mcp-none::before { content: ""; }
+    /* Row 14 — the inherited Environment region (settings / hooks / skills). */
+    .ontum-env-region-title { margin-top: 1rem; }
+    .ontum-env-group { margin-bottom: 0.6rem; }
+    .ontum-env-subtitle {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ontum-dim);
+      margin: 0 0 0.3rem;
+    }
+    .ontum-env-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+    .ontum-env-settings,
+    .ontum-env-hook,
+    .ontum-env-skill {
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.35rem 0.5rem;
+      background: var(--ontum-bg);
+      display: grid;
+      gap: 0.1rem;
+    }
+    .ontum-env-settings[data-present="true"] { border-left: 2px solid #6fae8f; }
+    .ontum-env-settings[data-present="false"] { border-left: 2px solid var(--ontum-edge); opacity: 0.7; }
+    .ontum-env-hook { border-left: 2px solid #5a82c2; }
+    .ontum-env-skill { border-left: 2px solid var(--ontum-accent); }
+    .ontum-env-scope {
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ontum-dim);
+    }
+    .ontum-env-meta { color: var(--ontum-dim); font-size: 0.72rem; word-break: break-word; }
+    .ontum-env-hook-event { color: var(--ontum-accent); font-size: 0.8rem; }
+    .ontum-env-hook-matcher {
+      font-family: var(--vscode-editor-font-family, ui-monospace, monospace);
+      font-size: 0.72rem;
+      color: var(--ontum-ink);
+    }
+    .ontum-env-skill-name { color: var(--ontum-accent); font-size: 0.8rem; }
+    .ontum-env-skill-desc {
+      color: var(--ontum-dim);
+      font-size: 0.72rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ontum-env-list .ontum-empty { padding: 0.2rem 0.1rem; }
   </style>
 </head>
 <body>
@@ -638,6 +1297,14 @@ function renderShell(opts) {
     <aside class="ontum-sessions" data-region="sessions">
       <p class="ontum-region-title">Sessions</p>
       ${sessionsHtml}
+      <p class="ontum-region-title ontum-mcp-region-title">MCP servers</p>
+      <div class="ontum-mcp" data-region="mcp">
+        ${mcpHtml}
+      </div>
+      <p class="ontum-region-title ontum-env-region-title">Environment</p>
+      <div class="ontum-env" data-region="environment">
+        ${envHtml}
+      </div>
     </aside>
     <section class="ontum-transcript" data-region="transcript">
       <p class="ontum-region-title">Transcript</p>
@@ -648,18 +1315,35 @@ function renderShell(opts) {
     <div class="ontum-slash" data-region="slash" hidden>
       ${slashHtml}
     </div>
+    <div class="ontum-mention" data-region="mention" hidden>
+      ${mentionHtml}
+    </div>
+    <div class="ontum-attach" data-region="attach">
+      ${attachHtml}
+    </div>
     <div class="ontum-compose-row">
+      <button class="ontum-attach-add" type="button" aria-label="Attach an image or file" title="Attach an image or file">&#128206;</button>
       <textarea
         class="ontum-compose-input"
         rows="1"
         placeholder="Send a prompt to drive a turn… (Enter to send, Shift+Enter for newline)"
         aria-label="Send a prompt"></textarea>
       <button class="ontum-compose-send" type="button">Send</button>
+      <!-- Row 17 — Stop interrupts the in-flight turn (terminates the engine
+           process). Hidden until a turn is driving; revealed on send, re-hidden
+           on reply. A click posts ontum:interrupt-turn to the host. -->
+      <button class="ontum-compose-stop" type="button" hidden aria-label="Stop the running turn" title="Stop the running turn">Stop</button>
     </div>
     <div class="ontum-compose-foot">
       ${permissionHtml}
+      ${resumeHtml}
+      ${planBadge}
       <p class="ontum-compose-status" data-status="idle" hidden></p>
     </div>
+    <!-- Row 18 — the cost/usage meter. Updated in place by the ontum:turn-reply
+         handler with the engine's own reported usage (cost/tokens/duration/turns)
+         + the running session total. -->
+    ${usageHtml}
   </footer>
   <script nonce="${nonce}">
     // Acquire the webview API when hosted; a no-op outside VS Code so the same
@@ -700,6 +1384,36 @@ function renderShell(opts) {
       });
     })();
 
+    // Row 16 — the session-continuity surface. Clicking New / Continue recent /
+    // Resume selected tells the host which session the NEXT turn joins; the host
+    // threads it into engineArgs (--continue / --resume <id>), so the turn
+    // actually resumes/continues the chosen conversation. Delegation on the
+    // resume region (not per-button) keeps it wired across re-renders. The
+    // "Resume selected" button carries the selected session's id (row 2). We
+    // reflect the choice on the region (data-resume-mode + aria-pressed) so a
+    // cold reader / test can see what is in force. A disabled (no-selection)
+    // resume button posts nothing.
+    (function wireResume() {
+      var region = document.querySelector('.ontum-resume');
+      if (!region) return;
+      region.addEventListener('click', function (ev) {
+        var btn = ev.target && ev.target.closest
+          ? ev.target.closest('button.ontum-resume-btn')
+          : null;
+        if (!btn || btn.disabled) return;
+        var mode = btn.getAttribute('data-resume') || 'new';
+        var id = btn.getAttribute('data-session-id') || '';
+        region.setAttribute('data-resume-mode', mode);
+        region.querySelectorAll('button.ontum-resume-btn').forEach(function (b) {
+          if (b === btn) b.setAttribute('aria-pressed', 'true');
+          else b.removeAttribute('aria-pressed');
+        });
+        if (vscode) {
+          vscode.postMessage({ type: 'ontum:set-resume', mode: mode, id: id });
+        }
+      });
+    })();
+
     // Row 8 — diff accept/reject. An edit tool-call (Edit/Write/MultiEdit/…)
     // renders as a diff with Accept + Reject buttons. Delegation on document is
     // used (not per-button listeners) so diffs spliced in LATER by the live-tail
@@ -732,6 +1446,71 @@ function renderShell(opts) {
           decision: decision,
           toolId: toolId,
         });
+      }
+    });
+
+    // Row 11 — plan-mode approve/keep. An ExitPlanMode tool-call renders as a
+    // plan card with Approve & proceed + Keep planning buttons. Delegation on
+    // document (not per-button listeners) so plan cards spliced in LATER by the
+    // live-tail (row 4) and turn-reply (rows 5–7) paths are wired too. A click
+    // posts { type:'ontum:plan-decision', decision, toolId } to the host, then
+    // locks the controls and records the choice on the block. The host records
+    // the decision and — on approve — EXITS plan mode so the work can proceed
+    // (the surface renders the decision; the engine runs the approved work).
+    document.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest
+        ? ev.target.closest('button.ontum-plan-decision')
+        : null;
+      if (!btn) return;
+      var decision = btn.getAttribute('data-plan-decision');
+      var toolId = btn.getAttribute('data-tool-id');
+      var actions = btn.closest('.ontum-plan-actions');
+      if (actions) {
+        if (actions.getAttribute('data-plan-state') !== 'pending') return;
+        actions.setAttribute('data-plan-state', decision);
+        actions.querySelectorAll('button.ontum-plan-decision')
+          .forEach(function (b) { b.disabled = true; });
+        var note = document.createElement('span');
+        note.className = 'ontum-plan-decision-note';
+        note.textContent = decision === 'approve'
+          ? 'Approved — proceeding' : 'Keep planning';
+        actions.appendChild(note);
+      }
+      if (vscode) {
+        vscode.postMessage({
+          type: 'ontum:plan-decision',
+          decision: decision,
+          toolId: toolId,
+        });
+      }
+    });
+
+    // Row 15 — image / file attach. The composer's attach button asks the host
+    // to open its file picker (the live picker is a VS Code host dialog); the
+    // host reads + classifies the chosen file (attach.readAttachment) and
+    // re-renders the tray with the staged chip. A chip's Remove button (delegated
+    // on document so chips rendered LATER are wired too) posts
+    // { type:'ontum:remove-attachment', name } so the host drops it from the
+    // staged set. The staged attachments ride the NEXT turn as content blocks
+    // ahead of the typed text (the host threads them into driveTurn).
+    (function wireAttach() {
+      var add = document.querySelector('.ontum-attach-add');
+      if (add) {
+        add.addEventListener('click', function () {
+          if (vscode) vscode.postMessage({ type: 'ontum:attach-file' });
+        });
+      }
+    })();
+    document.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest
+        ? ev.target.closest('button.ontum-attach-remove')
+        : null;
+      if (!btn) return;
+      var name = btn.getAttribute('data-attach-name');
+      var chip = btn.closest('.ontum-attach-chip');
+      if (chip && chip.parentElement) chip.parentElement.removeChild(chip);
+      if (vscode) {
+        vscode.postMessage({ type: 'ontum:remove-attachment', name: name });
       }
     });
 
@@ -770,6 +1549,8 @@ function renderShell(opts) {
     (function wireComposer() {
       var input = document.querySelector('.ontum-compose-input');
       var send = document.querySelector('.ontum-compose-send');
+      // Row 17 — the Stop button (interrupt the in-flight turn).
+      var stop = document.querySelector('.ontum-compose-stop');
       var status = document.querySelector('.ontum-compose-status');
       if (!input || !send) return;
 
@@ -780,19 +1561,37 @@ function renderShell(opts) {
         status.hidden = !text;
       }
 
+      // Row 17 — toggle the Stop affordance with the turn lifecycle: shown while
+      // a turn drives (Send disabled), hidden once it settles. Centralised so the
+      // submit + turn-reply paths stay in sync.
+      function setTurnRunning(running) {
+        send.disabled = running;
+        if (stop) stop.hidden = !running;
+      }
+
       function submit() {
         var text = (input.value || '').trim();
         if (!text) return;
         if (vscode) vscode.postMessage({ type: 'ontum:send-prompt', text: text });
         input.value = '';
-        send.disabled = true;
+        setTurnRunning(true);
         setStatus('sending', 'Driving a turn…');
       }
 
       send.addEventListener('click', submit);
+      // Row 17 — a Stop click asks the host to terminate the engine turn. The
+      // turn then settles as an honest interrupted reply via the turn-reply path
+      // (which re-hides Stop + re-enables Send), so this only fires the request.
+      if (stop) {
+        stop.addEventListener('click', function () {
+          if (vscode) vscode.postMessage({ type: 'ontum:interrupt-turn' });
+          stop.disabled = true;
+          setStatus('sending', 'Stopping the turn…');
+        });
+      }
       input.addEventListener('keydown', function (e) {
-        // Row 10 — Escape closes the slash palette without sending.
-        if (e.key === 'Escape') { hideSlash(); return; }
+        // Rows 10/12 — Escape closes the slash + mention palettes without sending.
+        if (e.key === 'Escape') { hideSlash(); hideMention(); return; }
         // Enter sends; Shift+Enter inserts a newline (the chat convention).
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
@@ -833,6 +1632,52 @@ function renderShell(opts) {
           var name = btn.getAttribute('data-command') || '';
           input.value = '/' + name + ' ';
           hideSlash();
+          input.focus();
+        });
+      }
+
+      // Row 12 — the @-mention palette. As the human types, if the caret is
+      // inside an '@' token (an '@' at start/after-space, no whitespace since),
+      // show the palette filtered by the partial path; picking an item REPLACES
+      // that token with '@<path> ' so the prompt carries the mention down the
+      // SAME engine channel (an @-mention is context the engine reads —
+      // pass-through). The palette never blocks: an unlisted '@path' just sends
+      // as typed. The regex mirrors mentions.mentionQuery / mentions.MENTION_RE
+      // (the host-side source of truth) so the surface and the fold agree.
+      var mentionMenu = document.querySelector('.ontum-mention');
+      var MENTION_TAIL = /(^|\s)@([A-Za-z0-9_./\\-]*)$/;
+      function hideMention() { if (mentionMenu) mentionMenu.hidden = true; }
+      function refreshMention() {
+        if (!mentionMenu) return;
+        var val = input.value || '';
+        var m = MENTION_TAIL.exec(val);
+        if (!m) { hideMention(); return; }
+        var token = (m[2] || '').toLowerCase();
+        var any = false;
+        mentionMenu.querySelectorAll('.ontum-mention-item').forEach(function (btn) {
+          var p = (btn.getAttribute('data-mention') || '').toLowerCase();
+          // Match on any path segment containing the partial (so '@app' finds
+          // 'src/app.js'); an empty token (bare '@') shows everything.
+          var match = token === '' || p.indexOf(token) >= 0;
+          var li = btn.parentElement;
+          if (li) li.hidden = !match;
+          if (match) any = true;
+        });
+        mentionMenu.hidden = !any;
+      }
+      input.addEventListener('input', refreshMention);
+      if (mentionMenu) {
+        mentionMenu.addEventListener('click', function (ev) {
+          var btn = ev.target && ev.target.closest
+            ? ev.target.closest('.ontum-mention-item')
+            : null;
+          if (!btn) return;
+          var pathv = btn.getAttribute('data-mention') || '';
+          // Replace the @-token being typed (the tail) with the chosen path.
+          input.value = input.value.replace(MENTION_TAIL, function (_m, pre) {
+            return pre + '@' + pathv + ' ';
+          });
+          hideMention();
           input.focus();
         });
       }
@@ -908,7 +1753,11 @@ function renderShell(opts) {
       window.addEventListener('message', function (ev) {
         var m = ev && ev.data;
         if (!m || m.type !== 'ontum:turn-reply') return;
-        send.disabled = false;
+        // Row 17 — the turn settled (replied, errored, timed out, or was
+        // stopped); re-enable Send + re-hide Stop, and re-arm the Stop button
+        // for the next turn (a prior Stop click left it disabled).
+        setTurnRunning(false);
+        if (stop) stop.disabled = false;
         // Row 6 — drop the live streaming preview before splicing the folded
         // reply, so the authoritative fold replaces it (no double render).
         document.querySelectorAll('.ontum-msg[data-streaming="true"]')
@@ -922,7 +1771,26 @@ function renderShell(opts) {
             if (section) section.scrollTop = section.scrollHeight;
           }
         }
-        if (m.isError) {
+        // Row 18 — swap the cost/usage meter in place with the host-rendered bar
+        // (the engine's own reported usage + the running session total). The host
+        // sends the pre-rendered usageHtml so the surface stays a single source of
+        // truth (the same escaped fold renderUsageBar produced at first paint).
+        if (m.usageHtml) {
+          var usage = document.querySelector('.ontum-usage');
+          if (usage) {
+            usage.outerHTML = m.usageHtml;
+          } else {
+            var foot = document.querySelector('.ontum-compose-foot');
+            if (foot && foot.parentNode) {
+              foot.insertAdjacentHTML('afterend', m.usageHtml);
+            }
+          }
+        }
+        if (m.subtype === 'interrupted') {
+          // Row 17 — an honest user stop, not an engine failure: report it as a
+          // calm "stopped" rather than a red "Turn failed".
+          setStatus('done', 'Turn stopped.');
+        } else if (m.isError) {
           setStatus('error', 'Turn failed' + (m.subtype ? ' (' + m.subtype + ')' : '') + '.');
         } else {
           var cost = (typeof m.cost === 'number') ? ' · $' + m.cost.toFixed(4) : '';
@@ -943,8 +1811,15 @@ module.exports = {
   renderTranscriptRow,
   renderDiffBlock,
   renderDiffLines,
+  renderPlanBlock,
   renderPermissionControl,
+  renderResumeControl,
+  renderUsageBar,
   renderSlashMenu,
+  renderMentionMenu,
+  renderAttachTray,
+  renderMcpPanel,
+  renderEnvPanel,
   makeNonce,
   escapeHtml,
 };
