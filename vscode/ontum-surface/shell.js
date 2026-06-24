@@ -322,6 +322,36 @@ function renderShell(opts) {
       color: var(--ontum-dim);
       font-size: 0.85rem;
     }
+    .ontum-compose-row { display: flex; gap: 0.5rem; align-items: flex-end; }
+    .ontum-compose-input {
+      flex: 1;
+      resize: vertical;
+      min-height: 2.2rem;
+      max-height: 12rem;
+      padding: 0.45rem 0.55rem;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      background: var(--ontum-bg);
+      color: var(--ontum-ink);
+      font: inherit;
+      line-height: 1.4;
+    }
+    .ontum-compose-input:focus { outline: none; border-color: var(--ontum-accent); }
+    button.ontum-compose-send {
+      cursor: pointer;
+      border: 1px solid var(--ontum-accent);
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      background: var(--ontum-accent);
+      color: #1a1206;
+      font: inherit;
+      font-weight: 600;
+    }
+    button.ontum-compose-send:disabled { opacity: 0.55; cursor: progress; }
+    .ontum-compose-status { margin: 0.4rem 0 0; font-size: 0.76rem; }
+    .ontum-compose-status[data-status="error"] { color: #c2685a; }
+    .ontum-compose-status[data-status="done"] { color: var(--ontum-dim); }
+    .ontum-compose-status[data-status="sending"] { color: var(--ontum-accent); }
   </style>
 </head>
 <body>
@@ -340,7 +370,15 @@ function renderShell(opts) {
     </section>
   </main>
   <footer class="ontum-composer" data-region="composer">
-    Composer (drive a turn) lands in rows&nbsp;5–6 via the inherited engine bridge.
+    <div class="ontum-compose-row">
+      <textarea
+        class="ontum-compose-input"
+        rows="1"
+        placeholder="Send a prompt to drive a turn… (Enter to send, Shift+Enter for newline)"
+        aria-label="Send a prompt"></textarea>
+      <button class="ontum-compose-send" type="button">Send</button>
+    </div>
+    <p class="ontum-compose-status" data-status="idle" hidden></p>
   </footer>
   <script nonce="${nonce}">
     // Acquire the webview API when hosted; a no-op outside VS Code so the same
@@ -389,6 +427,73 @@ function renderShell(opts) {
       list.setAttribute('data-live', 'true');
       if (section) section.scrollTop = section.scrollHeight;
     });
+
+    // Row 5 — drive a turn. The composer posts { type:'ontum:send-prompt', text }
+    // to the host, which drives the inherited engine and posts back
+    // { type:'ontum:turn-reply', html, isError, subtype, cost }. We disable the
+    // send button while a turn is in flight, splice the reply's rendered blocks
+    // onto the transcript list (reusing the row-4 append path's list), and show
+    // an honest status line (cost/subtype, or the error).
+    (function wireComposer() {
+      var input = document.querySelector('.ontum-compose-input');
+      var send = document.querySelector('.ontum-compose-send');
+      var status = document.querySelector('.ontum-compose-status');
+      if (!input || !send) return;
+
+      function setStatus(state, text) {
+        if (!status) return;
+        status.setAttribute('data-status', state);
+        status.textContent = text;
+        status.hidden = !text;
+      }
+
+      function submit() {
+        var text = (input.value || '').trim();
+        if (!text) return;
+        if (vscode) vscode.postMessage({ type: 'ontum:send-prompt', text: text });
+        input.value = '';
+        send.disabled = true;
+        setStatus('sending', 'Driving a turn…');
+      }
+
+      send.addEventListener('click', submit);
+      input.addEventListener('keydown', function (e) {
+        // Enter sends; Shift+Enter inserts a newline (the chat convention).
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          submit();
+        }
+      });
+
+      window.addEventListener('message', function (ev) {
+        var m = ev && ev.data;
+        if (!m || m.type !== 'ontum:turn-reply') return;
+        send.disabled = false;
+        if (m.html) {
+          var section = document.querySelector('section.ontum-transcript');
+          var list = document.querySelector('.ontum-transcript-list');
+          if (!list && section) {
+            var note = section.querySelector('.ontum-empty');
+            if (note) note.remove();
+            list = document.createElement('div');
+            list.className = 'ontum-transcript-list';
+            list.setAttribute('data-count', '0');
+            section.appendChild(list);
+          }
+          if (list) {
+            list.insertAdjacentHTML('beforeend', m.html);
+            list.setAttribute('data-count', String(list.querySelectorAll('.ontum-msg').length));
+            if (section) section.scrollTop = section.scrollHeight;
+          }
+        }
+        if (m.isError) {
+          setStatus('error', 'Turn failed' + (m.subtype ? ' (' + m.subtype + ')' : '') + '.');
+        } else {
+          var cost = (typeof m.cost === 'number') ? ' · $' + m.cost.toFixed(4) : '';
+          setStatus('done', 'Turn complete' + cost + '.');
+        }
+      });
+    })();
   </script>
 </body>
 </html>`;

@@ -17,6 +17,7 @@ const { renderShell, renderTranscriptRows } = require('./shell');
 const { listSessions, storeDirFor } = require('./sessions');
 const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
+const { driveTurn } = require('./engine');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -32,6 +33,11 @@ let selectedSessionId = null;
 // (so we can stop watching when the selection changes or the panel closes).
 let tailOffset = 0;
 let tailWatched = null;
+// Row 5 — the engine spawn used to drive a turn. Null in production (driveTurn
+// falls back to the real child_process.spawn); a host-free test injects a fake
+// process via __setSpawnForTest so the send→reply round-trip is proven without a
+// real billed model call.
+let spawnImpl = null;
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -122,6 +128,47 @@ function pumpTail() {
   return res.entries;
 }
 
+// sendPrompt(text) -> drive ONE new turn through the inherited engine and post
+// the folded reply back to the webview (row 5). Returns the reply so a host-free
+// test can await it directly. The engine writes the turn to its own transcript
+// store, so a selected+tailed session also streams it via row 4; this path
+// additionally posts an `ontum:turn-reply` carrying the reply's rendered blocks
+// and its honest status (cost/subtype) so the composer reflects the turn even
+// before/without a session selection. Failures resolve to an error reply that is
+// surfaced, never swallowed.
+async function sendPrompt(text) {
+  const prompt = String(text == null ? '' : text).trim();
+  if (!prompt || !panel) return null;
+  let reply;
+  try {
+    reply = await driveTurn({
+      prompt,
+      cwd: currentCwd(),
+      permissionMode: 'default',
+      spawn: spawnImpl || undefined,
+    });
+  } catch (err) {
+    reply = {
+      isError: true,
+      subtype: 'spawn-error',
+      entries: [],
+      text: (err && err.message) || 'engine failed to start',
+      cost: null,
+    };
+  }
+  if (panel && panel.webview && typeof panel.webview.postMessage === 'function') {
+    panel.webview.postMessage({
+      type: 'ontum:turn-reply',
+      html: renderTranscriptRows(reply.entries || []),
+      isError: !!reply.isError,
+      subtype: reply.subtype || '',
+      cost: typeof reply.cost === 'number' ? reply.cost : null,
+      sessionId: reply.sessionId || null,
+    });
+  }
+  return reply;
+}
+
 // startTail() -> begin watching the selected session's file for appends. The
 // full transcript was just painted by renderPanel, so we anchor the offset at
 // the current end and only future appends stream in. fs.watchFile polls (works
@@ -192,6 +239,10 @@ function openSurface(context) {
         // Row 4 — begin live-tailing the newly-selected session from its
         // current end, so future appends stream into the panel.
         startTail();
+      } else if (msg && msg.type === 'ontum:send-prompt' && msg.text) {
+        // Row 5 — drive a new turn through the inherited engine and post the
+        // reply back to the composer.
+        sendPrompt(msg.text);
       }
     });
   }
@@ -228,6 +279,13 @@ function getSelectedSessionId() {
   return selectedSessionId;
 }
 
+// __setSpawnForTest(fn) -> inject the engine spawn (row 5). A host-free test
+// passes a fake process so the send→reply round-trip is proven without a real
+// billed model call; pass null to restore the production default.
+function __setSpawnForTest(fn) {
+  spawnImpl = fn || null;
+}
+
 module.exports = {
   activate,
   deactivate,
@@ -236,6 +294,10 @@ module.exports = {
   // watcher's poll is timing-bound; the pump is the deterministic seam).
   pumpTail,
   stopTail,
+  // Row 5 — exposed so a host-free test can drive a turn directly (with an
+  // injected fake engine) and assert the posted reply.
+  sendPrompt,
+  __setSpawnForTest,
   VIEW_TYPE,
   OPEN_COMMAND,
 };
