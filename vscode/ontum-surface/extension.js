@@ -20,6 +20,7 @@ const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
 const { driveTurn, partialDelta, normalizePermissionMode } = require('./engine');
 const { listSlashCommands } = require('./slash');
+const { nextModeOnPlanDecision, isPlanDecision } = require('./plan');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -41,6 +42,12 @@ let tailWatched = null;
 // edit on disk is the host permission flow's job (row 9) / a human's — the
 // surface records the decision, it does not fake the effect.
 let lastDiffDecision = null;
+// Row 11 — the last plan-mode approve/keep decision the webview posted (an
+// ExitPlanMode tool-call renders as a plan card with Approve/Keep). We record
+// the decision AND, on approve, exit plan mode (the permission posture
+// transitions out of 'plan' so the engine can proceed). Conservative by
+// construction: approve exits to 'default', never to acceptEdits/bypass.
+let lastPlanDecision = null;
 // Row 5 — the engine spawn used to drive a turn. Null in production (driveTurn
 // falls back to the real child_process.spawn); a host-free test injects a fake
 // process via __setSpawnForTest so the send→reply round-trip is proven without a
@@ -238,6 +245,27 @@ function recordDiffDecision(msg) {
   return lastDiffDecision;
 }
 
+// recordPlanDecision(msg) -> record a plan-mode approve/keep the webview posted
+// (row 11) and return it. Returns null for an unrecognised decision. The
+// decision is `{ toolId, decision:'approve'|'keep' }`; on 'approve' the
+// permission posture EXITS plan mode (transitions out of 'plan' to 'default' —
+// conservative, never to acceptEdits/bypass) so the engine can proceed, on
+// 'keep' it stays in 'plan'. We re-render so the surface reflects the in-force
+// mode (the plan-mode banner clears on approve), and keep only the latest so a
+// host-free test can assert the round-trip. Running the approved work is the
+// engine's job under the exited mode — the surface drives the mode, not the work.
+function recordPlanDecision(msg) {
+  if (!msg || !isPlanDecision(msg.decision)) return null;
+  permissionMode = nextModeOnPlanDecision(msg.decision, permissionMode);
+  lastPlanDecision = {
+    toolId: msg.toolId || '',
+    decision: msg.decision,
+    mode: permissionMode,
+  };
+  renderPanel(); // repaint in the now-in-force mode (no-op when no panel)
+  return lastPlanDecision;
+}
+
 // setPermissionMode(msg) -> record the permission mode the webview's permission
 // surface chose (row 9), normalized so an unknown/hostile value can never
 // escalate past 'default'. Accepts either a raw mode string or the
@@ -339,6 +367,9 @@ function openSurface(context) {
       } else if (msg && msg.type === 'ontum:diff-decision') {
         // Row 8 — record an Accept/Reject the human made on a rendered diff.
         recordDiffDecision(msg);
+      } else if (msg && msg.type === 'ontum:plan-decision') {
+        // Row 11 — record an Approve/Keep on a plan card; approve exits plan mode.
+        recordPlanDecision(msg);
       } else if (msg && msg.type === 'ontum:set-permission-mode') {
         // Row 9 — the human chose a permission mode; the next turn runs under it.
         setPermissionMode(msg);
@@ -385,6 +416,13 @@ function getLastDiffDecision() {
   return lastDiffDecision;
 }
 
+// getLastPlanDecision() -> the last Approve/Keep the webview posted on a
+// rendered plan card (or null). Exposed so a host-free test can assert the
+// row-11 decision round-trip + the exit-plan-mode mode transition.
+function getLastPlanDecision() {
+  return lastPlanDecision;
+}
+
 // __setSpawnForTest(fn) -> inject the engine spawn (row 5). A host-free test
 // passes a fake process so the send→reply round-trip is proven without a real
 // billed model call; pass null to restore the production default.
@@ -413,6 +451,10 @@ module.exports = {
   // accept/reject decision round-trip.
   recordDiffDecision,
   getLastDiffDecision,
+  // Row 11 — exposed so a host-free test can drive + assert the plan-mode
+  // approve/keep decision round-trip (and the exit-plan-mode transition).
+  recordPlanDecision,
+  getLastPlanDecision,
   // Row 9 — exposed so a host-free test can drive + assert the permission-mode
   // round-trip (the webview's permission surface → the next turn's argv).
   setPermissionMode,

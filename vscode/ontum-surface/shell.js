@@ -17,6 +17,7 @@
 
 const { diffFromToolUse } = require('./diff');
 const { PERMISSION_MODES, normalizePermissionMode } = require('./engine');
+const { planFromToolUse, isPlanMode } = require('./plan');
 
 // A small, dependency-free nonce for the webview Content-Security-Policy.
 // (Webview scripts must carry a nonce the CSP whitelists; without one the
@@ -157,9 +158,44 @@ function renderDiffBlock(d) {
   );
 }
 
+// renderPlanBlock(p) -> the HTML of an ExitPlanMode tool-call rendered as a
+// PLAN CARD with approve/keep-planning controls (row 11). `p` comes from
+// plan.planFromToolUse (a pure fold of the engine's own ExitPlanMode tool_use
+// record). The block is still a tool-use (data-kind="tool-use", so row 7's
+// structure/CSS holds) but is flagged data-plan-tool="true" and carries: a
+// header, the proposed plan text (escaped), and two decision buttons
+// (data-plan-decision approve|keep) carrying the tool id. The buttons post
+// `ontum:plan-decision` to the host (the delegated handler in the shell
+// script), which records the decision and — on approve — EXITS plan mode so the
+// work can proceed. HONEST SCOPE: this renders the plan and the approve/keep
+// AFFORDANCE and proves the decision round-trip + the mode transition; actually
+// running the approved work is the engine's job under the exited mode.
+function renderPlanBlock(p) {
+  const name = escapeHtml(p.name || 'ExitPlanMode');
+  const toolId = escapeHtml(p.toolId || '');
+  const plan = escapeHtml(p.plan || '');
+  return (
+    '<div class="ontum-msg" data-kind="tool-use" data-plan-tool="true" ' +
+    `data-tool-name="${name}" data-tool-id="${toolId}">` +
+    '<span class="ontum-role">plan &#9656; proposed</span>' +
+    '<div class="ontum-plan">' +
+    `<pre class="ontum-plan-text">${plan || '(no plan text)'}</pre>` +
+    '<div class="ontum-plan-actions" data-plan-state="pending">' +
+    `<button class="ontum-plan-decision" type="button" data-plan-decision="approve" data-tool-id="${toolId}">Approve &amp; proceed</button>` +
+    `<button class="ontum-plan-decision" type="button" data-plan-decision="keep" data-tool-id="${toolId}">Keep planning</button>` +
+    '</div>' +
+    '</div>' +
+    '</div>'
+  );
+}
+
 function renderTranscriptRow(e) {
   const kind = e && e.kind ? e.kind : '';
   if (kind === 'tool-use') {
+    // Row 11 — the ExitPlanMode tool renders as a plan card with approve/keep,
+    // not a raw JSON dump (checked before the diff/JSON paths below).
+    const plan = planFromToolUse(e);
+    if (plan) return renderPlanBlock(plan);
     // Row 8 — an edit tool (Edit/Write/MultiEdit/NotebookEdit) renders as a
     // diff with accept/reject instead of a raw JSON input dump.
     const diff = diffFromToolUse(e);
@@ -326,6 +362,14 @@ function renderShell(opts) {
   // Row 9 — the permission-mode surface in the composer. Defaults to 'default'
   // (conservative) when the host passes none.
   const permissionHtml = renderPermissionControl(o.permissionMode);
+  // Row 11 — a read-only plan-mode banner shows when the in-force permission
+  // mode is 'plan', so the human sees the engine is researching + proposing a
+  // plan (no edits) before the ExitPlanMode card offers approve/keep.
+  const planBadge = isPlanMode(o.permissionMode)
+    ? '<span class="ontum-plan-badge" data-region="plan-mode">' +
+      '&#9656; plan mode · read-only — the engine proposes a plan to approve' +
+      '</span>'
+    : '';
   // Row 10 — the slash-command palette. The host passes the discovered command
   // list (slash.listSlashCommands); absent -> an empty palette (the container +
   // wiring still ship, so a later render with commands lights up).
@@ -493,6 +537,54 @@ function renderShell(opts) {
     .ontum-diff-actions[data-decision-state="accept"] { color: #6fae8f; }
     .ontum-diff-actions[data-decision-state="reject"] { color: #c2685a; }
     .ontum-diff-decision-note { padding: 0 0.2rem; align-self: center; font-size: 0.74rem; }
+    /* Row 11 — plan mode: the ExitPlanMode plan card + the read-only banner. */
+    .ontum-msg[data-plan-tool="true"] { border-left: 2px solid var(--ontum-accent); }
+    .ontum-plan {
+      margin-top: 0.35rem;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .ontum-plan-text {
+      margin: 0;
+      padding: 0.5rem 0.6rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--ontum-ink);
+      background: var(--ontum-bg);
+    }
+    .ontum-plan-actions {
+      display: flex;
+      gap: 0.4rem;
+      padding: 0.4rem 0.5rem;
+      background: var(--ontum-bg);
+      border-top: 1px solid var(--ontum-edge);
+    }
+    button.ontum-plan-decision {
+      cursor: pointer;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 5px;
+      padding: 0.25rem 0.7rem;
+      background: var(--ontum-panel);
+      color: var(--ontum-ink);
+      font: inherit;
+      font-size: 0.76rem;
+    }
+    button.ontum-plan-decision[data-plan-decision="approve"]:hover { border-color: var(--ontum-accent); color: var(--ontum-accent); }
+    button.ontum-plan-decision[data-plan-decision="keep"]:hover { border-color: #5a82c2; color: #5a82c2; }
+    button.ontum-plan-decision:disabled { opacity: 0.5; cursor: default; }
+    .ontum-plan-actions[data-plan-state="approve"] { color: var(--ontum-accent); }
+    .ontum-plan-actions[data-plan-state="keep"] { color: #5a82c2; }
+    .ontum-plan-decision-note { padding: 0 0.2rem; align-self: center; font-size: 0.74rem; }
+    .ontum-plan-badge {
+      font-size: 0.72rem;
+      color: var(--ontum-accent);
+      border: 1px solid var(--ontum-accent);
+      border-radius: 5px;
+      padding: 0.15rem 0.45rem;
+    }
     .ontum-session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
     button.ontum-session {
       display: grid;
@@ -658,6 +750,7 @@ function renderShell(opts) {
     </div>
     <div class="ontum-compose-foot">
       ${permissionHtml}
+      ${planBadge}
       <p class="ontum-compose-status" data-status="idle" hidden></p>
     </div>
   </footer>
@@ -729,6 +822,42 @@ function renderShell(opts) {
       if (vscode) {
         vscode.postMessage({
           type: 'ontum:diff-decision',
+          decision: decision,
+          toolId: toolId,
+        });
+      }
+    });
+
+    // Row 11 — plan-mode approve/keep. An ExitPlanMode tool-call renders as a
+    // plan card with Approve & proceed + Keep planning buttons. Delegation on
+    // document (not per-button listeners) so plan cards spliced in LATER by the
+    // live-tail (row 4) and turn-reply (rows 5–7) paths are wired too. A click
+    // posts { type:'ontum:plan-decision', decision, toolId } to the host, then
+    // locks the controls and records the choice on the block. The host records
+    // the decision and — on approve — EXITS plan mode so the work can proceed
+    // (the surface renders the decision; the engine runs the approved work).
+    document.addEventListener('click', function (ev) {
+      var btn = ev.target && ev.target.closest
+        ? ev.target.closest('button.ontum-plan-decision')
+        : null;
+      if (!btn) return;
+      var decision = btn.getAttribute('data-plan-decision');
+      var toolId = btn.getAttribute('data-tool-id');
+      var actions = btn.closest('.ontum-plan-actions');
+      if (actions) {
+        if (actions.getAttribute('data-plan-state') !== 'pending') return;
+        actions.setAttribute('data-plan-state', decision);
+        actions.querySelectorAll('button.ontum-plan-decision')
+          .forEach(function (b) { b.disabled = true; });
+        var note = document.createElement('span');
+        note.className = 'ontum-plan-decision-note';
+        note.textContent = decision === 'approve'
+          ? 'Approved — proceeding' : 'Keep planning';
+        actions.appendChild(note);
+      }
+      if (vscode) {
+        vscode.postMessage({
+          type: 'ontum:plan-decision',
           decision: decision,
           toolId: toolId,
         });
@@ -943,6 +1072,7 @@ module.exports = {
   renderTranscriptRow,
   renderDiffBlock,
   renderDiffLines,
+  renderPlanBlock,
   renderPermissionControl,
   renderSlashMenu,
   makeNonce,
