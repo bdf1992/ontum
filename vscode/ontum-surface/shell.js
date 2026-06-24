@@ -16,6 +16,7 @@
 'use strict';
 
 const { diffFromToolUse } = require('./diff');
+const { PERMISSION_MODES, normalizePermissionMode } = require('./engine');
 
 // A small, dependency-free nonce for the webview Content-Security-Policy.
 // (Webview scripts must carry a nonce the CSP whitelists; without one the
@@ -223,6 +224,41 @@ function renderTranscript(entries) {
   );
 }
 
+// renderPermissionControl(mode) -> the inner HTML of the composer's permission
+// surface (row 9): a labelled <select> offering the four permission modes the
+// engine accepts (default / acceptEdits / plan / bypassPermissions — the exact
+// list `claude --help` advertises, sourced from engine.PERMISSION_MODES so the
+// surface and the argv never drift). The current mode is normalized
+// (conservative: an unknown value shows 'default', it never escalates) and
+// marked `selected`. Changing it posts `{ type:'ontum:set-permission-mode',
+// mode }` to the host, which threads it into the NEXT turn's engineArgs — so a
+// turn actually runs under the human's chosen policy. A short human label per
+// mode tells a cold reader what each one does (no fake "Allow once" button that
+// the --print channel cannot honour).
+const PERMISSION_MODE_LABELS = {
+  default: 'default — ask before risky tools',
+  acceptEdits: 'acceptEdits — auto-accept file edits',
+  plan: 'plan — read-only, propose a plan',
+  bypassPermissions: 'bypassPermissions — run without prompts',
+};
+function renderPermissionControl(mode) {
+  const current = normalizePermissionMode(mode);
+  const options = PERMISSION_MODES.map((m) => {
+    const sel = m === current ? ' selected' : '';
+    const label = escapeHtml(PERMISSION_MODE_LABELS[m] || m);
+    return `<option value="${escapeHtml(m)}"${sel}>${label}</option>`;
+  }).join('');
+  return (
+    '<div class="ontum-permission" data-region="permission">' +
+    '<label class="ontum-permission-label" for="ontum-permission-mode">Permission</label>' +
+    `<select class="ontum-permission-mode" id="ontum-permission-mode" ` +
+    `data-mode="${escapeHtml(current)}" aria-label="Permission mode">` +
+    options +
+    '</select>' +
+    '</div>'
+  );
+}
+
 // renderShell(opts) -> string of branded, standalone HTML.
 //
 //   opts.nonce      — CSP nonce (one is generated if absent).
@@ -251,6 +287,9 @@ function renderShell(opts) {
     o.transcript === undefined
       ? '<p class="ontum-empty">Pick a session on the left to read it here.</p>'
       : renderTranscript(o.transcript);
+  // Row 9 — the permission-mode surface in the composer. Defaults to 'default'
+  // (conservative) when the host passes none.
+  const permissionHtml = renderPermissionControl(o.permissionMode);
   // When a real webview.cspSource is supplied, allow styles/images from it;
   // otherwise lock to 'self' + the nonce. Scripts are nonce-gated either way.
   const styleSrc = o.cspSource ? `'self' ${o.cspSource}` : "'self'";
@@ -473,10 +512,36 @@ function renderShell(opts) {
       font-weight: 600;
     }
     button.ontum-compose-send:disabled { opacity: 0.55; cursor: progress; }
-    .ontum-compose-status { margin: 0.4rem 0 0; font-size: 0.76rem; }
+    .ontum-compose-status { margin: 0; font-size: 0.76rem; }
     .ontum-compose-status[data-status="error"] { color: #c2685a; }
     .ontum-compose-status[data-status="done"] { color: var(--ontum-dim); }
     .ontum-compose-status[data-status="sending"] { color: var(--ontum-accent); }
+    /* Row 9 — the permission-mode surface. */
+    .ontum-compose-foot {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+    }
+    .ontum-permission { display: flex; align-items: center; gap: 0.35rem; }
+    .ontum-permission-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--ontum-dim);
+    }
+    select.ontum-permission-mode {
+      cursor: pointer;
+      border: 1px solid var(--ontum-edge);
+      border-radius: 6px;
+      padding: 0.25rem 0.4rem;
+      background: var(--ontum-bg);
+      color: var(--ontum-ink);
+      font: inherit;
+      font-size: 0.76rem;
+    }
+    select.ontum-permission-mode:focus { outline: none; border-color: var(--ontum-accent); }
+    select.ontum-permission-mode[data-mode="bypassPermissions"] { border-color: #c2685a; color: #c2685a; }
   </style>
 </head>
 <body>
@@ -503,7 +568,10 @@ function renderShell(opts) {
         aria-label="Send a prompt"></textarea>
       <button class="ontum-compose-send" type="button">Send</button>
     </div>
-    <p class="ontum-compose-status" data-status="idle" hidden></p>
+    <div class="ontum-compose-foot">
+      ${permissionHtml}
+      <p class="ontum-compose-status" data-status="idle" hidden></p>
+    </div>
   </footer>
   <script nonce="${nonce}">
     // Acquire the webview API when hosted; a no-op outside VS Code so the same
@@ -526,6 +594,23 @@ function renderShell(opts) {
         }
       });
     });
+
+    // Row 9 — the permission-mode surface. Changing the composer's permission
+    // <select> tells the host which mode the NEXT turn runs under; the host
+    // threads it into engineArgs (--permission-mode), so the turn actually runs
+    // under the human's chosen policy. We also reflect the choice on the element
+    // (data-mode) so a cold reader / test can see what is in force.
+    (function wirePermission() {
+      var sel = document.querySelector('.ontum-permission-mode');
+      if (!sel) return;
+      sel.addEventListener('change', function () {
+        var mode = sel.value;
+        sel.setAttribute('data-mode', mode);
+        if (vscode) {
+          vscode.postMessage({ type: 'ontum:set-permission-mode', mode: mode });
+        }
+      });
+    })();
 
     // Row 8 — diff accept/reject. An edit tool-call (Edit/Write/MultiEdit/…)
     // renders as a diff with Accept + Reject buttons. Delegation on document is
@@ -731,6 +816,7 @@ module.exports = {
   renderTranscriptRow,
   renderDiffBlock,
   renderDiffLines,
+  renderPermissionControl,
   makeNonce,
   escapeHtml,
 };

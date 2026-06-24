@@ -51,12 +51,45 @@ function encodeUserMessage(text) {
   return JSON.stringify(msg) + '\n';
 }
 
+// --- row 9: the permission surface ------------------------------------------
+// Normal Claude Code gates a tool behind a permission decision: the permission
+// MODE (default / acceptEdits / plan / bypassPermissions) sets the standing
+// policy, and per-tool allow/deny lists pre-authorize or forbid specific tools
+// (the canUseTool policy a host expresses). The bridge spike resolved this row
+// to `inherit`: the SAME `claude` CLI exposes exactly these levers, verified
+// live on this machine — `claude --help` advertises
+//   --permission-mode <mode>  (choices: acceptEdits, bypassPermissions, default, plan)
+//   --allowedTools <tools...> / --disallowedTools <tools...>
+//   --dangerously-skip-permissions
+// so the surface does not invent a permission engine; it drives the inherited
+// one. engineArgs() below threads the chosen mode + allow/deny policy into the
+// drive channel's argv (so a turn actually runs under the human's choice), and
+// normalizePermissionMode() keeps the surface conservative — an unknown mode
+// falls back to 'default' (never silently to bypass).
+
+// The permission modes the engine accepts, in the order the surface offers
+// them (most restrictive intent first). Mirrors `claude --help` exactly.
+const PERMISSION_MODES = ['default', 'acceptEdits', 'plan', 'bypassPermissions'];
+
+// normalizePermissionMode(m) -> a valid permission mode, defaulting to
+// 'default' for anything unrecognised. Conservative by construction: a typo or
+// a hostile value can never escalate to 'bypassPermissions'.
+function normalizePermissionMode(m) {
+  return PERMISSION_MODES.indexOf(m) >= 0 ? m : 'default';
+}
+
 // engineArgs(opts) -> the CLI argv that opens the stream-json drive channel.
-//   opts.permissionMode — one of default|acceptEdits|plan|bypassPermissions
-//                         (default 'default'); the surface stays conservative.
-//   opts.resume         — a session id to continue (row 16 territory; passed
-//                         through here so a resumed turn uses the same channel).
-//   opts.model          — optional model override (passed as --model).
+//   opts.permissionMode  — one of default|acceptEdits|plan|bypassPermissions
+//                          (normalized; unknown -> 'default'). The surface stays
+//                          conservative — row 9's permission-mode lever.
+//   opts.allowedTools     — array of tool specs to pre-authorize (row 9's
+//                          allow-list, e.g. ['Bash(git:*)','Edit']); emitted as
+//                          --allowedTools when non-empty.
+//   opts.disallowedTools  — array of tool specs to forbid (row 9's deny-list);
+//                          emitted as --disallowedTools when non-empty.
+//   opts.resume          — a session id to continue (row 16 territory; passed
+//                          through here so a resumed turn uses the same channel).
+//   opts.model           — optional model override (passed as --model).
 // The flags mirror exactly what `claude --help` advertises (verified live).
 function engineArgs(opts) {
   const o = opts || {};
@@ -69,8 +102,14 @@ function engineArgs(opts) {
     '--include-partial-messages',
     '--verbose', // stream-json needs verbose to emit the full event stream
   ];
-  const mode = o.permissionMode || 'default';
-  args.push('--permission-mode', mode);
+  args.push('--permission-mode', normalizePermissionMode(o.permissionMode));
+  // Row 9 — per-tool allow/deny policy (the canUseTool levers the CLI exposes).
+  if (Array.isArray(o.allowedTools) && o.allowedTools.length) {
+    args.push('--allowedTools', ...o.allowedTools.map(String));
+  }
+  if (Array.isArray(o.disallowedTools) && o.disallowedTools.length) {
+    args.push('--disallowedTools', ...o.disallowedTools.map(String));
+  }
   if (o.resume) {
     args.push('--resume', String(o.resume));
     if (o.forkSession) args.push('--fork-session');
@@ -383,4 +422,7 @@ module.exports = {
   partialDelta,
   assembleStream,
   driveTurn,
+  // Row 9 — the permission surface (mode normalization + the mode list).
+  PERMISSION_MODES,
+  normalizePermissionMode,
 };

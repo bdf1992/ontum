@@ -17,7 +17,7 @@ const { renderShell, renderTranscriptRows } = require('./shell');
 const { listSessions, storeDirFor } = require('./sessions');
 const { readTranscript, fileForSession } = require('./transcript');
 const { tailTranscript } = require('./livetail');
-const { driveTurn, partialDelta } = require('./engine');
+const { driveTurn, partialDelta, normalizePermissionMode } = require('./engine');
 
 const VIEW_TYPE = 'ontum.surface';
 const OPEN_COMMAND = 'ontum.surface.open';
@@ -44,6 +44,12 @@ let lastDiffDecision = null;
 // process via __setSpawnForTest so the send→reply round-trip is proven without a
 // real billed model call.
 let spawnImpl = null;
+// Row 9 — the permission mode the next turn runs under (the permission-mode
+// surface). The composer's <select> posts ontum:set-permission-mode to change
+// it; sendPrompt threads it into the engine argv (--permission-mode), so a turn
+// actually runs under the human's chosen policy. Conservative default — an
+// unknown value normalizes to 'default', never escalating to bypass.
+let permissionMode = 'default';
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -167,7 +173,9 @@ async function sendPrompt(text) {
     reply = await driveTurn({
       prompt,
       cwd: currentCwd(),
-      permissionMode: 'default',
+      // Row 9 — run under the human's chosen permission mode (the composer's
+      // permission surface set it; defaults to the conservative 'default').
+      permissionMode,
       spawn: spawnImpl || undefined,
       // Row 6 — stream the live partials to the composer as they arrive.
       onEvent: postTurnDelta,
@@ -210,6 +218,24 @@ function recordDiffDecision(msg) {
   return lastDiffDecision;
 }
 
+// setPermissionMode(msg) -> record the permission mode the webview's permission
+// surface chose (row 9), normalized so an unknown/hostile value can never
+// escalate past 'default'. Accepts either a raw mode string or the
+// `{ type:'ontum:set-permission-mode', mode }` message. Returns the mode now in
+// force. The NEXT turn's sendPrompt threads this into the engine argv
+// (--permission-mode), so the turn actually runs under the human's choice.
+function setPermissionMode(msg) {
+  const raw = msg && typeof msg === 'object' ? msg.mode : msg;
+  permissionMode = normalizePermissionMode(raw);
+  return permissionMode;
+}
+
+// getPermissionMode() -> the permission mode the next turn will run under.
+// Exposed so a host-free test can assert the row-9 mode round-trip.
+function getPermissionMode() {
+  return permissionMode;
+}
+
 // startTail() -> begin watching the selected session's file for appends. The
 // full transcript was just painted by renderPanel, so we anchor the offset at
 // the current end and only future appends stream in. fs.watchFile polls (works
@@ -247,6 +273,9 @@ function renderPanel() {
     cspSource: panel.webview.cspSource,
     sessions: readSessions(),
     transcript: readSelectedTranscript(),
+    // Row 9 — paint the composer's permission surface in its current mode so a
+    // re-render preserves the human's choice.
+    permissionMode,
   });
 }
 
@@ -287,6 +316,9 @@ function openSurface(context) {
       } else if (msg && msg.type === 'ontum:diff-decision') {
         // Row 8 — record an Accept/Reject the human made on a rendered diff.
         recordDiffDecision(msg);
+      } else if (msg && msg.type === 'ontum:set-permission-mode') {
+        // Row 9 — the human chose a permission mode; the next turn runs under it.
+        setPermissionMode(msg);
       }
     });
   }
@@ -355,6 +387,10 @@ module.exports = {
   // accept/reject decision round-trip.
   recordDiffDecision,
   getLastDiffDecision,
+  // Row 9 — exposed so a host-free test can drive + assert the permission-mode
+  // round-trip (the webview's permission surface → the next turn's argv).
+  setPermissionMode,
+  getPermissionMode,
   __setSpawnForTest,
   VIEW_TYPE,
   OPEN_COMMAND,
