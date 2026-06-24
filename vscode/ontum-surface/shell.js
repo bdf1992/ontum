@@ -951,6 +951,19 @@ function renderShell(opts) {
       font-weight: 600;
     }
     button.ontum-compose-send:disabled { opacity: 0.55; cursor: progress; }
+    /* Row 17 — the Stop button: a quiet danger affordance shown only while a
+       turn is in flight (the Send button is disabled then). */
+    button.ontum-compose-stop {
+      cursor: pointer;
+      border: 1px solid #c2685a;
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      background: transparent;
+      color: #c2685a;
+      font: inherit;
+      font-weight: 600;
+    }
+    button.ontum-compose-stop[hidden] { display: none; }
     .ontum-compose-status { margin: 0; font-size: 0.76rem; }
     .ontum-compose-status[data-status="error"] { color: #c2685a; }
     .ontum-compose-status[data-status="done"] { color: var(--ontum-dim); }
@@ -1205,6 +1218,10 @@ function renderShell(opts) {
         placeholder="Send a prompt to drive a turn… (Enter to send, Shift+Enter for newline)"
         aria-label="Send a prompt"></textarea>
       <button class="ontum-compose-send" type="button">Send</button>
+      <!-- Row 17 — Stop interrupts the in-flight turn (terminates the engine
+           process). Hidden until a turn is driving; revealed on send, re-hidden
+           on reply. A click posts ontum:interrupt-turn to the host. -->
+      <button class="ontum-compose-stop" type="button" hidden aria-label="Stop the running turn" title="Stop the running turn">Stop</button>
     </div>
     <div class="ontum-compose-foot">
       ${permissionHtml}
@@ -1417,6 +1434,8 @@ function renderShell(opts) {
     (function wireComposer() {
       var input = document.querySelector('.ontum-compose-input');
       var send = document.querySelector('.ontum-compose-send');
+      // Row 17 — the Stop button (interrupt the in-flight turn).
+      var stop = document.querySelector('.ontum-compose-stop');
       var status = document.querySelector('.ontum-compose-status');
       if (!input || !send) return;
 
@@ -1427,16 +1446,34 @@ function renderShell(opts) {
         status.hidden = !text;
       }
 
+      // Row 17 — toggle the Stop affordance with the turn lifecycle: shown while
+      // a turn drives (Send disabled), hidden once it settles. Centralised so the
+      // submit + turn-reply paths stay in sync.
+      function setTurnRunning(running) {
+        send.disabled = running;
+        if (stop) stop.hidden = !running;
+      }
+
       function submit() {
         var text = (input.value || '').trim();
         if (!text) return;
         if (vscode) vscode.postMessage({ type: 'ontum:send-prompt', text: text });
         input.value = '';
-        send.disabled = true;
+        setTurnRunning(true);
         setStatus('sending', 'Driving a turn…');
       }
 
       send.addEventListener('click', submit);
+      // Row 17 — a Stop click asks the host to terminate the engine turn. The
+      // turn then settles as an honest interrupted reply via the turn-reply path
+      // (which re-hides Stop + re-enables Send), so this only fires the request.
+      if (stop) {
+        stop.addEventListener('click', function () {
+          if (vscode) vscode.postMessage({ type: 'ontum:interrupt-turn' });
+          stop.disabled = true;
+          setStatus('sending', 'Stopping the turn…');
+        });
+      }
       input.addEventListener('keydown', function (e) {
         // Rows 10/12 — Escape closes the slash + mention palettes without sending.
         if (e.key === 'Escape') { hideSlash(); hideMention(); return; }
@@ -1601,7 +1638,11 @@ function renderShell(opts) {
       window.addEventListener('message', function (ev) {
         var m = ev && ev.data;
         if (!m || m.type !== 'ontum:turn-reply') return;
-        send.disabled = false;
+        // Row 17 — the turn settled (replied, errored, timed out, or was
+        // stopped); re-enable Send + re-hide Stop, and re-arm the Stop button
+        // for the next turn (a prior Stop click left it disabled).
+        setTurnRunning(false);
+        if (stop) stop.disabled = false;
         // Row 6 — drop the live streaming preview before splicing the folded
         // reply, so the authoritative fold replaces it (no double render).
         document.querySelectorAll('.ontum-msg[data-streaming="true"]')
@@ -1615,7 +1656,11 @@ function renderShell(opts) {
             if (section) section.scrollTop = section.scrollHeight;
           }
         }
-        if (m.isError) {
+        if (m.subtype === 'interrupted') {
+          // Row 17 — an honest user stop, not an engine failure: report it as a
+          // calm "stopped" rather than a red "Turn failed".
+          setStatus('done', 'Turn stopped.');
+        } else if (m.isError) {
           setStatus('error', 'Turn failed' + (m.subtype ? ' (' + m.subtype + ')' : '') + '.');
         } else {
           var cost = (typeof m.cost === 'number') ? ' · $' + m.cost.toFixed(4) : '';

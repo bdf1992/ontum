@@ -107,6 +107,12 @@ let resumeTarget = { mode: 'new', sessionId: null, fork: false };
 // "the attachment rode the turn as a content block" round-trip is proven without
 // a host dialog. Null -> the production picker.
 let attachPickerImpl = null;
+// Row 17 — the control handle for the turn currently in flight (or null when no
+// turn is running). driveTurn hands it to sendPrompt's onStart hook; the
+// composer's Stop button posts ontum:interrupt-turn, which calls its interrupt()
+// to terminate the engine process. Cleared the moment the turn settles, so a
+// late Stop click is a harmless no-op (interruptTurn returns false).
+let activeTurnControl = null;
 
 // currentCwd() -> the workspace folder path, or process.cwd() as a fallback.
 // The transcript store is keyed by this path (sessions.storeDirFor).
@@ -419,6 +425,9 @@ async function sendPrompt(text) {
       spawn: spawnImpl || undefined,
       // Row 6 — stream the live partials to the composer as they arrive.
       onEvent: postTurnDelta,
+      // Row 17 — capture the in-flight turn's interrupt handle so the composer's
+      // Stop button can terminate THIS turn (the engine process).
+      onStart: (handle) => { activeTurnControl = handle; },
     }, resumeArgs));
   } catch (err) {
     reply = {
@@ -428,6 +437,10 @@ async function sendPrompt(text) {
       text: (err && err.message) || 'engine failed to start',
       cost: null,
     };
+  } finally {
+    // Row 17 — the turn has settled (replied, errored, timed out, or was
+    // stopped); drop the interrupt handle so a later Stop is a no-op.
+    activeTurnControl = null;
   }
   // Row 15 — the attachments rode this one turn; clear the staged set so they do
   // not ride the next. Re-render so the composer's tray empties (only when there
@@ -539,6 +552,30 @@ function setResumeTarget(msg) {
 // under (row 16). Exposed so a host-free test can assert the resume round-trip.
 function getResumeTarget() {
   return resumeTarget;
+}
+
+// interruptTurn() -> stop the turn currently in flight (row 17). Calls the
+// active turn's interrupt handle (driveTurn's onStart controller), which
+// terminates the spawned engine process; the turn then settles with an honest
+// interrupted reply (subtype 'interrupted') the existing turn-reply path
+// renders. Returns true when a live turn was stopped, false when none was
+// running (idempotent — a stray / late Stop click is a harmless no-op). The
+// composer's Stop button posts ontum:interrupt-turn to drive this.
+function interruptTurn() {
+  if (!activeTurnControl || typeof activeTurnControl.interrupt !== 'function') {
+    return false;
+  }
+  try {
+    return activeTurnControl.interrupt() === true;
+  } catch (_) {
+    return false;
+  }
+}
+
+// isTurnRunning() -> whether a turn is currently in flight (row 17). Exposed so
+// a host-free test can assert the handle is held during a turn and dropped after.
+function isTurnRunning() {
+  return activeTurnControl != null;
 }
 
 // startTail() -> begin watching the selected session's file for appends. The
@@ -658,6 +695,9 @@ function openSurface(context) {
       } else if (msg && msg.type === 'ontum:remove-attachment') {
         // Row 15 — drop a staged attachment the human removed; re-render the tray.
         if (removeAttachment(msg.name)) renderPanel();
+      } else if (msg && msg.type === 'ontum:interrupt-turn') {
+        // Row 17 — the human pressed Stop; terminate the in-flight engine turn.
+        interruptTurn();
       }
     });
   }
@@ -790,6 +830,11 @@ module.exports = {
   getAttachments,
   pickAttachment,
   __setAttachPickerForTest,
+  // Row 17 — exposed so a host-free test can assert the stop/interrupt round-trip
+  // (a turn in flight holds the control handle; Stop terminates it and the turn
+  // settles as an honest interrupted reply; a late Stop is a no-op).
+  interruptTurn,
+  isTurnRunning,
   VIEW_TYPE,
   OPEN_COMMAND,
 };

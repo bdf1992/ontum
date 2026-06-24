@@ -206,6 +206,36 @@ function resumeArgsFromTarget(t) {
   return out;
 }
 
+// --- row 17: stop / interrupt a running turn --------------------------------
+// Normal Claude Code lets the human STOP an in-flight turn (Esc / the Stop
+// button). The spike marked this `inherit` ("stream-json control / process
+// signal"); grounded live this tick: `claude --help` advertises NO interrupt /
+// abort / control flag for the `--print` headless channel (no
+// `--interrupt`/`--abort`/control-request option exists in 2.0.19). So the only
+// honest way to stop an in-flight HEADLESS turn is to TERMINATE the spawned
+// engine process — the same `child.kill()` the watchdog uses, here
+// user-initiated. The turn then settles via its `close` with whatever events
+// arrived, folded by foldReply and LABELLED interrupted (markInterrupted) so the
+// surface reports an honest, partial stop — never a fabricated completion.
+const INTERRUPT_SUBTYPE = 'interrupted';
+
+// markInterrupted(reply) -> the reply re-labelled as a user interrupt, pure (a
+// shallow merge that PRESERVES every folded field — sessionId, the entries +
+// text that streamed before the stop, exitCode/stderr — so a stopped turn shows
+// its honest partial result, not an empty one). isError is true and subtype is
+// 'interrupted' (distinct from a 'no-result' engine failure or a 'timeout'), so
+// the surface can render "Turn stopped." rather than "Turn failed." A test
+// proves the labelling host-free.
+function markInterrupted(reply) {
+  const r = reply && typeof reply === 'object' ? reply : {};
+  return Object.assign({}, r, {
+    interrupted: true,
+    isError: true,
+    subtype: INTERRUPT_SUBTYPE,
+    error: r.error || 'turn interrupted by the user',
+  });
+}
+
 // foldReply(events) -> the ONE turn's reply, folded from the output events.
 //   { sessionId, tools, entries, text, isError, subtype, cost, usage,
 //     durationMs, numTurns }
@@ -414,6 +444,14 @@ function assembleStream(events) {
 //   opts.spawn           — injectable spawn (default child_process.spawn) so a
 //                          test can feed a fake process — no real model call.
 //   opts.onEvent(ev)     — optional per-event hook (row 6 will stream on it).
+//   opts.onStart(handle) — optional hook called SYNCHRONOUSLY once the engine
+//                          process has spawned, handed a control handle
+//                          `{ interrupt(), child }` (row 17). `interrupt()`
+//                          terminates the running turn (kills the engine
+//                          process); the turn then settles with an honest
+//                          interrupted reply. Returns true when it stopped a
+//                          live turn, false when the turn had already settled
+//                          (idempotent — a late Stop is a harmless no-op).
 //   opts.permissionMode/resume/continueSession/forkSession/model — forwarded to
 //                          engineArgs (row 16: resume/continue an existing session).
 // Rejects only on a spawn/process error; a turn that ends in an engine error
@@ -448,6 +486,32 @@ function driveTurn(opts) {
     let stderr = '';
     let settled = false;
     let timer = null;
+    let interrupted = false;
+
+    // Row 17 — the interrupt controller. There is no headless control flag
+    // (verified live: `claude --print --help` has no interrupt/abort option), so
+    // a Stop terminates the engine process; the 'close' handler then folds the
+    // partial events and labels the reply interrupted (markInterrupted). The
+    // handle is handed to opts.onStart synchronously so the surface can wire a
+    // Stop button to this exact running turn. Idempotent: a Stop after the turn
+    // has already settled returns false and does nothing.
+    function interrupt() {
+      if (settled) return false;
+      interrupted = true;
+      try {
+        if (child && typeof child.kill === 'function') child.kill();
+      } catch (_) {
+        /* best-effort — the process may have already exited */
+      }
+      return true;
+    }
+    if (typeof o.onStart === 'function') {
+      try {
+        o.onStart({ interrupt, child });
+      } catch (_) {
+        /* a bad onStart hook must not break the drive */
+      }
+    }
 
     // Decode stdout across chunk boundaries: the OS splits the pipe at arbitrary
     // byte offsets, so a multibyte UTF-8 sequence can straddle two chunks.
@@ -520,7 +584,9 @@ function driveTurn(opts) {
       const reply = foldReply(events);
       reply.exitCode = typeof code === 'number' ? code : null;
       reply.stderr = stderr;
-      resolve(reply);
+      // Row 17 — a user Stop killed the process: fold whatever events arrived and
+      // label the reply interrupted (honest partial result, not a fake success).
+      resolve(interrupted ? markInterrupted(reply) : reply);
     });
 
     // Writing the prompt to a child that already exited delivers EPIPE/ECONNRESET
@@ -588,4 +654,8 @@ module.exports = {
   RESUME_MODES,
   normalizeResumeTarget,
   resumeArgsFromTarget,
+  // Row 17 — stop / interrupt a running turn (the interrupt subtype + the pure
+  // reply labeller; the live interrupt itself is driveTurn's onStart controller).
+  INTERRUPT_SUBTYPE,
+  markInterrupted,
 };
