@@ -19,7 +19,7 @@ Each card carries, in order: an **id**, its **family**, the **subject** it
 documents, a **pointer** (the `file:line` / log record it resolves to — the
 provenance leg; a card with no resolvable pointer is OPEN, not drawn), **what
 it does**, **how it connects**, a text-first **aid** (Mermaid/ASCII, legible
-without the render), and the **gen prompt** (the block handed to the AI).
+without the render), and a pointer to its **gen prompt** in [visual-requests.md](visual-requests.md).
 
 ---
 
@@ -67,11 +67,7 @@ file bytes ──sha256──▶ artifact_hash ──┐
 node_real admission ──▶ stage: mock ──▶ real   (the bind = a logged stamp)
 ```
 
-> **gen prompt:** A learning card titled "Identity Is Content Hash." A file
-> passing through a hash function into a glowing fingerprint; a chain-link
-> whose binding glow is labeled "receipt"; a dim "mock" stage crystallizing
-> into a solid "real" stage at the moment a stamp lands. Particle-card
-> aesthetic, emphasis on the bond.
+*(gen prompt → [visual-requests.md](visual-requests.md))*
 
 ---
 
@@ -95,11 +91,7 @@ node_real admission ──▶ stage: mock ──▶ real   (the bind = a logged 
    ───────────────────  the record persists  ───────────────────  ◀ the self
 ```
 
-> **gen prompt:** A learning card titled "The Mortal Session." A translucent
-> figure appearing at a labeled node, performing one act, then fading — while
-> a solid engraved ledger beneath it remains, glowing. The caption frames the
-> ledger, not the figure, as "the self." Particle-card aesthetic, sense of
-> impermanence over permanence.
+*(gen prompt → [visual-requests.md](visual-requests.md))*
 
 ---
 
