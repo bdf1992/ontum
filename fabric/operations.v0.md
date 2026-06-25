@@ -13,12 +13,25 @@ the conserved singlet, the cube center / observer).
 | 02 | **Subtractive** | `−` | parts remove / filter | a − b | AND-NOT / mask |
 | 03 | **Multiply** | `×` | parts scale / interact | a × b | AND / tensor ⊗ |
 | 04 | **Divisive** | `÷` | parts split / ratio / normalize | a ÷ b | shift / partition |
-| 05 | **Resolute** | `⚖` | opposites balance into a valid whole | a ⊕ ā → 0 | XOR → neutral |
+| 05 | **Resolve** | `⚖` | opposites collapse into a valid whole (reach gray) | a ⊕ ā → 0 | measure / XOR → neutral |
+| 06 | **Waver** | `~` | the superposition of what *could* resolve (chance/chaos) | a ⊕ ā held | superpose / amplitudes (hold +−) |
 
-- **Reach gray = the resolved neutral whole.** Gray is **not** emptiness or the average
-  — it is the point where the concept **holds under all relevant tests.** So
-  **Resolute = the verdict / gate**: reconcile opposites until the whole is coherent
-  (the §10 validity check; the color-neutral singlet; the conserved sum → 0).
+**The operations are symmetric — three inverse-pairs (the 3 axes / 6 cube faces):**
+
+- Additive ↔ Subtractive (accumulate ↔ filter)
+- Multiply ↔ Divisive (scale ↔ split)
+- **Resolve ↔ Waver (collapse ↔ superpose)** — the pair the card was missing; Waver is
+  Resolute's symmetry.
+
+Each pair is a direction and its inverse: **toward order/coherence**, or **toward
+spread/possibility.**
+
+- **Resolve / Waver is the quantum measurement axis.** **Resolve** = what *did* resolve
+  (collapse, measurement, actual, *being*, filled, gray — the point where the concept
+  **holds under all relevant tests**: the verdict/gate, the color-neutral singlet, the
+  conserved sum → 0). **Waver** = what *could have* (the wavefunction, possibility,
+  chance/chaos, *becoming*, the hungry-empty, the `+−` held uncollapsed). **You cannot
+  resolve without first wavering** — a measurement needs a wave to collapse.
 - **Order matters** — each operation shapes the path; intermediate results are valid
   checkpoints (the grades). **Balance > quantity; completeness > size.**
 
@@ -38,7 +51,8 @@ structure** actually requires:
 ## What this gives the math
 
 - arithmetic (`+ − × ÷`) over the fields (charge / color / spin),
-- **Resolute** (`⚖`) = conservation / neutralization → the valid whole (singlet, gray),
+- **Resolve / Waver** (`⚖` / `~`) = collapse to the valid whole (singlet, gray) **vs**
+  the superposition of what could resolve (the wave) — the **measurement axis**,
 - all grounded in binary (the rails) — so every operation is **computable and
   enumerable** (the bounded-wave principle).
 
