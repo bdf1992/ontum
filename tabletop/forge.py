@@ -90,6 +90,15 @@ def validate(spec):
                     f"tiers: timecoin must strictly increase with tier "
                     f"(T{prev['tier']}={prev['timecoin']} -> T{t}={coin})")
         prev = row
+    clock = spec.get("clock", {})
+    hours = clock.get("hours")
+    if not (isinstance(hours, int) and 1 <= hours <= 12):
+        problems.append(
+            f"clock: hours must be an integer in 1..12 (the dial template has "
+            f"twelve numerals), got {hours!r}")
+    if not (isinstance(clock.get("max_turns"), int) and clock["max_turns"] >= 1):
+        problems.append(f"clock: max_turns must be a positive integer, got "
+                        f"{clock.get('max_turns')!r}")
     names = {e.get("name") for e in elements}
     for kind in ("races", "classes"):
         for row in spec.get(kind, []):
@@ -155,8 +164,9 @@ def render_data(spec):
         f"  currency = {{ name = {lua_str(cur['name'])}, start = {cur['start']}, "
         f"denominations = {{ {denoms} }} }},")
     ap = spec["attention"]
+    note = f", note = {lua_str(ap['note'])}" if ap.get("note") else ""
     lines.append(
-        f"  attention = {{ name = {lua_str(ap['name'])}, per_turn = {ap['per_turn']} }},")
+        f"  attention = {{ name = {lua_str(ap['name'])}, per_turn = {ap['per_turn']}{note} }},")
     lines.append("  shapes = {")
     for s in spec["shapes"]:
         lines.append(f"    {{ label = {lua_str(s['label'])}, tts = {lua_str(s['tts'])} }},")
@@ -218,9 +228,9 @@ def transform(pos, rot=(0.0, 0.0, 0.0), scale=(1.0, 1.0, 1.0)):
 
 def obj(tts_name, nickname, pos, scale=(1, 1, 1), rot=(0, 0, 0), tint=None,
         description="", gm_notes="", lua="", tags=(), locked=False, contained=None,
-        extra=None):
+        extra=None, guid_key=None):
     state = {
-        "GUID": guid(nickname),
+        "GUID": guid(guid_key or nickname),
         "Name": tts_name,
         "Transform": transform(pos, rot, scale),
         "Nickname": nickname,
@@ -317,14 +327,16 @@ def build_objects(spec, scripts):
                                  "class": p["class"], "tier": p["tier"],
                                  "pool": p["pool"], "identified": False}),
             tags=["cc-holder", "cc-persona"],
-            description="Unidentified persona — click ID? on the pawn."))
+            description="Unidentified persona — click ID? on the pawn.",
+            guid_key=f"persona-sample-{i}-{p['name']}"))
     personas.append(obj(
         "PlayerPawn", "Unknown T1", persona_positions[1], scale=(1.1, 1.1, 1.1),
         tint=(0.45, 0.45, 0.45), lua=scripts["persona"],
         gm_notes=json.dumps({"name": "Nameless", "race": "Mortal", "class": "Magus",
                              "tier": 1, "pool": {}, "identified": False}),
         tags=["cc-holder", "cc-persona"],
-        description="A blank persona — edit GM Notes to make anyone."))
+        description="A blank persona — edit GM Notes to make anyone.",
+        guid_key="persona-blank"))
 
     chip_types = {10: "Chip_10", 100: "Chip_100", 1000: "Chip_1000"}
     coins = []
@@ -349,7 +361,8 @@ def build_objects(spec, scripts):
                  scale=(0.9, 0.9, 0.9), tint=(0.15, 0.65, 0.6),
                  contained=[ap_token],
                  description=(f"{ap['name']} — attention/action points "
-                              f"({ap['per_turn']}/turn; unspent converts to {coin_name})."))
+                              f"({ap['per_turn']}/turn; unspent converts to {coin_name})."
+                              + (f"\nNote: {ap['note']}" if ap.get("note") else "")))
 
     shape_items = [obj(s["tts"], f"{s['label']} (shape)", (0, 0, 0))
                    for s in spec["shapes"]]
@@ -454,7 +467,8 @@ def main(argv=None):
     if args.cmd == "check":
         problems = validate(load_spec())
         if problems:
-            print("result: needs-you — the spec breaks the canon laws:")
+            # a broken spec is the session's to fix, never bdo's: report, not needs-you
+            print("result: report — refused: the spec breaks the canon laws:")
             for p in problems:
                 print(f"  - {p}")
             return 1
@@ -466,7 +480,7 @@ def main(argv=None):
         try:
             written = build(load_spec(args.spec), args.out)
         except ValueError as exc:
-            print(f"result: needs-you — {exc}")
+            print(f"result: report — {exc}")
             return 1
         print(f"result: done — forged {len(written)} file(s) into {args.out}")
         return 0

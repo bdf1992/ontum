@@ -46,7 +46,7 @@ CC = {
   },
   clock = { hours = 12, max_turns = 12, eon_message = "Eon, you have awakened. The end time has come — he arrives in {turns} turns." },
   currency = { name = "Timecoin", start = 100, denominations = { 10, 100, 1000 } },
-  attention = { name = "AP", per_turn = 3 },
+  attention = { name = "AP", per_turn = 3, note = "provisional default (bdo's notes name AP but not a per-turn amount); unspent AP converts to timecoin at end of turn" },
   shapes = {
     { label = "Block", tts = "BlockSquare" },
     { label = "Slab", tts = "BlockRectangle" },
@@ -142,6 +142,7 @@ function onLoad(saved)
   if not restored then
     local cfg = ccNotesConfig({ max_turns = CC.clock.max_turns })
     state.max_turns = tonumber(cfg.max_turns) or CC.clock.max_turns
+    state.hand = CC.clock.hours
     state.hours = {}
     for i = 1, CC.clock.hours do state.hours[i] = "on" end
   end
@@ -160,18 +161,21 @@ function buildUI()
             width = 260, height = 260, font_size = 110,
             tooltip = "Hour " .. ROMAN[h] .. ": click to warp (remove / double / restore)" })
   end
+  -- indices after the dial: END TURN = hours, status = hours + 1 (STATUS_INDEX)
   ccBtn({ click_function = "endTurn", label = "END TURN", position = { 0, 0.62, 0 },
           width = 900, height = 420, font_size = 130,
-          color = { 0.75, 0.2, 0.15 }, font_color = { 1, 1, 1 } })          -- 12
+          color = { 0.75, 0.2, 0.15 }, font_color = { 1, 1, 1 } })
   ccBtn({ click_function = "ccNoop", label = "", position = { 0, 0.62, 0.17 },
-          width = 0, height = 0, font_size = 90 })                          -- 13 status
+          width = 0, height = 0, font_size = 90 })
   ccBtn({ click_function = "turnPlus", label = "+T", position = { 0.62, 0.62, -0.55 },
           width = 260, height = 220, font_size = 100,
-          tooltip = "Gain a turn: the end comes later" })                   -- 14
+          tooltip = "Gain a turn: the end comes later" })
   ccBtn({ click_function = "turnMinus", label = "-T", position = { 0.62, 0.62, -0.42 },
           width = 260, height = 220, font_size = 100,
-          tooltip = "Lose a turn: the end comes sooner" })                  -- 15
+          tooltip = "Lose a turn: the end comes sooner" })
 end
+
+local STATUS_INDEX = CC.clock.hours + 1
 
 local function hourLabel(h)
   if state.hours[h] == "off" then return "--" end
@@ -188,7 +192,7 @@ function refresh()
       font_color = mine and { 0.1, 0.1, 0.1 } or { 0.95, 0.9, 0.8 } })
   end
   local left = state.max_turns - state.turn + 1
-  self.editButton({ index = 13,
+  self.editButton({ index = STATUS_INDEX,
     label = "Turn " .. state.turn .. "/" .. state.max_turns
       .. "  |  hand on " .. hourLabel(state.hand)
       .. "  |  Eon in " .. math.max(0, left) })
@@ -198,6 +202,8 @@ end
 function ccNoop() end
 
 -- click an hour to warp it: on -> off -> dup -> on
+-- (twelve handlers always exist; buildUI wires only CC.clock.hours of them,
+-- and forge.validate refuses a spec asking for more than the dial has)
 for h = 1, 12 do
   _G["hour" .. h] = function()
     local cur = state.hours[h]
@@ -235,8 +241,8 @@ local function advanceHand()
     state.hand = state.hand % CC.clock.hours + 1
     steps = steps + 1
     if state.hours[state.hand] == "off" then table.insert(skipped, ROMAN[state.hand]) end
-  until state.hours[state.hand] ~= "off" or steps > CC.clock.hours
-  if steps > CC.clock.hours then
+  until state.hours[state.hand] ~= "off" or steps >= CC.clock.hours
+  if state.hours[state.hand] == "off" then
     broadcastToAll("Every hour is deleted — the hand spins in a clockless void.", { 0.7, 0.3, 0.9 })
   end
   return skipped
@@ -244,12 +250,15 @@ end
 
 function endTurn()
   local skipped = advanceHand()
-  state.turn = state.turn + 1
+  -- a deleted hour the hand skips is time you lose: each one costs a turn
+  -- ("you go from 12 to 2 — you lose a turn but something else might happen")
+  state.turn = state.turn + 1 + #skipped
   if #skipped > 0 then
     broadcastToAll("The hour" .. (#skipped > 1 and "s" or "") .. " of "
         .. table.concat(skipped, ", ")
         .. " never come" .. (#skipped > 1 and "" or "s")
-        .. " — you lose that time, and something stirs...", { 0.7, 0.3, 0.9 })
+        .. " — " .. #skipped .. " turn" .. (#skipped > 1 and "s are" or " is")
+        .. " lost, and something stirs...", { 0.7, 0.3, 0.9 })
   end
   -- the world computes: biomes generate, events fire
   local fired = 0

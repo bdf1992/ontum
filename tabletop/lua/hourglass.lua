@@ -105,9 +105,10 @@ end
 function hgDrop()
   local n = state.top[selName()] or 0
   if n > 0 then
+    local was = isTimeless()
     state.top[selName()] = n - 1
     state.bottom[selName()] = (state.bottom[selName()] or 0) + 1
-    if isTimeless() then
+    if not was and isTimeless() then
       broadcastToAll(self.getName() .. " has slipped into TIMELESSNESS.", { 0.6, 0.4, 0.9 })
     end
   end

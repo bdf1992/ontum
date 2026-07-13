@@ -64,7 +64,7 @@ function refresh()
       .. " grain(s) per turn" .. (state.timeless and " INTO TIMELESSNESS" or "")
       .. "\nOwn (in time): " .. ccFmtPool(state.top)
       .. "\nOwn (timeless): " .. ccFmtPool(state.bottom)
-      .. "\nPersonas standing here add their grains to this region's census.")
+      .. "\nPersonas and vessels standing here add their grains to this region's census.")
   if state.timeless then
     self.setColorTint({ 0.22, 0.16, 0.32 })
   elseif e ~= nil then

@@ -134,10 +134,11 @@ end
 
 local function scripted(objType, scale, script, notes, name, tint)
   local o = spawnObject({ type = objType, position = dropPos(), scale = scale, sound = false })
-  o.setGMNotes(JSON.encode(notes or {}))
+  o.setGMNotes(JSON.encode(notes or {}))  -- notes first: the script reads them on load
   if name then o.setName(name) end
   if tint then o.setColorTint(tint) end
   o.setLuaScript(script)
+  o.reload()  -- guarantee the script's onLoad runs, whatever setLuaScript did
   return o
 end
 
@@ -162,7 +163,13 @@ function ccSpawn(params)
           race = params.race or "Mortal", class = params.class or "Lord",
           tier = tier, pool = params.pool or {}, identified = params.identified == true })
   elseif kind == "biome" then
-    local e = ccElem(params.element) or CC.elements[2]
+    local e = ccElem(params.element)
+    if e == nil then
+      printToAll("A biome needs one of the eight element colors ('"
+          .. tostring(params.element) .. "' is not one) — spawning Fire.",
+          { 0.9, 0.6, 0.2 })
+      e = CC.elements[2]
+    end
     scripted("BlockRectangle", { 6, 0.2, 6 }, CC_SCRIPTS.biome,
         { name = params.name or ("Region " .. state.spawned), element = e.name,
           own = tonumber(params.own) or 0, rate = tonumber(params.rate) or 1 })
@@ -186,58 +193,60 @@ function ccSpawn(params)
     end
   elseif kind == "ap" then
     local p = self.getPosition()
-    spawnTokenBag("AP", { 0.15, 0.65, 0.6 },
+    spawnTokenBag(CC.attention.name, { 0.15, 0.65, 0.6 },
         { x = p.x, y = p.y + 2.5, z = p.z - 13 },
         CC.attention.name .. " — attention/action points ("
         .. CC.attention.per_turn .. "/turn; unspent AP converts to "
-        .. CC.currency.name .. " at end of turn)")
+        .. CC.currency.name .. " at end of turn)"
+        .. (CC.attention.note and ("\nNote: " .. CC.attention.note) or ""))
   else
     printToAll("Unknown spawn kind: " .. kind, { 0.9, 0.4, 0.3 })
   end
 end
 
-function spawnGrainBag(e, pos)
-  local bag = spawnObject({ type = "Infinite_Bag", position = pos,
+-- one recipe for every infinite bag: spawn the bag, spawn its one item
+-- above it, drop the item in once physics has settled
+local function spawnFilledBag(spec)
+  local bag = spawnObject({ type = "Infinite_Bag", position = spec.pos,
                             scale = { 0.9, 0.9, 0.9 }, sound = false })
-  bag.setColorTint({ e.color.r, e.color.g, e.color.b })
-  bag.setName(e.name .. " Grains")
-  bag.setDescription(e.role .. " | opposite: " .. e.opposite
-      .. "\nPull grains from here into hourglasses and pools.")
-  bag.addTag("cc-grainbag")
-  local chk = spawnObject({ type = "Checker_white",
-      position = { x = pos.x, y = pos.y + 3, z = pos.z },
-      scale = { 0.45, 0.45, 0.45 }, sound = false })
-  chk.setColorTint({ e.color.r, e.color.g, e.color.b })
-  chk.setName(e.name .. " Grain")
-  chk.addTag("cc-grain")
-  Wait.frames(function() bag.putObject(chk) end, 20)
+  bag.setColorTint(spec.bagTint)
+  bag.setName(spec.bagName)
+  if spec.desc then bag.setDescription(spec.desc) end
+  if spec.bagTag then bag.addTag(spec.bagTag) end
+  local item = spawnObject({ type = spec.itemType,
+      position = { x = spec.pos.x, y = spec.pos.y + 3, z = spec.pos.z },
+      scale = spec.itemScale, sound = false })
+  item.setColorTint(spec.itemTint or spec.bagTint)
+  item.setName(spec.itemName)
+  if spec.itemTag then item.addTag(spec.itemTag) end
+  Wait.frames(function() bag.putObject(item) end, 20)
+end
+
+function spawnGrainBag(e, pos)
+  spawnFilledBag({
+    pos = pos, bagName = e.name .. " Grains",
+    bagTint = { e.color.r, e.color.g, e.color.b }, bagTag = "cc-grainbag",
+    desc = e.role .. " | opposite: " .. e.opposite
+        .. "\nPull grains from here into hourglasses and pools.",
+    itemType = "Checker_white", itemName = e.name .. " Grain",
+    itemScale = { 0.45, 0.45, 0.45 }, itemTag = "cc-grain",
+  })
 end
 
 function spawnCoinBag(denom, chipType, pos)
-  local bag = spawnObject({ type = "Infinite_Bag", position = pos,
-                            scale = { 0.9, 0.9, 0.9 }, sound = false })
-  bag.setColorTint({ 0.85, 0.7, 0.25 })
-  bag.setName(CC.currency.name .. " " .. denom)
-  bag.addTag("cc-coinbag")
-  local chip = spawnObject({ type = chipType,
-      position = { x = pos.x, y = pos.y + 3, z = pos.z }, sound = false })
-  chip.setColorTint({ 0.9, 0.75, 0.3 })
-  chip.setName(CC.currency.name .. " " .. denom)
-  Wait.frames(function() bag.putObject(chip) end, 20)
+  spawnFilledBag({
+    pos = pos, bagName = CC.currency.name .. " " .. denom,
+    bagTint = { 0.85, 0.7, 0.25 }, bagTag = "cc-coinbag",
+    itemType = chipType, itemName = CC.currency.name .. " " .. denom,
+    itemTint = { 0.9, 0.75, 0.3 },
+  })
 end
 
 function spawnTokenBag(name, tint, pos, desc)
-  local bag = spawnObject({ type = "Infinite_Bag", position = pos,
-                            scale = { 0.9, 0.9, 0.9 }, sound = false })
-  bag.setColorTint(tint)
-  bag.setName(name .. " Tokens")
-  if desc then bag.setDescription(desc) end
-  local tok = spawnObject({ type = "Checker_white",
-      position = { x = pos.x, y = pos.y + 3, z = pos.z },
-      scale = { 0.5, 0.5, 0.5 }, sound = false })
-  tok.setColorTint(tint)
-  tok.setName(name)
-  Wait.frames(function() bag.putObject(tok) end, 20)
+  spawnFilledBag({
+    pos = pos, bagName = name .. " Tokens", bagTint = tint, desc = desc,
+    itemType = "Checker_white", itemName = name, itemScale = { 0.5, 0.5, 0.5 },
+  })
 end
 
 -- ---- the census: region + occupants -> world (bdo's Herald example) ----

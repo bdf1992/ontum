@@ -54,6 +54,28 @@ class TestSpecLaws(unittest.TestCase):
         self.assertTrue(any("timecoin must strictly increase" in p for p in problems2),
                         problems2)
 
+    def test_refuses_clock_beyond_the_dial(self):
+        """The clock template is a twelve-numeral dial; a spec asking for
+        more hours than the dial has must be refused, not built broken."""
+        broken = copy.deepcopy(self.spec)
+        broken["clock"]["hours"] = 24
+        problems = forge.validate(broken)
+        self.assertTrue(any("clock: hours" in p for p in problems), problems)
+        broken2 = copy.deepcopy(self.spec)
+        broken2["clock"]["max_turns"] = 0
+        problems2 = forge.validate(broken2)
+        self.assertTrue(any("max_turns" in p for p in problems2), problems2)
+
+    def test_persona_guids_survive_same_tier_samples(self):
+        """GUIDs must not collide when two same-tier personas share the
+        'Unknown T<n>' nickname (the fog-of-war mask)."""
+        spec = copy.deepcopy(self.spec)
+        spec["samples"]["personas"].append(
+            {"name": "Echo", "race": "Mortal", "class": "Magus", "tier": 1,
+             "pool": {}})
+        with tempfile.TemporaryDirectory() as tmp:
+            forge.build(spec, tmp)  # must not raise duplicate-GUID refusal
+
     def test_build_refuses_unlawful_spec(self):
         broken = copy.deepcopy(self.spec)
         broken["elements"].pop()

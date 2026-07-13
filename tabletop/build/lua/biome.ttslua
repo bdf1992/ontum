@@ -46,7 +46,7 @@ CC = {
   },
   clock = { hours = 12, max_turns = 12, eon_message = "Eon, you have awakened. The end time has come — he arrives in {turns} turns." },
   currency = { name = "Timecoin", start = 100, denominations = { 10, 100, 1000 } },
-  attention = { name = "AP", per_turn = 3 },
+  attention = { name = "AP", per_turn = 3, note = "provisional default (bdo's notes name AP but not a per-turn amount); unspent AP converts to timecoin at end of turn" },
   shapes = {
     { label = "Block", tts = "BlockSquare" },
     { label = "Slab", tts = "BlockRectangle" },
@@ -181,7 +181,7 @@ function refresh()
       .. " grain(s) per turn" .. (state.timeless and " INTO TIMELESSNESS" or "")
       .. "\nOwn (in time): " .. ccFmtPool(state.top)
       .. "\nOwn (timeless): " .. ccFmtPool(state.bottom)
-      .. "\nPersonas standing here add their grains to this region's census.")
+      .. "\nPersonas and vessels standing here add their grains to this region's census.")
   if state.timeless then
     self.setColorTint({ 0.22, 0.16, 0.32 })
   elseif e ~= nil then

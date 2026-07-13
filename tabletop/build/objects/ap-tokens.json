@@ -31,7 +31,7 @@
         "scaleZ": 0.9
       },
       "Nickname": "AP Tokens",
-      "Description": "AP — attention/action points (3/turn; unspent converts to Timecoin).",
+      "Description": "AP — attention/action points (3/turn; unspent converts to Timecoin).\nNote: provisional default (bdo's notes name AP but not a per-turn amount); unspent AP converts to timecoin at end of turn",
       "GMNotes": "",
       "ColorDiffuse": {
         "r": 0.15,

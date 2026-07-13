@@ -49,6 +49,17 @@ end
 
 local function selName() return CC.elements[state.sel].name end
 local function isTimeless() return ccTotal(state.bottom) > ccTotal(state.top) end
+-- a persona's own hourglass: its tier bounds its total grains, like any vessel
+local function used() return ccTotal(state.top) + ccTotal(state.bottom) end
+local function full()
+  if used() >= ccTier(state.tier).capacity then
+    broadcastToAll(self.getName() .. "'s hourglass is full ("
+        .. ccTier(state.tier).capacity .. " grains at Tier " .. state.tier .. ").",
+        { 0.9, 0.6, 0.2 })
+    return true
+  end
+  return false
+end
 
 function buildUI()
   self.clearButtons()
@@ -121,7 +132,11 @@ function pIdentify()
   refresh()
 end
 
-function pPlus() state.top[selName()] = (state.top[selName()] or 0) + 1; refresh() end
+function pPlus()
+  if full() then return end
+  state.top[selName()] = (state.top[selName()] or 0) + 1
+  refresh()
+end
 function pMinus()
   local n = state.top[selName()] or 0
   if n > 0 then state.top[selName()] = n - 1 end
@@ -130,9 +145,10 @@ end
 function pDrop()
   local n = state.top[selName()] or 0
   if n > 0 then
+    local was = isTimeless()
     state.top[selName()] = n - 1
     state.bottom[selName()] = (state.bottom[selName()] or 0) + 1
-    if isTimeless() then
+    if not was and isTimeless() then
       broadcastToAll(self.getName() .. " has slipped into TIMELESSNESS.", { 0.6, 0.4, 0.9 })
     end
   end
@@ -148,15 +164,19 @@ function pRaise()
 end
 
 function ccGetPool()
-  return { kind = "persona", name = state.name, tier = state.tier,
+  -- fog of war holds here too: the census never leaks an unidentified name
+  local shown = state.identified and state.name or ("Unknown T" .. state.tier)
+  return { kind = "persona", name = shown, tier = state.tier,
            top = state.top, bottom = state.bottom, timeless = isTimeless() }
 end
 
 function ccAddGrain(params)
   local e = ccElem(params.element)
   if e == nil then return false end
+  local n = tonumber(params.n) or 1
+  if used() + n > ccTier(state.tier).capacity then return false end
   local side = (params.side == "bottom") and "bottom" or "top"
-  state[side][e.name] = (state[side][e.name] or 0) + (tonumber(params.n) or 1)
+  state[side][e.name] = (state[side][e.name] or 0) + n
   refresh()
   return true
 end
