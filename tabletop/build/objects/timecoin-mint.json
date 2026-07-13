@@ -1,0 +1,266 @@
+{
+  "SaveName": "CC timecoin-mint",
+  "Date": "",
+  "VersionNumber": "",
+  "GameMode": "",
+  "GameType": "",
+  "GameComplexity": "",
+  "Tags": [],
+  "Gravity": 0.5,
+  "PlayArea": 0.5,
+  "Table": "",
+  "Sky": "",
+  "Note": "",
+  "TabStates": {},
+  "LuaScript": "",
+  "LuaScriptState": "",
+  "XmlUI": "",
+  "ObjectStates": [
+    {
+      "GUID": "65a4d0",
+      "Name": "Infinite_Bag",
+      "Transform": {
+        "posX": 13.0,
+        "posY": 1.5,
+        "posZ": 4.0,
+        "rotX": 0.0,
+        "rotY": 0.0,
+        "rotZ": 0.0,
+        "scaleX": 0.9,
+        "scaleY": 0.9,
+        "scaleZ": 0.9
+      },
+      "Nickname": "Timecoin 10 Mint",
+      "Description": "An endless mint of 10-Timecoin chips.",
+      "GMNotes": "",
+      "ColorDiffuse": {
+        "r": 0.85,
+        "g": 0.7,
+        "b": 0.25
+      },
+      "Tags": [
+        "cc-coinbag"
+      ],
+      "Locked": false,
+      "Grid": true,
+      "Snap": true,
+      "Autoraise": true,
+      "Sticky": true,
+      "Tooltip": true,
+      "LuaScript": "",
+      "LuaScriptState": "",
+      "XmlUI": "",
+      "ContainedObjects": [
+        {
+          "GUID": "eccba9",
+          "Name": "Chip_10",
+          "Transform": {
+            "posX": 0.0,
+            "posY": 0.0,
+            "posZ": 0.0,
+            "rotX": 0.0,
+            "rotY": 0.0,
+            "rotZ": 0.0,
+            "scaleX": 1.0,
+            "scaleY": 1.0,
+            "scaleZ": 1.0
+          },
+          "Nickname": "Timecoin 10",
+          "Description": "",
+          "GMNotes": "",
+          "ColorDiffuse": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.3
+          },
+          "Tags": [],
+          "Locked": false,
+          "Grid": true,
+          "Snap": true,
+          "Autoraise": true,
+          "Sticky": true,
+          "Tooltip": true,
+          "LuaScript": "",
+          "LuaScriptState": "",
+          "XmlUI": ""
+        }
+      ]
+    },
+    {
+      "GUID": "51f6cd",
+      "Name": "Infinite_Bag",
+      "Transform": {
+        "posX": 13.0,
+        "posY": 1.5,
+        "posZ": 7.0,
+        "rotX": 0.0,
+        "rotY": 0.0,
+        "rotZ": 0.0,
+        "scaleX": 0.9,
+        "scaleY": 0.9,
+        "scaleZ": 0.9
+      },
+      "Nickname": "Timecoin 100 Mint",
+      "Description": "An endless mint of 100-Timecoin chips.",
+      "GMNotes": "",
+      "ColorDiffuse": {
+        "r": 0.85,
+        "g": 0.7,
+        "b": 0.25
+      },
+      "Tags": [
+        "cc-coinbag"
+      ],
+      "Locked": false,
+      "Grid": true,
+      "Snap": true,
+      "Autoraise": true,
+      "Sticky": true,
+      "Tooltip": true,
+      "LuaScript": "",
+      "LuaScriptState": "",
+      "XmlUI": "",
+      "ContainedObjects": [
+        {
+          "GUID": "3f7b5f",
+          "Name": "Chip_100",
+          "Transform": {
+            "posX": 0.0,
+            "posY": 0.0,
+            "posZ": 0.0,
+            "rotX": 0.0,
+            "rotY": 0.0,
+            "rotZ": 0.0,
+            "scaleX": 1.0,
+            "scaleY": 1.0,
+            "scaleZ": 1.0
+          },
+          "Nickname": "Timecoin 100",
+          "Description": "",
+          "GMNotes": "",
+          "ColorDiffuse": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.3
+          },
+          "Tags": [],
+          "Locked": false,
+          "Grid": true,
+          "Snap": true,
+          "Autoraise": true,
+          "Sticky": true,
+          "Tooltip": true,
+          "LuaScript": "",
+          "LuaScriptState": "",
+          "XmlUI": ""
+        }
+      ]
+    },
+    {
+      "GUID": "3b151a",
+      "Name": "Infinite_Bag",
+      "Transform": {
+        "posX": 13.0,
+        "posY": 1.5,
+        "posZ": 10.0,
+        "rotX": 0.0,
+        "rotY": 0.0,
+        "rotZ": 0.0,
+        "scaleX": 0.9,
+        "scaleY": 0.9,
+        "scaleZ": 0.9
+      },
+      "Nickname": "Timecoin 1000 Mint",
+      "Description": "An endless mint of 1000-Timecoin chips.",
+      "GMNotes": "",
+      "ColorDiffuse": {
+        "r": 0.85,
+        "g": 0.7,
+        "b": 0.25
+      },
+      "Tags": [
+        "cc-coinbag"
+      ],
+      "Locked": false,
+      "Grid": true,
+      "Snap": true,
+      "Autoraise": true,
+      "Sticky": true,
+      "Tooltip": true,
+      "LuaScript": "",
+      "LuaScriptState": "",
+      "XmlUI": "",
+      "ContainedObjects": [
+        {
+          "GUID": "982d6c",
+          "Name": "Chip_1000",
+          "Transform": {
+            "posX": 0.0,
+            "posY": 0.0,
+            "posZ": 0.0,
+            "rotX": 0.0,
+            "rotY": 0.0,
+            "rotZ": 0.0,
+            "scaleX": 1.0,
+            "scaleY": 1.0,
+            "scaleZ": 1.0
+          },
+          "Nickname": "Timecoin 1000",
+          "Description": "",
+          "GMNotes": "",
+          "ColorDiffuse": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.3
+          },
+          "Tags": [],
+          "Locked": false,
+          "Grid": true,
+          "Snap": true,
+          "Autoraise": true,
+          "Sticky": true,
+          "Tooltip": true,
+          "LuaScript": "",
+          "LuaScriptState": "",
+          "XmlUI": ""
+        }
+      ]
+    },
+    {
+      "GUID": "e5ac60",
+      "Name": "Counter",
+      "Transform": {
+        "posX": 13.0,
+        "posY": 1.5,
+        "posZ": 1.0,
+        "rotX": 0.0,
+        "rotY": 0.0,
+        "rotZ": 0.0,
+        "scaleX": 1.4,
+        "scaleY": 1.4,
+        "scaleZ": 1.4
+      },
+      "Nickname": "Timecoin Bank",
+      "Description": "The player starts with 100 Timecoin.",
+      "GMNotes": "",
+      "ColorDiffuse": {
+        "r": 0.85,
+        "g": 0.7,
+        "b": 0.25
+      },
+      "Tags": [],
+      "Locked": false,
+      "Grid": true,
+      "Snap": true,
+      "Autoraise": true,
+      "Sticky": true,
+      "Tooltip": true,
+      "LuaScript": "",
+      "LuaScriptState": "",
+      "XmlUI": "",
+      "Counter": {
+        "value": 100
+      }
+    }
+  ]
+}

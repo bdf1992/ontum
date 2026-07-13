@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "game": "Catalyst Core: The 13th Hour",
+    "canon": "RiftRealms.CatalystCore.Compendium (bdo upload, 2026-07-13): wiki/the-game.md, wiki/glossary/element.md, wiki/races-and-classes.md",
+    "input": "bdo's paper-play concept notes, 2026-07-13 (hourglass grains, global clock, timecoin, AP, timelessness, census example: Region A 5 Fire + Region B 10 Fire + persona Herald 5 Fire = world 20 Fire)",
+    "laws": "exactly 8 elements on the F2^3 cube; oppose(x) = x XOR 7; tier capacities and timecoin values strictly increase with tier"
+  },
+  "elements": [
+    { "addr": 0, "name": "Void",   "opposite": "Aether", "role": "Absence, nothingness",    "color": { "r": 0.10, "g": 0.06, "b": 0.16 } },
+    { "addr": 1, "name": "Fire",   "opposite": "Water",  "role": "Destruction, energy",     "color": { "r": 0.89, "g": 0.35, "b": 0.12 } },
+    { "addr": 2, "name": "Earth",  "opposite": "Air",    "role": "Stability, substance",    "color": { "r": 0.48, "g": 0.31, "b": 0.13 } },
+    { "addr": 3, "name": "Order",  "opposite": "Chaos",  "role": "Structure, pattern",      "color": { "r": 0.91, "g": 0.77, "b": 0.25 } },
+    { "addr": 4, "name": "Chaos",  "opposite": "Order",  "role": "Entropy, disruption",     "color": { "r": 0.70, "g": 0.09, "b": 0.43 } },
+    { "addr": 5, "name": "Air",    "opposite": "Earth",  "role": "Freedom, mobility",       "color": { "r": 0.75, "g": 0.85, "b": 0.91 } },
+    { "addr": 6, "name": "Water",  "opposite": "Fire",   "role": "Adaptation, flow",        "color": { "r": 0.18, "g": 0.53, "b": 0.87 } },
+    { "addr": 7, "name": "Aether", "opposite": "Void",   "role": "Transcendence, resonance","color": { "r": 0.56, "g": 0.37, "b": 0.85 } }
+  ],
+  "tiers": [
+    { "tier": 1, "capacity": 10,  "timecoin": 100 },
+    { "tier": 2, "capacity": 25,  "timecoin": 500 },
+    { "tier": 3, "capacity": 50,  "timecoin": 1500 },
+    { "tier": 4, "capacity": 75,  "timecoin": 4000 },
+    { "tier": 5, "capacity": 100, "timecoin": 10000 }
+  ],
+  "races": [
+    { "name": "Mortal",   "is": "Void",  "wants": "(contextual)", "weak": "Aether" },
+    { "name": "Primal",   "is": "Fire",  "wants": "Aether",       "weak": "Water" },
+    { "name": "Golem",    "is": "Earth", "wants": "Water",        "weak": "Air" },
+    { "name": "Chimeral", "is": "Order", "wants": "Fire",         "weak": "Chaos" },
+    { "name": "Revenant", "is": "Chaos", "wants": "Air",          "weak": "Order" },
+    { "name": "Outsider", "is": "Air",   "wants": "Aether",       "weak": "Earth" }
+  ],
+  "classes": [
+    { "name": "Lord",   "is": "Aether", "wants": "Chaos", "weak": "Void",
+      "ability": "Command: forcefully move a persona to a location or order it to interact with an event.",
+      "passives": ["City Recruitment Center: spend timecoin to recruit personas (cost scales with rarity + equipment).", "See where personas intend to move."] },
+    { "name": "Keeper", "is": "Chaos",  "wants": "Earth", "weak": "Order",
+      "ability": "(open — holds the line between what is and what was)", "passives": [] },
+    { "name": "Magus",  "is": "Water",  "wants": "Air",   "weak": "Fire",
+      "ability": "Transmute Void/Aether: transmute an element into Void or Aether, whichever it is most similar to.", "passives": [] },
+    { "name": "Weaver", "is": "Order",  "wants": "Fire",  "weak": "Chaos",
+      "ability": "(open — imposes pattern on noise)", "passives": [] },
+    { "name": "Mercer", "is": "Earth",  "wants": "Water", "weak": "Air",
+      "ability": "(open — moves value across the Rift)", "passives": [] }
+  ],
+  "clock": {
+    "hours": 12,
+    "max_turns": 12,
+    "eon_message": "Eon, you have awakened. The end time has come — he arrives in {turns} turns."
+  },
+  "currency": {
+    "name": "Timecoin",
+    "start": 100,
+    "denominations": [10, 100, 1000]
+  },
+  "attention": {
+    "name": "AP",
+    "per_turn": 3,
+    "note": "provisional default (bdo's notes name AP but not a per-turn amount); unspent AP converts to timecoin at end of turn"
+  },
+  "shapes": [
+    { "label": "Block",    "tts": "BlockSquare" },
+    { "label": "Slab",     "tts": "BlockRectangle" },
+    { "label": "Wedge",    "tts": "BlockTriangle" },
+    { "label": "Pawn",     "tts": "PlayerPawn" },
+    { "label": "Die",      "tts": "Die_6" },
+    { "label": "Chip",     "tts": "Chip_100" },
+    { "label": "Checker",  "tts": "Checker_white" }
+  ],
+  "samples": {
+    "biomes": [
+      { "name": "Region A", "element": "Fire", "own": 5,  "rate": 1 },
+      { "name": "Region B", "element": "Fire", "own": 10, "rate": 1 }
+    ],
+    "personas": [
+      { "name": "Herald", "race": "Primal", "class": "Lord", "tier": 3, "pool": { "Fire": 5 } }
+    ]
+  }
+}

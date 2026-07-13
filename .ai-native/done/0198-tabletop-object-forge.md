@@ -1,0 +1,5 @@
+# Done-line 0198 — Tabletop Simulator object forge — generic shapes, colors, and the script generator
+
+> **Done when:** a governed `tabletop/` module exists whose forge (`python tabletop/forge.py build`) deterministically regenerates `tabletop/build/` — TTS-importable Saved Object JSON (valid JSON, unique GUIDs, no unresolved template placeholders) for generic tinted shapes, the eight element grain bags, tiered hourglasses, the global clock, biome tiles, persona pawns, timecoin, and an in-game spawner console with chat commands — AND the forge REFUSES a spec that breaks the compendium's laws (not exactly 8 elements, opposition that is not XOR 7, non-monotonic tier capacities), with `tests/test_tabletop.py` in the main suite proving the refusal non-vacuous (§10).
+
+The paper-play kit for Catalyst Core: The 13th Hour (the uploaded compendium is the canon; bdo's 2026-07-13 concept notes are the gameplay input). The spec (`tabletop/game.spec.json`) is declared input; `build/` is generated output, never hand-edited. Physical-play affordances only — no game AI, no networked anything; the Lua runs inside Tabletop Simulator.
