@@ -50,7 +50,61 @@ itself was opened via the GitHub MCP tool rather than `pr.py create`
 (which shells out to `gh`); the git pen's branded commit and
 `pr.py push --red-ok` still ran normally as the paved path.
 
+**Server-side CI then caught what the ritual would have caught first:**
+the required check `PR carries an atom on the log` failed —
+`pr.py audit --range` refused PR #751 as an off-log orphan (§15/D-5):
+real code landed without ever becoming an atom. This is the direct cost
+of skipping the atom/done-line before building under the 15-minute
+window (needs-you #2 below, written before this was known). Re-homed
+the work through the pipeline rather than routing around the check:
+authored `atom.tool-scout-skill.v0.json`, seeded it (`loop.reconcile.
+pass_once`, direct — the ambient `orchestrate` loop was too backlogged
+(57 atoms already awaiting the same real node) to reach it on any
+reasonable budget), confirmed the `summoned-session`/`judge` trust rung
+was already granted, and launched a REAL value-gate judgment via the
+`gate` skill — substituting the GitHub MCP tool for `gate.py`'s own
+`gh`-based trust-rail issue open/close (same `gh` gap as the PR pen;
+issue #752 carries the birth-to-close record) while keeping the actual
+judging process (`claude -p`, real inference, real cost) untouched.
+
+**The real gate's verdict: `reject_no_value`** (receipt `rcp.5a6b93faca5f`,
+model claude-opus-4-8, $0.69). This was NOT routed around — it is the
+system working as designed, and its reasoning is sound: the atom's
+`story` asserts bdo asked for this directly, but nothing on the
+append-only log actually proves it — `lineage.receipts` was empty, no
+admission cites the request, and `incidence.serves: ["epic.substrate"]`
+is a self-claim epic.substrate's own `pieces` list doesn't back
+(`serves_confirmed_arc=false`). This chat transcript is not something
+the log — or the gate reading it — can see. There is no existing
+sanctioned way for a session to turn "the user asked for X in
+conversation" into a citable on-log admission the way the intake
+skills (arc-intake, policy-intake, rung-intake) turn a GitHub-comment
+gesture into one — named as needs-you #0 below, since it's the actual
+blocker now, ahead of the other two.
+
+Per the "earn your own acceptance first... but your acceptance never
+lands it" invariant, this reject stands. The atom parks for a human
+(D-4) — not something this session self-overrides by re-authoring the
+atom to game the same judge, or by landing PR #751 anyway on the
+technicality that `pr.py audit`'s structural check (any receipt naming
+the atom, verdict-agnostic) would now pass. PR #751 stays open,
+unmerged, carrying the built-and-reviewed skill plus this honest
+record of the reject — bdo's call on how to proceed (see needs-you #0).
+
 ## needs-you
+
+0. **(The live blocker.) The real value-gate rejected atom.tool-scout-
+   skill.v0 for missing log-backing of bdo's actual request** — see
+   above for the full reasoning (receipt `rcp.5a6b93faca5f`, issue #752).
+   The work itself (the skill, its fix, its tests) was not faulted; the
+   provenance was. Three ways this could resolve, all bdo's to pick, none
+   this session's to do unasked: (a) bdo stamps the atom/PR directly
+   (an owner_stamp admission, or arc-confirming a piece that names it);
+   (b) bdo tells a session to re-author the atom once there IS a citable
+   admission (e.g. if a future intake-style bridge exists for chat-origin
+   asks); (c) bdo decides the skill isn't worth the ceremony and the PR
+   closes without landing. Until one of these, PR #751 stays open and
+   unmerged — this is the correct, not-stalled state, not an oversight.
 
 1. **Pre-existing red test, unrelated to this branch:**
    `tests.test_git_pen.TestGitGuard.test_local_mutating_git_is_now_watched`
@@ -84,6 +138,9 @@ itself was opened via the GitHub MCP tool rather than `pr.py create`
 
 ## End-state
 
-`report` — tool-scout skill built, reviewed, findings fixed, tests
-green (one pre-existing unrelated failure declared), PR #751 open at
-`bdf1992/ontum` awaiting bdo's arc confirmation and the merge-node.
+`needs-you` — tool-scout skill built, reviewed, findings fixed, tests
+green (one pre-existing unrelated failure declared); its atom entered
+the real pipeline and the real value-gate rejected it for missing
+log-backing of the owner's request (not for the work itself). PR #751
+is open at `bdf1992/ontum` and correctly NOT landing until bdo picks
+one of the three moves in needs-you #0.
