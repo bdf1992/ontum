@@ -1,0 +1,56 @@
+{
+  "atom": {
+    "id": "atom.tool-scout-skill.v0",
+    "story": {
+      "text": "bdo asked directly, with a hard 15-minute window, for a dedicated skill to search across his PC and repos for tools that already do a job — CLI programs and applications — and floated discussing or forking off the repo's existing graphing/query tooling (causality/term_economy.py). I built .claude/skills/tool-scout/: a SKILL.md ritual plus scout.py, a pure stdlib, read-only, no-network fold indexing four sources (PATH executables; this repo's .claude/skills/*/SKILL.md; .claude/workflows/*.js meta blocks; the python -m loop.* commands documented in loop/CLAUDE.md), ranked by token overlap — a shortlist generator, not a final answer, so the pipeline before it saves the session from re-building tooling that already exists (this repo's own don't-double-build rule, §10). I skipped writing this atom and a done-line before building, under the explicit time constraint — the server-side CI gate (pr.py audit --range, 'PR carries an atom on the log') then refused PR #751 as off-log, so this atom re-homes that work through the pipeline the way the refusal names.",
+      "value_confidence": "medium",
+      "owner_stamp": "pending"
+    },
+    "briefing": {
+      "headline": "tool-scout — a keyword search over PATH executables + this repo's own skills/workflows/loop commands, so a session checks before it double-builds",
+      "value": "A session (or bdo) asking 'is there already something that does X' gets a deterministic, sub-second answer instead of grepping by hand or building a duplicate. Running `python .claude/skills/tool-scout/scout.py \"<query>\"` ranks matches from four sources by token overlap and names what it did NOT index (GUI apps, unattached repos) rather than claiming a false absence.",
+      "why_now": "bdo asked for it directly, with an explicit 15-minute usability window, and named forking the graphing/query tooling as a thing to discuss — this atom is that discussion's outcome: forking causality/term_economy.py was considered and declined (different domain, §10), the pattern was reused instead.",
+      "if_accepted": "tool-scout lands as a normal skill any session can reach for before building new tooling; the disambiguation from loop/scout.py's unrelated capital-S Scout (ScoutCTA, done-line 0148) stands recorded in SKILL.md so the name collision never causes real confusion.",
+      "if_rejected": "The skill stays off the log and off main — bdo gets the working tree removed from the diff, or judges the shortlist-generator approach (plain token overlap, no embeddings) insufficient and this atom's disposition names what to build instead.",
+      "cost_of_wrong_call": "Low and bounded: the pen is read-only (no writes, no network, no execution of anything it finds) and additive-only (a new .claude/skills/ directory, one new tests/ file, one report). Reverting is deleting the directory and the test file; nothing else in the repo depends on it yet.",
+      "mechanism": "index_path_tools() walks $PATH directories once (no subprocess per binary); index_repo_skills()/index_repo_workflows()/index_loop_commands() parse this repo's own SKILL.md frontmatter, workflow meta blocks (escape-aware JS string regex — the exact bug an independent review caught and this atom's diff fixes), and loop/CLAUDE.md's documented commands. search() ranks by token overlap plus a name-substring bonus. tests/test_tool_scout.py (7 tests, added after the independent review) covers all four sources, ranking, the no-write invariant, and CLI JSON/no-match output — including a regression test reproducing the escaped-quote truncation against this repo's own tend-heal.js. Report 0133 names the process gap (built before the done-line/atom, under bdo's explicit time constraint) as needs-you.",
+      "reading": [
+        ".claude/skills/tool-scout/SKILL.md",
+        ".claude/skills/tool-scout/scout.py",
+        "tests/test_tool_scout.py",
+        ".ai-native/reports/0133-tool-scout-skill.md"
+      ]
+    },
+    "concern_surface": "systems",
+    "incidence": {
+      "serves": [
+        "epic.substrate"
+      ],
+      "touches": [
+        ".claude/skills/tool-scout/SKILL.md",
+        ".claude/skills/tool-scout/scout.py",
+        "tests/test_tool_scout.py",
+        ".ai-native/reports/0133-tool-scout-skill.md"
+      ],
+      "must_not_collide_with": [
+        "loop/scout.py"
+      ],
+      "hands_off_to": [
+        "seam.value-to-owner-stamp"
+      ]
+    },
+    "desired_state": "value_confirmed",
+    "verdicts": {
+      "value_gate": "pending"
+    },
+    "lineage": {
+      "prompt_versions": [],
+      "source_artifacts": [
+        "pr:751",
+        "epic.substrate",
+        ".ai-native/reports/0133-tool-scout-skill.md"
+      ],
+      "receipts": []
+    }
+  }
+}
