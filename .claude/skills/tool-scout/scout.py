@@ -114,8 +114,17 @@ def index_repo_skills(root):
     return items
 
 
-META_NAME_RE = re.compile(r"name:\s*['\"]([^'\"]+)['\"]")
-META_DESC_RE = re.compile(r"description:\s*['\"]([^'\"]+)['\"]")
+# A JS string literal's closing quote may be backslash-escaped inside the
+# string (e.g. `'...bdo\'s, D-4)...'`); `[^'"]+` would stop there instead of
+# finding the real close. Match `\.` (any escaped char) or any non-quote,
+# non-backslash char, then unescape on capture.
+_JS_STRING = r"(['\"])((?:\\.|(?!\1)[^\\])*)\1"
+META_NAME_RE = re.compile(r"name:\s*" + _JS_STRING)
+META_DESC_RE = re.compile(r"description:\s*" + _JS_STRING)
+
+
+def _js_unescape(raw):
+    return re.sub(r"\\(.)", r"\1", raw)
 
 
 def index_repo_workflows(root):
@@ -137,8 +146,8 @@ def index_repo_workflows(root):
         items.append(
             {
                 "kind": "workflow",
-                "name": (name_m.group(1) if name_m else entry[:-3]),
-                "description": desc_m.group(1) if desc_m else "",
+                "name": (_js_unescape(name_m.group(2)) if name_m else entry[:-3]),
+                "description": _js_unescape(desc_m.group(2)) if desc_m else "",
                 "source": full,
             }
         )
