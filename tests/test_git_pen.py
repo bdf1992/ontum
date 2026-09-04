@@ -195,12 +195,12 @@ class TestGitGuard(unittest.TestCase):
         self.watch_log = pathlib.Path(path)
         self.addCleanup(self.watch_log.unlink)
 
-    def _invoke(self, command, tool="Bash", session="s1"):
+    def _invoke(self, command, tool="Bash", session="s1", cwd=None):
         payload = json.dumps({"session_id": session, "tool_name": tool,
                               "tool_input": {"command": command}})
         env = dict(os.environ, ONTUM_TOOL_WATCH_LOG=str(self.watch_log))
         return subprocess.run([sys.executable, str(GUARD_PATH)], input=payload,
-                              capture_output=True, text=True, env=env)
+                              capture_output=True, text=True, env=env, cwd=cwd)
 
     def _entries(self):
         text = self.watch_log.read_text(encoding="utf-8")
@@ -234,15 +234,44 @@ class TestGitGuard(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, verb)
         self.assertEqual(self._entries(), [])
 
-    def test_local_mutating_git_is_now_watched(self):
-        # the farm half: standalone local mutation is visible so the next
-        # verb to brand nominates itself (it was invisible before 0020)
-        for command in ("git checkout -b claude/x", "git branch -D claude/dead",
-                        "git merge claude/feature", "git rebase main",
-                        "git worktree add ../wt"):
+    def test_non_flipping_local_mutation_is_watched(self):
+        # the farm half (done-line 0020): standalone local mutation that does
+        # NOT flip the tree stays visible, so the next verb to brand nominates
+        # itself. Workstation management is explicitly on this side of the line.
+        for command in ("git worktree add ../wt", "git tag -a v1 -m x",
+                        "git remote add origin url", "git notes add -m x"):
             self.assertEqual(self._invoke(command).returncode, 0, command)
         bins = [e["bins"] for e in self._entries()]
-        self.assertEqual(bins, [["git"]] * 5)
+        self.assertEqual(bins, [["git"]] * 4)
+
+    def test_viewport_flip_is_denied_in_the_viewport(self):
+        # The workstation fence (bdo, 2026-06-20) supersedes the 0020 reading
+        # for the verbs that FLIP the tree: in bdo's viewport (the primary
+        # worktree) they are denied, not merely watched. A worker edits only
+        # its own workstation.
+        for command in ("git checkout -b claude/x", "git branch -D claude/dead",
+                        "git merge claude/feature", "git rebase main"):
+            proc = self._invoke(command, cwd=str(ROOT))
+            self.assertEqual(proc.returncode, 2, command)
+            self.assertIn("VIEWPORT", proc.stderr)
+        rules = [e["rule"] for e in self._entries()]
+        self.assertEqual(rules, ["viewport-flip"] * 4)
+
+    def test_viewport_flip_is_only_watched_inside_a_workstation(self):
+        # The fence is a WORKSTATION fence, not a blanket ban: the same verb
+        # that is denied in the viewport is merely watched inside a linked
+        # worktree, which is where a worker is supposed to be doing it.
+        with tempfile.TemporaryDirectory() as tmp:
+            station = pathlib.Path(tmp) / "station"
+            subprocess.run(["git", "worktree", "add", "--detach", str(station), "HEAD"],
+                           cwd=str(ROOT), capture_output=True, check=True)
+            try:
+                proc = self._invoke("git checkout -b claude/x", cwd=str(station))
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+                self.assertEqual([e["bins"] for e in self._entries()], [["git"]])
+            finally:
+                subprocess.run(["git", "worktree", "remove", "--force", str(station)],
+                               cwd=str(ROOT), capture_output=True)
 
     def test_read_only_git_stays_invisible(self):
         # denying a look would diverge from the gh precedent, not match it
