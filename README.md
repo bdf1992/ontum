@@ -136,3 +136,19 @@ at arc scale. See [CONTRIBUTING.md](CONTRIBUTING.md) before changing anything.
 
 Copyright © 2026. All rights reserved — see [LICENSE](LICENSE). The repo is
 viewable for reference; no reuse rights are granted yet.
+
+<!-- lineage:begin — generated from system-cartographer lineage/lineage.yaml. Do not hand-edit. -->
+
+## Where this sits
+
+This is one of 20 repositories on this account whose relations are recorded, with the evidence for each, in [`lineage.yaml`](https://github.com/bdf1992/system-cartographer/blob/claude/access-requirements-zbl1s7/lineage/lineage.yaml). What that record says about this one:
+
+**Claim.** A governed gateway for autonomous AI work, where the append-only log is the truth and every other view is folded from it.
+
+**Checked.** `python -m unittest discover -s tests` — 1612 tests, 2 skipped, OK, observed 2026-09-04.
+
+**Relations.**
+
+- This repository **supersedes** `onton`. ontum's glossary records the rename. glyphs/knolling.md:142 lists "Onton | DEAD | Former unit-name", and docs/sources/rosetta-creole.md:15 says the source "was written with the dead unit-name Onton, renamed Onton -> Ontum". Recorded with a caveat: this is a rename of a unit-name inside ontum's own vocabulary, sitting beside etymontoken and epistemontoken. Neither repository states that one superseded the other.
+
+<!-- lineage:end -->
