@@ -1,20 +1,19 @@
 # Ontum
 
-**Ontum is a governed gateway for autonomous AI work — a controlled layer
-between what a person wants and the sprawl of their digital life (email,
-files, repos, accounts, calendars), where AI can carry out whole initiatives
-on their behalf without losing track of where facts came from, overstepping
-what it is allowed to do, or dissolving into chat no one can replay.**
+**Ontum is a governed gateway for autonomous AI work: a controlled layer
+between a person and their email, files, repositories, accounts and calendars,
+where an AI can carry out whole pieces of work without losing track of where
+facts came from, exceeding what it is allowed to do, or leaving behind a
+conversation nobody can replay.**
 
-Most AI is trapped in one session: it answers, forgets, and grades its own
-work. Ontum gives AI a *lawful body* to act through — durable files instead
-of fading memory, an independent check on every claim, an append-only record
-you can replay, and one owner who steers by approving directions. You stop
-governing **prompts** and start governing **initiatives**.
+Most AI work lives and dies inside one session. The model answers, forgets, and
+grades its own output. Ontum replaces that with four things: files that outlast
+the session, a second participant that checks every claim, an append-only log
+you can replay, and one owner who approves **arcs** — directions of work —
+rather than individual prompts.
 
-The aim is to **raise the floor and remove the ceiling**: anyone who can hold
-a conversation should be able to deal with the digital world more safely, and
-the same system should scale up to serious AI-native work.
+The same system is meant to serve someone who can only hold a conversation and
+someone doing serious AI-native work.
 **→ [Read the full idea](docs/culture/the-idea.md).**
 
 ---
